@@ -1,8 +1,12 @@
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+
+# C extensions
 *.so
+
+# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -16,21 +20,28 @@ parts/
 sdist/
 var/
 wheels/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
 
-# Django
+# Django stuff
 *.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
 media/
+staticfiles/
+static_root/
 
-# Virtual Environment
-venv/
+# Environment variables
+.env
+.env.local
+.env.production
+.venv
 env/
+venv/
 ENV/
 env.bak/
 venv.bak/
@@ -51,18 +62,6 @@ venv.bak/
 ehthumbs.db
 Thumbs.db
 
-# Environment variables
-.env
-.env.local
-.env.production
-
-# Static files (will be generated)
-staticfiles/
-static_root/
-
-# Media files (user uploads)
-media_root/
-
 # Coverage reports
 htmlcov/
 .coverage
@@ -71,12 +70,18 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+.tox/
+.nox/
+.cache
+nosetests.xml
+*.py,cover
+cover/
 
 # Translations
 *.mo
 *.pot
 
-# Celery
+# Celery stuff
 celerybeat-schedule
 celerybeat.pid
 
@@ -85,6 +90,72 @@ celerybeat.pid
 *.backup
 *.sql
 
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# PDM
+.pdm.toml
+.pdm-python
+.pdm-build/
+
+# PEP 582
+__pypackages__/
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# PyCharm
+#.idea/
+
+# Ruff stuff
+.ruff_cache/
+
+# PyPI configuration file
+.pypirc
+
+# Cursor
+.cursorignore
+.cursorindexingignore
+
 # Logs
 logs/
-*.log
+
+# Media files (user uploads)
+media_root/

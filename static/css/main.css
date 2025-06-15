@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Shafarik&amp;display=swap&amp;subset=cyrillic');
+@import url('https://fonts.googleapis.com/css2?family=Kurale&amp;display=swap&amp;subset=cyrillic');
+
+:root {
+    --primary-green: #4a7c59;
+    --light-green: #e8f5e8;
+    --accent-gold: #d4af37;
+    --dark-green: #2d4a2d;
+    --muted-olive: #6c757d;
+    --children-blue: #87ceeb;
+}
+
+body {
+    font-family: 'Kurale', serif;
+    background: linear-gradient(60deg, #eef8a5 0%, #ffffff 47%, #ebffe5 100%);
+    color: var(--dark-green);
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Shafarik', serif;
+    color: var(--dark-green);
+}
+
+.navbar-brand {
+    font-family: 'Shafarik', serif;
+    font-size: 1.5rem;
+    color: var(--primary-green) !important;
+}
+
+.card {
+    background: linear-gradient(60deg, #ddfdd3 0%, #ffffff 100%);
+    border: 1px solid var(--light-green);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.btn-primary {
+    background-color: var(--accent-gold);
+    border-color: var(--accent-gold);
+    color: var(--dark-green);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    color: white;
+}
+
+/* Детский раздел */
+.children-section {
+    background: linear-gradient(45deg, var(--children-blue), #ffffff);
+    border-radius: 15px;
+    padding: 20px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+    }
+}

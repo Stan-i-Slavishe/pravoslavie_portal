@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Подписка на уведомления{% endblock %}
+
+{% block extra_css %}
+<style>
+.subscription-form {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.form-header h1 {
+    color: #2B5AA0;
+    margin-bottom: 10px;
+}
+
+.form-header p {
+    color: #666;
+    font-size: 16px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.form-control:focus {
+    border-color: #2B5AA0;
+    outline: none;
+}
+
+.btn-subscribe {
+    width: 100%;
+    padding: 15px;
+    background: #2B5AA0;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-subscribe:hover {
+    background: #1e4080;
+}
+
+.benefits {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.benefits h3 {
+    color: #2B5AA0;
+    margin-bottom: 15px;
+}
+
+.benefits ul {
+    list-style: none;
+    padding: 0;
+}
+
+.benefits li {
+    margin: 8px 0;
+    padding-left: 25px;
+    position: relative;
+}
+
+.benefits li:before {
+    content: "✅";
+    position: absolute;
+    left: 0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="subscription-form">
+        <div class="form-header">
+            <h1>📧 Подписка на уведомления</h1>
+            <p>Узнайте первыми о запуске платежной системы!</p>
+        </div>
+
+        <div class="benefits">
+            <h3>Вы будете получать:</h3>
+            <ul>
+                <li>Уведомление о запуске покупок</li>
+                <li>Информацию о новом контенте</li>
+                <li>Специальные предложения для подписчиков</li>
+                <li>Еженедельную аналитику (по желанию)</li>
+            </ul>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="email">Email адрес:</label>
+                <input type="email" 
+                       id="email" 
+                       name="email" 
+                       class="form-control" 
+                       placeholder="your@email.com" 
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="interested_in">Что вас больше интересует?</label>
+                <select id="interested_in" name="interested_in" class="form-control">
+                    <option value="">Выберите...</option>
+                    <option value="books">📚 Книги</option>
+                    <option value="fairy_tales">🧚‍♀️ Терапевтические сказки</option>
+                    <option value="audio">🎧 Аудио-контент</option>
+                    <option value="subscriptions">👑 Премиум подписки</option>
+                    <option value="all">🌟 Всё сразу</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-subscribe">
+                🔔 Подписаться на уведомления
+            </button>
+        </form>
+
+        <div class="text-center mt-3">
+            <small class="text-muted">
+                Мы уважаем вашу конфиденциальность. 
+                <a href="/privacy/">Политика конфиденциальности</a>
+            </small>
+        </div>
+    </div>
+</div>
+{% endblock %}

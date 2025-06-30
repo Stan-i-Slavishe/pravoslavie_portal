@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from core.views import custom_404_view, custom_500_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -17,11 +18,19 @@ urlpatterns = [
     path('stories/', include('stories.urls')),
     path('books/', include('books.urls')),
     path('audio/', include('audio.urls')),
+    path('fairy-tales/', include('fairy_tales.urls')),  # Терапевтические сказки
     
     # Коммерция
     path('shop/', include('shop.urls')),
     path('subscriptions/', include('subscriptions.urls')),
+    
+    # Аналитика
+    path('analytics/', include('analytics.urls')),
 ]
+
+# Кастомные страницы ошибок
+handler404 = custom_404_view
+handler500 = custom_500_view
 
 # Для разработки - обслуживание медиа файлов
 if settings.DEBUG:

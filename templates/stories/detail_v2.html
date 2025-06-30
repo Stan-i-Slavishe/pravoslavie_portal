@@ -1,0 +1,380 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ story.title }} - Видео-рассказы{% endblock %}
+
+{% block description %}{{ story.description|truncatewords:30 }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+.story-video-container {
+    background: #000;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    max-width: 100%;
+}
+
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    max-height: 400px;
+}
+
+.video-iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.story-content {
+    background: #fff;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.story-title {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+}
+
+.story-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.meta-item i {
+    margin-right: 0.5rem;
+    color: #e74c3c;
+}
+
+.story-description {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+    color: #444;
+}
+
+.story-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border: 1px solid #e0e0e0;
+    background: #fff;
+    color: #333;
+    text-decoration: none;
+    border-radius: 25px;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.action-btn:hover {
+    border-color: #e74c3c;
+    color: #e74c3c;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.action-btn.liked {
+    background: #e74c3c;
+    border-color: #e74c3c;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .story-title {
+        font-size: 1.5rem;
+    }
+    
+    .story-meta {
+        gap: 1rem;
+    }
+    
+    .story-actions {
+        justify-content: center;
+    }
+    
+    .video-wrapper {
+        max-height: 250px;
+    }
+    
+    .story-video-container {
+        margin-bottom: 1.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- Левая колонка с видео и контентом -->
+        <div class="col-lg-8">
+            <!-- YouTube Video Player -->
+            <div class="story-video-container">
+                {% if story.youtube_embed_id %}
+                    <div class="video-wrapper">
+                        <iframe class="video-iframe" 
+                                src="https://www.youtube.com/embed/{{ story.youtube_embed_id }}" 
+                                allowfullscreen>
+                        </iframe>
+                    </div>
+                {% else %}
+                    <div class="video-placeholder text-center py-5">
+                        <i class="bi bi-play-circle" style="font-size: 4rem; color: #666;"></i>
+                        <p class="mt-3 text-muted">Видео недоступно</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Контент рассказа -->
+            <div class="story-content">
+                <h1 class="story-title">{{ story.title }}</h1>
+                
+                <div class="story-meta">
+                    <div class="meta-item">
+                        <i class="bi bi-calendar3"></i>
+                        <span>{{ story.created_at|date:"d F Y" }}</span>
+                    </div>
+                    
+                    <div class="meta-item">
+                        <i class="bi bi-eye"></i>
+                        <span>{{ story.views_count|default:"0" }} просмотров</span>
+                    </div>
+                    
+                    <div class="meta-item">
+                        <i class="bi bi-heart"></i>
+                        <span>{{ likes_count|default:"0" }} лайков</span>
+                    </div>
+                    
+                    {% if story.category %}
+                        <div class="meta-item">
+                            <i class="bi bi-folder"></i>
+                            <a href="{% url 'stories:list' %}?category={{ story.category.slug }}" 
+                               style="color: #e74c3c; text-decoration: none;">
+                                {{ story.category.name }}
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                {% if story.description %}
+                    <div class="story-description">
+                        {{ story.description|linebreaks }}
+                    </div>
+                {% endif %}
+                
+                {% if story.tags.all %}
+                    <div class="mb-4">
+                        <strong>Теги:</strong>
+                        {% for tag in story.tags.all %}
+                            <a href="{% url 'stories:list' %}?tag={{ tag.slug }}" 
+                               class="badge bg-secondary me-2 text-decoration-none">
+                                {{ tag.name }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <!-- Действия -->
+                <div class="story-actions">
+                    <button class="action-btn {% if user_liked %}liked{% endif %}" 
+                            onclick="toggleLike({{ story.id }})">
+                        <i class="bi bi-heart{% if user_liked %}-fill{% endif %} me-2"></i>
+                        <span id="like-text">Нравится</span>
+                        <span id="like-count">({{ likes_count|default:"0" }})</span>
+                    </button>
+                    
+                    <button class="action-btn" onclick="shareStory()">
+                        <i class="bi bi-share me-2"></i>
+                        Поделиться
+                    </button>
+                </div>
+            </div>
+
+            <!-- Система комментариев -->
+            {% include 'stories/comments_section.html' %}
+        </div>
+        
+        <!-- Боковая панель -->
+        <div class="col-lg-4">
+            <!-- Статистика -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-bar-chart"></i>
+                        Статистика
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="h4 text-primary mb-1">{{ story.views_count|default:"0" }}</div>
+                            <small class="text-muted">Просмотров</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="h4 text-danger mb-1">{{ likes_count|default:"0" }}</div>
+                            <small class="text-muted">Лайков</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 text-center">
+                        <small class="text-muted">
+                            Опубликовано {{ story.created_at|date:"d F Y" }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Похожие рассказы -->
+            {% if related_stories %}
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-collection"></i>
+                            Похожие рассказы
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% for related_story in related_stories %}
+                            <div class="mb-3">
+                                <h6>
+                                    <a href="{{ related_story.get_absolute_url }}" class="text-decoration-none">
+                                        {{ related_story.title }}
+                                    </a>
+                                </h6>
+                                <small class="text-muted">
+                                    <i class="bi bi-eye"></i> {{ related_story.views_count }} просмотров
+                                </small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% csrf_token %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// JavaScript для интерактивности страницы
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📱 Страница рассказа загружена');
+});
+
+// Функция лайка рассказа
+function toggleLike(storyId) {
+    {% if user.is_authenticated %}
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch('/stories/' + storyId + '/like/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const likeBtn = document.querySelector('.action-btn[onclick*="toggleLike"]');
+                const likeIcon = likeBtn.querySelector('i');
+                const likeCount = document.getElementById('like-count');
+                
+                if (data.liked) {
+                    likeBtn.classList.add('liked');
+                    likeIcon.classList.add('bi-heart-fill');
+                    likeIcon.classList.remove('bi-heart');
+                } else {
+                    likeBtn.classList.remove('liked');
+                    likeIcon.classList.add('bi-heart');
+                    likeIcon.classList.remove('bi-heart-fill');
+                }
+                
+                likeCount.textContent = '(' + data.likes_count + ')';
+                showToast(data.liked ? 'Лайк добавлен!' : 'Лайк убран!', 'success');
+            }
+        })
+        .catch(err => {
+            console.error('Like error:', err);
+            showToast('Ошибка при обработке лайка', 'error');
+        });
+    {% else %}
+        window.location.href = "{% url 'account_login' %}";
+    {% endif %}
+}
+
+// Функция поделиться
+function shareStory() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ story.title }}',
+            text: '{{ story.description|truncatewords:20 }}',
+            url: window.location.href
+        });
+    } else {
+        // Копируем ссылку в буфер
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            showToast('Ссылка скопирована в буфер обмена!', 'success');
+        }).catch(() => {
+            showToast('Не удалось скопировать ссылку', 'error');
+        });
+    }
+}
+
+// Функция для показа уведомлений
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 3000);
+}
+</script>
+{% endblock %}

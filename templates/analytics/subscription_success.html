@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Подписка оформлена{% endblock %}
+
+{% block extra_css %}
+<style>
+.success-page {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 40px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.success-icon {
+    font-size: 80px;
+    color: #28a745;
+    margin-bottom: 20px;
+}
+
+.success-title {
+    color: #2B5AA0;
+    margin-bottom: 20px;
+}
+
+.success-message {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.next-steps {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 8px;
+    margin: 25px 0;
+}
+
+.next-steps h3 {
+    color: #2B5AA0;
+    margin-bottom: 15px;
+}
+
+.next-steps ul {
+    list-style: none;
+    padding: 0;
+    text-align: left;
+}
+
+.next-steps li {
+    margin: 10px 0;
+    padding-left: 25px;
+    position: relative;
+}
+
+.next-steps li:before {
+    content: "📧";
+    position: absolute;
+    left: 0;
+}
+
+.btn-continue {
+    background: #2B5AA0;
+    color: white;
+    padding: 12px 25px;
+    text-decoration: none;
+    border-radius: 8px;
+    display: inline-block;
+    margin: 10px;
+    transition: background 0.3s;
+}
+
+.btn-continue:hover {
+    background: #1e4080;
+    color: white;
+    text-decoration: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="success-page">
+        <div class="success-icon">✅</div>
+        
+        <h1 class="success-title">Подписка успешно оформлена!</h1>
+        
+        <div class="success-message">
+            Спасибо за подписку на уведомления <strong>Православного портала</strong>!<br>
+            Вы будете среди первых, кто узнает о запуске платежной системы.
+        </div>
+
+        <div class="next-steps">
+            <h3>Что дальше?</h3>
+            <ul>
+                <li>Проверьте почту - мы отправили подтверждение</li>
+                <li>Следите за новым контентом на сайте</li>
+                <li>Ждите уведомления о запуске покупок</li>
+                <li>Получайте специальные предложения для подписчиков</li>
+            </ul>
+        </div>
+
+        <div>
+            <a href="/" class="btn-continue">🏠 На главную</a>
+            <a href="/fairy-tales/" class="btn-continue">🧚‍♀️ Смотреть сказки</a>
+            <a href="/books/" class="btn-continue">📚 Изучать книги</a>
+        </div>
+
+        <div class="mt-4">
+            <small class="text-muted">
+                Не получили письмо? Проверьте папку "Спам" или 
+                <a href="mailto:support@pravoslavie-portal.ru">свяжитесь с нами</a>
+            </small>
+        </div>
+    </div>
+</div>
+{% endblock %}

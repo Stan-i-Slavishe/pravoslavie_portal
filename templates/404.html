@@ -1,0 +1,46 @@
+<!-- templates/404.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Страница не найдена - Православный портал{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+        <div class="error-404">
+            <h1 class="display-1 text-muted">404</h1>
+            <h2 class="mb-4">Страница не найдена</h2>
+            <p class="lead mb-4">
+                К сожалению, запрашиваемая страница не существует или была перемещена.
+            </p>
+            
+            <div class="mb-4">
+                <i class="bi bi-compass display-4 text-muted"></i>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-block">
+                <a href="{% url 'core:home' %}" class="btn btn-primary">
+                    <i class="bi bi-house"></i> На главную
+                </a>
+                <a href="{% url 'stories:list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-collection-play"></i> Видео-рассказы
+                </a>
+                <a href="{% url 'books:list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-book"></i> Библиотека
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-404 {
+    padding: 60px 0;
+}
+.error-404 h1 {
+    font-size: 8rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}

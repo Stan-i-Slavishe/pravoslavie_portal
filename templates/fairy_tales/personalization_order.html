@@ -1,0 +1,378 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Персонализация сказки "{{ fairy_tale.title }}"{% endblock %}
+
+{% block extra_css %}
+<style>
+    .personalization-hero {
+        background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .form-section {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+    
+    .step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 1rem;
+        font-weight: bold;
+    }
+    
+    .step.active {
+        background: #4ecdc4;
+        color: white;
+    }
+    
+    .step.completed {
+        background: #28a745;
+        color: white;
+    }
+    
+    .form-step {
+        display: none;
+    }
+    
+    .form-step.active {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="personalization-hero">
+    <div class="container">
+        <h1 class="display-6 fw-bold mb-3">Создаем сказку для вашего ребенка</h1>
+        <p class="lead">Заполните информацию, и мы создадим уникальную терапевтическую сказку</p>
+    </div>
+</div>
+
+<div class="container">
+    <form method="post" id="personalizationForm">
+        {% csrf_token %}
+        <div class="row">
+            <!-- Основная форма -->
+            <div class="col-lg-8">
+                <!-- Индикатор шагов -->
+                <div class="step-indicator">
+                    <div class="step active" id="stepIndicator1">1</div>
+                    <div class="step" id="stepIndicator2">2</div>
+                    <div class="step" id="stepIndicator3">3</div>
+                    <div class="step" id="stepIndicator4">4</div>
+                </div>
+                
+                <!-- Шаг 1: Информация о ребенке -->
+                <div class="form-step active" id="step1">
+                    <div class="form-section">
+                        <h3 class="mb-4">
+                            <i class="bi bi-person-heart text-primary"></i>
+                            Расскажите о вашем ребенке
+                        </h3>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="child_name" class="form-label">Имя ребенка <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control form-control-lg" 
+                                           id="child_name" name="child_name" required
+                                           placeholder="Например: Маша">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="child_age" class="form-label">Возраст</label>
+                                    <select class="form-select form-select-lg" id="child_age" name="child_age">
+                                        <option value="">Выберите</option>
+                                        <option value="0+">0+ месяцев</option>
+                                        <option value="1">1 год</option>
+                                        <option value="2">2 года</option>
+                                        <option value="3">3 года</option>
+                                        <option value="4">4 года</option>
+                                        <option value="5">5 лет</option>
+                                        <option value="6">6 лет</option>
+                                        <option value="7">7 лет</option>
+                                        <option value="8">8 лет</option>
+                                        <option value="9">9 лет</option>
+                                        <option value="10">10 лет</option>
+                                        <option value="11">11 лет</option>
+                                        <option value="12">12 лет</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="child_gender" class="form-label">Пол</label>
+                                    <select class="form-select form-select-lg" id="child_gender" name="child_gender">
+                                        <option value="">Не указано</option>
+                                        <option value="boy">Мальчик</option>
+                                        <option value="girl">Девочка</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="child_interests" class="form-label">Увлечения и интересы ребенка</label>
+                            <textarea class="form-control" id="child_interests" name="child_interests" 
+                                      rows="3" maxlength="500"
+                                      placeholder="Например: любит рисовать, играть в футбол, читать книги про динозавров..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Шаг 2: Проблема -->
+                <div class="form-step" id="step2">
+                    <div class="form-section">
+                        <h3 class="mb-4">
+                            <i class="bi bi-heart-pulse text-primary"></i>
+                            Какую проблему решаем?
+                        </h3>
+                        
+                        <div class="mb-4">
+                            <label for="main_problem" class="form-label">Основная проблема <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="main_problem" name="main_problem" 
+                                      rows="4" required maxlength="1000"
+                                      placeholder="Опишите, с какой проблемой или ситуацией сталкивается ребенок..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Шаг 3: Семейная ситуация -->
+                <div class="form-step" id="step3">
+                    <div class="form-section">
+                        <h3 class="mb-4">
+                            <i class="bi bi-house-heart text-primary"></i>
+                            Семейная ситуация
+                        </h3>
+                        
+                        <div class="mb-4">
+                            <label for="family_situation" class="form-label">Расскажите о семье</label>
+                            <textarea class="form-control" id="family_situation" name="family_situation" 
+                                      rows="4" maxlength="1000"
+                                      placeholder="Состав семьи, особенности отношений..."></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="special_requests" class="form-label">Особые пожелания</label>
+                            <textarea class="form-control" id="special_requests" name="special_requests" 
+                                      rows="3" maxlength="500"
+                                      placeholder="Любые дополнительные пожелания к сказке..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Шаг 4: Контакты -->
+                <div class="form-step" id="step4">
+                    <div class="form-section">
+                        <h3 class="mb-4">
+                            <i class="bi bi-person-lines-fill text-primary"></i>
+                            Контактные данные
+                        </h3>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="customer_name" class="form-label">Ваше имя <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="customer_name" 
+                                           name="customer_name" required
+                                           {% if user.is_authenticated %}
+                                           value="{{ user.first_name|default:user.username }}"
+                                           {% endif %}>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="customer_email" class="form-label">Email <span class="text-danger">*</span></label>
+                                    <input type="email" class="form-control" id="customer_email" 
+                                           name="customer_email" required
+                                           {% if user.is_authenticated %}
+                                           value="{{ user.email }}"
+                                           {% endif %}>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="customer_phone" class="form-label">Телефон</label>
+                            <input type="tel" class="form-control" id="customer_phone" 
+                                   name="customer_phone" placeholder="+7 (___) ___-__-__">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Навигация -->
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn btn-outline-secondary" id="prevBtn" style="display: none;">
+                        <i class="bi bi-arrow-left"></i> Назад
+                    </button>
+                    
+                    <div class="ms-auto">
+                        <button type="button" class="btn btn-primary" id="nextBtn">
+                            Далее <i class="bi bi-arrow-right"></i>
+                        </button>
+                        <button type="submit" class="btn btn-success" id="submitBtn" style="display: none;">
+                            <i class="bi bi-check-circle"></i> Оформить заказ
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Боковая панель -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ fairy_tale.title }}</h5>
+                        <p class="card-text">{{ fairy_tale.short_description }}</p>
+                        <div class="text-center">
+                            <h4>{{ fairy_tale.base_price|floatformat:0 }} ₽</h4>
+                            <small class="text-muted">Персонализация</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Простая реализация пошаговой формы
+let currentStep = 1;
+const totalSteps = 4;
+
+// DOM элементы
+const nextBtn = document.getElementById('nextBtn');
+const prevBtn = document.getElementById('prevBtn');
+const submitBtn = document.getElementById('submitBtn');
+
+// Обработчики событий
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Страница загружена, инициализируем форму');
+    
+    nextBtn.addEventListener('click', function() {
+        console.log('Клик по кнопке "Далее"');
+        goToNextStep();
+    });
+    
+    prevBtn.addEventListener('click', function() {
+        console.log('Клик по кнопке "Назад"');
+        goToPreviousStep();
+    });
+    
+    updateStepDisplay();
+});
+
+function goToNextStep() {
+    console.log(`Попытка перехода с шага ${currentStep} на ${currentStep + 1}`);
+    
+    // Проверяем валидацию текущего шага
+    if (!validateStep(currentStep)) {
+        console.log('Валидация не прошла');
+        return;
+    }
+    
+    if (currentStep < totalSteps) {
+        currentStep++;
+        console.log(`Переходим на шаг ${currentStep}`);
+        updateStepDisplay();
+    }
+}
+
+function goToPreviousStep() {
+    if (currentStep > 1) {
+        currentStep--;
+        console.log(`Возвращаемся на шаг ${currentStep}`);
+        updateStepDisplay();
+    }
+}
+
+function validateStep(step) {
+    console.log(`Валидация шага ${step}`);
+    
+    const stepElement = document.getElementById(`step${step}`);
+    const requiredFields = stepElement.querySelectorAll('input[required], textarea[required]');
+    
+    let isValid = true;
+    
+    requiredFields.forEach(field => {
+        const value = field.value.trim();
+        console.log(`Поле ${field.name}: "${value}"`);
+        
+        if (!value) {
+            field.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            field.classList.remove('is-invalid');
+            field.classList.add('is-valid');
+        }
+    });
+    
+    if (!isValid) {
+        alert('Пожалуйста, заполните все обязательные поля');
+    }
+    
+    console.log(`Результат валидации: ${isValid}`);
+    return isValid;
+}
+
+function updateStepDisplay() {
+    console.log(`Обновляем отображение для шага ${currentStep}`);
+    
+    // Скрываем все шаги
+    for (let i = 1; i <= totalSteps; i++) {
+        const step = document.getElementById(`step${i}`);
+        const indicator = document.getElementById(`stepIndicator${i}`);
+        
+        if (step) step.classList.remove('active');
+        if (indicator) {
+            indicator.classList.remove('active', 'completed');
+            if (i < currentStep) {
+                indicator.classList.add('completed');
+            } else if (i === currentStep) {
+                indicator.classList.add('active');
+            }
+        }
+    }
+    
+    // Показываем текущий шаг
+    const currentStepElement = document.getElementById(`step${currentStep}`);
+    if (currentStepElement) {
+        currentStepElement.classList.add('active');
+        console.log(`Показан шаг ${currentStep}`);
+    }
+    
+    // Управление кнопками
+    prevBtn.style.display = currentStep > 1 ? 'block' : 'none';
+    
+    if (currentStep < totalSteps) {
+        nextBtn.style.display = 'block';
+        submitBtn.style.display = 'none';
+    } else {
+        nextBtn.style.display = 'none';
+        submitBtn.style.display = 'block';
+    }
+}
+</script>
+{% endblock %}

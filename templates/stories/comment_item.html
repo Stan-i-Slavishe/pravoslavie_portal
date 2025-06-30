@@ -1,0 +1,570 @@
+{% load comment_tags %}
+<!-- Отдельный комментарий -->
+<div class="comment-item mb-4" data-comment-id="{{ comment.id }}">
+    <div class="d-flex">
+        <!-- Аватар пользователя -->
+        <div class="comment-avatar me-3">
+            {% if comment.user.userprofile.avatar %}
+                <img src="{{ comment.user.userprofile.avatar.url }}" alt="{{ comment.user.username }}" class="rounded-circle" width="40" height="40">
+            {% else %}
+                <div class="avatar-placeholder rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                    {{ comment.user.username|first|upper }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="comment-content flex-grow-1">
+            <!-- Заголовок комментария -->
+            <div class="comment-header d-flex align-items-center mb-2">
+                <strong class="comment-author me-2">{{ comment.user.get_full_name|default:comment.user.username }}</strong>
+                
+                <!-- Время публикации -->
+                <small class="text-muted me-2">{{ comment.created_at|timesince }} назад</small>
+                
+                <!-- Метка "отредактировано" -->
+                {% if comment.is_edited %}
+                    <small class="text-muted me-2">(изменено)</small>
+                {% endif %}
+                
+                <!-- Метка "закреплен" -->
+                {% if comment.is_pinned %}
+                    <span class="badge bg-warning me-2">
+                        <i class="bi bi-pin-fill"></i>
+                        Закреплен
+                    </span>
+                {% endif %}
+            </div>
+            
+            <!-- Текст комментария -->
+            <div class="comment-text mb-3" id="commentText-{{ comment.id }}">
+                {{ comment.text|linebreaks }}
+            </div>
+            
+            <!-- Форма редактирования (скрыта по умолчанию) -->
+            <div class="comment-edit-form" id="editForm-{{ comment.id }}" style="display: none;">
+                <form onsubmit="updateComment(event, {{ comment.id }})">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <textarea 
+                            class="form-control" 
+                            name="text" 
+                            rows="3" 
+                            maxlength="1000"
+                            required
+                        >{{ comment.text }}</textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>
+                            Сохранить
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="cancelEdit({{ comment.id }})">
+                            Отмена
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Действия с комментарием -->
+            <div class="comment-actions d-flex align-items-center gap-3">
+                <!-- Лайки -->
+                <div class="comment-reaction-group d-flex align-items-center">
+                    <button 
+                        class="btn btn-sm btn-outline-success reaction-btn {% if user_reactions|user_reaction:comment.id == 'like' %}active{% endif %}"
+                        onclick="toggleReaction({{ comment.id }}, 'like')"
+                        data-reaction="like"
+                    >
+                        <i class="bi bi-hand-thumbs-up me-1"></i>
+                        <span class="likes-count">{{ comment.likes_count }}</span>
+                    </button>
+                    
+                    <button 
+                        class="btn btn-sm btn-outline-danger reaction-btn {% if user_reactions|user_reaction:comment.id == 'dislike' %}active{% endif %}"
+                        onclick="toggleReaction({{ comment.id }}, 'dislike')"
+                        data-reaction="dislike"
+                    >
+                        <i class="bi bi-hand-thumbs-down me-1"></i>
+                        <span class="dislikes-count">{{ comment.dislikes_count }}</span>
+                    </button>
+                </div>
+                
+                <!-- Ответить -->
+                {% if user.is_authenticated %}
+                    <button class="btn btn-sm btn-outline-primary" onclick="showReplyForm({{ comment.id }})">
+                        <i class="bi bi-reply me-1"></i>
+                        Ответить
+                    </button>
+                {% endif %}
+                
+                <!-- Действия автора -->
+                {% if user == comment.user %}
+                    <div class="author-actions">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="editComment({{ comment.id }})">
+                            <i class="bi bi-pencil me-1"></i>
+                            Изменить
+                        </button>
+                        
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteComment({{ comment.id }})">
+                            <i class="bi bi-trash me-1"></i>
+                            Удалить
+                        </button>
+                    </div>
+                {% endif %}
+                
+                <!-- Жалоба (для других пользователей) -->
+                {% if user.is_authenticated and user != comment.user %}
+                    <button class="btn btn-sm btn-outline-warning" onclick="reportComment({{ comment.id }})">
+                        <i class="bi bi-flag me-1"></i>
+                        Пожаловаться
+                    </button>
+                {% endif %}
+            </div>
+            
+            <!-- Форма ответа (скрыта по умолчанию) -->
+            {% if user.is_authenticated %}
+                <div class="reply-form mt-3" id="replyForm-{{ comment.id }}" style="display: none;">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex">
+                                <div class="comment-avatar me-3">
+                                    {% if user.userprofile.avatar %}
+                                        <img src="{{ user.userprofile.avatar.url }}" alt="{{ user.username }}" class="rounded-circle" width="32" height="32">
+                                    {% else %}
+                                        <div class="avatar-placeholder rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 12px;">
+                                            {{ user.username|first|upper }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="flex-grow-1">
+                                    <form onsubmit="submitReply(event, {{ comment.id }})">
+                                        {% csrf_token %}
+                                        <div class="mb-3">
+                                            <textarea 
+                                                class="form-control" 
+                                                name="text" 
+                                                rows="2" 
+                                                placeholder="Ответ на комментарий {{ comment.user.username }}..."
+                                                maxlength="1000"
+                                                required
+                                            ></textarea>
+                                        </div>
+                                        
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="hideReplyForm({{ comment.id }})">
+                                                Отмена
+                                            </button>
+                                            <button type="submit" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-send me-1"></i>
+                                                Ответить
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- Ответы на комментарий -->
+            {% if comment.replies.all %}
+                <div class="comment-replies mt-3">
+                    <div class="replies-header mb-2">
+                        <button class="btn btn-sm btn-link text-decoration-none p-0" onclick="toggleReplies({{ comment.id }})">
+                            <i class="bi bi-chevron-down me-1" id="repliesToggle-{{ comment.id }}"></i>
+                            {{ comment.replies_count }} ответ{{ comment.replies_count|pluralize:",,ов" }}
+                        </button>
+                    </div>
+                    
+                    <div class="replies-list ps-4" id="repliesList-{{ comment.id }}" style="display: none;">
+                        {% for reply in comment.replies.all %}
+                            {% include 'stories/comment_item.html' with comment=reply user_reactions=user_reactions %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.comment-item {
+    transition: all 0.3s ease;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 3px solid transparent;
+}
+
+.comment-item:hover {
+    background-color: #f8f9fa;
+    border-left-color: #e74c3c;
+}
+
+.comment-avatar img,
+.avatar-placeholder {
+    object-fit: cover;
+}
+
+.comment-author {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.comment-text {
+    line-height: 1.6;
+    color: #495057;
+}
+
+.comment-actions {
+    border-top: 1px solid #f8f9fa;
+    padding-top: 0.75rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.comment-reaction-group {
+    gap: 0.5rem;
+}
+
+.reaction-btn {
+    transition: all 0.2s ease;
+    border: 1px solid #e9ecef;
+    background: #fff;
+    color: #6c757d;
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    min-width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reaction-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-color: currentColor;
+}
+
+.reaction-btn.active[data-reaction="like"] {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    border-color: #28a745;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.reaction-btn.active[data-reaction="dislike"] {
+    background: linear-gradient(135deg, #dc3545, #e74c3c);
+    color: white;
+    border-color: #dc3545;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+.reaction-btn:not(.active):hover[data-reaction="like"] {
+    color: #28a745;
+    border-color: #28a745;
+}
+
+.reaction-btn:not(.active):hover[data-reaction="dislike"] {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.comment-replies {
+    border-left: 2px solid #e9ecef;
+    margin-left: 1rem;
+}
+
+.reply-form .card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+}
+
+.author-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .comment-actions {
+        gap: 0.75rem;
+        justify-content: flex-start;
+    }
+    
+    .comment-reaction-group {
+        gap: 0.375rem;
+    }
+    
+    .reaction-btn {
+        padding: 0.35rem 0.65rem;
+        font-size: 0.8rem;
+        min-width: 55px;
+    }
+    
+    .author-actions {
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+    }
+    
+    .comment-replies {
+        margin-left: 0.5rem;
+    }
+    
+    /* Обеспечиваем, что лайки остаются горизонтально */
+    .comment-reaction-group {
+        display: flex !important;
+        flex-direction: row !important;
+    }
+}
+</style>
+
+<script>
+// Функции для работы с отдельным комментарием
+
+function toggleReaction(commentId, reactionType) {
+    {% if user.is_authenticated %}
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch(`/stories/comments/${commentId}/reaction/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `type=${reactionType}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Обновляем счетчики
+                const commentItem = document.querySelector(`[data-comment-id="${commentId}"]`);
+                const likesCount = commentItem.querySelector('.likes-count');
+                const dislikesCount = commentItem.querySelector('.dislikes-count');
+                const likeBtn = commentItem.querySelector('[data-reaction="like"]');
+                const dislikeBtn = commentItem.querySelector('[data-reaction="dislike"]');
+                
+                if (likesCount) likesCount.textContent = data.likes_count;
+                if (dislikesCount) dislikesCount.textContent = data.dislikes_count;
+                
+                // Обновляем активные состояния кнопок
+                likeBtn.classList.toggle('active', data.user_reaction === 'like');
+                dislikeBtn.classList.toggle('active', data.user_reaction === 'dislike');
+                
+                // Анимация
+                const targetBtn = reactionType === 'like' ? likeBtn : dislikeBtn;
+                targetBtn.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    targetBtn.style.transform = 'scale(1)';
+                }, 200);
+                
+            } else {
+                showToast(data.message || 'Ошибка при обработке реакции', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Произошла ошибка', 'error');
+        });
+    {% else %}
+        window.location.href = "{% url 'account_login' %}";
+    {% endif %}
+}
+
+function editComment(commentId) {
+    const textDiv = document.getElementById(`commentText-${commentId}`);
+    const editForm = document.getElementById(`editForm-${commentId}`);
+    
+    if (textDiv && editForm) {
+        textDiv.style.display = 'none';
+        editForm.style.display = 'block';
+        
+        // Фокус на textarea
+        const textarea = editForm.querySelector('textarea');
+        if (textarea) {
+            textarea.focus();
+            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+        }
+    }
+}
+
+function cancelEdit(commentId) {
+    const textDiv = document.getElementById(`commentText-${commentId}`);
+    const editForm = document.getElementById(`editForm-${commentId}`);
+    
+    if (textDiv && editForm) {
+        textDiv.style.display = 'block';
+        editForm.style.display = 'none';
+    }
+}
+
+function updateComment(event, commentId) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch(`/stories/comments/${commentId}/edit/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': csrfToken,
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Обновляем текст комментария
+            const textDiv = document.getElementById(`commentText-${commentId}`);
+            if (textDiv) {
+                textDiv.innerHTML = data.new_text.replace(/\n/g, '<br>');
+            }
+            
+            // Скрываем форму редактирования
+            cancelEdit(commentId);
+            
+            showToast('Комментарий обновлен', 'success');
+        } else {
+            showToast(data.message || 'Ошибка при обновлении комментария', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Произошла ошибка при обновлении', 'error');
+    });
+}
+
+function deleteComment(commentId) {
+    if (confirm('Вы уверены, что хотите удалить этот комментарий?')) {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch(`/stories/comments/${commentId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Удаляем комментарий с анимацией
+                const commentItem = document.querySelector(`[data-comment-id="${commentId}"]`);
+                if (commentItem) {
+                    commentItem.style.transition = 'all 0.3s ease';
+                    commentItem.style.opacity = '0';
+                    commentItem.style.transform = 'translateX(-100%)';
+                    
+                    setTimeout(() => {
+                        commentItem.remove();
+                        updateCommentsCounter();
+                    }, 300);
+                }
+                
+                showToast('Комментарий удален', 'success');
+            } else {
+                showToast(data.message || 'Ошибка при удалении комментария', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Произошла ошибка при удалении', 'error');
+        });
+    }
+}
+
+function showReplyForm(commentId) {
+    const replyForm = document.getElementById(`replyForm-${commentId}`);
+    if (replyForm) {
+        replyForm.style.display = 'block';
+        
+        // Фокус на textarea
+        const textarea = replyForm.querySelector('textarea');
+        if (textarea) {
+            textarea.focus();
+        }
+        
+        // Скролл к форме
+        setTimeout(() => {
+            replyForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    }
+}
+
+function hideReplyForm(commentId) {
+    const replyForm = document.getElementById(`replyForm-${commentId}`);
+    if (replyForm) {
+        replyForm.style.display = 'none';
+        
+        // Очищаем форму
+        const form = replyForm.querySelector('form');
+        if (form) {
+            form.reset();
+        }
+    }
+}
+
+function submitReply(event, parentId) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    formData.append('parent_id', parentId);
+    
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch(`/stories/{{ story.id }}/comments/add/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': csrfToken,
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Здесь нужно добавить ответ в список ответов
+            // Пока просто скрываем форму и показываем уведомление
+            hideReplyForm(parentId);
+            showToast('Ответ добавлен!', 'success');
+            
+            // Перезагружаем страницу для простоты
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        } else {
+            showToast(data.message || 'Ошибка при добавлении ответа', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Произошла ошибка при отправке ответа', 'error');
+    });
+}
+
+function toggleReplies(commentId) {
+    const repliesList = document.getElementById(`repliesList-${commentId}`);
+    const toggle = document.getElementById(`repliesToggle-${commentId}`);
+    
+    if (repliesList && toggle) {
+        if (repliesList.style.display === 'none') {
+            repliesList.style.display = 'block';
+            toggle.classList.remove('bi-chevron-down');
+            toggle.classList.add('bi-chevron-up');
+        } else {
+            repliesList.style.display = 'none';
+            toggle.classList.remove('bi-chevron-up');
+            toggle.classList.add('bi-chevron-down');
+        }
+    }
+}
+
+function reportComment(commentId) {
+    // Простая реализация жалобы
+    const reason = prompt('Укажите причину жалобы:', '');
+    if (reason && reason.trim()) {
+        showToast('Жалоба отправлена модераторам', 'info');
+    }
+}
+</script>

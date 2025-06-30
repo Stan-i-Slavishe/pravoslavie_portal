@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Выйти из системы - {{ site_settings.site_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.logout-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.logout-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 1rem;
+    padding: 3rem 2rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.logout-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #e74c3c, #c0392b);
+}
+
+.logout-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    font-size: 2rem;
+    color: white;
+    animation: fadeInScale 0.6s ease-out;
+}
+
+.logout-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.logout-text {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.logout-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-logout {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    border: none;
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-logout:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-cancel {
+    background: transparent;
+    border: 2px solid #3498db;
+    color: #3498db;
+    padding: 0.75rem 2rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-cancel:hover {
+    background: #3498db;
+    color: white;
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+
+.user-info {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+}
+
+@keyframes fadeInScale {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@media (max-width: 576px) {
+    .logout-container {
+        padding: 1rem;
+    }
+    
+    .logout-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    .logout-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn-logout,
+    .btn-cancel {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="logout-container">
+    <div class="logout-card">
+        <div class="logout-icon">
+            <i class="bi bi-box-arrow-right"></i>
+        </div>
+        
+        <h1 class="logout-title">Выйти из системы</h1>
+        
+        {% if user.is_authenticated %}
+            <div class="user-info">
+                <div class="user-avatar">
+                    {{ user.first_name|first|default:user.username|first|upper }}
+                </div>
+                <div>
+                    <strong>{{ user.first_name|default:user.username }}</strong>
+                    <div class="small text-muted">{{ user.email }}</div>
+                </div>
+            </div>
+        {% endif %}
+        
+        <p class="logout-text">
+            Вы уверены, что хотите выйти из системы?<br>
+            <small class="text-muted">Вы всегда можете войти снова, используя свои учетные данные.</small>
+        </p>
+        
+        <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <div class="logout-actions">
+                <button type="submit" class="btn-logout">
+                    <i class="bi bi-box-arrow-right"></i>
+                    Да, выйти
+                </button>
+                <a href="{% url 'core:home' %}" class="btn-cancel">
+                    <i class="bi bi-arrow-left"></i>
+                    Отмена
+                </a>
+            </div>
+        </form>
+        
+        <!-- Дополнительные ссылки -->
+        <div class="mt-4 pt-3 border-top">
+            <div class="row text-center small text-muted">
+                <div class="col-4">
+                    <a href="{% url 'shop:my_purchases' %}" class="text-decoration-none text-muted">
+                        <i class="bi bi-bag-check d-block mb-1"></i>
+                        Покупки
+                    </a>
+                </div>
+                <div class="col-4">
+                    <a href="{% url 'core:home' %}" class="text-decoration-none text-muted">
+                        <i class="bi bi-house d-block mb-1"></i>
+                        Главная
+                    </a>
+                </div>
+                <div class="col-4">
+                    <a href="{% url 'core:contact' %}" class="text-decoration-none text-muted">
+                        <i class="bi bi-headset d-block mb-1"></i>
+                        Поддержка
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Добавляем анимацию появления
+    const card = document.querySelector('.logout-card');
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(30px)';
+    
+    setTimeout(() => {
+        card.style.transition = 'all 0.6s ease-out';
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+    }, 100);
+    
+    // Подтверждение выхода
+    const logoutForm = document.querySelector('form');
+    const logoutBtn = document.querySelector('.btn-logout');
+    
+    logoutForm.addEventListener('submit', function(e) {
+        logoutBtn.innerHTML = '<i class="bi bi-hourglass me-2"></i>Выходим...';
+        logoutBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

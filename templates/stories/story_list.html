@@ -1,0 +1,471 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Видео-рассказы - {{ site_settings.site_name }}{% endblock %}
+
+{% block description %}Духовные видео-рассказы и истории о вере, чудесах и православной жизни{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Стили для страницы видео-рассказов */
+.stories-hero {
+    background: linear-gradient(135deg, #e74c3c 0%, #c44569 100%);
+    border-radius: 1rem;
+    padding: 3rem 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.stories-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: pulse 4s ease-in-out infinite;
+}
+
+.stories-hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.search-filters {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.story-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+    position: relative;
+}
+
+.story-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border-color: #e74c3c;
+}
+
+.story-thumbnail {
+    position: relative;
+    aspect-ratio: 16/9;
+    background: #f5f5f5;
+    overflow: hidden;
+}
+
+.story-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.story-card:hover .story-thumbnail img {
+    transform: scale(1.05);
+}
+
+.play-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.story-card:hover .play-overlay {
+    background: #e74c3c;
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.story-duration {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.story-content {
+    padding: 1.5rem;
+}
+
+.story-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.story-description {
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.story-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.story-tags {
+    margin-bottom: 1rem;
+}
+
+.story-tag {
+    display: inline-block;
+    padding: 4px 8px;
+    background: #f8f9fa;
+    color: #333;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.25rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.story-tag:hover {
+    background: #e74c3c;
+    color: white;
+    text-decoration: none;
+}
+
+/* Скрытые категории */
+.category-hidden {
+    display: none;
+}
+
+.category-filter-container {
+    margin-bottom: 2rem;
+}
+
+.category-filter {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    transition: all 0.3s ease;
+}
+
+.category-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid #e0e0e0;
+    background: #fff;
+    color: #333;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+}
+
+.category-btn:hover,
+.category-btn.active {
+    background: #e74c3c;
+    border-color: #e74c3c;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+}
+
+/* Адаптивность для категорий */
+@media (max-width: 768px) {
+    .category-filter {
+        gap: 0.25rem;
+    }
+    
+    .category-btn {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+        flex: 1 1 auto;
+        min-width: 0;
+        text-align: center;
+        justify-content: center;
+    }
+    
+    .category-btn i {
+        display: none; /* Скрываем иконки на мобильных */
+    }
+}
+
+@media (max-width: 576px) {
+    .category-filter {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.5rem;
+    }
+    
+    .category-btn {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+.no-results {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #666;
+}
+
+.no-results i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Героическая секция -->
+<div class="stories-hero">
+    <div class="stories-hero-content">
+        <h1>
+            <i class="bi bi-play-circle me-2"></i>
+            Видео-рассказы
+        </h1>
+        <p class="lead mb-0">
+            Духовные истории и свидетельства, которые вдохновляют и поучают
+        </p>
+    </div>
+</div>
+
+<!-- Поиск и фильтры -->
+<div class="search-filters">
+    <form method="get" action="">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" 
+                           class="form-control" 
+                           name="search" 
+                           placeholder="Поиск по названию или описанию..."
+                           value="{{ request.GET.search }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" name="category">
+                    <option value="">Все категории</option>
+                    {% for category in categories %}
+                        <option value="{{ category.slug }}" 
+                                {% if request.GET.category == category.slug %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel"></i> Найти
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Быстрые фильтры -->
+{% if categories %}
+<div class="category-filter-container">
+    <div class="category-filter" id="categoryFilter">
+        <a href="{% url 'stories:list' %}" 
+           class="category-btn {% if not request.GET.category %}active{% endif %}">
+            Все рассказы
+        </a>
+        {% for category in categories %}
+            <a href="?category={{ category.slug }}" 
+               class="category-btn {% if request.GET.category == category.slug %}active{% endif %}
+                      {% if forloop.counter > 6 %}category-hidden{% endif %}"
+               data-category-index="{{ forloop.counter }}">
+                {% if category.icon %}
+                    <i class="bi bi-{{ category.icon }} me-1"></i>
+                {% endif %}
+                {{ category.name }}
+            </a>
+        {% endfor %}
+    </div>
+    
+    {% if categories.count > 6 %}
+        <div class="text-center mt-2">
+            <button class="btn btn-outline-secondary btn-sm" 
+                    id="toggleCategories" 
+                    onclick="toggleAllCategories()">
+                <i class="bi bi-chevron-down me-1" id="toggleIcon"></i>
+                <span id="toggleText">Показать все категории</span>
+            </button>
+        </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Список рассказов -->
+{% if stories %}
+    <div class="row g-4">
+        {% for story in stories %}
+            <div class="col-lg-4 col-md-6">
+                <div class="story-card">
+                    <div class="story-thumbnail">
+                        {% if story.youtube_embed_id %}
+                            <!-- YouTube превью -->
+                            <img src="https://img.youtube.com/vi/{{ story.youtube_embed_id }}/maxresdefault.jpg" 
+                                 alt="{{ story.title }}" 
+                                 onerror="this.src='https://img.youtube.com/vi/{{ story.youtube_embed_id }}/hqdefault.jpg'">
+                        {% else %}
+                            <div class="d-flex align-items-center justify-content-center h-100" 
+                                 style="background: linear-gradient(45deg, #e74c3c, #c0392b);">
+                                <i class="bi bi-play-circle" style="font-size: 3rem; color: white; opacity: 0.7;"></i>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="play-overlay">
+                            <i class="bi bi-play-fill"></i>
+                        </div>
+                        
+                        {% if story.duration %}
+                            <div class="story-duration">{{ story.duration }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="story-content">
+                        <h3 class="story-title">
+                            <a href="{% url 'stories:detail' slug=story.slug %}" class="text-decoration-none">
+                                {{ story.title }}
+                            </a>
+                        </h3>
+                        
+                        {% if story.description %}
+                            <p class="story-description">{{ story.description }}</p>
+                        {% endif %}
+                        
+                        <div class="story-meta">
+                            <span>
+                                <i class="bi bi-calendar3 me-1"></i>
+                                {{ story.created_at|date:"d.m.Y" }}
+                            </span>
+                            <span>
+                                <i class="bi bi-eye me-1"></i>
+                                {{ story.views_count|default:"0" }}
+                            </span>
+                        </div>
+                        
+                        {% if story.tags.all %}
+                            <div class="story-tags">
+                                {% for tag in story.tags.all %}
+                                    <a href="?tag={{ tag.slug }}" class="story-tag">
+                                        {{ tag.name }}
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <a href="{% url 'stories:detail' slug=story.slug %}" 
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-play me-1"></i>
+                            Смотреть
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="no-results">
+        <i class="bi bi-search"></i>
+        <h3>Рассказы не найдены</h3>
+        <p>
+            {% if request.GET.search %}
+                По запросу "{{ request.GET.search }}" ничего не найдено.
+            {% else %}
+                В данной категории пока нет рассказов.
+            {% endif %}
+        </p>
+        <a href="{% url 'stories:list' %}" class="btn btn-primary">
+            <i class="bi bi-arrow-left me-1"></i>
+            Все рассказы
+        </a>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Функция для показа/скрытия всех категорий
+function toggleAllCategories() {
+    const hiddenCategories = document.querySelectorAll('.category-hidden');
+    const toggleIcon = document.getElementById('toggleIcon');
+    const toggleText = document.getElementById('toggleText');
+    
+    const isExpanded = hiddenCategories[0] && hiddenCategories[0].style.display !== 'none';
+    
+    hiddenCategories.forEach(category => {
+        if (isExpanded) {
+            category.style.display = 'none';
+        } else {
+            category.style.display = 'flex';
+        }
+    });
+    
+    if (isExpanded) {
+        toggleIcon.className = 'bi bi-chevron-down me-1';
+        toggleText.textContent = 'Показать все категории';
+    } else {
+        toggleIcon.className = 'bi bi-chevron-up me-1';
+        toggleText.textContent = 'Скрыть';
+    }
+}
+</script>
+{% endblock %}

@@ -4,8 +4,20 @@ from . import views
 app_name = 'books'
 
 urlpatterns = [
-    path('', views.BookListView.as_view(), name='list'),
-    path('<slug:slug>/', views.BookDetailView.as_view(), name='detail'),
-    path('articles/', views.ArticleListView.as_view(), name='articles'),
-    path('articles/<slug:slug>/', views.ArticleDetailView.as_view(), name='article_detail'),
+    # Основные страницы
+    path('', views.book_list, name='list'),
+    path('book/<slug:slug>/', views.book_detail, name='detail'),
+    path('download/<int:book_id>/', views.download_book, name='download'),
+    
+    # Категории
+    path('categories/', views.category_list, name='categories'),
+    path('category/<slug:slug>/', views.category_detail, name='category'),
+    
+    # Пользовательские действия
+    path('favorites/', views.user_favorites, name='favorites'),
+    path('favorite/<int:book_id>/', views.toggle_favorite, name='toggle_favorite'),
+    path('review/<int:book_id>/', views.add_review, name='add_review'),
+    
+    # AJAX
+    path('search/', views.search_books, name='search'),
 ]

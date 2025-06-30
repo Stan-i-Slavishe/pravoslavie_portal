@@ -1,0 +1,404 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+.fairy-tale-form {
+    background: linear-gradient(135deg, #f8f9ff 0%, #fff5f8 100%);
+    border: 2px solid #e8ecff;
+    border-radius: 15px;
+    padding: 25px;
+    margin: 20px 0;
+}
+
+.fairy-tale-form h4 {
+    color: #6f42c1;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #6f42c1;
+    box-shadow: 0 0 0 0.1rem rgba(111, 66, 193, 0.25);
+}
+
+.options-section {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 15px;
+    border: 1px solid #dee2e6;
+}
+
+.option-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.option-card:hover {
+    background: #e9ecef;
+}
+
+.option-price {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.price-breakdown {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.price-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.total-price {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #28a745;
+    border-top: 1px solid #dee2e6;
+    padding-top: 10px;
+    margin-top: 10px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-6">
+            <!-- Изображение товара -->
+            <div class="product-image text-center">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.title }}" class="img-fluid rounded">
+                {% elif content_object.cover_image %}
+                    <img src="{{ content_object.cover_image.url }}" alt="{{ product.title }}" class="img-fluid rounded">
+                {% else %}
+                    <div class="placeholder-image bg-light d-flex align-items-center justify-content-center rounded" style="height: 400px;">
+                        <i class="bi bi-image fs-1 text-muted"></i>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <!-- Информация о товаре -->
+            <div class="product-info">
+                <h1 class="h2 mb-3">{{ product.title }}</h1>
+                
+                <!-- Тип товара -->
+                <div class="mb-3">
+                    <span class="badge bg-primary">{{ product.get_product_type_display }}</span>
+                    {% if product.product_type == 'fairy_tale' %}
+                        <span class="badge bg-warning">Требует персонализации</span>
+                    {% endif %}
+                </div>
+                
+                <!-- Описание -->
+                <div class="mb-4">
+                    <p class="text-muted">{{ product.description }}</p>
+                </div>
+                
+                <!-- Цена -->
+                <div class="price-section mb-4">
+                    <div class="h4 text-success mb-2">
+                        {{ product.price }}₽
+                        {% if product.product_type == 'fairy_tale' and product.has_audio_option or product.has_illustration_option %}
+                            <small class="text-muted">(базовая цена)</small>
+                        {% endif %}
+                    </div>
+                    
+                    {% if product.product_type == 'fairy_tale' %}
+                        <div class="small text-muted">
+                            {% if product.has_audio_option %}
+                                + {{ product.audio_option_price }}₽ за озвучку<br>
+                            {% endif %}
+                            {% if product.has_illustration_option %}
+                                + {{ product.illustration_option_price }}₽ за иллюстрации<br>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Форма добавления в корзину -->
+                {% if is_purchased %}
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle me-2"></i> Вы уже приобрели этот товар
+                    </div>
+                    <a href="{% url 'shop:my_purchases' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-download me-2"></i> Перейти к покупкам
+                    </a>
+                {% else %}
+                    <!-- Аналитическая заглушка вместо реальной корзины -->
+                    <button type="button" class="btn btn-success btn-lg w-100 analytics-purchase-btn" 
+                            data-content-type="product"
+                            data-object-id="{{ product.id }}"
+                            data-button-type="buy">
+                        <i class="bi bi-cart-plus me-2"></i> Купить за {{ product.price }}₽
+                    </button>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>🚀 Платежная система скоро заработает!</strong><br>
+                        Мы записываем ваш интерес к товарам и уведомим о запуске покупок. Скоро вы сможете приобрести этот товар!
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Дополнительная информация -->
+    {% if content_object %}
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Подробнее о товаре</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if product.product_type == 'fairy_tale' %}
+                            <!-- Информация о сказке -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Возрастная группа</h5>
+                                    <p>{{ content_object.age_range_display }}</p>
+                                    
+                                    <h5>Терапевтические цели</h5>
+                                    <ul>
+                                        {% for goal in content_object.get_therapeutic_goals_display %}
+                                            <li>{{ goal }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5>Автор</h5>
+                                    <p>{{ content_object.author|default:"Не указан" }}</p>
+                                    
+                                    <h5>Статистика</h5>
+                                    <p>
+                                        <i class="bi bi-eye me-1"></i> {{ content_object.views_count }} просмотров<br>
+                                        <i class="bi bi-bag me-1"></i> {{ content_object.orders_count }} заказов
+                                    </p>
+                                </div>
+                            </div>
+                        {% elif product.product_type == 'book' %}
+                            <!-- Информация о книге -->
+                            <p>{{ content_object.description }}</p>
+                            {% if content_object.author %}
+                                <p><strong>Автор:</strong> {{ content_object.author }}</p>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Аналитика покупательских намерений в магазине
+    const analyticsButtons = document.querySelectorAll('.analytics-purchase-btn');
+    analyticsButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const contentType = this.dataset.contentType;
+            const objectId = this.dataset.objectId;
+            const buttonType = this.dataset.buttonType;
+            
+            // Блокируем кнопку
+            this.disabled = true;
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Обрабатываем...';
+            
+            // Показываем сообщение
+            this.innerHTML = '<i class="bi bi-check-circle me-2"></i>Интерес записан!';
+            this.classList.remove('btn-success', 'btn-warning');
+            this.classList.add('btn-info');
+            
+            // Добавляем пульсацию для привлечения внимания
+            this.style.animation = 'pulse 0.6s ease-in-out 4';
+            
+            // Показываем попап с подпиской
+            setTimeout(() => {
+                showSubscriptionModal(contentType, objectId, buttonType);
+            }, 1000);
+            
+            // Сбрасываем анимацию
+            setTimeout(() => {
+                this.style.animation = '';
+            }, 3000);
+            
+            // Логируем в консоль для отладки
+            console.log('Purchase intent recorded:', {
+                contentType: contentType,
+                objectId: objectId,
+                buttonType: buttonType,
+                timestamp: new Date().toISOString()
+            });
+        });
+    });
+});
+
+// Функция для показа формы подписки
+function showSubscriptionModal(contentType, objectId, buttonType) {
+    // Проверяем, есть ли Bootstrap
+    if (typeof bootstrap === 'undefined') {
+        // Если Bootstrap недоступен, показываем обычный alert
+        alert('🚀 Платежная система скоро заработает!\n\nВаш интерес к этому товару записан!\nМы уведомим вас о запуске покупок.\n\n• Вы получите скидку на первый заказ\n• Этот товар будет ждать вас в рекомендациях');
+        return;
+    }
+    
+    // Удаляем существующий модал если есть
+    const existingModal = document.getElementById('subscriptionModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Создаем модальное окно с формой подписки (точная копия)
+    const modalHTML = `
+        <div class="modal fade" id="subscriptionModal" tabindex="-1" aria-labelledby="subscriptionModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-sm">
+                <div class="modal-content" style="border-radius: 8px;">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #2B5AA0, #1e4080); color: white; padding: 20px; border-radius: 8px 8px 0 0; border-bottom: none;">
+                        <h5 class="modal-title text-center w-100" id="subscriptionModalLabel" style="margin: 0; font-weight: 600;">
+                            🔔 Уведомить о запуске платежей
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" style="padding: 25px;">
+                        <div class="text-center mb-4">
+                            <p class="text-muted" style="margin-bottom: 0; font-size: 14px;">
+                                Узнайте первыми, когда станут доступны покупки!
+                            </p>
+                        </div>
+                        
+                        <form id="subscriptionForm">
+                            <div class="form-group mb-3">
+                                <input type="email" 
+                                       id="email" 
+                                       name="email" 
+                                       class="form-control" 
+                                       placeholder="Ваш email" 
+                                       required
+                                       style="
+                                           border: 2px solid #e9ecef;
+                                           border-radius: 8px; 
+                                           padding: 15px 20px;
+                                           font-size: 16px;
+                                           background: #fff;
+                                           transition: border-color 0.3s ease;
+                                       ">
+                            </div>
+                            
+                            <div id="subscriptionMessage" class="alert" style="display: none;"></div>
+                        </form>
+                        
+                        <button type="button" id="subscribeBtn" class="btn w-100 mb-3" 
+                                style="
+                                    background: #2B5AA0; 
+                                    color: white;
+                                    border: none; 
+                                    border-radius: 8px; 
+                                    padding: 15px;
+                                    font-size: 16px;
+                                    font-weight: 600;
+                                ">
+                            ✅ Подписаться
+                        </button>
+                        
+                        <div class="text-center">
+                            <button type="button" class="btn btn-link text-muted" data-bs-dismiss="modal" 
+                                    style="border: none; background: none; text-decoration: none; font-size: 14px;">
+                                Может потом
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Добавляем модальное окно в DOM
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Настраиваем обработчики событий
+    const subscribeBtn = document.getElementById('subscribeBtn');
+    const subscriptionMessage = document.getElementById('subscriptionMessage');
+    
+    subscribeBtn.addEventListener('click', function() {
+        const email = document.getElementById('email').value;
+        
+        if (!email) {
+            subscriptionMessage.className = 'alert alert-warning';
+            subscriptionMessage.textContent = 'Пожалуйста, введите email адрес';
+            subscriptionMessage.style.display = 'block';
+            return;
+        }
+        
+        // Отправляем данные (заглушка пока)
+        subscribeBtn.disabled = true;
+        subscribeBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Подписываем...';
+        
+        // Имитируем отправку
+        setTimeout(() => {
+            subscriptionMessage.className = 'alert alert-success';
+            subscriptionMessage.innerHTML = '🎉 <strong>Отлично!</strong> Вы подписаны на уведомления.<br><small>Мы напишем, когда запустим покупки!</small>';
+            subscriptionMessage.style.display = 'block';
+            
+            subscribeBtn.innerHTML = '✅ Подписка оформлена!';
+            subscribeBtn.className = 'btn btn-success btn-lg w-100';
+            
+            // Логируем подписку
+            console.log('Email subscription:', {
+                email: email,
+                content_type: contentType,
+                object_id: objectId,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Автозакрытие через 3 секунды
+            setTimeout(() => {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('subscriptionModal'));
+                if (modal) {
+                    modal.hide();
+                }
+            }, 3000);
+            
+        }, 1500);
+    });
+    
+    // Показываем модальное окно
+    const modalElement = document.getElementById('subscriptionModal');
+    if (modalElement) {
+        const bootstrapModal = new bootstrap.Modal(modalElement);
+        bootstrapModal.show();
+        
+        // Удаляем модальное окно после закрытия
+        modalElement.addEventListener('hidden.bs.modal', function () {
+            modalElement.remove();
+        });
+    }
+}
+
+</script>
+{% endblock %}

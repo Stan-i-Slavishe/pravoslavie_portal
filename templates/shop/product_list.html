@@ -1,0 +1,417 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Магазин - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.product-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    height: 100%;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.product-image {
+    height: 200px;
+    object-fit: cover;
+    width: 100%;
+}
+
+.product-price {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #2B5AA0;
+}
+
+.product-type-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+}
+
+.filter-section {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.price-input {
+    max-width: 120px;
+}
+
+/* Улучшения для кнопок в карточках товаров */
+.product-card .btn {
+    min-height: 42px !important; /* Фиксированная высота */
+    height: 42px !important; /* Строго фиксированная высота */
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center;
+    line-height: 1.2;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+}
+
+/* Кнопки на всю ширину с одинаковой высотой */
+.product-card .d-grid .btn {
+    width: 100% !important;
+}
+
+/* Одинаковые отступы для всех кнопок */
+.product-card .d-grid {
+    gap: 10px !important;
+}
+
+/* Контейнер для кнопок */
+.product-card .mt-auto {
+    margin-top: auto;
+    padding-top: 15px;
+}
+
+/* Цена и дополнительная информация */
+.product-card .product-price {
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+/* Принудительное выравнивание для иконок и текста */
+.product-card .btn i {
+    margin-right: 6px !important;
+    font-size: 0.9rem;
+}
+
+/* Отзывчивость для мобильных */
+@media (max-width: 576px) {
+    .product-card .btn {
+        height: 38px !important;
+        min-height: 38px !important;
+        font-size: 0.8rem;
+        padding: 6px 10px !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Заголовок страницы -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h2 mb-3">
+                <i class="bi bi-shop text-primary me-2"></i>
+                Цифровой магазин
+            </h1>
+            <p class="text-muted">
+                Духовные книги, аудио и персонализированные сказки для всей семьи
+            </p>
+            
+            <!-- Уведомление о разработке -->
+            <div class="alert alert-primary alert-dismissible fade show" role="alert">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>🚀 Платежная система скоро заработает!</strong>
+                Мы записываем ваш интерес к товарам и уведомим о запуске покупок. Скоро вы сможете приобрести любой товар!
+                <a href="{% url 'analytics:subscription_form' %}" class="alert-link">Подписаться на уведомления</a>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="filter-section">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label for="search" class="form-label">Поиск</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       value="{{ current_filters.search }}" placeholder="Название товара...">
+            </div>
+            
+            <div class="col-md-2">
+                <label for="type" class="form-label">Тип товара</label>
+                <select class="form-select" id="type" name="type">
+                    <option value="">Все типы</option>
+                    {% for type_code, type_name in product_types %}
+                        <option value="{{ type_code }}" 
+                                {% if current_filters.type == type_code %}selected{% endif %}>
+                            {{ type_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-2">
+                <label for="min_price" class="form-label">Цена от</label>
+                <input type="number" class="form-control price-input" id="min_price" 
+                       name="min_price" value="{{ current_filters.min_price }}" 
+                       placeholder="0" min="0">
+            </div>
+            
+            <div class="col-md-2">
+                <label for="max_price" class="form-label">до</label>
+                <input type="number" class="form-control price-input" id="max_price" 
+                       name="max_price" value="{{ current_filters.max_price }}" 
+                       placeholder="1000" min="0">
+            </div>
+            
+            <div class="col-md-2">
+                <label for="sort" class="form-label">Сортировка</label>
+                <select class="form-select" id="sort" name="sort">
+                    <option value="newest" {% if current_filters.sort == 'newest' %}selected{% endif %}>
+                        Новые
+                    </option>
+                    <option value="price_low" {% if current_filters.sort == 'price_low' %}selected{% endif %}>
+                        Цена: по возрастанию
+                    </option>
+                    <option value="price_high" {% if current_filters.sort == 'price_high' %}selected{% endif %}>
+                        Цена: по убыванию
+                    </option>
+                    <option value="name" {% if current_filters.sort == 'name' %}selected{% endif %}>
+                        По названию
+                    </option>
+                </select>
+            </div>
+            
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Результаты -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <p class="text-muted mb-0">
+                    {% if page_obj.paginator.count %}
+                        Найдено товаров: <strong>{{ page_obj.paginator.count }}</strong>
+                    {% else %}
+                        Товары не найдены
+                    {% endif %}
+                </p>
+                
+                {% if current_filters.search or current_filters.type or current_filters.min_price or current_filters.max_price %}
+                    <a href="{% url 'shop:catalog' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-x-circle me-1"></i>
+                        Сбросить фильтры
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Товары -->
+    {% if page_obj %}
+        <div class="row">
+            {% for product in page_obj %}
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card product-card h-100">
+                        <div class="position-relative">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" class="card-img-top product-image" alt="{{ product.title }}">
+                            {% else %}
+                                <div class="product-image bg-light d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Бейдж типа товара -->
+                            <span class="badge product-type-badge
+                                {% if product.product_type == 'book' %}bg-success
+                                {% elif product.product_type == 'audio' %}bg-info
+                                {% elif product.product_type == 'fairy_tale' %}bg-warning
+                                {% else %}bg-primary{% endif %}">
+                                {{ product.get_product_type_display }}
+                            </span>
+                        </div>
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ product.title }}</h5>
+                            <p class="card-text text-muted flex-grow-1">
+                                {{ product.description|truncatewords:15 }}
+                            </p>
+                            
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="product-price">{{ product.price }}₽</span>
+                                    {% if product.requires_personalization %}
+                                        <small class="text-muted">+ персонализация</small>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="d-grid gap-2">
+                                    <a href="{% url 'shop:product_detail' product.id %}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-eye me-1"></i>
+                                        Подробнее
+                                    </a>
+                                    
+                                    {% if not product.requires_personalization %}
+                                    <!-- Аналитическая заглушка вместо реальной корзины -->
+                                    <button class="btn btn-primary btn-sm analytics-purchase-btn" 
+                                            data-content-type="product"
+                                            data-object-id="{{ product.id }}"
+                                            data-button-type="buy">
+                                        <i class="bi bi-cart-plus me-1"></i>
+                                        Купить {{ product.price }}₽
+                                    </button>
+                                    {% else %}
+                                    <button class="btn btn-warning btn-sm analytics-purchase-btn" 
+                                            data-content-type="product"
+                                            data-object-id="{{ product.id }}"
+                                            data-button-type="personalize">
+                                        <i class="bi bi-magic me-1"></i>
+                                        Персонализировать
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Пагинация -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Навигация по страницам">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.type %}type={{ request.GET.type }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.previous_page_number }}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.type %}type={{ request.GET.type }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.type %}type={{ request.GET.type }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.next_page_number }}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <!-- Пустое состояние -->
+        <div class="text-center py-5">
+            <i class="bi bi-shop text-muted" style="font-size: 4rem;"></i>
+            <h3 class="text-muted mt-3">Товары не найдены</h3>
+            <p class="text-muted">
+                Попробуйте изменить параметры поиска или
+                <a href="{% url 'shop:catalog' %}">сбросить все фильтры</a>
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Аналитика покупательских намерений в магазине
+document.addEventListener('DOMContentLoaded', function() {
+    const analyticsButtons = document.querySelectorAll('.analytics-purchase-btn');
+    
+    analyticsButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const contentType = this.dataset.contentType;
+            const objectId = this.dataset.objectId;
+            const buttonType = this.dataset.buttonType;
+            
+            // Блокируем кнопку
+            this.disabled = true;
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Обрабатываем...';
+            
+            // Отправляем аналитику
+            fetch('/analytics/track-purchase-intent/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    content_type: contentType,
+                    object_id: parseInt(objectId),
+                    button_type: buttonType,
+                    session_key: 'shop_session_' + Date.now(),
+                    page_url: window.location.href,
+                    referer: document.referrer
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Показываем сообщение о запуске платежей
+                    this.innerHTML = '<i class="bi bi-check-circle me-1"></i>Интерес записан!';
+                    this.classList.remove('btn-primary', 'btn-warning');
+                    this.classList.add('btn-success');
+                    
+                    // Добавляем пульсацию для привлечения внимания
+                    this.style.animation = 'pulse 0.5s ease-in-out 3';
+                    
+                    // Показываем попап с подпиской
+                    setTimeout(() => {
+                        if (typeof showSubscribePopup === 'function') {
+                            showSubscribePopup(contentType);
+                        } else {
+                            alert('🚀 Платежная система скоро заработает!\n\nВаш интерес записан. Мы уведомим вас о запуске покупок!');
+                        }
+                    }, 1500); // Увеличили с 1000 до 1500мс
+                    
+                    // Возвращаем кнопку через 5 секунд (было 3)
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.classList.remove('btn-success');
+                        if (buttonType === 'buy') {
+                            this.classList.add('btn-primary');
+                        } else {
+                            this.classList.add('btn-warning');
+                        }
+                        this.disabled = false;
+                        
+                        // Сбрасываем анимацию и z-index
+                        this.style.animation = '';
+                        this.style.zIndex = '';
+                        this.style.position = '';
+                    }, 5000);
+                    
+                } else {
+                    throw new Error(data.error || 'Неизвестная ошибка');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('ℹ️ Платежная система скоро заработает!\nМы записали ваш интерес к этому товару.');
+                
+                // Возвращаем кнопку
+                this.innerHTML = originalText;
+                this.disabled = false;
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,131 @@
+<!-- Список комментариев для AJAX загрузки -->
+{% if comments %}
+    {% for comment in comments %}
+        <div class="comment-item" data-comment-id="{{ comment.id }}">
+            <!-- Аватар пользователя -->
+            <div class="comment-avatar-wrapper">
+                <div class="comment-avatar" title="{{ comment.user.get_full_name|default:comment.user.username }}">
+                    {{ comment.user.first_name.0|default:comment.user.username.0|upper }}
+                </div>
+            </div>
+            
+            <!-- Контент комментария -->
+            <div class="comment-content">
+                <!-- Заголовок комментария -->
+                <div class="comment-header">
+                    <a href="#" class="comment-author">{{ comment.user.get_full_name|default:comment.user.username }}</a>
+                    <span class="comment-date">{{ comment.created_at|timesince }} назад</span>
+                    {% if comment.is_edited %}
+                        <span class="comment-edited">(изменено)</span>
+                    {% endif %}
+                </div>
+                
+                <!-- Текст комментария -->
+                <div class="comment-text">{{ comment.text|linebreaksbr }}</div>
+                
+                <!-- Действия с комментарием -->
+                <div class="comment-actions-bar">
+                    {% if user.is_authenticated %}
+                        <!-- Лайк -->
+                        <button 
+                            class="comment-action-btn {% if comment.id in user_reactions and user_reactions.comment.id == 'like' %}liked{% endif %}"
+                            data-comment-id="{{ comment.id }}"
+                            data-reaction="like"
+                            onclick="toggleCommentReaction({{ comment.id }}, 'like')"
+                            title="Нравится"
+                        >
+                            <i class="bi bi-hand-thumbs-up"></i>
+                        </button>
+                        
+                        <!-- Счетчик лайков -->
+                        <span class="comment-like-count" data-comment-id="{{ comment.id }}">
+                            {% if comment.likes_count %}{{ comment.likes_count }}{% endif %}
+                        </span>
+                        
+                        <!-- Дизлайк -->
+                        <button 
+                            class="comment-action-btn {% if comment.id in user_reactions and user_reactions.comment.id == 'dislike' %}liked{% endif %}"
+                            data-comment-id="{{ comment.id }}"
+                            data-reaction="dislike"
+                            onclick="toggleCommentReaction({{ comment.id }}, 'dislike')"
+                            title="Не нравится"
+                        >
+                            <i class="bi bi-hand-thumbs-down"></i>
+                        </button>
+                        
+                        <!-- Ответить -->
+                        <button 
+                            class="comment-reply-btn"
+                            onclick="replyToComment({{ comment.id }}, '{{ comment.user.get_full_name|default:comment.user.username }}')"
+                        >
+                            Ответить
+                        </button>
+                    {% endif %}
+                </div>
+                
+                <!-- Ответы на комментарий -->
+                {% if comment.replies_count > 0 %}
+                    <div class="replies-container">
+                        <button class="replies-toggle" onclick="toggleReplies({{ comment.id }})">
+                            <i class="bi bi-chevron-down"></i>
+                            <span>{{ comment.replies_count }} ответ{{ comment.replies_count|pluralize:",,ов" }}</span>
+                        </button>
+                        
+                        <!-- Контейнер для ответов (загружается через AJAX) -->
+                        <div class="replies-list" id="replies-{{ comment.id }}" style="display: none;">
+                            <!-- Ответы будут загружены через AJAX -->
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <!-- Пустое состояние -->
+    <div class="no-comments">
+        <i class="bi bi-chat-dots"></i>
+        <h3>Пока нет комментариев</h3>
+        <p>Станьте первым, кто поделится своими мыслями об этом рассказе</p>
+    </div>
+{% endif %}
+
+<script>
+// Переключение показа ответов
+function toggleReplies(commentId) {
+    const repliesContainer = document.getElementById(`replies-${commentId}`);
+    const toggleBtn = document.querySelector(`[onclick="toggleReplies(${commentId})"]`);
+    
+    if (repliesContainer && toggleBtn) {
+        if (repliesContainer.style.display === 'none') {
+            // Показываем ответы
+            loadReplies(commentId);
+            repliesContainer.style.display = 'block';
+            toggleBtn.classList.add('expanded');
+        } else {
+            // Скрываем ответы
+            repliesContainer.style.display = 'none';
+            toggleBtn.classList.remove('expanded');
+        }
+    }
+}
+
+// Загрузка ответов на комментарий
+async function loadReplies(commentId) {
+    try {
+        const url = `/stories/ajax/comments/${commentId}/replies/`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.success) {
+            const repliesContainer = document.getElementById(`replies-${commentId}`);
+            if (repliesContainer) {
+                repliesContainer.innerHTML = data.html;
+            }
+        } else {
+            console.error('Ошибка загрузки ответов:', data.error);
+        }
+    } catch (error) {
+        console.error('Ошибка запроса ответов:', error);
+    }
+}
+</script>

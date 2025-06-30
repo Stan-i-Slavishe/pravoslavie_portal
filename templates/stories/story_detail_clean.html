@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ story.title }} - Добрые истории{% endblock %}
+
+{% block description %}{{ story.description|default:"Духовный рассказ на портале Добрые истории" }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- YouTube Video Player -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="video-container">
+                
+}
+
+// Универсальная функция уведомлений
+function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
+    
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show`;
+    toast.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 3000);
+}
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.style.cssText = 'position: fixed; top: 0; right: 0; z-index: 9999; padding: 20px;';
+    document.body.appendChild(container);
+    return container;
+}
+</script>
+{% endblock %}

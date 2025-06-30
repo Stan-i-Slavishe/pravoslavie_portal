@@ -1,0 +1,522 @@
+{% load comment_tags %}
+<!-- Секция комментариев в стиле YouTube -->
+<div class="comments-section mt-5">
+    <div class="comments-header d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0 d-flex align-items-center">
+            <i class="bi bi-chat-dots me-2"></i>
+            Комментарии 
+            <span class="badge bg-secondary ms-2 d-flex align-items-center">
+                <i class="bi bi-chat-text me-1" style="font-size: 0.8rem;"></i>
+                {{ comments_count|default:"0" }}
+            </span>
+        </h5>
+        
+        {% if user.is_authenticated %}
+            <button class="btn btn-outline-primary btn-sm" onclick="scrollToCommentForm()">
+                <i class="bi bi-plus-circle me-1"></i>
+                Добавить комментарий
+            </button>
+        {% endif %}
+    </div>
+
+    <!-- Форма добавления комментария (скрыта на мобильных) -->
+    {% if user.is_authenticated %}
+        <div class="comment-form-section mb-4 d-none d-md-block" id="commentFormSection">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="comment-avatar me-3">
+                            {% if user.userprofile.avatar %}
+                                <img src="{{ user.userprofile.avatar.url }}" alt="{{ user.username }}" class="rounded-circle" width="40" height="40">
+                            {% else %}
+                                <div class="avatar-placeholder rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    {{ user.username|first|upper }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="flex-grow-1">
+                            <form id="commentForm" class="comment-form">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <textarea 
+                                        class="form-control" 
+                                        id="commentText" 
+                                        name="text" 
+                                        rows="3" 
+                                        placeholder="Поделитесь своими мыслями..."
+                                        maxlength="1000"
+                                        required
+                                    ></textarea>
+                                    <div class="form-text d-flex justify-content-between">
+                                        <span>Максимум 1000 символов</span>
+                                        <span id="charCount">0/1000</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="comment-form-actions d-flex justify-content-between">
+                                    <small class="text-muted">
+                                        Пишите с уважением к другим участникам
+                                    </small>
+                                    <div>
+                                        <button type="button" class="btn btn-outline-secondary me-2" onclick="clearCommentForm()">
+                                            Отмена
+                                        </button>
+                                        <button type="submit" class="btn btn-primary" disabled id="submitComment">
+                                            <i class="bi bi-send me-1"></i>
+                                            Комментировать
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-4">
+            <p class="text-muted mb-3">
+                <i class="bi bi-chat-dots me-2"></i>
+                Войдите, чтобы оставить комментарий
+            </p>
+            <a href="{% url 'account_login' %}" class="btn btn-outline-primary">
+                Войти
+            </a>
+        </div>
+    {% endif %}
+    
+    <!-- Мобильная форма комментария (всплывающая снизу) -->
+    {% if user.is_authenticated %}
+        <div class="mobile-comment-form d-md-none" id="mobileCommentForm" style="display: none;">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="mb-0">
+                            <i class="bi bi-chat-plus me-2"></i>
+                            Новый комментарий
+                        </h6>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="hideMobileCommentForm()">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                    
+                    <form class="mobile-comment-form-inner">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <textarea 
+                                class="form-control" 
+                                id="mobileCommentText" 
+                                name="text" 
+                                rows="3" 
+                                placeholder="Поделитесь своими мыслями..."
+                                maxlength="1000"
+                                required
+                            ></textarea>
+                            <div class="form-text d-flex justify-content-between">
+                                <span>Максимум 1000 символов</span>
+                                <span id="mobileCharCount">0/1000</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" disabled id="mobileSubmitComment">
+                                <i class="bi bi-send me-1"></i>
+                                Комментировать
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Список комментариев -->
+    <div class="comments-list" id="commentsList">
+        {% if comments %}
+            {% for comment in comments %}
+                {% include 'stories/comment_item.html' with comment=comment user_reactions=user_reactions %}
+            {% endfor %}
+            
+            <!-- Кнопка "Загрузить еще" -->
+            {% if comments_count > 5 %}
+                <div class="text-center mt-4">
+                    <button class="btn btn-outline-secondary" onclick="loadMoreComments()" id="loadMoreBtn">
+                        <i class="bi bi-arrow-down-circle me-2"></i>
+                        Показать еще комментарии
+                    </button>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="no-comments text-center py-5">
+                <i class="bi bi-chat-dots" style="font-size: 3rem; color: #dee2e6;"></i>
+                <h6 class="text-muted mt-3">Пока нет комментариев</h6>
+                <p class="text-muted">Станьте первым, кто оставит комментарий!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.comments-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.comment-avatar img,
+.avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+}
+
+.comment-form {
+    transition: all 0.3s ease;
+}
+
+.comment-form textarea:focus {
+    border-color: #e74c3c;
+    box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.25);
+}
+
+.comments-header {
+    border-bottom: 2px solid #f8f9fa;
+    padding-bottom: 1rem;
+}
+
+.comments-header .badge {
+    background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+    border-radius: 20px;
+    padding: 0.5rem 0.75rem;
+    font-weight: 500;
+    font-size: 0.85rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.comments-header .badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.comments-header .badge i {
+    opacity: 0.9;
+}
+
+.no-comments {
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 2px dashed #dee2e6;
+}
+
+/* Мобильная форма */
+.mobile-comment-form {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    background: #fff;
+    border-top: 1px solid #dee2e6;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.15);
+    padding: 1rem;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+}
+
+.mobile-comment-form.show {
+    transform: translateY(0);
+}
+
+.mobile-comment-form .card {
+    border: none;
+    box-shadow: none;
+    margin: 0;
+}
+
+.mobile-comment-form textarea {
+    border-radius: 12px;
+    border: 1px solid #e74c3c;
+    min-height: 80px;
+}
+
+.mobile-comment-form textarea:focus {
+    border-color: #e74c3c;
+    box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.25);
+}
+
+@media (max-width: 768px) {
+    .comments-section {
+        padding: 1rem;
+        margin: 0 -15px;
+        border-radius: 0;
+    }
+    
+    .comment-form-actions {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .comment-form-actions > div {
+        text-align: center;
+    }
+}
+</style>
+
+<script>
+// Скрипт для работы с комментариями
+document.addEventListener('DOMContentLoaded', function() {
+    const commentForm = document.getElementById('commentForm');
+    const commentText = document.getElementById('commentText');
+    const submitBtn = document.getElementById('submitComment');
+    const charCount = document.getElementById('charCount');
+    
+    // Отслеживание символов для обычной формы
+    if (commentText && charCount) {
+        commentText.addEventListener('input', function() {
+            const length = this.value.length;
+            charCount.textContent = `${length}/1000`;
+            
+            if (submitBtn) {
+                submitBtn.disabled = length === 0 || length > 1000;
+            }
+            
+            if (length > 900) {
+                charCount.style.color = '#dc3545';
+            } else if (length > 800) {
+                charCount.style.color = '#fd7e14';
+            } else {
+                charCount.style.color = '#6c757d';
+            }
+        });
+    }
+    
+    // Отправка комментария (обычная форма)
+    if (commentForm) {
+        commentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitComment();
+        });
+    }
+    
+    // Обработчики для мобильной формы
+    const mobileCommentText = document.getElementById('mobileCommentText');
+    const mobileSubmitBtn = document.getElementById('mobileSubmitComment');
+    const mobileCharCount = document.getElementById('mobileCharCount');
+    const mobileCommentForm = document.querySelector('.mobile-comment-form-inner');
+    
+    if (mobileCommentText && mobileCharCount) {
+        mobileCommentText.addEventListener('input', function() {
+            const length = this.value.length;
+            mobileCharCount.textContent = `${length}/1000`;
+            
+            if (mobileSubmitBtn) {
+                mobileSubmitBtn.disabled = length === 0 || length > 1000;
+            }
+            
+            if (length > 900) {
+                mobileCharCount.style.color = '#dc3545';
+            } else if (length > 800) {
+                mobileCharCount.style.color = '#fd7e14';
+            } else {
+                mobileCharCount.style.color = '#6c757d';
+            }
+        });
+    }
+    
+    if (mobileCommentForm) {
+        mobileCommentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitMobileComment();
+        });
+    }
+});
+
+function submitComment() {
+    const form = document.getElementById('commentForm');
+    const submitBtn = document.getElementById('submitComment');
+    const text = document.getElementById('commentText').value.trim();
+    
+    if (!text) {
+        showToast('Введите текст комментария', 'error');
+        return;
+    }
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Отправка...';
+    
+    const formData = new FormData(form);
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch(`/stories/{{ story.id }}/comments/add/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': csrfToken,
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            addCommentToList(data.comment_html);
+            clearCommentForm();
+            showToast('Комментарий добавлен!', 'success');
+        } else {
+            showToast(data.message || 'Ошибка при добавлении комментария', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Произошла ошибка при отправке комментария', 'error');
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-send me-1"></i>Комментировать';
+    });
+}
+
+function submitMobileComment() {
+    const form = document.querySelector('.mobile-comment-form-inner');
+    const submitBtn = document.getElementById('mobileSubmitComment');
+    const text = document.getElementById('mobileCommentText').value.trim();
+    
+    if (!text) {
+        showToast('Введите текст комментария', 'error');
+        return;
+    }
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Отправка...';
+    
+    const formData = new FormData(form);
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch(`/stories/{{ story.id }}/comments/add/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': csrfToken,
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            addCommentToList(data.comment_html);
+            hideMobileCommentForm();
+            showToast('Комментарий добавлен!', 'success');
+        } else {
+            showToast(data.message || 'Ошибка при добавлении комментария', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Произошла ошибка при отправке комментария', 'error');
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-send me-1"></i>Комментировать';
+    });
+}
+
+function addCommentToList(commentHtml) {
+    const commentsList = document.getElementById('commentsList');
+    const noComments = commentsList.querySelector('.no-comments');
+    
+    if (noComments) {
+        noComments.remove();
+    }
+    
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = commentHtml;
+    const newComment = tempDiv.firstElementChild;
+    
+    commentsList.insertBefore(newComment, commentsList.firstChild);
+    updateCommentsCounter();
+}
+
+function clearCommentForm() {
+    const form = document.getElementById('commentForm');
+    const charCount = document.getElementById('charCount');
+    const submitBtn = document.getElementById('submitComment');
+    
+    if (form) form.reset();
+    if (charCount) {
+        charCount.textContent = '0/1000';
+        charCount.style.color = '#6c757d';
+    }
+    if (submitBtn) submitBtn.disabled = true;
+}
+
+function scrollToCommentForm() {
+    if (window.innerWidth < 768) {
+        showMobileCommentForm();
+    } else {
+        const formSection = document.getElementById('commentFormSection');
+        if (formSection) {
+            formSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => {
+                const textarea = document.getElementById('commentText');
+                if (textarea) textarea.focus();
+            }, 500);
+        }
+    }
+}
+
+function showMobileCommentForm() {
+    const mobileForm = document.getElementById('mobileCommentForm');
+    if (mobileForm) {
+        mobileForm.style.display = 'block';
+        setTimeout(() => mobileForm.classList.add('show'), 10);
+        setTimeout(() => {
+            const textarea = document.getElementById('mobileCommentText');
+            if (textarea) textarea.focus();
+        }, 300);
+    }
+}
+
+function hideMobileCommentForm() {
+    const mobileForm = document.getElementById('mobileCommentForm');
+    if (mobileForm) {
+        mobileForm.classList.remove('show');
+        setTimeout(() => {
+            mobileForm.style.display = 'none';
+            const form = mobileForm.querySelector('.mobile-comment-form-inner');
+            if (form) form.reset();
+            const charCount = document.getElementById('mobileCharCount');
+            if (charCount) {
+                charCount.textContent = '0/1000';
+                charCount.style.color = '#6c757d';
+            }
+            const submitBtn = document.getElementById('mobileSubmitComment');
+            if (submitBtn) submitBtn.disabled = true;
+        }, 300);
+    }
+}
+
+function updateCommentsCounter() {
+    const comments = document.querySelectorAll('.comment-item');
+    const badge = document.querySelector('.comments-header .badge');
+    
+    if (badge) {
+        badge.innerHTML = `
+            <i class="bi bi-chat-text me-1" style="font-size: 0.8rem;"></i>
+            ${comments.length}
+        `;
+    }
+}
+
+function loadMoreComments() {
+    const loadBtn = document.getElementById('loadMoreBtn');
+    if (loadBtn) {
+        loadBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Загрузка...';
+        loadBtn.disabled = true;
+        
+        setTimeout(() => {
+            loadBtn.innerHTML = '<i class="bi bi-arrow-down-circle me-2"></i>Показать еще комментарии';
+            loadBtn.disabled = false;
+        }, 1000);
+    }
+}
+</script>

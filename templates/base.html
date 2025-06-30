@@ -5,30 +5,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="{% block description %}Православный портал - духовные рассказы, книги, аудио и детские сказки{% endblock %}">
+    <meta name="description" content="{% block description %}Добрые истории - духовные рассказы, книги, аудио и детские сказки{% endblock %}">
     <meta name="keywords" content="православие, духовность, рассказы, книги, аудио, детские сказки">
     
-    <title>{% block title %}Православный портал{% endblock %}</title>
+    <title>{% block title %}Добрые истории{% endblock %}</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     
+    <!-- Font Awesome для социальных иконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <!-- Наши стили -->
-    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/azbyka-style.css' %}">
     
     <!-- Дополнительные стили -->
     {% block extra_css %}{% endblock %}
     
+    <!-- Дополнительные мета-теги -->
+    {% block extra_head %}{% endblock %}
+    
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{% static 'icons/favicon.ico' %}">
+    <link rel="icon" type="image/svg+xml" href="{% static 'icons/favicon.svg' %}">
+    <link rel="alternate icon" href="{% static 'icons/favicon.svg' %}">
 </head>
 <body>
     <!-- Навигация -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
         <div class="container">
             <a class="navbar-brand" href="{% url 'core:home' %}">
-                <i class="bi bi-cross"></i> Православный портал
+                <span class="orthodox-cross"></span> Добрые истории
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -38,39 +45,94 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'stories:list' %}">Видео-рассказы</a>
+                        {% url 'stories:list' as stories_url %}
+                        <a class="nav-link" href="{% if stories_url %}{{ stories_url }}{% else %}#stories{% endif %}">Видео-рассказы</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'books:list' %}">Библиотека</a>
+                        {% url 'books:list' as books_url %}
+                        <a class="nav-link" href="{% if books_url %}{{ books_url }}{% else %}#books{% endif %}">Библиотека</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'audio:list' %}">Аудио</a>
+                        {% url 'audio:list' as audio_url %}
+                        <a class="nav-link" href="{% if audio_url %}{{ audio_url }}{% else %}#audio{% endif %}">Аудио</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'shop:index' %}">Магазин</a>
+                        {% url 'fairy_tales:list' as fairy_tales_url %}
+                        <a class="nav-link" href="{% if fairy_tales_url %}{{ fairy_tales_url }}{% else %}#fairy-tales{% endif %}">Сказки</a>
+                    </li>
+                    <li class="nav-item">
+                        {% url 'shop:catalog' as shop_url %}
+                        <a class="nav-link" href="{% if shop_url %}{{ shop_url }}{% else %}#shop{% endif %}">Магазин</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            Разделы
+                        </a>
+                        <ul class="dropdown-menu">
+                            {% url 'core:categories' as categories_url %}
+                            <li><a class="dropdown-item" href="{% if categories_url %}{{ categories_url }}{% else %}#categories{% endif %}"><i class="bi bi-grid-3x3-gap me-2"></i> Категории</a></li>
+                            
+                            {% url 'core:tags' as tags_url %}
+                            <li><a class="dropdown-item" href="{% if tags_url %}{{ tags_url }}{% else %}#tags{% endif %}"><i class="bi bi-tags me-2"></i> Теги</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            
+                            {% url 'core:about' as about_url %}
+                            <li><a class="dropdown-item" href="{% if about_url %}{{ about_url }}{% else %}#about{% endif %}">О проекте</a></li>
+                            
+                            {% url 'core:contact' as contact_url %}
+                            <li><a class="dropdown-item" href="{% if contact_url %}{{ contact_url }}{% else %}#contact{% endif %}">Контакты</a></li>
+                        </ul>
                     </li>
                 </ul>
                 
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
+                        <!-- Корзина -->
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" href="{% url 'shop:cart' %}">
+                                <i class="bi bi-cart3"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-badge" style="display: none;">
+                                    0
+                                </span>
+                            </a>
+                        </li>
+                        
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle"></i> {{ user.first_name|default:user.username }}
+                                <i class="bi bi-person-circle me-1"></i> {{ user.first_name|default:user.username }}
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">Профиль</a></li>
-                                <li><a class="dropdown-item" href="{% url 'accounts:favorites' %}">Избранное</a></li>
-                                <li><a class="dropdown-item" href="{% url 'subscriptions:manage' %}">Подписка</a></li>
+                                {% url 'accounts:profile' as profile_url %}
+                                <li><a class="dropdown-item" href="{% if profile_url %}{{ profile_url }}{% else %}#profile{% endif %}"><i class="bi bi-person me-2"></i> Профиль</a></li>
+                                
+                                {% url 'shop:my_purchases' as purchases_url %}
+                                <li><a class="dropdown-item" href="{% if purchases_url %}{{ purchases_url }}{% else %}#purchases{% endif %}"><i class="bi bi-bag-check me-2"></i> Мои покупки</a></li>
+                                
+                                {% url 'shop:my_orders' as orders_url %}
+                                <li><a class="dropdown-item" href="{% if orders_url %}{{ orders_url }}{% else %}#orders{% endif %}"><i class="bi bi-list-ul me-2"></i> Мои заказы</a></li>
+                                
+                                {% url 'accounts:favorites' as favorites_url %}
+                                <li><a class="dropdown-item" href="{% if favorites_url %}{{ favorites_url }}{% else %}#favorites{% endif %}"><i class="bi bi-heart me-2"></i> Избранное</a></li>
+                                
+                                {% url 'stories:playlists_list' as playlists_url %}
+                                <li><a class="dropdown-item" href="{% if playlists_url %}{{ playlists_url }}{% else %}#playlists{% endif %}"><i class="bi bi-music-note-list me-2"></i> Мои плейлисты</a></li>
+                                
+                                {% url 'subscriptions:manage' as subscription_url %}
+                                <li><a class="dropdown-item" href="{% if subscription_url %}{{ subscription_url }}{% else %}#subscription{% endif %}"><i class="bi bi-card-checklist me-2"></i> Подписка</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'account_logout' %}">Выйти</a></li>
+                                
+                                {% url 'account_logout' as logout_url %}
+                                <li><a class="dropdown-item" href="{% if logout_url %}{{ logout_url }}{% else %}#logout{% endif %}"><i class="bi bi-box-arrow-right me-2"></i> Выйти</a></li>
                             </ul>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'account_login' %}">Войти</a>
+                            {% url 'account_login' as login_url %}
+                            <a class="nav-link" href="{% if login_url %}{{ login_url }}{% else %}#login{% endif %}">Войти</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'account_signup' %}">Регистрация</a>
+                            {% url 'account_signup' as signup_url %}
+                            <a class="nav-link" href="{% if signup_url %}{{ signup_url }}{% else %}#register{% endif %}">Регистрация</a>
                         </li>
                     {% endif %}
                 </ul>
@@ -101,30 +163,43 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <h5>Православный портал</h5>
+                    <h5>Добрые истории</h5>
                     <p class="text-muted">Духовные рассказы, книги и аудио для современного человека</p>
                 </div>
                 <div class="col-md-3">
                     <h6>Разделы</h6>
                     <ul class="list-unstyled">
-                        <li><a href="{% url 'stories:list' %}" class="text-muted">Видео-рассказы</a></li>
-                        <li><a href="{% url 'books:list' %}" class="text-muted">Библиотека</a></li>
-                        <li><a href="{% url 'audio:list' %}" class="text-muted">Аудио</a></li>
+                        {% url 'stories:list' as stories_url %}
+                        <li><a href="{% if stories_url %}{{ stories_url }}{% else %}#stories{% endif %}" class="text-muted">Видео-рассказы</a></li>
+                        
+                        {% url 'books:list' as books_url %}
+                        <li><a href="{% if books_url %}{{ books_url }}{% else %}#books{% endif %}" class="text-muted">Библиотека</a></li>
+                        
+                        {% url 'audio:list' as audio_url %}
+                        <li><a href="{% if audio_url %}{{ audio_url }}{% else %}#audio{% endif %}" class="text-muted">Аудио</a></li>
+                        
+                        {% url 'fairy_tales:list' as fairy_tales_url %}
+                        <li><a href="{% if fairy_tales_url %}{{ fairy_tales_url }}{% else %}#fairy-tales{% endif %}" class="text-muted">Сказки</a></li>
                     </ul>
                 </div>
                 <div class="col-md-3">
                     <h6>Информация</h6>
                     <ul class="list-unstyled">
-                        <li><a href="{% url 'core:about' %}" class="text-muted">О проекте</a></li>
-                        <li><a href="{% url 'core:contact' %}" class="text-muted">Контакты</a></li>
-                        <li><a href="{% url 'subscriptions:plans' %}" class="text-muted">Подписка</a></li>
+                        {% url 'core:about' as about_url %}
+                        <li><a href="{% if about_url %}{{ about_url }}{% else %}#about{% endif %}" class="text-muted">О проекте</a></li>
+                        
+                        {% url 'core:contact' as contact_url %}
+                        <li><a href="{% if contact_url %}{{ contact_url }}{% else %}#contact{% endif %}" class="text-muted">Контакты</a></li>
+                        
+                        {% url 'subscriptions:plans' as plans_url %}
+                        <li><a href="{% if plans_url %}{{ plans_url }}{% else %}#subscription{% endif %}" class="text-muted">Подписка</a></li>
                     </ul>
                 </div>
             </div>
             <hr>
             <div class="row">
                 <div class="col-12 text-center">
-                    <p class="text-muted mb-0">&amp;copy; 2024 Православный портал. Все права защищены.</p>
+                    <p class="text-muted mb-0">&copy; 2024 Добрые истории. Все права защищены.</p>
                 </div>
             </div>
         </div>
@@ -133,10 +208,103 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
     
+    <!-- Обновление счетчика корзины -->
+    {% if user.is_authenticated %}
+    <script>
+    function updateCartBadge() {
+        fetch('{% url "shop:cart_count" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('cart-badge');
+            if (badge) {
+                badge.textContent = data.count;
+                if (data.count > 0) {
+                    badge.style.display = 'inline';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        })
+        .catch(error => console.error('Ошибка обновления корзины:', error));
+    }
+    
+    // Обновляем при загрузке страницы
+    document.addEventListener('DOMContentLoaded', updateCartBadge);
+    </script>
+    {% endif %}
+    
     <!-- Наш JavaScript -->
     <script src="{% static 'js/main.js' %}"></script>
     
+    <!-- Обработчик ошибок сторонних скриптов -->
+    <script>
+    // Полностью приглушаем ошибки рекламных скриптов
+    (function() {
+        const originalAddEventListener = EventTarget.prototype.addEventListener;
+        EventTarget.prototype.addEventListener = function(type, listener, options) {
+            if (type === 'error') {
+                const wrappedListener = function(e) {
+                    if (e.filename && (
+                        e.filename.includes('googleads') || 
+                        e.filename.includes('doubleclick') ||
+                        e.filename.includes('pagead') ||
+                        e.filename.includes('googleleads')
+                    )) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return true;
+                    }
+                    return listener.call(this, e);
+                };
+                return originalAddEventListener.call(this, type, wrappedListener, options);
+            }
+            return originalAddEventListener.call(this, type, listener, options);
+        };
+        
+        // Переопределяем console.error для фильтрации
+        const originalConsoleError = console.error;
+        console.error = function(...args) {
+            const message = args.join(' ');
+            if (message.includes('googleads') || 
+                message.includes('doubleclick') ||
+                message.includes('ERR_BLOCKED_BY_CLIENT') ||
+                message.includes('googleleads') ||
+                message.includes('pagead/id')) {
+                return; // Полностью игнорируем эти ошибки
+            }
+            originalConsoleError.apply(console, args);
+        };
+        
+        // Глобальный обработчик ошибок
+        window.addEventListener('error', function(e) {
+            if (e.target && e.target.src && (
+                e.target.src.includes('googleads') ||
+                e.target.src.includes('doubleclick') ||
+                e.target.src.includes('googleleads')
+            )) {
+                e.preventDefault();
+                e.stopPropagation();
+                return true;
+            }
+        }, true);
+        
+        console.log('✅ Система фильтрации рекламных ошибок активирована');
+    })();
+    </script>
+    
+    <!-- Аналитика покупательских намерений (временно отключена) -->
+    {% comment %}<script src="{% static 'js/analytics.js' %}"></script>{% endcomment %}
+    
     <!-- Дополнительные скрипты -->
     {% block extra_js %}{% endblock %}
+    
+    <!-- Тестовый виджет аналитики (отключен для продакшена) -->
+    {% comment %}{% include 'analytics/test_widget.html' %}{% endcomment %}
 </body>
 </html>

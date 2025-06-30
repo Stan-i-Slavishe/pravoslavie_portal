@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ tag.name }} - Православный портал{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Хлебные крошки -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Главная</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'core:tags' %}">Теги</a></li>
+                <li class="breadcrumb-item active">{{ tag.name }}</li>
+            </ol>
+        </nav>
+        
+        <!-- Заголовок тега -->
+        <div class="d-flex align-items-center mb-4">
+            <div>
+                <h1 class="mb-2">
+                    <i class="bi bi-tag me-2"></i>
+                    {{ tag.name }}
+                </h1>
+                <span class="badge rounded-pill" 
+                      style="background-color: {{ tag.color }}; font-size: 16px; padding: 8px 12px;">
+                    #{{ tag.slug }}
+                </span>
+            </div>
+        </div>
+        
+        <!-- Описание тега -->
+        {% if tag.description %}
+            <div class="alert alert-info mb-4">
+                <i class="bi bi-info-circle me-2"></i>
+                {{ tag.description }}
+            </div>
+        {% endif %}
+        
+        <!-- Контент с тегом -->
+        <div class="row">
+            <div class="col-lg-8">
+                {% if content_items %}
+                    <div class="row g-4">
+                        {% for item in content_items %}
+                            <div class="col-md-6">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ item.title }}</h5>
+                                        <p class="card-text">{{ item.description|truncatewords:20 }}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-secondary">{{ item.content_type }}</span>
+                                            <a href="{{ item.get_absolute_url }}" class="btn btn-primary btn-sm">
+                                                Подробнее
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-search display-1 text-muted"></i>
+                        <h3 class="mt-3">Контент не найден</h3>
+                        <p class="text-muted">Материалы с тегом "{{ tag.name }}" пока отсутствуют</p>
+                        
+                        <div class="mt-4">
+                            <p>Попробуйте найти интересующий вас контент в наших разделах:</p>
+                            <div class="d-flex gap-2 justify-content-center flex-wrap">
+                                <a href="{% url 'stories:list' %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-play-circle"></i> Видео-рассказы
+                                </a>
+                                <a href="{% url 'books:list' %}" class="btn btn-outline-success btn-sm">
+                                    <i class="bi bi-book"></i> Библиотека
+                                </a>
+                                <a href="{% url 'audio:list' %}" class="btn btn-outline-info btn-sm">
+                                    <i class="bi bi-music-note"></i> Аудио
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Боковая панель -->
+            <div class="col-lg-4">
+                <div class="card bg-light">
+                    <div class="card-header">
+                        <h5 class="mb-0">О теге</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td><strong>Тег:</strong></td>
+                                <td>{{ tag.name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Slug:</strong></td>
+                                <td><code>{{ tag.slug }}</code></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Материалов:</strong></td>
+                                <td>{{ content_items|length }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Создан:</strong></td>
+                                <td>{{ tag.created_at|date:"d.m.Y" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Похожие теги -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Популярные теги</h5>
+                    </div>
+                    <div class="card-body">
+                        {% comment %}
+                        Здесь будем показывать другие популярные теги
+                        {% endcomment %}
+                        <div class="tag-cloud">
+                            <a href="{% url 'core:tags' %}" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-tags"></i> Все теги
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Поиск -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Поиск</h5>
+                    </div>
+                    <div class="card-body">
+                        <form class="d-flex">
+                            <input class="form-control me-2" 
+                                   type="search" 
+                                   placeholder="Поиск по сайту..." 
+                                   aria-label="Поиск">
+                            <button class="btn btn-outline-primary" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </form>
+                        <small class="text-muted">Функция поиска в разработке</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

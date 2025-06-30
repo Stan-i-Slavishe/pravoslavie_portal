@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Создать плейлист{% endblock %}
+
+{% block extra_css %}
+<style>
+.create-form {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--orthodox-blue, #2B5AA0);
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: var(--orthodox-blue, #2B5AA0);
+    box-shadow: 0 0 0 0.2rem rgba(43, 90, 160, 0.25);
+    outline: none;
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+}
+
+.form-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
+.form-check {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.form-check-input {
+    margin-right: 10px;
+}
+
+.form-check-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.btn-submit {
+    background: var(--gold-accent, #D4AF37);
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.btn-submit:hover {
+    background: #b8941f;
+    transform: translateY(-1px);
+}
+
+.btn-cancel {
+    background: #6c757d;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    transition: all 0.2s ease;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.btn-cancel:hover {
+    background: #5a6268;
+    color: white;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.page-header h1 {
+    color: var(--orthodox-blue, #2B5AA0);
+    margin-bottom: 10px;
+}
+
+.page-header p {
+    color: #6c757d;
+    font-size: 1.1rem;
+}
+
+.form-icon {
+    color: var(--orthodox-blue, #2B5AA0);
+    margin-right: 8px;
+}
+
+@media (max-width: 768px) {
+    .create-form {
+        padding: 20px;
+        margin: 20px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header">
+                <h1>
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Создать новый плейлист
+                </h1>
+                <p>Организуйте свои любимые видео-рассказы в удобные коллекции</p>
+            </div>
+            
+            <form method="post" class="create-form">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="name" class="form-label">
+                        <i class="fas fa-tag form-icon"></i>
+                        Название плейлиста *
+                    </label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="name" 
+                           name="name" 
+                           required 
+                           maxlength="200"
+                           placeholder="Введите название плейлиста">
+                    <div class="form-text">
+                        Выберите понятное название, которое отражает содержание плейлиста
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description" class="form-label">
+                        <i class="fas fa-align-left form-icon"></i>
+                        Описание
+                    </label>
+                    <textarea class="form-control" 
+                              id="description" 
+                              name="description" 
+                              rows="4"
+                              maxlength="1000"
+                              placeholder="Опишите, какие рассказы будут в этом плейлисте..."></textarea>
+                    <div class="form-text">
+                        Краткое описание поможет вам и другим понять тематику плейлиста
+                    </div>
+                </div>
+                
+                <div class="form-check">
+                    <input class="form-check-input" 
+                           type="checkbox" 
+                           id="is_public" 
+                           name="is_public">
+                    <label class="form-check-label" for="is_public">
+                        <i class="fas fa-globe me-2"></i>
+                        <strong>Сделать плейлист публичным</strong>
+                        <div class="form-text mt-2">
+                            Публичные плейлисты могут просматривать все пользователи сайта. 
+                            Приватные плейлисты видны только вам.
+                        </div>
+                    </label>
+                </div>
+                
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-save me-2"></i>
+                        Создать плейлист
+                    </button>
+                    <a href="{% url 'stories:playlists_list' %}" class="btn-cancel">
+                        <i class="fas fa-times me-2"></i>
+                        Отмена
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация появления формы
+    const form = document.querySelector('.create-form');
+    form.style.opacity = '0';
+    form.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+        form.style.transition = 'all 0.5s ease';
+        form.style.opacity = '1';
+        form.style.transform = 'translateY(0)';
+    }, 100);
+    
+    // Автофокус на поле названия
+    document.getElementById('name').focus();
+    
+    // Подсчет символов в описании
+    const descriptionField = document.getElementById('description');
+    const maxLength = 1000;
+    
+    // Создаем счетчик символов
+    const counter = document.createElement('div');
+    counter.className = 'form-text text-end';
+    counter.style.marginTop = '5px';
+    descriptionField.parentNode.appendChild(counter);
+    
+    function updateCounter() {
+        const remaining = maxLength - descriptionField.value.length;
+        counter.textContent = `Осталось символов: ${remaining}`;
+        
+        if (remaining < 100) {
+            counter.style.color = '#dc3545';
+        } else if (remaining < 200) {
+            counter.style.color = '#ffc107';
+        } else {
+            counter.style.color = '#6c757d';
+        }
+    }
+    
+    descriptionField.addEventListener('input', updateCounter);
+    updateCounter();
+    
+    // Валидация формы
+    const form_element = document.querySelector('form');
+    form_element.addEventListener('submit', function(e) {
+        const nameField = document.getElementById('name');
+        
+        if (nameField.value.trim().length < 3) {
+            e.preventDefault();
+            nameField.classList.add('is-invalid');
+            
+            // Показываем ошибку
+            let errorDiv = nameField.parentNode.querySelector('.invalid-feedback');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.className = 'invalid-feedback';
+                nameField.parentNode.appendChild(errorDiv);
+            }
+            errorDiv.textContent = 'Название плейлиста должно содержать минимум 3 символа';
+            
+            nameField.focus();
+        } else {
+            nameField.classList.remove('is-invalid');
+            const errorDiv = nameField.parentNode.querySelector('.invalid-feedback');
+            if (errorDiv) {
+                errorDiv.remove();
+            }
+        }
+    });
+    
+    // Убираем ошибку при вводе
+    document.getElementById('name').addEventListener('input', function() {
+        this.classList.remove('is-invalid');
+        const errorDiv = this.parentNode.querySelector('.invalid-feedback');
+        if (errorDiv) {
+            errorDiv.remove();
+        }
+    });
+});
+</script>
+{% endblock %}

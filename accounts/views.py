@@ -1,24 +1,22 @@
-from django.shortcuts import render
 from django.views.generic import TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
 
-class ProfileView(LoginRequiredMixin, TemplateView):
+class ProfileView(TemplateView):
     template_name = 'accounts/profile.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Мой профиль'
+        context['title'] = 'Профиль'
         return context
 
-class ProfileEditView(LoginRequiredMixin, TemplateView):
+class ProfileEditView(TemplateView):
     template_name = 'accounts/profile_edit.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Редактировать профиль'
+        context['title'] = 'Редактирование профиля'
         return context
 
-class FavoritesView(LoginRequiredMixin, TemplateView):
+class FavoritesView(TemplateView):
     template_name = 'accounts/favorites.html'
     
     def get_context_data(self, **kwargs):

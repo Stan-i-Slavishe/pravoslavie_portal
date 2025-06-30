@@ -1,0 +1,4 @@
+<!-- Список комментариев для AJAX загрузки -->
+{% for comment in comments %}
+    {% include 'stories/comment_item.html' with comment=comment user_reactions=user_reactions %}
+{% endfor %}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .header { background: #2B5AA0; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+        .stat-card { background: #f8f9fa; border-left: 4px solid #2B5AA0; padding: 15px; text-align: center; }
+        .stat-number { font-size: 2em; font-weight: bold; color: #2B5AA0; }
+        .stat-label { color: #666; margin-top: 5px; }
+        .top-content { background: #fff; border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin: 15px 0; }
+        .analysis { background: #e8f5e8; border-left: 4px solid #28a745; padding: 15px; margin: 15px 0; }
+        .button { background: #2B5AA0; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px 0; }
+        .footer { background: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #666; }
+        ol li { margin: 8px 0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 Недельный отчет по аналитике</h1>
+        <p>{{ period }}</p>
+    </div>
+    
+    <div class="content">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ report.total_purchase_intents }}</div>
+                <div class="stat-label">Кликов на покупку</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ report.unique_users }}</div>
+                <div class="stat-label">Уникальных пользователей</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ report.new_subscriptions }}</div>
+                <div class="stat-label">Новых подписок</div>
+            </div>
+        </div>
+        
+        <div class="top-content">
+            <h3>🔥 Популярный контент</h3>
+            {% if report.top_content %}
+                <ol>
+                {% for item in report.top_content %}
+                    <li><strong>{{ item.title }}</strong> - {{ item.clicks }} кликов</li>
+                {% endfor %}
+                </ol>
+            {% else %}
+                <p>За эту неделю не было кликов на покупку</p>
+            {% endif %}
+        </div>
+        
+        <div class="analysis">
+            <h3>📈 Анализ недели</h3>
+            {% if report.total_purchase_intents > 50 %}
+                <p><strong>🔥 Высокая активность!</strong> Более 50 кликов за неделю - отличный сигнал для запуска платежей.</p>
+            {% elif report.total_purchase_intents > 20 %}
+                <p><strong>📈 Средняя активность.</strong> Интерес к покупкам растет.</p>
+            {% elif report.total_purchase_intents > 0 %}
+                <p><strong>🌱 Начальная активность.</strong> Пользователи изучают контент.</p>
+            {% else %}
+                <p><strong>📊 Активности пока нет.</strong> Возможно, стоит улучшить продвижение.</p>
+            {% endif %}
+            
+            {% if report.new_subscriptions > 10 %}
+                <p><strong>💌 Отличный рост подписок!</strong> {{ report.new_subscriptions }} новых подписчиков.</p>
+            {% elif report.new_subscriptions > 0 %}
+                <p><strong>📧 Новые подписки:</strong> {{ report.new_subscriptions }}</p>
+            {% endif %}
+        </div>
+        
+        <a href="{{ analytics_url }}" class="button">Посмотреть полную аналитику</a>
+    </div>
+    
+    <div class="footer">
+        <strong>Православный портал</strong><br>
+        Еженедельная аналитика
+    </div>
+</body>
+</html>

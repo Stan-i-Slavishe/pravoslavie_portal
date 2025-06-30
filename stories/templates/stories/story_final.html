@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'stories/css/ajax_comments.css' %}">
+{% endblock %}
+
+{% block title %}{{ story.title }} - Видео-рассказы{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'stories:list' %}">Рассказы</a></li>
+            <li class="breadcrumb-item active">{{ story.title }}</li>
+        </ol>
+    </nav>
+    
+    <!-- Основное содержимое -->
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Видео -->
+            <div class="video-container mb-4">
+                ";
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Простое уведомление
+        if (window.ajaxComments) {
+            window.ajaxComments.showNotification('Ссылка скопирована в буфер обмена!', 'success');
+        } else {
+            alert('Ссылка скопирована в буфер обмена!');
+        }
+    }, function(err) {
+        console.error('Ошибка копирования: ', err);
+        if (window.ajaxComments) {
+            window.ajaxComments.showNotification('Не удалось скопировать ссылку', 'error');
+        } else {
+            alert('Не удалось скопировать ссылку');
+        }
+    });
+}
+
+// Простая обработка форм комментариев
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ Страница рассказа загружена');
+    
+    // Проверяем, есть ли комментарии в URL (якорь)
+    if (window.location.hash) {
+        const target = document.querySelector(window.location.hash);
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+    
+    // Уведомление о том, что AJAX активирован
+    if (window.ajaxComments) {
+        console.log('🚀 AJAX комментарии активированы - комментарии будут добавляться без перезагрузки!');
+    }
+});
+</script>
+{% endblock %}

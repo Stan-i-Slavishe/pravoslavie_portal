@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Православный портал{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="bi bi-search text-primary me-2"></i>
+            {{ title }}
+        </h1>
+        
+        <!-- Форма поиска -->
+        <div class="row mb-4">
+            <div class="col-md-8 mx-auto">
+                <form method="GET" class="d-flex">
+                    <input type="search" name="q" value="{{ search_query }}" 
+                           class="form-control form-control-lg me-2" 
+                           placeholder="Введите ключевые слова для поиска рассказов..."
+                           required>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        {% if search_query %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                Результаты поиска по запросу: <strong>"{{ search_query }}"</strong>
+                {% if stories %}
+                    (найдено: {{ paginator.count }})
+                {% endif %}
+            </div>
+            
+            {% if stories %}
+                <!-- Результаты поиска -->
+                <div class="row">
+                    {% for story in stories %}
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="{% url 'stories:detail' story.slug %}" class="text-decoration-none">
+                                        {{ story.title }}
+                                    </a>
+                                </h5>
+                                <p class="card-text text-muted">{{ story.description|truncatewords:20 }}</p>
+                                
+                                {% if story.category %}
+                                <small class="text-muted">
+                                    <i class="bi bi-folder me-1"></i>{{ story.category.name }}
+                                </small>
+                                {% endif %}
+                                
+                                <div class="mt-2">
+                                    {% for tag in story.tags.all %}
+                                    <span class="badge me-1" style="background-color: {{ tag.color|default:'#6c757d' }};">
+                                        {{ tag.name }}
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="card-footer">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="bi bi-eye me-1"></i>{{ story.views_count }}
+                                    </small>
+                                    <small class="text-muted">{{ story.created_at|date:"d.m.Y" }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Пагинация -->
+                {% if is_paginated %}
+                <nav aria-label="Навигация по страницам">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?q={{ search_query }}&page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                            </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+                        </li>
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?q={{ search_query }}&page={{ page_obj.next_page_number }}">Следующая</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                
+            {% else %}
+                <!-- Нет результатов -->
+                <div class="text-center py-5">
+                    <i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
+                    <h3 class="mt-3 text-muted">Ничего не найдено</h3>
+                    <p>По запросу "{{ search_query }}" ничего не найдено.</p>
+                    <div class="mt-4">
+                        <a href="{% url 'stories:list' %}" class="btn btn-primary me-2">
+                            <i class="bi bi-arrow-left me-2"></i>Все рассказы
+                        </a>
+                        <button class="btn btn-outline-secondary" onclick="document.querySelector('input[name=q]').value=''; document.querySelector('form').submit();">
+                            <i class="bi bi-x me-2"></i>Очистить поиск
+                        </button>
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <!-- Начальная страница поиска -->
+            <div class="text-center py-5">
+                <i class="bi bi-search text-primary" style="font-size: 4rem;"></i>
+                <h3 class="mt-3">Поиск рассказов</h3>
+                <p class="text-muted">Введите ключевые слова для поиска духовных рассказов</p>
+                
+                <div class="mt-4">
+                    <h6>Популярные запросы:</h6>
+                    <div class="d-flex flex-wrap justify-content-center gap-2 mt-2">
+                        <a href="?q=молитва" class="badge bg-primary text-decoration-none">молитва</a>
+                        <a href="?q=семья" class="badge bg-primary text-decoration-none">семья</a>
+                        <a href="?q=дети" class="badge bg-primary text-decoration-none">дети</a>
+                        <a href="?q=праздники" class="badge bg-primary text-decoration-none">праздники</a>
+                        <a href="?q=чудо" class="badge bg-primary text-decoration-none">чудо</a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

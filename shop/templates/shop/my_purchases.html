@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Мои покупки - {{ site_settings.site_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.purchases-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.purchase-item {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.purchase-item:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.purchase-image {
+    width: 80px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    background: #f5f5f5;
+}
+
+.purchase-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.purchase-meta {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.download-btn {
+    transition: all 0.3s ease;
+}
+
+.download-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.empty-purchases {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #666;
+}
+
+.empty-purchases i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="purchases-container">
+        <h1 class="mb-4">
+            <i class="bi bi-bag-check me-2"></i>
+            Мои покупки
+        </h1>
+        
+        {% if purchases %}
+            {% for purchase in purchases %}
+                <div class="purchase-item">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            {% if purchase.product.image %}
+                                <img src="{{ purchase.product.image.url }}" alt="{{ purchase.product.title }}" class="purchase-image">
+                            {% elif purchase.product.content_object.cover %}
+                                <img src="{{ purchase.product.content_object.cover.url }}" alt="{{ purchase.product.title }}" class="purchase-image">
+                            {% else %}
+                                <div class="purchase-image d-flex align-items-center justify-content-center" 
+                                     style="background: linear-gradient(45deg, #3498db, #2980b9);">
+                                    <i class="bi bi-{% if purchase.product.product_type == 'book' %}book{% elif purchase.product.product_type == 'audio' %}music-note{% else %}star{% endif %}" 
+                                       style="font-size: 1.5rem; color: white;"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col">
+                            <div class="purchase-title">{{ purchase.product.title }}</div>
+                            <div class="purchase-meta">
+                                <div class="mb-1">
+                                    <i class="bi bi-calendar me-1"></i>
+                                    Куплено: {{ purchase.purchased_at|date:"d.m.Y H:i" }}
+                                </div>
+                                <div class="mb-1">
+                                    <i class="bi bi-receipt me-1"></i>
+                                    Заказ: #{{ purchase.order.short_id }}
+                                </div>
+                                <div>
+                                    <i class="bi bi-tag me-1"></i>
+                                    {{ purchase.product.get_product_type_display }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-auto">
+                            {% if purchase.product.product_type == 'book' and purchase.product.content_object.file %}
+                                <a href="{% url 'shop:download_purchase' purchase_id=purchase.id %}" 
+                                   class="btn btn-success download-btn">
+                                    <i class="bi bi-download me-1"></i>
+                                    Скачать
+                                </a>
+                            {% else %}
+                                <span class="text-muted">Недоступно для скачивания</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <!-- Пустой список покупок -->
+            <div class="empty-purchases">
+                <i class="bi bi-bag-x"></i>
+                <h3>У вас пока нет покупок</h3>
+                <p>Приобретите книги или другие товары в нашем магазине</p>
+                <a href="{% url 'shop:catalog' %}" class="btn btn-primary">
+                    <i class="bi bi-shop me-2"></i>
+                    Перейти в магазин
+                </a>
+            </div>
+        {% endif %}
+        
+        <!-- Дополнительные ссылки -->
+        <div class="mt-4 text-center">
+            <div class="row">
+                <div class="col-md-4">
+                    <a href="{% url 'shop:my_orders' %}" class="text-decoration-none">
+                        <i class="bi bi-list-ul d-block mb-2" style="font-size: 1.5rem;"></i>
+                        <small>Мои заказы</small>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'shop:catalog' %}" class="text-decoration-none">
+                        <i class="bi bi-shop d-block mb-2" style="font-size: 1.5rem;"></i>
+                        <small>Магазин</small>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'core:contact' %}" class="text-decoration-none">
+                        <i class="bi bi-headset d-block mb-2" style="font-size: 1.5rem;"></i>
+                        <small>Поддержка</small>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

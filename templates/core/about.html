@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}О проекте - {{ site_settings.site_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Дополнительные стили для страницы О проекте */
+.about-hero {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-accent) 100%);
+    border-radius: var(--radius-xl);
+    padding: 4rem 2rem;
+    margin-bottom: 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.about-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(229, 62, 62, 0.1) 0%, transparent 70%);
+    animation: pulse 6s ease-in-out infinite;
+}
+
+.about-hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.mission-section {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    padding: 3rem 2rem;
+    margin: 3rem 0;
+    box-shadow: var(--shadow-sm);
+}
+
+.values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin: 3rem 0;
+}
+
+.value-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    text-align: center;
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.value-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--accent-color);
+    transform: scaleX(0);
+    transition: transform var(--transition-normal);
+}
+
+.value-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.value-card:hover::before {
+    transform: scaleX(1);
+}
+
+.value-icon {
+    font-size: 3rem;
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+    transition: transform var(--transition-normal);
+}
+
+.value-card:hover .value-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.contact-cta {
+    background: var(--bg-accent);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    text-align: center;
+    margin: 3rem 0;
+}
+
+@media (max-width: 768px) {
+    .about-hero {
+        padding: 2rem 1rem;
+    }
+    
+    .mission-section {
+        padding: 2rem 1rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .values-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Героическая секция -->
+<div class="about-hero">
+    <div class="about-hero-content">
+        <h1>
+            <span class="orthodox-cross"></span>
+            О проекте {{ site_settings.site_name }}
+        </h1>
+        <p class="lead">
+            Мы создаем духовное пространство для современного человека, где каждый может найти поддержку, вдохновение и добрые истории.
+        </p>
+    </div>
+</div>
+
+<!-- Миссия проекта -->
+<div class="mission-section">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <h2>Наша миссия</h2>
+            <p class="lead">
+                Делиться добрыми историями и духовными ценностями с людьми XXI века через современные технологии и качественный контент.
+            </p>
+            <p>
+                Мы верим, что добрые истории и духовные ценности никогда не устаревают, но способы их передачи должны соответствовать времени. 
+                Наш портал объединяет вековую мудрость добрых историй с современными возможностями интернета.
+            </p>
+        </div>
+        <div class="col-lg-4 text-center">
+            <i class="bi bi-heart-fill" style="font-size: 6rem; color: var(--accent-color); opacity: 0.3;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Наши ценности -->
+<div class="text-center mb-4">
+    <h2>Наши ценности</h2>
+    <p class="text-muted">Принципы, которыми мы руководствуемся в работе</p>
+</div>
+
+<div class="values-grid">
+    <div class="value-card">
+        <i class="bi bi-heart-fill value-icon"></i>
+        <h4>Любовь</h4>
+        <p>Основа всех наших материалов — христианская любовь к ближнему и стремление помочь каждому на пути духовного роста.</p>
+    </div>
+    
+    <div class="value-card">
+        <i class="bi bi-book-fill value-icon"></i>
+        <h4>Достоверность</h4>
+        <p>Весь контент основан на святоотеческом предании и проверяется духовными наставниками.</p>
+    </div>
+    
+    <div class="value-card">
+        <i class="bi bi-people-fill value-icon"></i>
+        <h4>Сообщество</h4>
+        <p>Мы создаем пространство для общения единомышленников и взаимной поддержки в вере.</p>
+    </div>
+    
+    <div class="value-card">
+        <i class="bi bi-lightbulb-fill value-icon"></i>
+        <h4>Современность</h4>
+        <p>Используем современные технологии для максимально удобного доступа к духовным сокровищам.</p>
+    </div>
+</div>
+
+<!-- История проекта -->
+<div class="text-center mb-4 mt-5">
+    <h2>Как мы развиваемся</h2>
+    <p class="text-muted">Основные этапы развития портала</p>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-rocket-takeoff me-3" style="font-size: 2rem; color: var(--accent-color);"></i>
+                    <h5 class="card-title mb-0">Начало пути</h5>
+                </div>
+                <p class="card-text">
+                    В {{ founding_year|default:"2020" }} году мы начали с простой идеи: сделать православную духовность доступной через интернет. 
+                    Первые материалы были опубликованы группой энтузиастов.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-graph-up me-3" style="font-size: 2rem; color: var(--books-color);"></i>
+                    <h5 class="card-title mb-0">Развитие</h5>
+                </div>
+                <p class="card-text">
+                    Постепенно мы расширили команду, добавили новые разделы и улучшили функциональность. 
+                    Сегодня портал содержит {{ total_stories|add:total_books|add:total_audio }} материалов.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Призыв к действию -->
+<div class="contact-cta">
+    <h3>Присоединяйтесь к нашей миссии</h3>
+    <p>Хотите стать частью команды или предложить свои материалы?</p>
+    <div class="mt-3">
+        <a href="#contact" class="btn btn-primary me-3">
+            <i class="bi bi-envelope me-2"></i>
+            Связаться с нами
+        </a>
+        <a href="mailto:{{ site_settings.contact_email }}" class="btn btn-outline-primary">
+            <i class="bi bi-at me-2"></i>
+            {{ site_settings.contact_email }}
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация появления карточек
+    const cardObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 100);
+                cardObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    // Подготавливаем карточки к анимации
+    document.querySelectorAll('.value-card, .card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'all 0.6s ease-out';
+        cardObserver.observe(card);
+    });
+});
+</script>
+{% endblock %}

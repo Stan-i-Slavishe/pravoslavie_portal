@@ -1,0 +1,411 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Аудио-контент - {{ site_settings.site_name }}{% endblock %}
+
+{% block description %}Проповеди, акафисты, духовная музыка и аудиокниги{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Стили для страницы аудио */
+.audio-hero {
+    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+    border-radius: 1rem;
+    padding: 3rem 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: white;
+}
+
+.audio-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.audio-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border-color: #9b59b6;
+}
+
+.audio-cover {
+    position: relative;
+    aspect-ratio: 1;
+    background: #f5f5f5;
+    overflow: hidden;
+}
+
+.audio-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.play-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(155, 89, 182, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.play-button:hover {
+    background: rgba(155, 89, 182, 1);
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.audio-content {
+    padding: 1.5rem;
+}
+
+.audio-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+}
+
+.audio-author {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    font-style: italic;
+}
+
+.audio-duration {
+    color: #9b59b6;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.audio-player {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-top: 1px solid #e0e0e0;
+    padding: 1rem;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+}
+
+.audio-player.active {
+    transform: translateY(0);
+}
+
+.player-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.player-info {
+    flex: 1;
+}
+
+.player-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.player-author {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.control-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #9b59b6;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+    background: #f8f9fa;
+    transform: scale(1.1);
+}
+
+.progress-container {
+    flex: 2;
+    margin: 0 1rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #9b59b6;
+    border-radius: 2px;
+    transition: width 0.1s ease;
+}
+
+.time-display {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Героическая секция -->
+<div class="audio-hero">
+    <h1>
+        <i class="bi bi-music-note-beamed me-2"></i>
+        Аудио-контент
+    </h1>
+    <p class="lead mb-0">
+        Проповеди, акафисты, духовная музыка и аудиокниги
+    </p>
+</div>
+
+<!-- Фильтры -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="input-group">
+            <span class="input-group-text">
+                <i class="bi bi-search"></i>
+            </span>
+            <input type="text" class="form-control" placeholder="Поиск аудио...">
+        </div>
+    </div>
+    <div class="col-md-3">
+        <select class="form-select">
+            <option>Все категории</option>
+            <option>Проповеди</option>
+            <option>Акафисты</option>
+            <option>Духовная музыка</option>
+            <option>Аудиокниги</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select class="form-select">
+            <option>Сначала новые</option>
+            <option>По популярности</option>
+            <option>По алфавиту</option>
+            <option>По длительности</option>
+        </select>
+    </div>
+</div>
+
+<!-- Список аудио -->
+<div class="row g-4">
+    <!-- Пример аудио-карточки (для демонстрации) -->
+    <div class="col-lg-3 col-md-4 col-sm-6">
+        <div class="audio-card">
+            <div class="audio-cover">
+                <div class="d-flex align-items-center justify-content-center h-100" 
+                     style="background: linear-gradient(45deg, #9b59b6, #8e44ad);">
+                    <i class="bi bi-music-note" style="font-size: 2rem; color: white; opacity: 0.7;"></i>
+                </div>
+                
+                <button class="play-button" onclick="playAudio('Акафист Божией Матери', 'Церковный хор', '#')">
+                    <i class="bi bi-play-fill"></i>
+                </button>
+            </div>
+            
+            <div class="audio-content">
+                <h3 class="audio-title">Акафист Божией Матери</h3>
+                <div class="audio-author">Церковный хор</div>
+                <div class="audio-duration">
+                    <i class="bi bi-clock me-1"></i>
+                    45:30
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-4 col-sm-6">
+        <div class="audio-card">
+            <div class="audio-cover">
+                <div class="d-flex align-items-center justify-content-center h-100" 
+                     style="background: linear-gradient(45deg, #9b59b6, #8e44ad);">
+                    <i class="bi bi-person-video3" style="font-size: 2rem; color: white; opacity: 0.7;"></i>
+                </div>
+                
+                <button class="play-button" onclick="playAudio('О молитве и посте', 'Протоиерей Александр', '#')">
+                    <i class="bi bi-play-fill"></i>
+                </button>
+            </div>
+            
+            <div class="audio-content">
+                <h3 class="audio-title">О молитве и посте</h3>
+                <div class="audio-author">Протоиерей Александр</div>
+                <div class="audio-duration">
+                    <i class="bi bi-clock me-1"></i>
+                    28:15
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-4 col-sm-6">
+        <div class="audio-card">
+            <div class="audio-cover">
+                <div class="d-flex align-items-center justify-content-center h-100" 
+                     style="background: linear-gradient(45deg, #9b59b6, #8e44ad);">
+                    <i class="bi bi-book" style="font-size: 2rem; color: white; opacity: 0.7;"></i>
+                </div>
+                
+                <button class="play-button" onclick="playAudio('Житие святого Серафима', 'Чтец Михаил', '#')">
+                    <i class="bi bi-play-fill"></i>
+                </button>
+            </div>
+            
+            <div class="audio-content">
+                <h3 class="audio-title">Житие святого Серафима</h3>
+                <div class="audio-author">Чтец Михаил</div>
+                <div class="audio-duration">
+                    <i class="bi bi-clock me-1"></i>
+                    1:12:45
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Заглушка для пустого состояния -->
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="bi bi-music-note-beamed" style="font-size: 4rem; color: #ccc;"></i>
+            <h3 class="mt-3">Раздел в разработке</h3>
+            <p class="text-muted">
+                Скоро здесь появится богатая коллекция духовного аудио-контента:<br>
+                проповеди, акафисты, духовная музыка и аудиокниги.
+            </p>
+            <a href="{% url 'core:home' %}" class="btn btn-primary">
+                <i class="bi bi-arrow-left me-1"></i>
+                На главную
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Аудио плеер -->
+<div class="audio-player" id="audioPlayer">
+    <div class="container">
+        <div class="player-controls">
+            <div class="player-info">
+                <div class="player-title" id="playerTitle">Название трека</div>
+                <div class="player-author" id="playerAuthor">Автор</div>
+            </div>
+            
+            <button class="control-btn" id="playPauseBtn">
+                <i class="bi bi-play-fill"></i>
+            </button>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="time-display">
+                    <span id="currentTime">0:00</span> / <span id="totalTime">0:00</span>
+                </div>
+            </div>
+            
+            <button class="control-btn" onclick="closePlayer()">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Скрытый аудио элемент -->
+    <audio id="audioElement" preload="none"></audio>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentAudio = null;
+let isPlaying = false;
+
+function playAudio(title, author, audioUrl) {
+    const player = document.getElementById('audioPlayer');
+    const audioElement = document.getElementById('audioElement');
+    const playerTitle = document.getElementById('playerTitle');
+    const playerAuthor = document.getElementById('playerAuthor');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    
+    // Обновляем информацию о треке
+    playerTitle.textContent = title;
+    playerAuthor.textContent = author;
+    
+    // Показываем плеер
+    player.classList.add('active');
+    
+    // Для демонстрации используем заглушку
+    console.log(`Playing: ${title} by ${author}`);
+    
+    // В реальном приложении здесь будет:
+    // audioElement.src = audioUrl;
+    // audioElement.play();
+    
+    // Симуляция воспроизведения
+    if (!isPlaying) {
+        playPauseBtn.innerHTML = '<i class="bi bi-pause-fill"></i>';
+        isPlaying = true;
+    }
+}
+
+function togglePlayPause() {
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    
+    if (isPlaying) {
+        playPauseBtn.innerHTML = '<i class="bi bi-play-fill"></i>';
+        isPlaying = false;
+        // audioElement.pause();
+    } else {
+        playPauseBtn.innerHTML = '<i class="bi bi-pause-fill"></i>';
+        isPlaying = true;
+        // audioElement.play();
+    }
+}
+
+function closePlayer() {
+    const player = document.getElementById('audioPlayer');
+    player.classList.remove('active');
+    isPlaying = false;
+    
+    // Останавливаем воспроизведение
+    // audioElement.pause();
+    // audioElement.currentTime = 0;
+}
+
+// Обработчики событий
+document.addEventListener('DOMContentLoaded', function() {
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    playPauseBtn.addEventListener('click', togglePlayPause);
+    
+    // Обработка прогресс-бара (для будущей реализации)
+    const progressBar = document.getElementById('progressBar');
+    progressBar.addEventListener('click', function(e) {
+        // Здесь будет логика перемотки
+        console.log('Seek to position:', e.offsetX / this.offsetWidth);
+    });
+});
+</script>
+{% endblock %}

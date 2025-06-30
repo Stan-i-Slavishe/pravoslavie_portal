@@ -1,0 +1,550 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Магазин - {{ site_settings.site_name }}{% endblock %}
+
+{% block description %}Православные книги, аудио и подписки в интернет-магазине{% endblock %}
+
+{% block extra_css %}
+<style>
+.shop-hero {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    border-radius: 1rem;
+    padding: 3rem 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.shop-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: pulse 4s ease-in-out infinite;
+}
+
+.shop-hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.product-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+    position: relative;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border-color: #3498db;
+}
+
+.product-image {
+    position: relative;
+    aspect-ratio: 3/4;
+    background: #f5f5f5;
+    overflow: hidden;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image img {
+    transform: scale(1.05);
+}
+
+.product-price-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #e74c3c;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.product-price-badge.free {
+    background: #27ae60;
+}
+
+.product-type-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.product-content {
+    padding: 1.5rem;
+}
+
+.product-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.product-description {
+    color: #666;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.product-price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #e74c3c;
+    margin-bottom: 1rem;
+}
+
+.product-price.free {
+    color: #27ae60;
+}
+
+.filter-section {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Исправление выравнивания поля поиска и кнопки */
+.filter-section .input-group {
+    align-items: stretch !important;
+    display: flex !important;
+}
+
+.filter-section .input-group > * {
+    height: 42px !important;
+    line-height: 1.5 !important;
+    border: 1px solid #ced4da !important;
+    margin: 0 !important;
+    vertical-align: middle !important;
+}
+
+.filter-section .input-group .form-control {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 1rem !important;
+    border-radius: 0 !important;
+}
+
+.filter-section .input-group .input-group-text {
+    padding: 0.5rem 0.75rem !important;
+    background-color: #e9ecef !important;
+    border-right: 0 !important;
+    border-top-left-radius: 0.375rem !important;
+    border-bottom-left-radius: 0.375rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.filter-section .input-group .input-group-text i {
+    font-size: 1.1rem !important;
+    color: #6c757d !important;
+}
+
+.filter-section .input-group .btn {
+    padding: 0.5rem 1rem !important;
+    font-size: 1rem !important;
+    border-left: 0 !important;
+    border-top-right-radius: 0.375rem !important;
+    border-bottom-right-radius: 0.375rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.filter-section .input-group .btn:focus,
+.filter-section .input-group .form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25) !important;
+}
+
+/* Дополнительные стили для формы поиска */
+.search-form .input-group {
+    border-radius: 0.375rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.search-form .input-group > * {
+    border-color: #ced4da;
+    box-sizing: border-box;
+}
+
+.search-form .form-control {
+    border-left: 1px solid #ced4da;
+    border-right: 1px solid #ced4da;
+    border-radius: 0;
+}
+
+.search-form .input-group-text {
+    border-right: none;
+}
+
+.search-form .btn {
+    border-left: none;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid #e0e0e0;
+    background: #fff;
+    color: #333;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    background: #3498db;
+    border-color: #3498db;
+    color: white;
+    text-decoration: none;
+}
+
+.cart-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #3498db;
+    color: white;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    z-index: 1000;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.cart-indicator:hover {
+    transform: scale(1.1);
+    color: white;
+    text-decoration: none;
+}
+
+.cart-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    min-width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+@media (max-width: 768px) {
+    .shop-hero {
+        padding: 2rem 1rem;
+    }
+    
+    .filter-section {
+        padding: 1rem;
+    }
+    
+    .cart-indicator {
+        width: 45px;
+        height: 45px;
+        font-size: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Корзина (индикатор) -->
+{% if user.is_authenticated %}
+<a href="{% url 'shop:cart' %}" class="cart-indicator">
+    <i class="bi bi-cart3"></i>
+    <span class="cart-count" id="cart-count">0</span>
+</a>
+{% endif %}
+
+<!-- Героическая секция -->
+<div class="shop-hero">
+    <div class="shop-hero-content">
+        <h1>
+            <i class="bi bi-shop me-2"></i>
+            Магазин
+        </h1>
+        <p class="lead mb-0">
+            Православные книги, аудио и подписки
+        </p>
+    </div>
+</div>
+
+<!-- Фильтры -->
+<div class="filter-section">
+    <div class="filter-buttons">
+        <a href="{% url 'shop:catalog' %}" 
+           class="filter-btn {% if not selected_type %}active{% endif %}">
+            Все товары
+        </a>
+        <a href="?type=book" 
+           class="filter-btn {% if selected_type == 'book' %}active{% endif %}">
+            <i class="bi bi-book me-1"></i>
+            Книги
+        </a>
+        <a href="?type=audio" 
+           class="filter-btn {% if selected_type == 'audio' %}active{% endif %}">
+            <i class="bi bi-music-note me-1"></i>
+            Аудио
+        </a>
+        <a href="?type=subscription" 
+           class="filter-btn {% if selected_type == 'subscription' %}active{% endif %}">
+            <i class="bi bi-star me-1"></i>
+            Подписки
+        </a>
+    </div>
+    
+    <form method="get" action="" class="search-form">
+        {% if selected_type %}
+            <input type="hidden" name="type" value="{{ selected_type }}">
+        {% endif %}
+        <div class="input-group">
+            <span class="input-group-text">
+                <i class="bi bi-search"></i>
+            </span>
+            <input type="text" 
+                   class="form-control" 
+                   name="search" 
+                   placeholder="Поиск товаров..."
+                   value="{{ request.GET.search }}">
+            <button type="submit" class="btn btn-primary">Найти</button>
+        </div>
+    </form>
+</div>
+
+<!-- Каталог товаров -->
+{% if products %}
+    <div class="row g-4">
+        {% for product in products %}
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <div class="product-card">
+                    <div class="product-image">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.title }}">
+                        {% elif product.content_object.cover %}
+                            <img src="{{ product.content_object.cover.url }}" alt="{{ product.title }}">
+                        {% else %}
+                            <div class="d-flex align-items-center justify-content-center h-100" 
+                                 style="background: linear-gradient(45deg, #3498db, #2980b9);">
+                                <i class="bi bi-{% if product.product_type == 'book' %}book{% elif product.product_type == 'audio' %}music-note{% else %}star{% endif %}" 
+                                   style="font-size: 3rem; color: white; opacity: 0.7;"></i>
+                            </div>
+                        {% endif %}
+                        
+                        {% if product.price > 0 %}
+                            <div class="product-price-badge">{{ product.price }}₽</div>
+                        {% else %}
+                            <div class="product-price-badge free">Бесплатно</div>
+                        {% endif %}
+                        
+                        <div class="product-type-badge">{{ product.get_product_type_display }}</div>
+                    </div>
+                    
+                    <div class="product-content">
+                        <h3 class="product-title">
+                            <a href="{% url 'shop:product_detail' product_id=product.id %}" class="text-decoration-none">
+                                {{ product.title }}
+                            </a>
+                        </h3>
+                        
+                        {% if product.description %}
+                            <p class="product-description">{{ product.description }}</p>
+                        {% endif %}
+                        
+                        <div class="product-price {% if product.price == 0 %}free{% endif %}">
+                            {% if product.price > 0 %}
+                                {{ product.price }}₽
+                            {% else %}
+                                Бесплатно
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'shop:add_to_cart' product_id=product.id %}" 
+                                   class="btn btn-primary btn-add-to-cart"
+                                   data-product-id="{{ product.id }}">
+                                    <i class="bi bi-cart-plus me-1"></i>
+                                    В корзину
+                                </a>
+                            {% else %}
+                                <a href="{% url 'account_login' %}" class="btn btn-outline-primary">
+                                    <i class="bi bi-person me-1"></i>
+                                    Войти для покупки
+                                </a>
+                            {% endif %}
+                            
+                            <a href="{% url 'shop:product_detail' product_id=product.id %}" 
+                               class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-eye me-1"></i>
+                                Подробнее
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-search" style="font-size: 4rem; color: #ccc;"></i>
+        <h3 class="mt-3">Товары не найдены</h3>
+        <p class="text-muted">
+            {% if request.GET.search %}
+                По запросу "{{ request.GET.search }}" ничего не найдено.
+            {% else %}
+                В данной категории пока нет товаров.
+            {% endif %}
+        </p>
+        <a href="{% url 'shop:catalog' %}" class="btn btn-primary">
+            <i class="bi bi-arrow-left me-1"></i>
+            Все товары
+        </a>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обновляем счетчик корзины при загрузке
+    updateCartCount();
+    
+    // Обработка добавления в корзину
+    document.querySelectorAll('.btn-add-to-cart').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const productId = this.dataset.productId;
+            const url = this.href;
+            
+            // Блокируем кнопку
+            this.disabled = true;
+            this.innerHTML = '<i class="bi bi-hourglass me-1"></i> Добавляем...';
+            
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Успешно добавлено
+                    this.innerHTML = '<i class="bi bi-check me-1"></i> Добавлено';
+                    this.classList.remove('btn-primary');
+                    this.classList.add('btn-success');
+                    
+                    // Обновляем счетчик корзины
+                    updateCartCount();
+                    
+                    // Возвращаем кнопку через 2 секунды
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="bi bi-cart-plus me-1"></i> В корзину';
+                        this.classList.remove('btn-success');
+                        this.classList.add('btn-primary');
+                        this.disabled = false;
+                    }, 2000);
+                } else {
+                    // Ошибка
+                    this.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i> Ошибка';
+                    this.classList.add('btn-danger');
+                    this.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                this.innerHTML = '<i class="bi bi-cart-plus me-1"></i> В корзину';
+                this.disabled = false;
+            });
+        });
+    });
+    
+    function updateCartCount() {
+        fetch('{% url "shop:cart_count" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const countElement = document.getElementById('cart-count');
+            if (countElement) {
+                countElement.textContent = data.count;
+                if (data.count > 0) {
+                    countElement.style.display = 'flex';
+                } else {
+                    countElement.style.display = 'none';
+                }
+            }
+        })
+        .catch(error => console.error('Ошибка обновления корзины:', error));
+    }
+});
+</script>
+{% endblock %}

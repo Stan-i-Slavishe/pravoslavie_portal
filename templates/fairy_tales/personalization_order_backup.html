@@ -1,0 +1,907 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Персонализация сказки "{{ fairy_tale.title }}"{% endblock %}
+
+{% block extra_css %}
+<style>
+    .personalization-hero {
+        background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .form-section {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .price-summary {
+        background: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-radius: 15px;
+        padding: 1.5rem;
+        position: sticky;
+        top: 2rem;
+    }
+    
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .price-row:last-child {
+        border-bottom: none;
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin-top: 0.5rem;
+        padding-top: 1rem;
+        border-top: 2px solid #dee2e6;
+    }
+    
+    .preview-section {
+        background: linear-gradient(135deg, #e3f2fd 0%, #e0f7fa 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin: 2rem 0;
+        border-left: 4px solid #4ecdc4;
+    }
+    
+    .preview-text {
+        font-style: italic;
+        line-height: 1.6;
+        color: #5a6c7d;
+    }
+    
+    .option-card {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 1rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .option-card:hover {
+        border-color: #4ecdc4;
+        box-shadow: 0 2px 10px rgba(78, 205, 196, 0.1);
+    }
+    
+    .option-card.selected {
+        border-color: #4ecdc4;
+        background: #f0fffe;
+    }
+    
+    .option-price {
+        font-weight: bold;
+        color: #4ecdc4;
+    }
+    
+    .form-step {
+        display: none;
+    }
+    
+    .form-step.active {
+        display: block;
+    }
+    
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+    
+    .step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 1rem;
+        font-weight: bold;
+        position: relative;
+    }
+    
+    .step.active {
+        background: #4ecdc4;
+        color: white;
+    }
+    
+    .step.completed {
+        background: #28a745;
+        color: white;
+    }
+    
+    .step::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 100%;
+        width: 2rem;
+        height: 2px;
+        background: #e9ecef;
+        z-index: -1;
+    }
+    
+    .step:last-child::after {
+        display: none;
+    }
+    
+    .step.completed::after {
+        background: #28a745;
+    }
+    
+    .character-count {
+        font-size: 0.875rem;
+        color: #6c757d;
+        text-align: right;
+        margin-top: 0.25rem;
+    }
+    
+    /* Стили для валидации */
+    .is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    }
+    
+    .is-valid {
+        border-color: #28a745 !important;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+    }
+    
+    .form-control.is-invalid:focus,
+    .form-select.is-invalid:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="personalization-hero">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb bg-transparent p-0 mb-2">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'fairy_tales:list' %}" class="text-white-50">Сказки</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'fairy_tales:detail' fairy_tale.slug %}" class="text-white-50">
+                                {{ fairy_tale.title }}
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">
+                            Персонализация
+                        </li>
+                    </ol>
+                </nav>
+                
+                <h1 class="display-6 fw-bold mb-3">Создаем сказку для вашего ребенка</h1>
+                <p class="lead">Заполните информацию, и мы создадим уникальную терапевтическую сказку</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <form method="post" id="personalizationForm">
+        {% csrf_token %}
+        <div class="row">
+            <!-- Основная форма -->
+            <div class="col-lg-8">
+                <!-- Индикатор шагов -->
+                <div class="step-indicator">
+                    <div class="step active" data-step="1">1</div>
+                    <div class="step" data-step="2">2</div>
+                    <div class="step" data-step="3">3</div>
+                    <div class="step" data-step="4">4</div>
+                </div>
+                
+                <!-- Шаг 1: Информация о ребенке -->
+                <div class="form-step active" id="step1">
+                    <div class="form-section">
+                        <h3 class="mb-4">
+                            <i class="bi bi-person-heart text-primary"></i>
+                            Расскажите о вашем ребенке
+                        </h3>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="child_name" class="form-label">Имя ребенка <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control form-control-lg" 
+                                           id="child_name" name="child_name" required
+                                           placeholder="Например: Маша">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="child_age" class="form-label">Возраст</label>
+                                    <select class="form-select form-select-lg" id="child_age" name="child_age">
+                                        <option value="">Выберите</option>
+                                        <option value="0+">0+ месяцев</option>
+                                        <option value="1">1 год</option>
+                                        <option value="2">2 года</option>
+                                        <option value="3">3 года</option>
+                                        <option value="4">4 года</option>
+                                        <option value="5">5 лет</option>
+                                        <option value="6">6 лет</option>
+                                        <option value="7">7 лет</option>
+                                        <option value="8">8 лет</option>
+                                        <option value="9">9 лет</option>
+                                        <option value="10">10 лет</option>
+                                        <option value="11">11 лет</option>
+                                        <option value="12">12 лет</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="child_gender" class="form-label">Пол</label>
+                                    <select class="form-select form-select-lg" id="child_gender" name="child_gender">
+                                        <option value="">Не указано</option>
+                                        <option value="boy">Мальчик</option>
+                                        <option value="girl">Девочка</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="child_interests" class="form-label">Увлечения и интересы ребенка</label>
+                            <textarea class="form-control" id="child_interests" name="child_interests" 
+                                      rows="3" maxlength="500"
+                                      placeholder="Например: любит рисовать, играть в футбол, читать книги про динозавров..."></textarea>
+                            <div class="character-count">0/500 символов</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Шаг 2: Проблема и цели -->
+                <div class="form-step" id="step2">
+                    <div class="form-section">
+                        <h3 class="mb-4">
+                            <i class="bi bi-heart-pulse text-primary"></i>
+                            Какую проблему решаем?
+                        </h3>
+                        
+                        <div class="mb-4">
+                            <label for="main_problem" class="form-label">Основная проблема <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="main_problem" name="main_problem" 
+                                      rows="4" required maxlength="1000"
+                                      placeholder="Опишите, с какой проблемой или ситуацией сталкивается ребенок. Например: боится темноты, не хочет идти в детский сад, капризничает..."></textarea>
+                            <div class="character-count">0/1000 символов</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Шаг 3: Семейная ситуация -->
+                <div class="form-step" id="step3">
+                    <div class="form-section">
+                        <h3 class="mb-4">
+                            <i class="bi bi-house-heart text-primary"></i>
+                            Семейная ситуация
+                        </h3>
+                        
+                        <div class="mb-4">
+                            <label for="family_situation" class="form-label">Расскажите о семье</label>
+                            <textarea class="form-control" id="family_situation" name="family_situation" 
+                                      rows="4" maxlength="1000"
+                                      placeholder="Состав семьи, особенности отношений, что важно учесть в сказке..."></textarea>
+                            <div class="character-count">0/1000 символов</div>
+                            <small class="form-text text-muted">
+                                Эта информация поможет сделать сказку более точной и эффективной
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="special_requests" class="form-label">Особые пожелания</label>
+                            <textarea class="form-control" id="special_requests" name="special_requests" 
+                                      rows="3" maxlength="500"
+                                      placeholder="Любые дополнительные пожелания к сказке..."></textarea>
+                            <div class="character-count">0/500 символов</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Шаг 4: Контакты и опции -->
+                <div class="form-step" id="step4">
+                    <!-- Дополнительные опции -->
+                    <div class="form-section">
+                        <h3 class="mb-4">
+                            <i class="bi bi-gear text-primary"></i>
+                            Дополнительные опции
+                        </h3>
+                        
+                        <div class="row">
+                            {% if fairy_tale.has_audio_option %}
+                            <div class="col-md-6 mb-3">
+                                <div class="option-card" onclick="toggleOption('audio')">
+                                    <div class="d-flex align-items-center">
+                                        <input type="checkbox" class="form-check-input me-3" 
+                                               id="include_audio" name="include_audio">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">
+                                                <i class="bi bi-volume-up text-primary"></i>
+                                                Профессиональная озвучка
+                                            </h6>
+                                            <p class="mb-1 small text-muted">
+                                                Сказка будет озвучена профессиональным диктором
+                                            </p>
+                                            <div class="option-price">+{{ fairy_tale.audio_price|floatformat:0 }} ₽</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if fairy_tale.has_illustration_option %}
+                            <div class="col-md-6 mb-3">
+                                <div class="option-card" onclick="toggleOption('illustrations')">
+                                    <div class="d-flex align-items-center">
+                                        <input type="checkbox" class="form-check-input me-3" 
+                                               id="include_illustrations" name="include_illustrations">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">
+                                                <i class="bi bi-image text-warning"></i>
+                                                Красочные иллюстрации
+                                            </h6>
+                                            <p class="mb-1 small text-muted">
+                                                Уникальные иллюстрации к вашей сказке
+                                            </p>
+                                            <div class="option-price">+{{ fairy_tale.illustration_price|floatformat:0 }} ₽</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Контактные данные -->
+                    <div class="form-section">
+                        <h3 class="mb-4">
+                            <i class="bi bi-person-lines-fill text-primary"></i>
+                            Контактные данные
+                        </h3>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="customer_name" class="form-label">Ваше имя <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="customer_name" 
+                                           name="customer_name" required
+                                           {% if user.is_authenticated %}
+                                           value="{{ user.first_name|default:user.username }}"
+                                           {% endif %}>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="customer_email" class="form-label">Email <span class="text-danger">*</span></label>
+                                    <input type="email" class="form-control" id="customer_email" 
+                                           name="customer_email" required
+                                           {% if user.is_authenticated %}
+                                           value="{{ user.email }}"
+                                           {% endif %}>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="customer_phone" class="form-label">Телефон</label>
+                            <input type="tel" class="form-control" id="customer_phone" 
+                                   name="customer_phone" placeholder="+7 (___) ___-__-__">
+                            <small class="form-text text-muted">
+                                Указать телефон необязательно, но это ускорит обработку заказа
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Навигация по шагам -->
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn btn-outline-secondary" id="prevBtn" style="display: none;" onclick="handlePrevStep()">
+                        <i class="bi bi-arrow-left"></i> Назад
+                    </button>
+                    
+                    <div class="ms-auto">
+                        <button type="button" class="btn btn-primary" id="nextBtn" onclick="handleNextStep()">
+                            Далее <i class="bi bi-arrow-right"></i>
+                        </button>
+                        <button type="submit" class="btn btn-success" id="submitBtn" style="display: none;">
+                            <i class="bi bi-check-circle"></i> Оформить заказ
+                        </button>
+                        <!-- Отладочная кнопка -->
+                        <button type="button" class="btn btn-outline-info btn-sm ms-2" onclick="handleDebug()" title="Отладка">
+                            <i class="bi bi-bug"></i>
+                        </button>
+                        <!-- Принудительный переход -->
+                        <button type="button" class="btn btn-outline-warning btn-sm ms-1" onclick="handleForceNext()" title="Принудительно далее">
+                            <i class="bi bi-skip-forward"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Боковая панель -->
+            <div class="col-lg-4">
+                <div class="price-summary">
+                    <h5 class="mb-3">Сводка заказа</h5>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-muted">{{ fairy_tale.title }}</h6>
+                        <small class="text-muted">{{ fairy_tale.short_description|truncatechars:80 }}</small>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Расчет стоимости -->
+                    <div class="price-breakdown">
+                        <div class="price-row">
+                            <span>Персонализация:</span>
+                            <span id="basePrice">{{ fairy_tale.base_price|floatformat:0 }} ₽</span>
+                        </div>
+                        
+                        {% if fairy_tale.has_audio_option %}
+                        <div class="price-row" id="audioPriceRow" style="display: none;">
+                            <span>Озвучка:</span>
+                            <span id="audioPrice">{{ fairy_tale.audio_price|floatformat:0 }} ₽</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if fairy_tale.has_illustration_option %}
+                        <div class="price-row" id="illustrationPriceRow" style="display: none;">
+                            <span>Иллюстрации:</span>
+                            <span id="illustrationPrice">{{ fairy_tale.illustration_price|floatformat:0 }} ₽</span>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="price-row">
+                            <span>Итого:</span>
+                            <span id="totalPrice">{{ fairy_tale.base_price|floatformat:0 }} ₽</span>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Информация о выполнении -->
+                    <div class="small text-muted">
+                        <div class="mb-2">
+                            <i class="bi bi-clock text-primary"></i>
+                            <strong>Срок выполнения:</strong> 1-3 рабочих дня
+                        </div>
+                        <div class="mb-2">
+                            <i class="bi bi-envelope text-primary"></i>
+                            <strong>Доставка:</strong> на указанный email
+                        </div>
+                        <div>
+                            <i class="bi bi-shield-check text-success"></i>
+                            <strong>Гарантия:</strong> возврат средств при неудовлетворенности
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Предпросмотр сказки -->
+                <div class="preview-section" id="previewSection" style="display: none;">
+                    <h6 class="mb-3">
+                        <i class="bi bi-eye text-primary"></i>
+                        Предпросмотр сказки
+                    </h6>
+                    <div class="preview-text" id="previewText">
+                        <!-- Здесь будет предпросмотр -->
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="updatePreview()">
+                        Обновить предпросмотр
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Глобальные обработчики для кнопок
+function handleNextStep() {
+    console.log('Нажата кнопка "Далее"');
+    try {
+        changeStep(1);
+    } catch (e) {
+        console.error('Ошибка при переходе на следующий шаг:', e);
+    }
+}
+
+function handlePrevStep() {
+    console.log('Нажата кнопка "Назад"');
+    try {
+        changeStep(-1);
+    } catch (e) {
+        console.error('Ошибка при возврате на предыдущий шаг:', e);
+    }
+}
+
+function handleDebug() {
+    console.log('Нажата кнопка отладки');
+    try {
+        debugValidation();
+    } catch (e) {
+        console.error('Ошибка при отладке:', e);
+    }
+}
+
+function handleForceNext() {
+    console.log('Нажата кнопка принудительного перехода');
+    try {
+        forceNextStep();
+    } catch (e) {
+        console.error('Ошибка при принудительном переходе:', e);
+    }
+}
+let currentStep = 1;
+const totalSteps = 4;
+
+// Цены
+const prices = {
+    base: {{ fairy_tale.base_price|floatformat:2 }},
+    audio: {{ fairy_tale.audio_price|floatformat:2 }},
+    illustration: {{ fairy_tale.illustration_price|floatformat:2 }}
+};
+
+// Инициализация
+document.addEventListener('DOMContentLoaded', function() {
+    updateStepDisplay();
+    updatePrice();
+    setupCharacterCounters();
+    setupFormValidation();
+});
+
+// Навигация по шагам
+function changeStep(direction) {
+    console.log(`Попытка перехода на шаг: ${currentStep} + ${direction}`);
+    
+    if (direction === 1) {
+        console.log('Проверяем валидацию текущего шага...');
+        if (!validateCurrentStep()) {
+            console.log('Валидация не прошла, остаемся на текущем шаге');
+            return;
+        }
+        console.log('Валидация прошла успешно');
+    }
+    
+    const newStep = currentStep + direction;
+    console.log(`Переходим с шага ${currentStep} на шаг ${newStep}`);
+    
+    if (newStep >= 1 && newStep <= totalSteps) {
+        currentStep = newStep;
+        updateStepDisplay();
+        
+        // Обновляем предпросмотр на 3-м шаге
+        if (currentStep >= 3) {
+            updatePreview();
+        }
+        
+        console.log(`Успешно перешли на шаг ${currentStep}`);
+    } else {
+        console.log(`Недопустимый шаг: ${newStep}`);
+    }
+}
+
+function updateStepDisplay() {
+    console.log(`Обновляем отображение для шага: ${currentStep}`);
+    
+    // Скрываем все шаги
+    document.querySelectorAll('.form-step').forEach((step, index) => {
+        step.classList.remove('active');
+        console.log(`Скрываем шаг ${index + 1}`);
+    });
+    
+    // Показываем текущий шаг
+    const currentStepElement = document.getElementById(`step${currentStep}`);
+    if (currentStepElement) {
+        currentStepElement.classList.add('active');
+        console.log(`Показываем шаг ${currentStep}`);
+    } else {
+        console.error(`Не найден элемент step${currentStep}`);
+    }
+    
+    // Обновляем индикаторы
+    document.querySelectorAll('.step').forEach((step, index) => {
+        const stepNum = index + 1;
+        step.classList.remove('active', 'completed');
+        
+        if (stepNum < currentStep) {
+            step.classList.add('completed');
+        } else if (stepNum === currentStep) {
+            step.classList.add('active');
+        }
+    });
+    
+    // Управление кнопками
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    prevBtn.style.display = currentStep > 1 ? 'block' : 'none';
+    
+    if (currentStep < totalSteps) {
+        nextBtn.style.display = 'block';
+        submitBtn.style.display = 'none';
+    } else {
+        nextBtn.style.display = 'none';
+        submitBtn.style.display = 'block';
+    }
+    
+    // Скролл к началу формы
+    document.querySelector('.step-indicator').scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
+// Остальной JavaScript код...
+// Валидация, обновление цены, предпросмотр и т.д.
+// Функция для показа уведомлений
+function showNotification(message, type = 'info') {
+    // Создаем элемент уведомления
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    notification.style.top = '20px';
+    notification.style.right = '20px';
+    notification.style.zIndex = '9999';
+    notification.style.minWidth = '300px';
+    
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Автоматически убираем через 5 секунд
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Валидация текущего шага
+function validateCurrentStep() {
+    const currentStepElement = document.getElementById(`step${currentStep}`);
+    const requiredFields = currentStepElement.querySelectorAll('input[required], textarea[required], select[required]');
+    let isValid = true;
+    let firstInvalidField = null;
+    
+    console.log(`Проверяем шаг ${currentStep}, найдено полей: ${requiredFields.length}`);
+    
+    requiredFields.forEach(field => {
+        // Очищаем предыдущие классы
+        field.classList.remove('is-invalid', 'is-valid');
+        
+        const value = field.value ? field.value.trim() : '';
+        console.log(`Поле ${field.name || field.id}: "${value}"`);
+        
+        if (!value) {
+            field.classList.add('is-invalid');
+            isValid = false;
+            if (!firstInvalidField) {
+                firstInvalidField = field;
+            }
+        } else {
+            field.classList.add('is-valid');
+        }
+    });
+    
+    if (!isValid) {
+        // Прокручиваем к первому невалидному полю
+        if (firstInvalidField) {
+            firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => firstInvalidField.focus(), 300);
+        }
+        
+        showNotification('Пожалуйста, заполните все обязательные поля', 'warning');
+    }
+    
+    return isValid;
+}
+
+// Отладочная функция
+function debugValidation() {
+    const currentStepElement = document.getElementById(`step${currentStep}`);
+    const allFields = currentStepElement.querySelectorAll('input, textarea, select');
+    const requiredFields = currentStepElement.querySelectorAll('input[required], textarea[required], select[required]');
+    
+    console.log('=== Отладка валидации ===');
+    console.log(`Текущий шаг: ${currentStep}`);
+    console.log(`Всего полей: ${allFields.length}`);
+    console.log(`Обязательных полей: ${requiredFields.length}`);
+    
+    allFields.forEach((field, index) => {
+        const isRequired = field.hasAttribute('required');
+        const value = field.value ? field.value.trim() : '';
+        console.log(`${index + 1}. ${field.name || field.id} (${field.type}): "${value}" ${isRequired ? '[required]' : '[optional]'}`);
+    });
+    
+    // Проверяем валидацию
+    const result = validateCurrentStep();
+    console.log(`Результат валидации: ${result ? '✅ ОК' : '❌ Ошибка'}`);
+    console.log('========================');
+    
+    showNotification(`Отладка: шаг ${currentStep}, полей: ${requiredFields.length}, результат: ${result ? 'ОК' : 'Ошибка'}`, result ? 'success' : 'danger');
+}
+
+// Принудительный переход (для отладки)
+function forceNextStep() {
+    console.log('Принудительный переход на следующий шаг');
+    if (currentStep < totalSteps) {
+        currentStep++;
+        updateStepDisplay();
+        showNotification(`Принудительно перешли на шаг ${currentStep}`, 'warning');
+    } else {
+        showNotification('Это последний шаг!', 'info');
+    }
+}
+
+function toggleOption(optionType) {
+    const checkbox = document.getElementById(`include_${optionType}`);
+    const card = checkbox.closest('.option-card');
+    
+    checkbox.checked = !checkbox.checked;
+    
+    if (checkbox.checked) {
+        card.classList.add('selected');
+    } else {
+        card.classList.remove('selected');
+    }
+    
+    updatePrice();
+}
+
+function updatePrice() {
+    let total = prices.base;
+    
+    const audioCheckbox = document.getElementById('include_audio');
+    const illustrationCheckbox = document.getElementById('include_illustrations');
+    
+    const audioPriceRow = document.getElementById('audioPriceRow');
+    const illustrationPriceRow = document.getElementById('illustrationPriceRow');
+    
+    if (audioCheckbox && audioCheckbox.checked) {
+        total += prices.audio;
+        if (audioPriceRow) audioPriceRow.style.display = 'flex';
+    } else {
+        if (audioPriceRow) audioPriceRow.style.display = 'none';
+    }
+    
+    if (illustrationCheckbox && illustrationCheckbox.checked) {
+        total += prices.illustration;
+        if (illustrationPriceRow) illustrationPriceRow.style.display = 'flex';
+    } else {
+        if (illustrationPriceRow) illustrationPriceRow.style.display = 'none';
+    }
+    
+    document.getElementById('totalPrice').textContent = Math.round(total) + ' ₽';
+}
+
+function updatePreview() {
+    const formData = new FormData(document.getElementById('personalizationForm'));
+    const personalizationData = {
+        child_name: formData.get('child_name'),
+        child_age: formData.get('child_age'),
+        child_gender: formData.get('child_gender'),
+        main_problem: formData.get('main_problem'),
+        child_interests: formData.get('child_interests'),
+        family_situation: formData.get('family_situation')
+    };
+    
+    const previewSection = document.getElementById('previewSection');
+    const previewText = document.getElementById('previewText');
+    
+    if (!personalizationData.child_name || !personalizationData.main_problem) {
+        previewSection.style.display = 'none';
+        return;
+    }
+    
+    previewSection.style.display = 'block';
+    previewText.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm"></div> Генерируем предпросмотр...</div>';
+    
+    fetch('{% url "fairy_tales:preview_personalization" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            template_id: {{ fairy_tale.id }},
+            personalization_data: personalizationData
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            previewText.innerHTML = data.preview;
+        } else {
+            previewText.innerHTML = '<div class="text-muted">Не удалось сгенерировать предпросмотр</div>';
+        }
+    })
+    .catch(error => {
+        previewText.innerHTML = '<div class="text-muted">Ошибка при генерации предпросмотра</div>';
+    });
+}
+
+function setupCharacterCounters() {
+    const textareas = document.querySelectorAll('textarea[maxlength]');
+    
+    textareas.forEach(textarea => {
+        const counter = textarea.parentNode.querySelector('.character-count');
+        if (counter) {
+            const maxLength = textarea.getAttribute('maxlength');
+            
+            textarea.addEventListener('input', function() {
+                const currentLength = this.value.length;
+                counter.textContent = `${currentLength}/${maxLength} символов`;
+                
+                if (currentLength > maxLength * 0.9) {
+                    counter.style.color = '#dc3545';
+                } else {
+                    counter.style.color = '#6c757d';
+                }
+            });
+            
+            textarea.dispatchEvent(new Event('input'));
+        }
+    });
+}
+
+function setupFormValidation() {
+    const form = document.getElementById('personalizationForm');
+    
+    form.addEventListener('submit', function(e) {
+        if (!validateCurrentStep()) {
+            e.preventDefault();
+            return false;
+        }
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const originalText = submitBtn.innerHTML;
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>Оформляем заказ...';
+        
+        setTimeout(() => {
+            if (submitBtn.disabled) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }, 10000);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const audioCheckbox = document.getElementById('include_audio');
+    const illustrationCheckbox = document.getElementById('include_illustrations');
+    
+    if (audioCheckbox) {
+        audioCheckbox.addEventListener('change', updatePrice);
+    }
+    
+    if (illustrationCheckbox) {
+        illustrationCheckbox.addEventListener('change', updatePrice);
+    }
+});
+</script>
+{% endblock %}

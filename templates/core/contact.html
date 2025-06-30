@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Контакты - Православный портал{% endblock %}
+
+{% block description %}Свяжитесь с нами - контактная информация православного портала.{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <h1 class="mb-4">Контакты</h1>
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h4 card-title">Свяжитесь с нами</h2>
+                <p class="card-text">
+                    Мы всегда рады вашим вопросам, предложениям и отзывам. Выберите удобный способ связи:
+                </p>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-envelope-fill text-primary me-3" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>Email</strong><br>
+                                <a href="mailto:info@pravoslavie-portal.ru">info@pravoslavie-portal.ru</a>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-telephone-fill text-success me-3" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>Телефон</strong><br>
+                                <a href="tel:+78001234567">+7 (800) 123-45-67</a><br>
+                                <small class="text-muted">Звонок бесплатный</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-clock-fill text-info me-3" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>Время работы</strong><br>
+                                Пн-Пт: 9:00 - 18:00<br>
+                                <small class="text-muted">По московскому времени</small>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-geo-alt-fill text-warning me-3" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>Адрес</strong><br>
+                                г. Москва<br>
+                                <small class="text-muted">Россия</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Форма обратной связи -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="h4 mb-0">Форма обратной связи</h2>
+            </div>
+            <div class="card-body">
+                <form method="post" action="">
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.name.label_tag }}
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger small">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.email.label_tag }}
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger small">{{ form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.subject.label_tag }}
+                        {{ form.subject }}
+                        {% if form.subject.errors %}
+                            <div class="text-danger small">{{ form.subject.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.message.label_tag }}
+                        {{ form.message }}
+                        {% if form.message.errors %}
+                            <div class="text-danger small">{{ form.message.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        {{ form.privacy_consent }}
+                        {{ form.privacy_consent.label_tag }}
+                        {% if form.privacy_consent.errors %}
+                            <div class="text-danger small">{{ form.privacy_consent.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Отправить сообщение
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Боковая панель -->
+    <div class="col-lg-4">
+        <div class="card bg-light">
+            <div class="card-header">
+                <h3 class="h5 mb-0">Часто задаваемые вопросы</h3>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h4 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#faq1">
+                                Как получить доступ к материалам?
+                            </button>
+                        </h4>
+                        <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body small">
+                                Большинство материалов доступны бесплатно после регистрации. 
+                                Премиум-контент доступен по подписке.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h4 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#faq2">
+                                Как отменить подписку?
+                            </button>
+                        </h4>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body small">
+                                Подписку можно отменить в любое время в разделе "Подписка" вашего профиля.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="h5 mb-0">Мы в социальных сетях</h3>
+            </div>
+            <div class="card-body text-center">
+                <p class="card-text small mb-3">Следите за нашими новостями и обновлениями</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="#" class="btn btn-outline-primary btn-sm social-btn-telegram">
+                        <i class="bi bi-telegram me-2"></i> Telegram
+                    </a>
+                    <a href="#" class="btn btn-danger btn-sm social-btn-youtube">
+                        <i class="bi bi-youtube me-2"></i> YouTube
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

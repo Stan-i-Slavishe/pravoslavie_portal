@@ -1,0 +1,48 @@
+<!-- templates/500.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ошибка сервера - Православный портал{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+        <div class="error-500">
+            <h1 class="display-1 text-danger">500</h1>
+            <h2 class="mb-4">Внутренняя ошибка сервера</h2>
+            <p class="lead mb-4">
+                Произошла непредвиденная ошибка на сервере. Мы уже работаем над её устранением.
+            </p>
+            
+            <div class="mb-4">
+                <i class="bi bi-exclamation-triangle display-4 text-danger"></i>
+            </div>
+            
+            <div class="alert alert-info" role="alert">
+                <i class="bi bi-info-circle"></i>
+                Если проблема повторяется, пожалуйста, свяжитесь с нами через <a href="{% url 'core:contact' %}" class="alert-link">форму обратной связи</a>.
+            </div>
+            
+            <div class="d-grid gap-2 d-md-block">
+                <a href="{% url 'core:home' %}" class="btn btn-primary">
+                    <i class="bi bi-house"></i> На главную
+                </a>
+                <button onclick="history.back()" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Назад
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-500 {
+    padding: 60px 0;
+}
+.error-500 h1 {
+    font-size: 8rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}

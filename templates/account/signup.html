@@ -1,0 +1,618 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Регистрация - {{ site_settings.site_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.signup-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.signup-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 1rem;
+    padding: 3rem 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.signup-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #27ae60, #229954);
+}
+
+.signup-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.signup-icon {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #27ae60, #229954);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 1.8rem;
+    color: white;
+    animation: fadeInScale 0.6s ease-out;
+}
+
+.signup-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.signup-subtitle {
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.form-floating {
+    margin-bottom: 1rem;
+}
+
+.form-floating .form-control {
+    border-radius: 0.5rem;
+    border: 2px solid #e9ecef;
+    padding: 1rem 0.75rem;
+    height: auto;
+    transition: all 0.3s ease;
+}
+
+.form-floating .form-control:focus {
+    border-color: #27ae60;
+    box-shadow: 0 0 0 0.2rem rgba(39, 174, 96, 0.25);
+}
+
+.form-floating label {
+    padding: 1rem 0.75rem;
+    color: #6c757d;
+}
+
+.btn-signup {
+    background: linear-gradient(135deg, #27ae60, #229954);
+    border: none;
+    color: white;
+    padding: 0.875rem 2rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    width: 100%;
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.btn-signup:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(39, 174, 96, 0.3);
+    color: white;
+}
+
+.btn-signup:disabled {
+    opacity: 0.7;
+    transform: none;
+    cursor: not-allowed;
+}
+
+.signup-links {
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+    margin-top: 1rem;
+}
+
+.signup-links a {
+    color: #27ae60;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.signup-links a:hover {
+    color: #229954;
+    text-decoration: underline;
+}
+
+.password-requirements {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+}
+
+.password-requirements ul {
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+.password-requirements li {
+    margin-bottom: 0.25rem;
+    color: #666;
+}
+
+.alert {
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+@keyframes fadeInScale {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* 📱 СОЦИАЛЬНЫЕ СЕТИ */
+.divider {
+    text-align: center;
+    margin: 30px 0;
+    position: relative;
+    color: #999;
+    font-size: 14px;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #ddd, transparent);
+    z-index: 1;
+}
+
+.divider span {
+    background: white;
+    padding: 0 20px;
+    position: relative;
+    z-index: 2;
+    font-weight: 500;
+}
+
+/* Кнопка раскрытия соцсетей */
+.social-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 14px 20px;
+    margin-bottom: 20px;
+    border: 2px solid #e1e5e9;
+    border-radius: 10px;
+    background: #f8f9fa;
+    color: #495057;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.social-toggle-btn:hover {
+    border-color: #27ae60;
+    background: #fff;
+    color: #27ae60;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.15);
+}
+
+.social-toggle-btn i:first-child {
+    margin-right: 10px;
+    font-size: 16px;
+}
+
+.social-toggle-btn .arrow {
+    position: absolute;
+    right: 20px;
+    transition: transform 0.3s ease;
+}
+
+.social-toggle-btn.active .arrow {
+    transform: rotate(180deg);
+}
+
+/* Выкатывающийся блок */
+.social-section {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.4s ease, margin 0.4s ease;
+    margin-bottom: 0;
+}
+
+.social-section.active {
+    max-height: 400px;
+    margin-bottom: 20px;
+    padding-top: 10px;
+}
+
+.social-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 10px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    color: white;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+}
+
+.social-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    text-decoration: none;
+    color: white;
+}
+
+.social-btn i {
+    margin-right: 6px;
+    font-size: 14px;
+}
+
+/* Цвета социальных кнопок */
+.btn-google { background: linear-gradient(135deg, #dd4b39, #c23321); }
+.btn-vk { background: linear-gradient(135deg, #4c75a3, #45688e); }
+.btn-telegram { background: linear-gradient(135deg, #0088cc, #006ca5); }
+.btn-mailru { background: linear-gradient(135deg, #168de2, #147bc4); }
+.btn-yandex { background: linear-gradient(135deg, #ffcc00, #e6b800); color: #333; }
+
+.btn-yandex:hover { color: #333; }
+
+/* Анимация появления социальных кнопок */
+.social-btn {
+    opacity: 0;
+    transform: translateY(15px);
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+.social-section.active .social-btn:nth-child(1) { animation-delay: 0.1s; }
+.social-section.active .social-btn:nth-child(2) { animation-delay: 0.15s; }
+.social-section.active .social-btn:nth-child(3) { animation-delay: 0.2s; }
+.social-section.active .social-btn:nth-child(4) { animation-delay: 0.25s; }
+.social-section.active .social-btn:nth-child(5) { animation-delay: 0.3s; }
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 576px) {
+    .signup-container {
+        padding: 1rem;
+    }
+    
+    .signup-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    /* Мобильная адаптация соцсетей */
+    .social-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .social-btn {
+        font-size: 14px;
+        padding: 14px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="signup-container">
+    <div class="signup-card">
+        <div class="signup-header">
+            <div class="signup-icon">
+                <i class="bi bi-person-plus"></i>
+            </div>
+            <h1 class="signup-title">Присоединяйтесь!</h1>
+            <p class="signup-subtitle">Создайте свой аккаунт</p>
+        </div>
+        
+        <!-- Ошибки -->
+        {% if form.errors or form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% if form.non_field_errors %}
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                {% else %}
+                    <div>Пожалуйста, исправьте ошибки в форме</div>
+                {% endif %}
+            </div>
+        {% endif %}
+        
+        <form method="post" id="signupForm">
+            {% csrf_token %}
+            
+            <div class="form-floating">
+                <input type="email" 
+                       class="form-control {% if form.email.errors %}is-invalid{% endif %}" 
+                       id="id_email" 
+                       name="email" 
+                       placeholder="Email"
+                       value="{{ form.email.value|default:'' }}"
+                       required>
+                <label for="id_email">Email</label>
+                {% if form.email.errors %}
+                    <div class="invalid-feedback">
+                        {{ form.email.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-floating">
+                <input type="password" 
+                       class="form-control {% if form.password1.errors %}is-invalid{% endif %}" 
+                       id="id_password1" 
+                       name="password1" 
+                       placeholder="Пароль"
+                       required>
+                <label for="id_password1">Пароль</label>
+                {% if form.password1.errors %}
+                    <div class="invalid-feedback">
+                        {{ form.password1.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-floating">
+                <input type="password" 
+                       class="form-control {% if form.password2.errors %}is-invalid{% endif %}" 
+                       id="id_password2" 
+                       name="password2" 
+                       placeholder="Подтверждение пароля"
+                       required>
+                <label for="id_password2">Подтверждение пароля</label>
+                {% if form.password2.errors %}
+                    <div class="invalid-feedback">
+                        {{ form.password2.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="password-requirements">
+                <div class="small text-muted mb-2">
+                    <i class="bi bi-info-circle me-1"></i>
+                    <strong>Требования к паролю:</strong>
+                </div>
+                <ul class="small text-muted">
+                    <li>Минимум 8 символов</li>
+                    <li>Не должен быть слишком простым</li>
+                    <li>Не должен состоять только из цифр</li>
+                </ul>
+            </div>
+            
+            <button type="submit" class="btn-signup" id="signupBtn">
+                <i class="bi bi-person-plus me-2"></i>
+                Зарегистрироваться
+            </button>
+        </form>
+        
+        <!-- 📱 БЛОК СОЦИАЛЬНЫХ СЕТЕЙ -->
+        <div class="divider">
+            <span>или</span>
+        </div>
+        
+        <!-- Кнопка для раскрытия социальных сетей -->
+        <button class="social-toggle-btn" id="socialToggle">
+            <i class="bi bi-people"></i>
+            Регистрация через социальные сети
+            <i class="bi bi-chevron-down arrow"></i>
+        </button>
+
+        <!-- Выкатывающийся блок социальных сетей -->
+        <div class="social-section" id="socialSection">
+            <div class="social-grid">
+                <a href="/accounts/google/login/" class="social-btn btn-google">
+                    <i class="bi bi-google"></i>
+                    Google
+                </a>
+                
+                <a href="#" class="social-btn btn-vk">
+                    <i class="bi bi-heart"></i>
+                    ВКонтакте
+                </a>
+                
+                <a href="#" class="social-btn btn-telegram">
+                    <i class="bi bi-telegram"></i>
+                    Telegram
+                </a>
+                
+                <a href="#" class="social-btn btn-mailru">
+                    <i class="bi bi-envelope"></i>
+                    Mail.ru
+                </a>
+            </div>
+            
+            <a href="#" class="social-btn btn-yandex" style="width: 100%; margin-top: 8px;">
+                <i class="bi bi-search"></i>
+                Регистрация через Яндекс
+            </a>
+        </div>
+        
+        <div class="signup-links">
+            <div>
+                Уже есть аккаунт? 
+                <a href="{% url 'account_login' %}">
+                    <i class="bi bi-box-arrow-in-right me-1"></i>
+                    Войти
+                </a>
+            </div>
+        </div>
+        
+        <!-- Дополнительные ссылки -->
+        <div class="mt-4 pt-3 border-top">
+            <div class="row text-center small text-muted">
+                <div class="col-4">
+                    <a href="{% url 'core:home' %}" class="text-decoration-none text-muted">
+                        <i class="bi bi-house d-block mb-1"></i>
+                        Главная
+                    </a>
+                </div>
+                <div class="col-4">
+                    <a href="{% url 'core:about' %}" class="text-decoration-none text-muted">
+                        <i class="bi bi-info-circle d-block mb-1"></i>
+                        О проекте
+                    </a>
+                </div>
+                <div class="col-4">
+                    <a href="{% url 'core:contact' %}" class="text-decoration-none text-muted">
+                        <i class="bi bi-headset d-block mb-1"></i>
+                        Поддержка
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация появления
+    const card = document.querySelector('.signup-card');
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(30px)';
+    
+    setTimeout(() => {
+        card.style.transition = 'all 0.6s ease-out';
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+    }, 100);
+    
+    // Обработка формы
+    const form = document.getElementById('signupForm');
+    const signupBtn = document.getElementById('signupBtn');
+    
+    form.addEventListener('submit', function(e) {
+        signupBtn.innerHTML = '<i class="bi bi-hourglass me-2"></i>Регистрируем...';
+        signupBtn.disabled = true;
+    });
+    
+    // Проверка совпадения паролей
+    const password1 = document.getElementById('id_password1');
+    const password2 = document.getElementById('id_password2');
+    
+    function checkPasswords() {
+        if (password1.value && password2.value) {
+            if (password1.value !== password2.value) {
+                password2.setCustomValidity('Пароли не совпадают');
+                password2.classList.add('is-invalid');
+            } else {
+                password2.setCustomValidity('');
+                password2.classList.remove('is-invalid');
+            }
+        }
+    }
+    
+    password1.addEventListener('input', checkPasswords);
+    password2.addEventListener('input', checkPasswords);
+    
+    // 📱 Анимация выкатывания социальных сетей
+    const socialToggle = document.getElementById('socialToggle');
+    const socialSection = document.getElementById('socialSection');
+    
+    if (socialToggle && socialSection) {
+        socialToggle.addEventListener('click', function() {
+            const toggleBtn = this;
+            
+            // Переключаем классы
+            socialSection.classList.toggle('active');
+            toggleBtn.classList.toggle('active');
+            
+            // Обновляем текст кнопки
+            if (socialSection.classList.contains('active')) {
+                toggleBtn.innerHTML = `
+                    <i class="bi bi-people"></i>
+                    Скрыть социальные сети
+                    <i class="bi bi-chevron-down arrow"></i>
+                `;
+            } else {
+                toggleBtn.innerHTML = `
+                    <i class="bi bi-people"></i>
+                    Регистрация через социальные сети
+                    <i class="bi bi-chevron-down arrow"></i>
+                `;
+            }
+        });
+    }
+
+    // 📱 Аналитика кликов по социальным кнопкам
+    document.querySelectorAll('.social-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            // Проверяем, есть ли реальная ссылка
+            if (this.href && this.href !== '#' && !this.href.endsWith('#')) {
+                // Эффект клика
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+                
+                console.log('Переход к регистрации:', this.textContent.trim());
+                // Позволяем переходу произойти
+                return true;
+            } else {
+                // Отменяем переход, показываем сообщение
+                e.preventDefault();
+                
+                // Эффект клика
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+                
+                console.log('Клик по:', this.textContent.trim());
+                
+                // Сообщение о разработке
+                setTimeout(() => {
+                    alert(`Регистрация через ${this.textContent.trim()} в разработке`);
+                }, 200);
+            }
+        });
+    });
+    
+    // Фокус на первое поле
+    document.getElementById('id_email').focus();
+});
+</script>
+{% endblock %}

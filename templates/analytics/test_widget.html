@@ -1,0 +1,83 @@
+<!-- Добавьте этот код в любой шаблон для тестирования -->
+
+<!-- CSRF токен для тестов -->
+{% csrf_token %}
+
+<!-- Тестовые кнопки аналитики -->
+<div class="test-widget">
+    <h5>🧪 Тест аналитики</h5>
+    
+    <!-- Кнопки для тестирования кликов -->
+    <button onclick="testPurchaseIntent('book', 7, 'buy')" class="btn btn-sm btn-primary mb-1">
+        📚 Тест клика на книгу
+    </button><br>
+    
+    <button onclick="testPurchaseIntent('fairy_tale', 1, 'buy')" class="btn btn-sm btn-success mb-1">
+        🧚‍♀️ Тест клика на сказку
+    </button><br>
+    
+    <button onclick="showSubscribePopup('books')" class="btn btn-sm btn-warning mb-1">
+        📧 Тест подписки
+    </button><br>
+    
+    <a href="/analytics/dashboard/" class="btn btn-sm btn-info mb-1" target="_blank">
+        📊 Дашборд
+    </a><br>
+    
+    <a href="/admin/analytics/" class="btn btn-sm btn-secondary" target="_blank">
+        ⚙️ Админка
+    </a>
+</div>
+
+<!-- Виджет подписки -->
+{% include 'analytics/widgets/subscribe_button.html' %}
+
+<script>
+// Функция для тестирования кликов на покупку
+function testPurchaseIntent(contentType, objectId, buttonType) {
+    console.log(`Тестируем клик: ${contentType} #${objectId}`);
+    
+    fetch('/analytics/track-purchase-intent/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value || getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            content_type: contentType,
+            object_id: objectId,
+            button_type: buttonType,
+            session_key: 'test_session_' + Date.now(),
+            page_url: window.location.href,
+            referer: document.referrer
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`✅ Клик зарегистрирован!\nВсего кликов: ${data.total_clicks}\nВероятность покупки: ${data.user_probability}%`);
+        } else {
+            alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+        }
+    })
+    .catch(error => {
+        alert('❌ Ошибка соединения: ' + error);
+    });
+}
+
+// Получение CSRF токена из cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>

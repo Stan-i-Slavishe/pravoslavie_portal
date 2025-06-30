@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .header { background: #2B5AA0; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .subscription-list { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .subscription-list li { margin: 5px 0; }
+        .button { background: #D4AF37; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px 0; }
+        .footer { background: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>✅ Подписка оформлена!</h1>
+    </div>
+    
+    <div class="content">
+        <p>Спасибо, что подписались на уведомления <strong>Православного портала</strong>!</p>
+        
+        <div class="subscription-list">
+            <strong>📬 Вы будете получать уведомления о:</strong>
+            <ul>
+                {% if subscription.notify_payment_launch %}<li>🚀 Запуске системы платежей</li>{% endif %}
+                {% if subscription.notify_new_content %}<li>📚 Новом контенте на сайте</li>{% endif %}
+                {% if subscription.notify_discounts %}<li>💰 Скидках и акциях</li>{% endif %}
+                {% if subscription.notify_weekly_reports %}<li>📊 Еженедельных отчетах</li>{% endif %}
+            </ul>
+        </div>
+        
+        <p>Как только мы запустим платежную систему, вы <strong>первыми</strong> узнаете об этом!</p>
+        
+        <a href="{{ unsubscribe_url }}" class="button">Управление подпиской</a>
+    </div>
+    
+    <div class="footer">
+        <strong>Православный портал</strong><br>
+        С верой и любовью 🙏
+    </div>
+</body>
+</html>

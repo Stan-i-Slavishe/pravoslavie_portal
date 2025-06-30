@@ -1,0 +1,542 @@
+from django.db import models
+from django.contrib.auth.models import User
+from django.urls import reverse
+from django.utils.text import slugify
+from django.core.validators import MinLengthValidator, MaxLengthValidator
+from core.models import TimeStampedModel
+import uuid
+import json
+
+
+class AgeGroup(models.TextChoices):
+    """Возрастные группы для сказок"""
+    CHILD = 'child', 'Дети (3-12 лет)'
+    TEEN = 'teen', 'Подростки (13-17 лет)'
+    ADULT = 'adult', 'Взрослые (18+ лет)'
+    FAMILY = 'family', 'Семейные (все возрасты)'
+
+
+class TherapeuticGoal(models.TextChoices):
+    """Терапевтические цели сказок"""
+    FEARS = 'fears', 'Преодоление страхов'
+    CONFIDENCE = 'confidence', 'Повышение уверенности'
+    RELATIONSHIPS = 'relationships', 'Улучшение отношений'
+    BEHAVIOR = 'behavior', 'Коррекция поведения'
+    EMOTIONS = 'emotions', 'Управление эмоциями'
+    GRIEF = 'grief', 'Работа с потерей'
+    STRESS = 'stress', 'Снижение стресса'
+    FAITH = 'faith', 'Укрепление веры'
+    FORGIVENESS = 'forgiveness', 'Прощение'
+    PATIENCE = 'patience', 'Развитие терпения'
+    KINDNESS = 'kindness', 'Воспитание доброты'
+    GRATITUDE = 'gratitude', 'Благодарность'
+
+
+class FairyTaleCategory(TimeStampedModel):
+    """Категории терапевтических сказок"""
+    
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name='Название категории',
+        validators=[MinLengthValidator(2)]
+    )
+    slug = models.SlugField(
+        max_length=120,
+        unique=True,
+        blank=True,
+        verbose_name='URL-адрес'
+    )
+    description = models.TextField(
+        verbose_name='Описание категории',
+        help_text='Краткое описание целей и задач категории'
+    )
+    age_group = models.CharField(
+        max_length=20,
+        choices=AgeGroup.choices,
+        default=AgeGroup.CHILD,
+        verbose_name='Возрастная группа'
+    )
+    icon = models.CharField(
+        max_length=50,
+        default='magic',
+        verbose_name='Иконка',
+        help_text='Bootstrap иконка, например: bi-magic'
+    )
+    color = models.CharField(
+        max_length=7,
+        default='#9b59b6',
+        verbose_name='Цвет категории',
+        help_text='HEX код цвета'
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name='Активна'
+    )
+    order = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Порядок сортировки'
+    )
+    
+    class Meta:
+        verbose_name = 'Категория сказок'
+        verbose_name_plural = 'Категории сказок'
+        ordering = ['age_group', 'order', 'name']
+        
+    def __str__(self):
+        return f"{self.name} ({self.get_age_group_display()})"
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name, allow_unicode=True)
+        super().save(*args, **kwargs)
+    
+    def get_absolute_url(self):
+        return reverse('fairy_tales:category', kwargs={'slug': self.slug})
+
+
+class FairyTaleTemplate(TimeStampedModel):
+    """Шаблоны терапевтических сказок"""
+    
+    title = models.CharField(
+        max_length=200,
+        verbose_name='Название сказки',
+        validators=[MinLengthValidator(5)]
+    )
+    slug = models.SlugField(
+        max_length=220,
+        unique=True,
+        blank=True,
+        verbose_name='URL-адрес'
+    )
+    category = models.ForeignKey(
+        FairyTaleCategory,
+        on_delete=models.CASCADE,
+        related_name='templates',
+        verbose_name='Категория'
+    )
+    short_description = models.CharField(
+        max_length=300,
+        verbose_name='Краткое описание',
+        help_text='Описание для каталога'
+    )
+    therapeutic_goals = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name='Терапевтические цели',
+        help_text='Список целей из TherapeuticGoal'
+    )
+    content_template = models.TextField(
+        verbose_name='Шаблон сказки',
+        help_text='Текст с переменными: {name}, {age}, {problem}, {hobby} и др.'
+    )
+    
+    # Настройки персонализации
+    personalization_fields = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name='Поля персонализации',
+        help_text='Настройки форм для персонализации'
+    )
+    
+    # Возрастные ограничения
+    target_age_min = models.PositiveIntegerField(
+        default=3,
+        verbose_name='Минимальный возраст'
+    )
+    target_age_max = models.PositiveIntegerField(
+        default=12,
+        verbose_name='Максимальный возраст'
+    )
+    
+    # Ценообразование
+    is_free = models.BooleanField(
+        default=True,
+        verbose_name='Бесплатная сказка'
+    )
+    base_price = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=0.00,
+        verbose_name='Базовая цена персонализации'
+    )
+    
+    # Дополнительные опции
+    has_audio_option = models.BooleanField(
+        default=False,
+        verbose_name='Доступна озвучка'
+    )
+    audio_price = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=0.00,
+        verbose_name='Цена озвучки'
+    )
+    has_illustration_option = models.BooleanField(
+        default=False,
+        verbose_name='Доступны иллюстрации'
+    )
+    illustration_price = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=0.00,
+        verbose_name='Цена иллюстраций'
+    )
+    
+    # Статистика
+    views_count = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Количество просмотров'
+    )
+    orders_count = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Количество заказов'
+    )
+    
+    # Изображения
+    cover_image = models.ImageField(
+        upload_to='fairy_tales/covers/%Y/%m/',
+        blank=True,
+        null=True,
+        verbose_name='Обложка сказки',
+        help_text='Рекомендуемый размер: 400x250 пикселей'
+    )
+    
+    # Метаинформация
+    author = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Автор сказки'
+    )
+    is_published = models.BooleanField(
+        default=False,
+        verbose_name='Опубликована'
+    )
+    featured = models.BooleanField(
+        default=False,
+        verbose_name='Рекомендуемая'
+    )
+    
+    class Meta:
+        verbose_name = 'Шаблон сказки'
+        verbose_name_plural = 'Шаблоны сказок'
+        ordering = ['-featured', '-created_at']
+        
+    def __str__(self):
+        return self.title
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title, allow_unicode=True)
+        super().save(*args, **kwargs)
+    
+    def get_absolute_url(self):
+        return reverse('fairy_tales:detail', kwargs={'slug': self.slug})
+    
+    @property
+    def age_range_display(self):
+        """Отображение возрастного диапазона"""
+        if self.target_age_min == self.target_age_max:
+            return f"{self.target_age_min} лет"
+        return f"{self.target_age_min}-{self.target_age_max} лет"
+    
+    @property
+    def total_price_with_options(self):
+        """Полная цена с опциями"""
+        total = self.base_price
+        if self.has_audio_option:
+            total += self.audio_price
+        if self.has_illustration_option:
+            total += self.illustration_price
+        return total
+    
+    def get_therapeutic_goals_display(self):
+        """Отображение терапевтических целей"""
+        goals = []
+        for goal_code in self.therapeutic_goals:
+            for choice in TherapeuticGoal.choices:
+                if choice[0] == goal_code:
+                    goals.append(choice[1])
+                    break
+        return goals
+    
+    def get_shop_product(self):
+        """Получить связанный товар в магазине"""
+        try:
+            from shop.models import Product
+            return Product.objects.get(
+                product_type='fairy_tale',
+                fairy_tale_template_id=self.id,
+                is_active=True
+            )
+        except:
+            return None
+
+
+class PersonalizationOrder(TimeStampedModel):
+    """Заказы на персонализацию сказок"""
+    
+    class OrderStatus(models.TextChoices):
+        PENDING = 'pending', 'Ожидает оплаты'
+        PAID = 'paid', 'Оплачен'
+        IN_PROGRESS = 'in_progress', 'В работе'
+        READY = 'ready', 'Готов'
+        DELIVERED = 'delivered', 'Доставлен'
+        CANCELLED = 'cancelled', 'Отменен'
+    
+    # Идентификация заказа
+    order_id = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+        verbose_name='ID заказа'
+    )
+    template = models.ForeignKey(
+        FairyTaleTemplate,
+        on_delete=models.CASCADE,
+        related_name='orders',
+        verbose_name='Шаблон сказки'
+    )
+    
+    # Информация о заказчике
+    customer_name = models.CharField(
+        max_length=100,
+        verbose_name='Имя заказчика'
+    )
+    customer_email = models.EmailField(
+        verbose_name='Email заказчика'
+    )
+    customer_phone = models.CharField(
+        max_length=20,
+        blank=True,
+        verbose_name='Телефон заказчика'
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='fairy_tale_orders',
+        verbose_name='Пользователь'
+    )
+    
+    # Данные для персонализации
+    personalization_data = models.JSONField(
+        default=dict,
+        verbose_name='Данные персонализации',
+        help_text='Все данные, введенные клиентом'
+    )
+    
+    # Выбранные опции
+    include_audio = models.BooleanField(
+        default=False,
+        verbose_name='Включить озвучку'
+    )
+    include_illustrations = models.BooleanField(
+        default=False,
+        verbose_name='Включить иллюстрации'
+    )
+    special_requests = models.TextField(
+        blank=True,
+        verbose_name='Особые пожелания'
+    )
+    
+    # Ценообразование
+    base_price = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        verbose_name='Базовая цена'
+    )
+    audio_price = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=0.00,
+        verbose_name='Цена озвучки'
+    )
+    illustration_price = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=0.00,
+        verbose_name='Цена иллюстраций'
+    )
+    total_price = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        verbose_name='Общая стоимость'
+    )
+    
+    # Статус и выполнение
+    status = models.CharField(
+        max_length=20,
+        choices=OrderStatus.choices,
+        default=OrderStatus.PENDING,
+        verbose_name='Статус заказа'
+    )
+    estimated_completion = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Планируемое завершение'
+    )
+    completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Дата завершения'
+    )
+    
+    # Результат
+    generated_content = models.TextField(
+        blank=True,
+        verbose_name='Готовая сказка'
+    )
+    audio_file = models.FileField(
+        upload_to='fairy_tales/audio/%Y/%m/',
+        blank=True,
+        null=True,
+        verbose_name='Аудио-файл'
+    )
+    illustration_file = models.FileField(
+        upload_to='fairy_tales/illustrations/%Y/%m/',
+        blank=True,
+        null=True,
+        verbose_name='Файл с иллюстрациями'
+    )
+    
+    # Админские заметки
+    admin_notes = models.TextField(
+        blank=True,
+        verbose_name='Заметки администратора'
+    )
+    
+    class Meta:
+        verbose_name = 'Заказ персонализации'
+        verbose_name_plural = 'Заказы персонализации'
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return f"Заказ #{self.order_id.hex[:8]} - {self.template.title}"
+    
+    def save(self, *args, **kwargs):
+        # Автоматический расчет общей стоимости
+        if not self.total_price:
+            self.total_price = self.base_price + self.audio_price + self.illustration_price
+        super().save(*args, **kwargs)
+    
+    def get_absolute_url(self):
+        return reverse('fairy_tales:order_detail', kwargs={'order_id': self.order_id})
+    
+    @property
+    def short_order_id(self):
+        """Короткий ID заказа для отображения"""
+        return self.order_id.hex[:8].upper()
+    
+    def get_personalization_summary(self):
+        """Краткое резюме персонализации"""
+        data = self.personalization_data
+        summary_parts = []
+        
+        if 'child_name' in data:
+            summary_parts.append(f"Имя: {data['child_name']}")
+        if 'child_age' in data:
+            summary_parts.append(f"Возраст: {data['child_age']}")
+        if 'main_problem' in data:
+            summary_parts.append(f"Проблема: {data['main_problem']}")
+            
+        return "; ".join(summary_parts) if summary_parts else "Не указано"
+
+
+class FairyTaleReview(TimeStampedModel):
+    """Отзывы о сказках"""
+    
+    template = models.ForeignKey(
+        FairyTaleTemplate,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        verbose_name='Шаблон сказки'
+    )
+    order = models.OneToOneField(
+        PersonalizationOrder,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='review',
+        verbose_name='Заказ'
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='fairy_tale_reviews',
+        verbose_name='Автор отзыва'
+    )
+    
+    rating = models.PositiveIntegerField(
+        choices=[(i, f'{i} звезд') for i in range(1, 6)],
+        verbose_name='Оценка'
+    )
+    title = models.CharField(
+        max_length=200,
+        verbose_name='Заголовок отзыва'
+    )
+    content = models.TextField(
+        verbose_name='Текст отзыва',
+        validators=[MinLengthValidator(20)]
+    )
+    
+    # Эффективность
+    helped_with_problem = models.BooleanField(
+        null=True,
+        blank=True,
+        verbose_name='Помогла ли сказка с проблемой?'
+    )
+    child_liked = models.BooleanField(
+        null=True,
+        blank=True,
+        verbose_name='Понравилась ли ребенку?'
+    )
+    would_recommend = models.BooleanField(
+        default=True,
+        verbose_name='Рекомендует другим'
+    )
+    
+    is_published = models.BooleanField(
+        default=True,
+        verbose_name='Опубликован'
+    )
+    is_featured = models.BooleanField(
+        default=False,
+        verbose_name='Рекомендуемый отзыв'
+    )
+    
+    class Meta:
+        verbose_name = 'Отзыв о сказке'
+        verbose_name_plural = 'Отзывы о сказках'
+        ordering = ['-created_at']
+        unique_together = ['template', 'author']
+        
+    def __str__(self):
+        return f"Отзыв {self.author.username} о {self.template.title}"
+
+
+class FairyTaleFavorite(TimeStampedModel):
+    """Избранные сказки пользователей"""
+    
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='favorite_fairy_tales',
+        verbose_name='Пользователь'
+    )
+    template = models.ForeignKey(
+        FairyTaleTemplate,
+        on_delete=models.CASCADE,
+        related_name='favorited_by',
+        verbose_name='Шаблон сказки'
+    )
+    
+    class Meta:
+        verbose_name = 'Избранная сказка'
+        verbose_name_plural = 'Избранные сказки'
+        unique_together = ['user', 'template']
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return f"{self.user.username} - {self.template.title}"

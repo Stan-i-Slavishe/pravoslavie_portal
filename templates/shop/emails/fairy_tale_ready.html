@@ -1,0 +1,92 @@
+{% extends 'shop/emails/base_email.html' %}
+
+{% block title %}Ваша персонализированная сказка готова! - {{ site_name }}{% endblock %}
+
+{% block header_title %}Сказка готова! ✨🧚‍♀️{% endblock %}
+
+{% block content %}
+<p>Здравствуйте, <strong>{{ order.full_name }}</strong>!</p>
+
+<p>Отличная новость! Ваша персонализированная терапевтическая сказка готова!</p>
+
+<div style="background-color: #fff3e0; padding: 25px; border-radius: 12px; margin: 20px 0; border: 2px solid #FF6B9D;">
+    <h3 style="margin-top: 0; color: #d84315; text-align: center;">✨ {{ order_item.product_title }} ✨</h3>
+    
+    <div style="background-color: white; padding: 15px; border-radius: 8px; margin: 15px 0;">
+        <strong>👶 Персонализация:</strong><br>
+        {{ order_item.get_personalization_summary }}
+        
+        {% if order_item.include_audio %}
+        <br><br><strong>🎵 Включена озвучка:</strong> Да
+        {% endif %}
+        
+        {% if order_item.include_illustrations %}
+        <br><br><strong>🎨 Включены иллюстрации:</strong> Да
+        {% endif %}
+        
+        {% if order_item.special_requests %}
+        <br><br><strong>💝 Особые пожелания:</strong><br>
+        {{ order_item.special_requests }}
+        {% endif %}
+    </div>
+</div>
+
+<div class="download-section">
+    <h3 style="margin-top: 0; color: #155724;">📥 Скачать вашу сказку</h3>
+    
+    <div style="text-align: center; margin: 20px 0;">
+        <a href="{{ site_url }}/shop/download/{{ order_item.id }}/" 
+           style="display: inline-block; background-color: #ff9800; color: white; padding: 20px 40px; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 18px; box-shadow: 0 4px 8px rgba(255,152,0,0.3);">
+            ✨ Скачать персонализированную сказку
+        </a>
+    </div>
+    
+    {% if order_item.include_audio %}
+    <div style="text-align: center; margin: 10px 0;">
+        <a href="{{ site_url }}/shop/download/{{ order_item.id }}/audio/" 
+           style="display: inline-block; background-color: #9c27b0; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">
+            🎵 Скачать аудио-версию
+        </a>
+    </div>
+    {% endif %}
+    
+    {% if order_item.include_illustrations %}
+    <div style="text-align: center; margin: 10px 0;">
+        <a href="{{ site_url }}/shop/download/{{ order_item.id }}/illustrations/" 
+           style="display: inline-block; background-color: #3f51b5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">
+            🎨 Скачать иллюстрации
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #4caf50;">
+    <h3 style="margin-top: 0; color: #2e7d32;">🌟 Как использовать терапевтическую сказку</h3>
+    <ul style="margin: 10px 0; padding-left: 20px;">
+        <li><strong>Время чтения:</strong> Лучше всего читать перед сном или в спокойной обстановке</li>
+        <li><strong>Частота:</strong> Можно читать ежедневно в течение 1-2 недель</li>
+        <li><strong>Обсуждение:</strong> После чтения обязательно поговорите с ребенком о сказке</li>
+        <li><strong>Терпение:</strong> Изменения в поведении могут проявиться через 2-3 недели</li>
+    </ul>
+</div>
+
+<div style="background-color: #fff3e0; padding: 15px; border-radius: 8px; margin: 20px 0;">
+    <h4 style="margin-top: 0; color: #e65100;">💡 Рекомендации психолога</h4>
+    <p style="margin: 0; font-size: 14px;">
+        Эта сказка создана специально для работы с выбранной вами проблемой. 
+        Регулярное чтение поможет ребенку через метафоры и образы лучше понять себя и найти способы решения трудностей.
+    </p>
+</div>
+
+<p style="text-align: center; margin: 30px 0;">
+    <a href="{{ site_url }}/shop/order/{{ order.order_id }}/" 
+       style="display: inline-block; background-color: #2B5AA0; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+        📋 Посмотреть заказ
+    </a>
+</p>
+
+<p>Надеемся, что эта сказка принесет пользу вашему ребенку! Если у вас есть вопросы или нужна помощь, обращайтесь к нам.</p>
+
+<p>С наилучшими пожеланиями,<br>
+<strong>Команда {{ site_name }}</strong></p>
+{% endblock %}

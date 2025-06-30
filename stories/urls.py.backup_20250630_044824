@@ -1,0 +1,46 @@
+from django.urls import path
+from . import views
+from . import views_playlists
+from . import comment_views
+
+app_name = 'stories'
+
+urlpatterns = [
+    # Основные страницы
+    path('', views.StoryListView.as_view(), name='list'),
+    
+    # Детальная страница рассказа
+    path('<slug:slug>/', views_playlists.enhanced_story_detail, name='detail'),
+    
+    # Категории и теги
+    path('category/<slug:category_slug>/', views.StoryCategoryView.as_view(), name='category'),
+    path('tag/<slug:tag_slug>/', views.StoryTagView.as_view(), name='tag'),
+    
+    # Специальные списки
+    path('popular/', views.PopularStoriesView.as_view(), name='popular'),
+    path('featured/', views.FeaturedStoriesView.as_view(), name='featured'),
+    path('search/', views.StorySearchView.as_view(), name='search'),
+    
+    # Лайки рассказов
+    path('<int:story_id>/like/', views.story_like, name='story_like'),
+    path('<int:story_id>/favorite/', views.story_favorite, name='story_favorite'),
+    
+    # YouTube-style комментарии (новая система)
+    path('comment/add/<slug:story_slug>/', comment_views.add_comment, name='add_comment'),
+    path('comment/<int:comment_id>/reply/', comment_views.add_reply, name='add_reply'),
+    path('comment/<int:comment_id>/delete/', comment_views.delete_comment, name='delete_comment'),
+    path('comment/<int:comment_id>/react/<str:reaction_type>/', comment_views.toggle_comment_reaction, name='toggle_comment_reaction'),
+    
+    # AJAX endpoints для YouTube-style комментариев
+    path('ajax/comment/add/<slug:story_slug>/', comment_views.ajax_add_comment, name='ajax_add_comment'),
+    path('ajax/reply/add/<int:comment_id>/', comment_views.ajax_add_reply, name='ajax_add_reply'),
+    path('ajax/comment/<int:comment_id>/react/<str:reaction_type>/', comment_views.ajax_toggle_comment_reaction, name='ajax_toggle_comment_reaction'),
+    path('ajax/comment/delete/<int:comment_id>/', comment_views.ajax_delete_comment, name='ajax_delete_comment'),
+    path('ajax/comments/load/<slug:story_slug>/', comment_views.ajax_load_comments, name='ajax_load_comments'),
+    path('ajax/comment/report/<int:comment_id>/', comment_views.ajax_report_comment, name='ajax_report_comment'),
+    path('ajax/story/<int:story_id>/view/', views.story_view_count, name='story_view_count'),
+    
+    # Простые комментарии (без AJAX)
+    path('simple/comment/add/<int:story_id>/', views.add_simple_comment, name='add_simple_comment'),
+    path('simple/reply/add/<int:comment_id>/', views.add_simple_reply, name='add_simple_reply'),
+]

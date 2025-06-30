@@ -1,0 +1,240 @@
+<!-- ИСПРАВЛЕННАЯ СИСТЕМА КОММЕНТАРИЕВ -->
+
+    <!-- Главная форма добавления комментария -->
+    
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow-1">
+                        <div class="mb-2">
+                            <textarea 
+                                class="form-control reply-textarea"
+                                name="text"
+                                placeholder="Добавьте ответ..."
+                                rows="2"
+                                maxlength="1000"
+                                required
+                            ></textarea>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                Максимум 1000 символов
+                            </small>
+                            
+                            <div class="action-buttons">
+                                <button type="button" class="btn btn-sm btn-secondary me-2" onclick="closeReplyForm('${commentId}')">
+                                    Отмена
+                                </button>
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-paper-plane me-1"></i>Ответить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    container.style.display = 'block';
+    
+    // Фокус на textarea
+    setTimeout(() => {
+        const textarea = container.querySelector('textarea');
+        if (textarea) {
+            textarea.focus();
+        }
+    }, 100);
+}
+
+function closeReplyForm(commentId) {
+    const container = document.getElementById(`reply-form-${commentId}`);
+    if (container) {
+        container.style.display = 'none';
+    }
+}
+
+function cancelMainComment() {
+    const textarea = document.getElementById('main-comment-textarea');
+    const actions = document.getElementById('main-comment-actions');
+    
+    textarea.value = '';
+    textarea.classList.remove('expanded');
+    textarea.rows = 1;
+    actions.style.display = 'none';
+    
+    const submitBtn = document.querySelector('#main-comment-form .submit-btn');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+    }
+}
+
+function focusMainComment() {
+    const textarea = document.getElementById('main-comment-textarea');
+    if (textarea) {
+        textarea.focus();
+    }
+}
+</script>
+
+<!-- СТИЛИ -->
+<style>
+.youtube-comments {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    transition: transform 0.2s ease;
+}
+
+.avatar-circle:hover {
+    transform: scale(1.05);
+}
+
+.avatar-circle-small {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 11px;
+}
+
+.comment-item {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.comment-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.comment-author {
+    color: #065fd4;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.comment-time {
+    font-size: 12px;
+}
+
+.comment-text p {
+    color: #0f0f0f;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.reaction-btn {
+    border-radius: 18px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.reaction-btn:hover {
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+.reply-btn {
+    border-radius: 18px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.reply-form-inline {
+    border-left: 3px solid #007bff;
+    background: #f8f9fa !important;
+}
+
+.replies-section {
+    background: rgba(248, 249, 250, 0.7);
+    border-radius: 8px;
+    padding: 0.5rem;
+}
+
+.reply-item {
+    background: white;
+    border-radius: 6px;
+    padding: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.reply-author {
+    color: #065fd4;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+.reply-time {
+    font-size: 11px;
+}
+
+.auth-prompt {
+    border: 2px dashed #dee2e6;
+}
+
+.no-comments {
+    background: white;
+    border-radius: 12px;
+    margin: 2rem 0;
+}
+
+.char-counter.text-warning {
+    color: #ffc107 !important;
+}
+
+.char-counter.text-danger {
+    color: #dc3545 !important;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .youtube-comments {
+        padding: 1rem;
+        border-radius: 8px;
+    }
+    
+    .avatar-circle {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+    
+    .avatar-circle-small {
+        width: 24px;
+        height: 24px;
+        font-size: 10px;
+    }
+    
+    .comment-item {
+        padding: 0.75rem;
+    }
+    
+    .replies-section {
+        padding: 0.25rem;
+    }
+}
+</style>

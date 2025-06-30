@@ -1,0 +1,16 @@
+Новый клик на покупку!
+
+Контент: {{ content_title }}
+{{ user_info }}
+Тип действия: {{ purchase_intent.get_button_type_display }}
+Время: {{ purchase_intent.clicked_at|date:"d.m.Y H:i" }}
+IP: {{ purchase_intent.ip_address }}
+Страница: {{ purchase_intent.page_url }}
+
+Всего кликов этого пользователя: {{ purchase_intent.click_count }}
+
+Посмотреть в админке: {{ admin_url }}
+Полная аналитика: {{ analytics_url }}
+
+--
+Православный портал - Система аналитики

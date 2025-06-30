@@ -1,0 +1,790 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ story.title }} - Православный портал{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* ПЛЕЙЛИСТ ФУНКЦИОНАЛЬНОСТЬ */
+    .playlist-widget {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        margin-bottom: 20px;
+    }
+    
+    /* СТИЛЬНЫЙ ЗАГОЛОВОК ПЛЕЙЛИСТОВ */
+    .playlist-header {
+        background: linear-gradient(135deg, #2B5AA0 0%, #4A7BC8 100%);
+        border: 2px solid #D4AF37;
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .playlist-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, rgba(212, 175, 55, 0.1) 0%, transparent 50%);
+        pointer-events: none;
+    }
+    
+    .playlist-title {
+        color: white;
+        font-weight: 600;
+        font-size: 18px;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .playlist-icon-btn {
+        background: linear-gradient(135deg, #D4AF37 0%, #F4E869 100%);
+        color: #2B5AA0;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .playlist-icon-btn:hover {
+        background: linear-gradient(135deg, #F4E869 0%, #D4AF37 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        color: #2B5AA0;
+        text-decoration: none;
+    }
+    
+    .playlist-icon-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    }
+    
+    .playlist-icon {
+        font-size: 16px;
+    }
+    
+    /* Кликабельные заголовки */
+    .playlist-widget h5 a {
+        transition: all 0.3s ease;
+    }
+    
+    .playlist-widget h5 a:hover {
+        transform: translateX(3px);
+        text-shadow: 0 2px 4px rgba(43, 90, 160, 0.2);
+    }
+    
+    /* Кнопки управления */
+    .playlist-control-btn {
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .playlist-control-btn:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .playlist-control-btn:active {
+        transform: translateY(0) scale(0.95);
+    }
+    
+    .playlist-dropdown {
+        position: relative;
+    }
+    
+    .playlist-list {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        background: white;
+        margin-top: 5px;
+    }
+    
+    .playlist-item {
+        padding: 10px 15px;
+        border-bottom: 1px solid #f8f9fa;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .playlist-item:hover {
+        background: #f8f9fa;
+    }
+    
+    .playlist-item.in-playlist {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .playlist-item:last-child {
+        border-bottom: none;
+    }
+    
+    .playlist-info {
+        flex: 1;
+    }
+    
+    .playlist-name {
+        font-weight: 500;
+        margin-bottom: 2px;
+    }
+    
+    .playlist-count {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    
+    .playlist-action {
+        margin-left: 10px;
+        padding: 4px 8px;
+        border: none;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-add-playlist {
+        background: #28a745;
+        color: white;
+    }
+    
+    .btn-remove-playlist {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .create-playlist-link {
+        display: block;
+        padding: 10px 15px;
+        text-align: center;
+        color: var(--orthodox-blue, #2B5AA0);
+        text-decoration: none;
+        border-top: 1px solid #dee2e6;
+        font-weight: 500;
+    }
+    
+    .create-playlist-link:hover {
+        background: #f8f9fa;
+        color: var(--orthodox-blue, #2B5AA0);
+    }
+    
+    .recommendations {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        margin-bottom: 20px;
+    }
+    
+    .recommendation-item {
+        display: flex;
+        gap: 15px;
+        padding: 15px 0;
+        border-bottom: 1px solid #f8f9fa;
+        transition: all 0.3s ease;
+    }
+    
+    .recommendation-item:hover {
+        transform: translateY(-1px);
+    }
+    
+    .recommendation-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .recommendation-thumbnail {
+        width: 100px;
+        height: 75px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .recommendation-info {
+        flex: 1;
+    }
+    
+    .recommendation-title {
+        font-weight: 600;
+        margin-bottom: 5px;
+        line-height: 1.3;
+    }
+    
+    .recommendation-title a {
+        color: var(--orthodox-blue, #2B5AA0);
+        text-decoration: none;
+    }
+    
+    .recommendation-title a:hover {
+        text-decoration: underline;
+    }
+    
+    .recommendation-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+        display: flex;
+        gap: 15px;
+        margin-top: 5px;
+    }
+    
+    /* АДАПТАЦИЯ СУЩЕСТВУЮЩИХ СТИЛЕЙ */
+    .story-video-container {
+        position: relative;
+        background: #000 !important;
+        border-radius: 15px !important;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3) !important;
+        margin-bottom: 30px;
+        min-height: 500px;
+    }
+    
+    .youtube-iframe {
+        width: 100%;
+        height: 500px;
+        border: none;
+        display: block;
+        border-radius: 15px !important;
+    }
+    
+    .video-fallback {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-align: center;
+        padding: 60px 40px;
+        z-index: 10;
+    }
+    
+    .video-fallback.active {
+        display: flex;
+    }
+    
+    .video-controls {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 15;
+    }
+    
+    .control-btn {
+        background: rgba(0,0,0,0.8) !important;
+        color: white !important;
+        border: none !important;
+        padding: 10px 12px !important;
+        border-radius: 8px !important;
+        margin-left: 8px !important;
+        cursor: pointer;
+        transition: all 0.3s ease !important;
+        backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+    }
+    
+    .control-btn:hover {
+        background: rgba(0,0,0,0.9) !important;
+        color: white !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    }
+    
+    .story-header {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 30px;
+    }
+    
+    .action-buttons .btn {
+        flex: 1;
+        min-width: 140px;
+    }
+    
+    @media (max-width: 768px) {
+        .youtube-iframe {
+            height: 300px;
+        }
+        
+        .story-video-container {
+            min-height: 300px;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .action-buttons .btn {
+            width: 100%;
+        }
+        
+        .recommendation-item {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .recommendation-thumbnail {
+            align-self: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Основной контент -->
+    <div class="col-lg-8">
+        <!-- Видео -->
+        <div class="story-video-container">
+            <!-- Управление -->
+            <div class="video-controls">
+                <button class="control-btn" onclick="showIframe()" title="Показать видео здесь">
+                    <i class="fas fa-play-circle"></i>
+                </button>
+                <button class="control-btn" onclick="showFallback()" title="Открыть на YouTube">
+                    <i class="fab fa-youtube"></i>
+                </button>
+            </div>
+            
+            <!-- YouTube iframe -->
+            {% if story.youtube_embed_id %}
+            <iframe 
+                id="youtube-iframe"
+                class="youtube-iframe"
+                src="https://www.youtube.com/embed/{{ story.youtube_embed_id }}?autoplay=0&rel=0&modestbranding=1"
+                allowfullscreen 
+                loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                title="{{ story.title }}"
+                onload="handleIframeLoad()"
+                onerror="handleIframeError()">
+            </iframe>
+            {% endif %}
+            
+            <!-- Fallback при проблемах с iframe -->
+            <div class="video-fallback" id="video-fallback">
+                <div class="video-placeholder">
+                    <i class="fab fa-youtube" style="font-size: 5rem; margin-bottom: 20px; color: #FF0000;"></i>
+                    <h3 style="margin-bottom: 15px;">{{ story.title }}</h3>
+                    <p style="margin-bottom: 30px;">Смотрите это видео на YouTube</p>
+                    <div>
+                        <a href="{{ story.youtube_url }}" target="_blank" class="btn btn-danger btn-lg me-2">
+                            <i class="fas fa-play me-2"></i>
+                            Открыть на YouTube
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Заголовок и описание -->
+        <div class="story-header">
+            <h1 class="mb-3">{{ story.title }}</h1>
+            
+            <!-- Теги -->
+            {% if story.tags.all %}
+            <div class="mb-3">
+                {% for tag in story.tags.all %}
+                <span class="badge me-2 mb-1" style="background-color: {{ tag.color|default:'#6c757d' }};">
+                    <i class="fas fa-tag me-1"></i>{{ tag.name }}
+                </span>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Описание -->
+            {% if story.description %}
+            <div class="story-description">
+                <p class="lead">{{ story.description }}</p>
+            </div>
+            {% endif %}
+            
+            <!-- Метаинформация -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    {% if story.category %}
+                    <p class="mb-2">
+                        <i class="fas fa-folder text-primary me-2"></i>
+                        <strong>Категория:</strong> 
+                        <a href="{% url 'stories:category' story.category.slug %}" class="text-decoration-none">
+                            {{ story.category.name }}
+                        </a>
+                    </p>
+                    {% endif %}
+                    <p class="mb-2">
+                        <i class="fas fa-calendar text-primary me-2"></i>
+                        <strong>Дата:</strong> {{ story.created_at|date:"d.m.Y" }}
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-2">
+                        <i class="fas fa-eye text-primary me-2"></i>
+                        <strong>Просмотры:</strong> {{ story.views_count }}
+                    </p>
+                    <p class="mb-2">
+                        <i class="fas fa-heart text-primary me-2"></i>
+                        <strong>Лайки:</strong> 
+                        <span id="total-likes">{{ likes_count }}</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Кнопки действий -->
+        <div class="action-buttons">
+            <!-- Лайк -->
+            <button class="btn btn-outline-danger like-button {% if user_liked %}btn-danger text-white{% endif %}" 
+                    onclick="likeStory({{ story.id }})" id="main-like-btn">
+                <i class="fas fa-heart{% if user_liked %} text-white{% endif %} me-2"></i>
+                {% if user_liked %}Убрать лайк{% else %}Нравится{% endif %}
+                (<span id="main-likes-count">{{ likes_count }}</span>)
+            </button>
+            
+            <!-- Плейлисты -->
+            {% if user.is_authenticated %}
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" 
+                        data-bs-toggle="dropdown" id="playlistBtn">
+                    <i class="fas fa-list me-2"></i>Добавить в плейлист
+                </button>
+                <div class="dropdown-menu" style="min-width: 300px;">
+                    <div id="playlist-loading" class="text-center p-3">
+                        <i class="fas fa-spinner fa-spin"></i> Загрузка...
+                    </div>
+                    <div id="playlist-list" style="display: none;">
+                        <!-- Плейлисты будут загружены через AJAX -->
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <a href="{% url 'stories:playlists_list' %}" class="btn btn-warning btn-lg">
+                    🗑️ УПРАВЛЯТЬ ПЛЕЙЛИСТАМИ
+                </a>
+            </div>
+            {% endif %}
+            
+            <!-- Поделиться -->
+            <div class="dropdown">
+                <button class="btn btn-outline-success dropdown-toggle" type="button" 
+                        data-bs-toggle="dropdown">
+                    <i class="fas fa-share me-2"></i>Поделиться
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text={{ story.title }}" target="_blank">
+                            <i class="fab fa-telegram text-primary me-2"></i>Telegram
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="https://vk.com/share.php?url={{ request.build_absolute_uri }}&title={{ story.title }}" target="_blank">
+                            <i class="fab fa-vk text-primary me-2"></i>ВКонтакте
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="https://wa.me/?text={{ story.title }} {{ request.build_absolute_uri }}" target="_blank">
+                            <i class="fab fa-whatsapp text-success me-2"></i>WhatsApp
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#" onclick="copyToClipboard('{{ request.build_absolute_uri }}')">
+                            <i class="fas fa-copy text-muted me-2"></i>Скопировать ссылку
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Навигация между рассказами -->
+        {% if previous_story or next_story %}
+        <div class="navigation-buttons bg-light rounded-3 p-3 mb-4">
+            <div class="row">
+                {% if previous_story %}
+                <div class="col-md-6 mb-3">
+                    <a href="{% url 'stories:detail' previous_story.slug %}" 
+                       class="btn btn-outline-primary w-100 text-start p-3">
+                        <i class="fas fa-chevron-left me-2"></i>
+                        <div>
+                            <small class="d-block text-muted">Предыдущий рассказ</small>
+                            <strong>{{ previous_story.title|truncatechars:40 }}</strong>
+                        </div>
+                    </a>
+                </div>
+                {% endif %}
+                
+                {% if next_story %}
+                <div class="col-md-6 mb-3">
+                    <a href="{% url 'stories:detail' next_story.slug %}" 
+                       class="btn btn-outline-primary w-100 text-end p-3">
+                        <div>
+                            <small class="d-block text-muted">Следующий рассказ</small>
+                            <strong>{{ next_story.title|truncatechars:40 }}</strong>
+                        </div>
+                        <i class="fas fa-chevron-right ms-2"></i>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Система комментариев -->
+        {% load comments_extras %}
+        {% show_comments story %}
+    </div>
+    
+    <!-- Сайдбар -->
+    <div class="col-lg-4">
+        <!-- Плейлисты пользователя (всегда показываем для авторизованных) -->
+        {% if user.is_authenticated %}
+        <div class="playlist-widget">
+            <!-- Контрольная кнопка -->
+            <div class="text-center mb-3 p-3 bg-warning rounded">
+                <h4>🏗️ УПРАВЛЕНИЕ ПЛЕЙЛИСТАМИ</h4>
+                <a href="{% url 'stories:playlists_list' %}" class="btn btn-danger btn-lg">
+                    🗑️ УДАЛИТЬ ПЛЕЙЛИСТЫ
+                </a>
+            </div>
+            
+            <!-- Стильный заголовок с иконкой -->
+            <div class="playlist-header d-flex justify-content-between align-items-center mb-3">
+                <h5 class="playlist-title mb-0">
+                    <span class="d-flex align-items-center">
+                        <i class="bi bi-music-note-list me-2"></i>
+                        Мои плейлисты
+                    </span>
+                    <a href="{% url 'stories:playlists_list' %}" class="playlist-icon-btn ms-3">
+                        <i class="bi bi-collection playlist-icon"></i>
+                        <span>Все</span>
+                    </a>
+                </h5>
+            </div>
+            {% if user_playlists %}
+            <div class="playlist-list">
+                {% for playlist in user_playlists %}
+                <a href="{% url 'stories:playlists_list' %}" class="text-decoration-none">
+                    <div class="playlist-item {% if playlist.id in story_in_playlists %}in-playlist{% endif %} p-3 mb-2 border rounded" 
+                         data-playlist-id="{{ playlist.id }}" style="transition: all 0.3s ease; cursor: pointer;"
+                         onmouseover="this.style.backgroundColor='#f8f9fa'; this.style.transform='translateY(-2px)'"
+                         onmouseout="this.style.backgroundColor='white'; this.style.transform='translateY(0)'">
+                        <div class="playlist-info">
+                            <div class="playlist-name fw-bold text-primary">
+                                {{ playlist.title }} → Кликнить для управления
+                            </div>
+                            <div class="playlist-count text-muted">{{ playlist.calculated_stories_count }} рассказ{{ playlist.calculated_stories_count|pluralize:"ов" }}</div>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-3">
+                <i class="fas fa-music" style="font-size: 2rem; color: #ddd; margin-bottom: 10px;"></i>
+                <p class="text-muted mb-2">У вас пока нет плейлистов</p>
+                <a href="{% url 'stories:playlists_list' %}" class="btn btn-warning btn-lg mb-2">
+                    🏗️ ПЕРЕЙТИ К УПРАВЛЕНИЮ
+                </a><br>
+                <a href="{% url 'stories:create_playlist' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i>Создать первый
+                </a>
+            </div>
+            {% endif %}
+            <a href="{% url 'stories:create_playlist' %}" class="create-playlist-link">
+                <i class="fas fa-plus me-2"></i>Создать новый плейлист
+            </a>
+        </div>
+        {% endif %}
+        
+        <!-- Рекомендации -->
+        {% if recommendations %}
+        <div class="recommendations">
+            <h5 class="mb-3">
+                <i class="fas fa-thumbs-up text-primary me-2"></i>Рекомендуем
+            </h5>
+            {% for rec in recommendations %}
+            <div class="recommendation-item">
+                <div class="recommendation-thumbnail">
+                    <i class="fas fa-video"></i>
+                </div>
+                <div class="recommendation-info">
+                    <div class="recommendation-title">
+                        <a href="{% url 'stories:detail' rec.slug %}">{{ rec.title }}</a>
+                    </div>
+                    <div class="recommendation-meta">
+                        <span>
+                            <i class="fas fa-eye me-1"></i>{{ rec.views_count }}
+                        </span>
+                        {% if rec.category %}
+                        <span>
+                            <i class="fas fa-folder me-1"></i>{{ rec.category.name }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Статистика -->
+        <div class="playlist-widget">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar text-primary me-2"></i>Статистика
+                </h5>
+                {% if user.is_authenticated %}
+                <div class="d-flex gap-1">
+                    <a href="{% url 'stories:playlists_list' %}" class="btn btn-success btn-sm" title="Мои плейлисты">
+                        ПЛЕЙЛИСТЫ
+                    </a>
+                    <a href="{% url 'stories:create_playlist' %}" class="btn btn-primary btn-sm" title="Создать плейлист">
+                        СОЗДАТЬ
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            <div class="row">
+                <div class="col-6">
+                    <div class="text-center p-3 bg-light rounded">
+                        <div class="h4 text-primary mb-1">{{ story.views_count }}</div>
+                        <small class="text-muted">просмотров</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="text-center p-3 bg-light rounded">
+                        <div class="h4 text-danger mb-1">{{ likes_count }}</div>
+                        <small class="text-muted">лайков</small>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <small class="text-muted">
+                    Опубликовано {{ story.created_at|date:"d.m.Y" }}
+                </small>
+                {% if user.is_authenticated %}
+                <br>
+                <a href="{% url 'stories:playlists_list' %}" class="btn btn-warning btn-sm mt-2">
+                    🎵 МОИ ПЛЕЙЛИСТЫ
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Похожие рассказы -->
+        {% if related_stories %}
+        <div class="playlist-widget">
+            <h5 class="mb-3">
+                <i class="fas fa-layer-group text-primary me-2"></i>Похожие рассказы
+            </h5>
+            {% for related in related_stories %}
+            <div class="border-bottom pb-3 mb-3">
+                <h6 class="mb-2">
+                    <a href="{% url 'stories:detail' related.slug %}" class="text-decoration-none">
+                        {{ related.title }}
+                    </a>
+                </h6>
+                {% if related.description %}
+                <p class="small text-muted mb-2">{{ related.description|truncatewords:15 }}</p>
+                {% endif %}
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <i class="fas fa-eye me-1"></i>{{ related.views_count }}
+                    </small>
+                    <small class="text-muted">{{ related.created_at|date:"d.m.Y" }}</small>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="text-center">
+                <a href="{% url 'stories:list' %}" class="btn btn-outline-primary btn-sm me-2">
+                    <i class="fas fa-arrow-left me-2"></i>Все рассказы
+                </a>
+                {% if user.is_authenticated %}
+                <a href="{% url 'stories:playlists_list' %}" class="btn btn-outline-secondary btn-sm playlist-control-btn" title="Мои плейлисты">
+                    🎤
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.STORY_ID = {{ story.id }};
+    window.csrfToken = '{{ csrf_token }}';
+    
+    console.log('✅ Story ID:', window.STORY_ID);
+    
+    function likeStory(storyId) {
+        {% if user.is_authenticated %}
+        fetch(`/stories/${storyId}/like/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': window.csrfToken,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            }
+        });
+        {% else %}
+        window.location.href = '/accounts/login/';
+        {% endif %}
+    }
+    
+    function replyToComment(commentId, authorName) {
+        console.log('Ответ на комментарий:', commentId);
+    }
+    
+    function cancelReply() {
+        console.log('Отмена ответа');
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,224 @@
+<!-- Простая форма для добавления комментария -->
+<div id="comments-section" class="mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 id="comments-title">
+            <i class="bi bi-chat-dots"></i>
+            Комментарии <span id="comments-count">(загружается...)</span>
+        </h4>
+        <div class="comment-sort">
+            <select id="comment-sort" class="form-select form-select-sm">
+                <option value="newest">Сначала новые</option>
+                <option value="oldest">Сначала старые</option>
+                <option value="top">Популярные</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Форма добавления комментария -->
+    {% if user.is_authenticated %}
+        <div class="comment-form mb-4">
+            <div class="d-flex">
+                <div class="me-3">
+                    <div class="comment-avatar">
+                        <i class="bi bi-person-circle" style="font-size: 2rem; color: #666;"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1">
+                    <form id="add-comment-form">
+                        {% csrf_token %}
+                        <textarea 
+                            id="comment-text" 
+                            class="form-control" 
+                            placeholder="Добавьте комментарий..." 
+                            rows="3"
+                            maxlength="1000"
+                            required>
+                        </textarea>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <small class="text-muted">
+                                <span id="char-count">0</span>/1000 символов
+                            </small>
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="cancelComment()">
+                                    Отмена
+                                </button>
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-send"></i>
+                                    Отправить
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="comment-auth-prompt mb-4 p-3" style="background: #f8f9fa; border-radius: 8px;">
+            <p class="mb-2">
+                <i class="bi bi-chat-dots me-2"></i>
+                Войдите, чтобы оставлять комментарии
+            </p>
+            <a href="{% url 'account_login' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-box-arrow-in-right me-1"></i>
+                Войти
+            </a>
+            <a href="{% url 'account_signup' %}" class="btn btn-outline-primary btn-sm ms-2">
+                Регистрация
+            </a>
+        </div>
+    {% endif %}
+
+    <!-- Загрузка комментариев -->
+    <div id="comments-loading" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+        <p class="mt-2 text-muted">Загружаем комментарии...</p>
+    </div>
+
+    <!-- Список комментариев -->
+    <div id="comments-list">
+        <!-- Здесь будут загружаться комментарии через AJAX -->
+    </div>
+
+    <!-- Сообщение "нет комментариев" -->
+    <div id="no-comments" class="text-center py-5" style="display: none;">
+        <i class="bi bi-chat-dots" style="font-size: 3rem; color: #ddd;"></i>
+        <h5 class="text-muted mt-3">Пока нет комментариев</h5>
+        <p class="text-muted">Станьте первым, кто оставит комментарий!</p>
+    </div>
+</div>
+
+<script>
+// Простой JavaScript для тестирования
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎬 YouTube-style комментарии загружены!');
+    
+    // Загружаем комментарии
+    loadComments();
+    
+    // Обработчик формы
+    document.getElementById('add-comment-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        addComment();
+    });
+    
+    // Счетчик символов
+    document.getElementById('comment-text')?.addEventListener('input', function() {
+        const count = this.value.length;
+        document.getElementById('char-count').textContent = count;
+    });
+});
+
+function loadComments() {
+    const storySlug = '{{ story.slug }}';
+    
+    fetch(`/stories/ajax/${storySlug}/comments/`)
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('comments-loading').style.display = 'none';
+        
+        if (data.success) {
+            document.getElementById('comments-count').textContent = `(${data.total_comments})`;
+            
+            if (data.total_comments > 0) {
+                document.getElementById('comments-list').innerHTML = data.html || '<p class="text-muted">Пока нет комментариев</p>';
+            } else {
+                document.getElementById('no-comments').style.display = 'block';
+            }
+        } else {
+            document.getElementById('comments-list').innerHTML = '<p class="text-danger">Ошибка загрузки комментариев</p>';
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        document.getElementById('comments-loading').style.display = 'none';
+        document.getElementById('comments-list').innerHTML = '<p class="text-danger">Ошибка загрузки комментариев</p>';
+    });
+}
+
+function addComment() {
+    const text = document.getElementById('comment-text').value.trim();
+    if (!text) return;
+    
+    const storySlug = '{{ story.slug }}';
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch(`/stories/ajax/${storySlug}/comments/add/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            text: text
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('comment-text').value = '';
+            document.getElementById('char-count').textContent = '0';
+            
+            // Перезагружаем комментарии
+            loadComments();
+            
+            showToast('Комментарий добавлен!', 'success');
+        } else {
+            showToast(data.error || 'Ошибка при добавлении комментария', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        showToast('Ошибка при добавлении комментария', 'error');
+    });
+}
+
+function cancelComment() {
+    document.getElementById('comment-text').value = '';
+    document.getElementById('char-count').textContent = '0';
+}
+
+function showToast(message, type = 'info') {
+    // Используем существующую функцию из detail_v2.html
+    if (window.showToast) {
+        window.showToast(message, type);
+    } else {
+        alert(message);
+    }
+}
+</script>
+
+<style>
+.comment-form {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+}
+
+.comment-avatar {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#comment-text {
+    border: 1px solid #e0e0e0;
+    border-radius: 20px;
+    padding: 10px 15px;
+    resize: vertical;
+    min-height: 80px;
+}
+
+#comment-text:focus {
+    border-color: #e74c3c;
+    box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.25);
+}
+
+.comment-sort select {
+    min-width: 150px;
+}
+</style>

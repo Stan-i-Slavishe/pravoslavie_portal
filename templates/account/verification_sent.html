@@ -1,0 +1,356 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Подтвердите ваш email{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --email-primary: #4f46e5;
+    --email-primary-hover: #4338ca;
+    --email-success: #10b981;
+    --email-warning: #f59e0b;
+    --email-info: #3b82f6;
+    --email-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.email-container {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin: -2rem -15px 0;
+    padding: 2rem 15px;
+    position: relative;
+    overflow: hidden;
+}
+
+.email-container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='m0 40 40-40v40zm40 0v-40l-40 40z'/%3E%3C/g%3E%3C/svg%3E");
+    animation: float 20s linear infinite;
+}
+
+@keyframes float {
+    0% { transform: translateX(-50px) translateY(-50px); }
+    100% { transform: translateX(50px) translateY(50px); }
+}
+
+.email-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 3rem;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    z-index: 10;
+    animation: slideInUp 0.8s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.email-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--email-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    position: relative;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.email-icon i {
+    font-size: 2.5rem;
+    color: white;
+    z-index: 2;
+    position: relative;
+}
+
+.email-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.email-message {
+    font-size: 1.1rem;
+    color: #6b7280;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.email-address {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: var(--email-primary);
+    background: #f3f4f6;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    display: inline-block;
+}
+
+.email-steps {
+    background: #f8fafc;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    text-align: left;
+}
+
+.email-steps h5 {
+    color: #374151;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.email-steps h5 i {
+    margin-right: 0.5rem;
+    color: var(--email-info);
+}
+
+.step-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.step-number {
+    background: var(--email-primary);
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+.step-text {
+    color: #4b5563;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.email-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+}
+
+.btn-email {
+    padding: 0.875rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary-email {
+    background: var(--email-gradient);
+    color: white;
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+}
+
+.btn-primary-email:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+    color: white;
+}
+
+.btn-secondary-email {
+    background: white;
+    color: var(--email-primary);
+    border: 2px solid var(--email-primary);
+}
+
+.btn-secondary-email:hover {
+    background: var(--email-primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+}
+
+.email-help {
+    background: #fef3c7;
+    border-left: 4px solid var(--email-warning);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 2rem;
+    text-align: left;
+}
+
+.email-help-title {
+    font-weight: 600;
+    color: #92400e;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.email-help-title i {
+    margin-right: 0.5rem;
+}
+
+.email-help-text {
+    color: #a16207;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .email-container {
+        margin: -1rem -15px 0;
+        padding: 1rem 15px;
+        min-height: 90vh;
+    }
+    
+    .email-card {
+        padding: 2rem 1.5rem;
+        margin: 1rem;
+    }
+    
+    .email-title {
+        font-size: 1.5rem;
+    }
+    
+    .email-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .btn-email {
+        width: 100%;
+        padding: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="email-container">
+    <div class="email-card">
+        <div class="email-icon">
+            <i class="bi bi-envelope-check"></i>
+        </div>
+        
+        <h1 class="email-title">Подтвердите ваш email</h1>
+        
+        <div class="email-message">
+            Мы отправили письмо с подтверждением на ваш email адрес. 
+            Пожалуйста, проверьте почту и следуйте инструкциям для завершения регистрации.
+        </div>
+        
+        <div class="email-address">
+            <i class="bi bi-envelope me-2"></i>
+            stassilin1984@gmail.com
+        </div>
+        
+        <div class="email-steps">
+            <h5><i class="bi bi-list-check"></i>Что делать дальше:</h5>
+            
+            <div class="step-item">
+                <div class="step-number">1</div>
+                <div class="step-text">
+                    Откройте ваш почтовый ящик и найдите письмо от нас
+                </div>
+            </div>
+            
+            <div class="step-item">
+                <div class="step-number">2</div>
+                <div class="step-text">
+                    Если письма нет в основной папке, проверьте папку "Спам"
+                </div>
+            </div>
+            
+            <div class="step-item">
+                <div class="step-number">3</div>
+                <div class="step-text">
+                    Нажмите на ссылку подтверждения в письме
+                </div>
+            </div>
+            
+            <div class="step-item">
+                <div class="step-number">4</div>
+                <div class="step-text">
+                    Войдите в свой аккаунт и начните пользоваться сайтом
+                </div>
+            </div>
+        </div>
+        
+        <div class="email-actions">
+            <a href="{% url 'account_login' %}" class="btn-email btn-primary-email">
+                <i class="bi bi-box-arrow-in-right me-2"></i>
+                Войти в систему
+            </a>
+            
+            <a href="{% url 'account_signup' %}" class="btn-email btn-secondary-email">
+                <i class="bi bi-arrow-left me-2"></i>
+                Регистрация
+            </a>
+        </div>
+        
+        <div class="email-help">
+            <div class="email-help-title">
+                <i class="bi bi-question-circle"></i>
+                Не получили письмо?
+            </div>
+            <div class="email-help-text">
+                Поскольку сейчас включен режим разработки, подтверждение email временно отключено.
+                Вы можете войти в систему, используя свой email и пароль.
+                <br><br>
+                <strong>Для разработки:</strong> проверьте консоль Django - письмо должно отображаться там.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

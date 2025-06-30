@@ -1,0 +1,83 @@
+from django import forms
+from django.core.validators import MinLengthValidator
+from .models import ContactMessage
+
+class ContactForm(forms.ModelForm):
+    """Форма обратной связи"""
+    
+    privacy_consent = forms.BooleanField(
+        required=True,
+        label='Я согласен с обработкой персональных данных',
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input'
+        })
+    )
+    
+    class Meta:
+        model = ContactMessage
+        fields = ['name', 'email', 'subject', 'message']
+        
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите ваше имя'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите ваш email'
+            }),
+            'subject': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'message': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 5,
+                'placeholder': 'Расскажите о вашем вопросе или предложении...'
+            })
+        }
+        
+        labels = {
+            'name': 'Ваше имя *',
+            'email': 'Email *',
+            'subject': 'Тема сообщения',
+            'message': 'Сообщение *'
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Добавляем плейсхолдер для темы
+        self.fields['subject'].empty_label = 'Выберите тему...'
+        
+        # Валидация минимальной длины сообщения
+        self.fields['message'].validators.append(
+            MinLengthValidator(10, message='Сообщение должно содержать минимум 10 символов')
+        )
+    
+    def clean_message(self):
+        """Дополнительная валидация сообщения"""
+        message = self.cleaned_data.get('message', '')
+        
+        # Проверяем, что сообщение не состоит только из пробелов
+        if not message.strip():
+            raise forms.ValidationError('Сообщение не может быть пустым')
+        
+        # Простая проверка на спам (примитивная)
+        spam_words = ['casino', 'viagra', 'lottery', 'winner']
+        if any(word in message.lower() for word in spam_words):
+            raise forms.ValidationError('Сообщение содержит недопустимые слова')
+        
+        return message
+    
+    def clean_name(self):
+        """Валидация имени"""
+        name = self.cleaned_data.get('name', '')
+        
+        if not name.strip():
+            raise forms.ValidationError('Имя не может быть пустым')
+        
+        # Проверяем, что имя содержит хотя бы одну букву
+        if not any(c.isalpha() for c in name):
+            raise forms.ValidationError('Имя должно содержать буквы')
+        
+        return name.strip()

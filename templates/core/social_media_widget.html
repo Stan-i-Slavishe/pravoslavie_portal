@@ -1,0 +1,40 @@
+{% load static %}
+<!-- Виджет социальных сетей -->
+{% if site_settings %}
+    <div class="social-media-section">
+        <h4>Мы в социальных сетях</h4>
+        <p>Следите за нашими новостями и обновлениями</p>
+        
+        <div class="social-buttons">
+            {% if site_settings.social_telegram %}
+                <a href="{{ site_settings.social_telegram }}" 
+                   class="social-btn telegram" 
+                   target="_blank" 
+                   rel="noopener noreferrer">
+                    <i class="bi bi-telegram"></i>
+                    Telegram
+                </a>
+            {% endif %}
+            
+            {% if site_settings.social_youtube %}
+                <a href="{{ site_settings.social_youtube }}" 
+                   class="social-btn youtube" 
+                   target="_blank" 
+                   rel="noopener noreferrer">
+                    <i class="bi bi-youtube"></i>
+                    YouTube
+                </a>
+            {% endif %}
+            
+            {% if site_settings.social_vk %}
+                <a href="{{ site_settings.social_vk }}" 
+                   class="social-btn vk" 
+                   target="_blank" 
+                   rel="noopener noreferrer">
+                    <i class="bi bi-chat-square-text"></i>
+                    ВКонтакте
+                </a>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}

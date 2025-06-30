@@ -1,0 +1,550 @@
+<!-- ИСПРАВЛЕННАЯ СИСТЕМА КОММЕНТАРИЕВ -->
+<div class="youtube-comments mt-4">
+    <!-- Заголовок с количеством комментариев -->
+    <div class="comments-header mb-4">
+        <h4 class="d-flex align-items-center">
+            <i class="fas fa-comments me-2 text-primary"></i>
+            <span id="total-comments-count">';
+
+// UI ЛОГИКА ДЛЯ ОСНОВНОЙ ФОРМЫ (без отправки)
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ UI система комментариев загружена');
+    setupMainCommentFormUI();
+});
+
+function setupMainCommentFormUI() {
+    const textarea = document.getElementById('main-comment-textarea');
+    const actions = document.getElementById('main-comment-actions');
+    const charCounterContainer = document.getElementById('char-counter-container');
+    const form = document.getElementById('main-comment-form');
+    const submitBtn = form?.querySelector('.submit-btn');
+    const charCount = document.getElementById('main-char-count');
+    
+    if (!textarea || !actions || !form) return;
+    
+    // Обработчик фокуса - показывает кнопки И счетчик
+    textarea.addEventListener('focus', () => {
+        textarea.classList.add('expanded');
+        actions.style.display = 'block';
+        
+        // 📊 ПОКАЗАТЬ СЧЕТЧИК ПОД ТЕКСТОВЫМ ПОЛЕМ
+        if (charCounterContainer) {
+            charCounterContainer.style.display = 'block';
+        }
+        
+        textarea.rows = 3;
+    });
+    
+    // Обработчик ввода - счетчик символов и активация кнопки
+    textarea.addEventListener('input', () => {
+        const current = textarea.value.length;
+        charCount.textContent = current; // Показываем количество написанных символов
+        
+        // Изменение цвета счетчика
+        const counter = charCount.parentElement;
+        counter.className = 'text-muted char-counter small';
+        if (current > 1800) counter.classList.add('text-warning'); // Желтый при приближении к лимиту
+        if (current > 1950) counter.classList.add('text-danger'); // Красный при приближении к максимуму
+        
+        // Активация кнопки отправки
+        if (submitBtn) {
+            submitBtn.disabled = textarea.value.trim().length === 0;
+        }
+    });
+    
+    // ✅ НЕ ПЕРЕХВАТЫВАЕМ SUBMIT - это делает AJAX система!
+    // Ctrl+Enter для отправки (будет перехвачено AJAX системой)
+    textarea.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'Enter' && !submitBtn.disabled) {
+            e.preventDefault();
+            form.dispatchEvent(new Event('submit', { bubbles: true }));
+        }
+    });
+}
+
+// НОВОЕ: Функция показа/скрытия ответов (как в YouTube)
+function toggleRepliesVisibility(commentId) {
+    const repliesContent = document.getElementById(`replies-content-${commentId}`);
+    const toggleButton = document.querySelector(`[data-comment-id="${commentId}"].replies-toggle-btn`);
+    const toggleIcon = toggleButton.querySelector('.toggle-icon');
+    const toggleText = toggleButton.querySelector('.toggle-text');
+    const repliesCount = toggleButton.dataset.repliesCount;
+    
+    if (!repliesContent || !toggleButton) return;
+    
+    const isHidden = repliesContent.style.display === 'none';
+    
+    if (isHidden) {
+        // Показываем ответы
+        repliesContent.style.display = 'block';
+        
+        // Меняем иконку и текст
+        toggleIcon.className = 'fas fa-chevron-up me-1 toggle-icon';
+        
+        let replyText = 'ответов';
+        if (repliesCount == 1) {
+            replyText = 'ответ';
+        } else if (repliesCount < 5) {
+            replyText = 'ответа';
+        }
+        
+        toggleText.textContent = `Скрыть ${repliesCount} ${replyText}`;
+        
+        // Плавная анимация появления
+        repliesContent.style.opacity = '0';
+        repliesContent.style.transform = 'translateY(-10px)';
+        
+        setTimeout(() => {
+            repliesContent.style.transition = 'all 0.3s ease';
+            repliesContent.style.opacity = '1';
+            repliesContent.style.transform = 'translateY(0)';
+        }, 10);
+        
+    } else {
+        // Скрываем ответы
+        repliesContent.style.transition = 'all 0.2s ease';
+        repliesContent.style.opacity = '0';
+        repliesContent.style.transform = 'translateY(-10px)';
+        
+        setTimeout(() => {
+            repliesContent.style.display = 'none';
+            repliesContent.style.transition = '';
+        }, 200);
+        
+        // Меняем иконку и текст
+        toggleIcon.className = 'fas fa-chevron-down me-1 toggle-icon';
+        
+        let replyText = 'ответов';
+        if (repliesCount == 1) {
+            replyText = 'ответ';
+        } else if (repliesCount < 5) {
+            replyText = 'ответа';
+        }
+        
+        toggleText.textContent = `Показать ${repliesCount} ${replyText}`;
+    }
+}
+
+// Вспомогательные функции для совместимости
+function focusMainComment() {
+    const textarea = document.getElementById('main-comment-textarea');
+    if (textarea) {
+        textarea.focus();
+    }
+}
+
+function cancelMainComment() {
+    const textarea = document.getElementById('main-comment-textarea');
+    const actions = document.getElementById('main-comment-actions');
+    const charCounterContainer = document.getElementById('char-counter-container');
+    const charCount = document.getElementById('main-char-count');
+    const submitBtn = document.querySelector('#main-comment-form .submit-btn');
+    
+    if (textarea) {
+        textarea.value = '';
+        textarea.classList.remove('expanded');
+        textarea.rows = 1;
+    }
+    
+    if (actions) {
+        actions.style.display = 'none';
+    }
+    
+    // 📊 СКРЫТЬ СЧЕТЧИК
+    if (charCounterContainer) {
+        charCounterContainer.style.display = 'none';
+    }
+    
+    if (charCount) {
+        charCount.textContent = '0'; // Показываем 0 написанных символов
+        charCount.parentElement.className = 'text-muted char-counter small';
+    }
+    
+    if (submitBtn) {
+        submitBtn.disabled = true;
+    }
+}
+</script>
+
+<!-- СТИЛИ -->
+<style>
+.youtube-comments {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    transition: transform 0.2s ease;
+}
+
+.avatar-circle:hover {
+    transform: scale(1.05);
+}
+
+.avatar-circle-small {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 11px;
+}
+
+.comment-item {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.comment-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.comment-author {
+    color: #065fd4;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.comment-time {
+    font-size: 12px;
+}
+
+.comment-text p {
+    color: #0f0f0f;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.reaction-btn {
+    border-radius: 18px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.reaction-btn:hover {
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+.reply-btn {
+    border-radius: 18px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.reply-form-inline {
+    border-left: 3px solid #007bff;
+    background: #f8f9fa !important;
+}
+
+.replies-section {
+    background: rgba(248, 249, 250, 0.7);
+    border-radius: 8px;
+    padding: 0.5rem;
+}
+
+.reply-item {
+    background: white;
+    border-radius: 6px;
+    padding: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.reply-author {
+    color: #065fd4;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+.reply-time {
+    font-size: 11px;
+}
+
+.auth-prompt {
+    border: 2px dashed #dee2e6;
+}
+
+.no-comments {
+    background: white;
+    border-radius: 12px;
+    margin: 2rem 0;
+}
+
+.char-counter.text-warning {
+    color: #ffc107 !important;
+}
+
+.char-counter.text-danger {
+    color: #dc3545 !important;
+}
+
+/* AJAX кнопки реакций */
+.ajax-reaction-btn {
+    border-radius: 18px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.ajax-reaction-btn:hover {
+    transform: translateY(-1px);
+}
+
+.ajax-reaction-btn.active {
+    background-color: var(--bs-primary);
+    color: white;
+    border-color: var(--bs-primary);
+}
+
+.ajax-reaction-btn.like-btn.active {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.ajax-reaction-btn.dislike-btn.active {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.reaction-clicked {
+    transform: scale(1.2);
+    transition: transform 0.2s ease;
+}
+
+/* Кнопка показа/скрытия ответов (как в YouTube) */
+.replies-toggle-btn {
+    font-size: 13px;
+    font-weight: 600;
+    color: #065fd4 !important;
+    text-decoration: none;
+    border: none;
+    background: none;
+    padding: 8px 0;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+.replies-toggle-btn:hover {
+    color: #0a84ff !important;
+    background-color: rgba(6, 95, 212, 0.1);
+    border-radius: 16px;
+    padding: 8px 12px;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.replies-toggle-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(6, 95, 212, 0.2);
+    border-radius: 16px;
+}
+
+.replies-toggle-btn .toggle-icon {
+    transition: transform 0.3s ease;
+    font-size: 12px;
+}
+
+.replies-toggle-btn .toggle-text {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Контейнер ответов */
+.replies-section {
+    background: rgba(248, 249, 250, 0.7);
+    border-radius: 8px;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+/* Красивая закругленная линия-скобка для ответов */
+.curved-reply-border {
+    position: relative;
+    margin-left: 20px;
+}
+
+.curved-reply-border::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 0;
+    bottom: 30px;
+    width: 16px;
+    border-left: 3px solid #2B5AA0; /* Основной цвет сайта */
+    border-bottom: 3px solid #2B5AA0;
+    border-bottom-left-radius: 16px;
+}
+
+/* Анимация появления ответов */
+.animate-fade-in {
+    animation: fadeInReply 0.4s ease-out;
+}
+
+@keyframes fadeInReply {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Исправленное выравнивание кнопок */
+.action-buttons {
+    gap: 8px;
+}
+
+.action-buttons .btn {
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 18px;
+    line-height: 1;
+    white-space: nowrap;
+    min-width: 80px; /* Минимальная ширина кнопки */
+}
+
+.action-buttons .btn-secondary {
+    background-color: #f1f3f4;
+    border-color: #f1f3f4;
+    color: #3c4043;
+}
+
+.action-buttons .btn-secondary:hover {
+    background-color: #e8eaed;
+    border-color: #e8eaed;
+    color: #3c4043;
+}
+
+.action-buttons .btn-primary {
+    background-color: #065fd4;
+    border-color: #065fd4;
+    color: white;
+    min-width: 140px; /* Увеличиваем кнопку "Комментировать" */
+}
+
+.action-buttons .btn-primary:hover {
+    background-color: #0a84ff;
+    border-color: #0a84ff;
+}
+
+.action-buttons .btn-primary:disabled {
+    background-color: #cccccc;
+    border-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .youtube-comments {
+        padding: 1rem;
+        border-radius: 8px;
+    }
+    
+    .avatar-circle {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+    
+    .avatar-circle-small {
+        width: 24px;
+        height: 24px;
+        font-size: 10px;
+    }
+    
+    .comment-item {
+        padding: 0.75rem;
+    }
+    
+    .replies-section {
+        padding: 0.25rem;
+    }
+
+    /* Исправление кнопок для мобильных */
+    .action-buttons {
+        gap: 6px; /* Меньший отступ */
+    }
+    
+    .action-buttons .btn {
+        font-size: 11px;
+        padding: 6px 12px;
+        min-height: 32px;
+        flex: 1; /* Кнопки делят пространство поровну */
+        white-space: nowrap;
+    }
+    
+    .action-buttons .btn-primary {
+        min-width: 110px; /* Минимальная ширина для текста с иконкой */
+    }
+    
+    .action-buttons .btn-secondary {
+        min-width: 70px;
+    }
+    
+    /* Адаптивное текстовое поле */
+    .add-comment-section {
+        padding: 0 0.5rem;
+    }
+    
+    .flex-grow-1 {
+        min-width: 0; /* Позволяет сжиматься */
+        width: 100%;
+    }
+    
+    #main-comment-textarea {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Счетчик символов */
+    .char-counter {
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* Контейнер действий */
+    #main-comment-actions {
+        margin-top: 8px;
+    }
+    
+    .d-flex.justify-content-between {
+        flex-direction: row; /* Возвращаем горизонтальное расположение */
+        gap: 8px;
+        align-items: center;
+    }
+}
+</style>

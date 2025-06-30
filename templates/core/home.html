@@ -1,42 +1,879 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Главная - Православный портал{% endblock %}
+{% block title %}Главная - {{ site_settings.site_name|default:"Добрые истории" }}{% endblock %}
 
 {% block content %}
-<div class="row">
+<!-- Главная секция в стиле Azbyka -->
+<div class="hero-section">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <h1>
+                <span class="orthodox-cross"></span>
+                Добро пожаловать в теплый мир Добрых историй
+            </h1>
+            <p class="lead">{{ site_settings.site_description|default:"Духовные рассказы, книги и аудио для современного человека" }}</p>
+            <div class="mt-4">
+                {% url 'stories:list' as stories_url %}
+                <a href="{% if stories_url %}{{ stories_url }}{% else %}#stories{% endif %}" class="btn btn-primary">
+                    <i class="bi bi-play-circle me-2"></i>
+                    Видео-рассказы
+                </a>
+                {% url 'books:list' as books_url %}
+                <a href="{% if books_url %}{{ books_url }}{% else %}#books{% endif %}" class="btn btn-outline-light">
+                    <i class="bi bi-book me-2"></i>
+                    Библиотека
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-4 text-center">
+            <i class="bi bi-heart-fill" style="font-size: 6rem; color: var(--accent-color); opacity: 0.3;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Основные разделы -->
+<div class="row mb-5">
     <div class="col-12">
-        <h1>Добро пожаловать в Православный портал</h1>
-        <p>Сайт находится в разработке...</p>
-        
-        <div class="row mt-4">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Видео-рассказы</h5>
-                        <p class="card-text">Духовные истории и свидетельства</p>
-                        <a href="#" class="btn btn-primary">Смотреть</a>
-                    </div>
+        <h2 class="text-center mb-4">Наши разделы</h2>
+    </div>
+</div>
+
+<div class="row g-4 mb-5 justify-content-center">
+    <!-- Видео-рассказы -->
+    <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-play-circle-fill section-icon icon-stories"></i>
                 </div>
+                <h5 class="card-title text-center">Видео-рассказы</h5>
+                <p class="card-text">Духовные истории и свидетельства, которые вдохновляют и поучают</p>
+                {% if story_categories %}
+                    <div class="mb-3">
+                        {% for category in story_categories %}
+                            <span class="badge" style="background-color: {{ category.color }}; color: white; margin: 0.1rem;">{{ category.name }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="mb-3">
+                        <span class="badge bg-danger text-white">Духовные истории</span>
+                        <span class="badge bg-warning text-white">Чудеса</span>
+                    </div>
+                {% endif %}
+                {% url 'stories:list' as stories_url %}
+                <a href="{% if stories_url %}{{ stories_url }}{% else %}#stories{% endif %}" class="btn btn-primary">
+                    Перейти
+                </a>
             </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Библиотека</h5>
-                        <p class="card-text">Книги и статьи</p>
-                        <a href="#" class="btn btn-primary">Читать</a>
-                    </div>
+        </div>
+    </div>
+
+    <!-- Библиотека -->
+    <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-book-fill section-icon icon-books"></i>
                 </div>
+                <h5 class="card-title text-center">Библиотека</h5>
+                <p class="card-text">Православные книги, статьи и публикации для углубления веры</p>
+                {% if book_categories %}
+                    <div class="mb-3">
+                        {% for category in book_categories %}
+                            <span class="badge" style="background-color: {{ category.color }}; color: white; margin: 0.1rem;">{{ category.name }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="mb-3">
+                        <span class="badge bg-success text-white">Богословие</span>
+                        <span class="badge bg-primary text-white">Жития</span>
+                    </div>
+                {% endif %}
+                {% url 'books:list' as books_url %}
+                <a href="{% if books_url %}{{ books_url }}{% else %}#books{% endif %}" class="btn btn-primary">
+                    Перейти
+                </a>
             </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Аудио</h5>
-                        <p class="card-text">Подкасты и аудиокниги</p>
-                        <a href="#" class="btn btn-primary">Слушать</a>
-                    </div>
+        </div>
+    </div>
+
+    <!-- Аудио -->
+    <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-music-note-beamed section-icon icon-audio"></i>
                 </div>
+                <h5 class="card-title text-center">Аудио-контент</h5>
+                <p class="card-text">Проповеди, акафисты, духовная музыка и аудиокниги</p>
+                {% if audio_categories %}
+                    <div class="mb-3">
+                        {% for category in audio_categories %}
+                            <span class="badge" style="background-color: {{ category.color }}; color: white; margin: 0.1rem;">{{ category.name }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="mb-3">
+                        <span class="badge bg-info text-white">Проповеди</span>
+                        <span class="badge bg-warning text-white">Акафисты</span>
+                    </div>
+                {% endif %}
+                {% url 'audio:list' as audio_url %}
+                <a href="{% if audio_url %}{{ audio_url }}{% else %}#audio{% endif %}" class="btn btn-primary">
+                    Перейти
+                </a>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Популярные теги -->
+<div class="popular-tags-section">
+    <div class="row">
+        <div class="col-12">
+            <h3>Популярные темы</h3>
+            <div class="tag-cloud-wrapper">
+                <div class="tag-cloud">
+                    {% if popular_tags %}
+                        {% for tag in popular_tags %}
+                            {% if tag.slug %}
+                                {% url 'core:tag' slug=tag.slug as tag_url %}
+                                <a href="{% if tag_url %}{{ tag_url }}{% else %}#tag-{{ tag.slug }}{% endif %}" 
+                                   class="badge rounded-pill me-2 mb-2 tag-link"
+                                   style="background-color: {{ tag.color }}; text-decoration: none; padding: 8px 12px;">
+                                    {{ tag.name }}
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <!-- Демо теги -->
+                        <a href="#" class="badge rounded-pill tag-link me-2 mb-2" style="background-color: #e74c3c; color: white; text-decoration: none; padding: 8px 12px;">вера</a>
+                        <a href="#" class="badge rounded-pill tag-link me-2 mb-2" style="background-color: #3498db; color: white; text-decoration: none; padding: 8px 12px;">исповедь</a>
+                        <a href="#" class="badge rounded-pill tag-link me-2 mb-2" style="background-color: #2ecc71; color: white; text-decoration: none; padding: 8px 12px;">воспитание</a>
+                        <a href="#" class="badge rounded-pill tag-link me-2 mb-2" style="background-color: #f39c12; color: white; text-decoration: none; padding: 8px 12px;">молитва</a>
+                        <a href="#" class="badge rounded-pill tag-link me-2 mb-2" style="background-color: #9b59b6; color: white; text-decoration: none; padding: 8px 12px;">любовь</a>
+                        <a href="#" class="badge rounded-pill tag-link me-2 mb-2" style="background-color: #1abc9c; color: white; text-decoration: none; padding: 8px 12px;">надежда</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="all-tags-btn">
+                {% url 'core:tags' as tags_url %}
+                <a href="{% if tags_url %}{{ tags_url }}{% else %}#tags{% endif %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-tags"></i> Все теги
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Социальные сети -->
+{% include 'core/social_media_widget.html' %}
+
+<!-- Призыв к действию -->
+<div class="cta-section" id="ctaSection">
+    <button class="cta-close" onclick="closeCTA()" title="Закрыть">&times;</button>
+    <h3>Присоединяйтесь к нам!</h3>
+    <p>Получайте доступ к эксклюзивным материалам</p>
+    <div>
+        {% if not user.is_authenticated %}
+            <a href="{% url 'account_signup' %}" class="btn btn-primary">
+                <i class="bi bi-person-plus me-1"></i>
+                Регистрация
+            </a>
+            <a href="{% url 'account_login' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-box-arrow-in-right me-1"></i>
+                Войти
+            </a>
+        {% else %}
+            {% url 'shop:catalog' as shop_url %}
+            <a href="{% if shop_url %}{{ shop_url }}{% else %}/shop/{% endif %}" class="btn btn-primary">
+                <i class="bi bi-star me-1"></i>
+                Магазин
+            </a>
+        {% endif %}
+        
+        <!-- Кнопка подписки на обновления -->
+        <button class="btn btn-warning ms-2" 
+                onclick="event.preventDefault(); event.stopPropagation(); console.log('🔴 Клик по кнопке!'); showOurSubscriptionModal(); return false;" 
+                id="subscribe-updates-btn"
+                type="button">
+            <i class="bi bi-bell me-1"></i>
+            Подписаться на обновления
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 🏠 Функция закрытия CTA блока
+function closeCTA() {
+    // Ищем CTA блок по разным способам
+    let ctaSection = document.getElementById('ctaSection');
+    
+    if (!ctaSection) {
+        ctaSection = document.querySelector('.cta-section');
+    }
+    
+    if (!ctaSection) {
+        ctaSection = document.querySelector('[class*="cta"]');
+    }
+    
+    if (ctaSection) {
+        // Мгновенное скрытие
+        ctaSection.style.display = 'none';
+        ctaSection.style.visibility = 'hidden';
+        ctaSection.style.opacity = '0';
+        
+        // Перемещение за пределы экрана
+        ctaSection.style.transform = 'translateX(200%)';
+        
+        // Классы скрытия
+        ctaSection.classList.add('hidden');
+        ctaSection.classList.add('d-none');
+        
+        // Красивая анимация
+        ctaSection.style.animation = 'slideOutRight 0.4s ease forwards';
+        
+        // Сохраняем в localStorage
+        localStorage.setItem('ctaClosed', 'true');
+        
+        // Полное удаление через 500мс
+        setTimeout(() => {
+            if (ctaSection && ctaSection.parentNode) {
+                ctaSection.remove();
+            }
+        }, 500);
+    } else {
+        // Последняя попытка - удаляем все возможные CTA
+        const allCTA = document.querySelectorAll('.cta-section, #ctaSection, [class*="cta"], [id*="cta"]');
+        allCTA.forEach((el) => {
+            el.style.display = 'none';
+            el.remove();
+        });
+    }
+}
+
+// Проверяем при загрузке, нужно ли скрывать CTA
+document.addEventListener('DOMContentLoaded', function() {
+    const ctaSection = document.getElementById('ctaSection');
+    const ctaClosed = localStorage.getItem('ctaClosed');
+    
+    if (ctaClosed === 'true' && ctaSection) {
+        ctaSection.classList.add('hidden');
+    }
+    
+    // Настраиваем кнопку подписки
+    const subscribeBtn = document.getElementById('subscribe-updates-btn');
+    if (subscribeBtn) {
+        subscribeBtn.onclick = null;
+        subscribeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            showOurSubscriptionModal();
+            return false;
+        }, true);
+    }
+    
+    // Настраиваем CTA блок
+    if (ctaSection) {
+        ctaSection.style.zIndex = '9999';
+        ctaSection.style.pointerEvents = 'auto';
+        
+        // Настраиваем кнопку закрытия
+        const closeButton = ctaSection.querySelector('.cta-close');
+        if (closeButton) {
+            closeButton.onclick = null;
+            closeButton.removeAttribute('onclick');
+            closeButton.style.pointerEvents = 'auto';
+            closeButton.style.zIndex = '10001';
+            closeButton.style.position = 'absolute';
+            closeButton.style.cursor = 'pointer';
+            
+            closeButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                closeCTA();
+                return false;
+            }, true);
+            
+            closeButton.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                closeCTA();
+            }, true);
+            
+            closeButton.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                closeCTA();
+            }, true);
+        }
+        
+        // Настраиваем остальные кнопки
+        const ctaButtons = ctaSection.querySelectorAll('a, button');
+        ctaButtons.forEach((btn) => {
+            btn.style.pointerEvents = 'auto';
+            btn.style.zIndex = '10000';
+            btn.style.position = 'relative';
+            btn.style.cursor = 'pointer';
+            btn.removeEventListener('click', handleCTAClick);
+            btn.addEventListener('click', handleCTAClick, true);
+        });
+    }
+});
+
+// Обработчик кликов по CTA кнопкам
+function handleCTAClick(e) {
+    // Проверяем, что ссылка не пустая
+    if (!this.href || this.href.includes('#')) {
+        e.preventDefault();
+        e.stopPropagation();
+        alert('🔧 Эта кнопка в разработке. Текст: ' + this.textContent.trim());
+        return false;
+    }
+    
+    // Если это кнопка закрытия
+    if (this.classList.contains('cta-close')) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeCTA();
+        return false;
+    }
+    
+    // Для остальных кнопок разрешаем переход
+    return true;
+}
+
+// 📧 Модальное окно подписки на обновления
+function showOurSubscriptionModal() {
+    // Удаляем старые модальные окна
+    const existingModals = document.querySelectorAll('.subscription-modal, .subscribe-popup');
+    existingModals.forEach(modal => modal.remove());
+    
+    const modal = document.createElement('div');
+    modal.className = 'subscription-modal';
+    modal.id = 'our-subscription-modal'; // Добавляем ID для надежного поиска
+    modal.innerHTML = `
+        <div class="modal-overlay" style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 20000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        ">
+            <div class="modal-content" style="
+                background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+                border-radius: 15px;
+                padding: 25px;
+                max-width: 480px;
+                width: 90%;
+                max-height: 90vh;
+                overflow-y: auto;
+                text-align: center;
+                box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+                position: relative;
+                animation: slideInUp 0.4s ease;
+                border: 2px solid #2B5AA0;
+            ">
+                <button class="close-btn" onclick="closeOurSubscriptionModal(); return false;" style="
+                    position: absolute;
+                    top: 15px;
+                    right: 20px;
+                    background: none;
+                    border: none;
+                    font-size: 28px;
+                    cursor: pointer;
+                    color: #999;
+                    transition: color 0.3s;
+                    padding: 5px;
+                ">&times;</button>
+                
+                <div style="margin-bottom: 20px;">
+                    <div style="
+                        background: linear-gradient(135deg, #2B5AA0, #1e4080);
+                        width: 60px;
+                        height: 60px;
+                        border-radius: 50%;
+                        margin: 0 auto 15px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        box-shadow: 0 6px 20px rgba(43, 90, 160, 0.3);
+                    ">
+                        <i class="bi bi-bell-fill" style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    
+                    <h3 style="color: #2B5AA0; margin-bottom: 8px; font-size: 1.5rem; font-weight: 700;">
+                        🔔 Подписаться на обновления
+                    </h3>
+                    <p style="color: #666; font-size: 1rem; line-height: 1.4; margin-bottom: 0;">
+                        Будьте в курсе всех новостей и получайте эксклюзивный контент!
+                    </p>
+                </div>
+                
+                <div style="margin-bottom: 20px; text-align: left;">
+                    <label style="display: block; margin-bottom: 12px; font-weight: 600; color: #333; font-size: 14px;">
+                        📫 Ваш email адрес:
+                    </label>
+                    <input type="email" 
+                           id="subscription-email" 
+                           placeholder="Введите ваш email" 
+                           style="
+                               width: 100%;
+                               padding: 12px 16px;
+                               border: 2px solid #e1e5e9;
+                               border-radius: 10px;
+                               font-size: 15px;
+                               transition: all 0.3s ease;
+                               background: white;
+                               box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+                           "
+                           required>
+                </div>
+                
+                <div style="margin-bottom: 20px; text-align: left;">
+                    <label style="display: block; margin-bottom: 12px; font-weight: 600; color: #333; font-size: 14px;">
+                        🎆 На что хотите подписаться? (можно выбрать несколько):
+                    </label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                        <label style="
+                            display: flex;
+                            align-items: center;
+                            padding: 8px 12px;
+                            background: #f8f9fa;
+                            border: 2px solid #e9ecef;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            font-size: 13px;
+                        " class="subscription-option">
+                            <input type="checkbox" name="subscription_types" value="stories" 
+                                   style="margin-right: 8px; transform: scale(1.1);">
+                            <span>🎥 Новые видео-рассказы</span>
+                        </label>
+                        
+                        <label style="
+                            display: flex;
+                            align-items: center;
+                            padding: 8px 12px;
+                            background: #f8f9fa;
+                            border: 2px solid #e9ecef;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            font-size: 13px;
+                        " class="subscription-option">
+                            <input type="checkbox" name="subscription_types" value="books" 
+                                   style="margin-right: 8px; transform: scale(1.1);">
+                            <span>📚 Новые книги</span>
+                        </label>
+                        
+                        <label style="
+                            display: flex;
+                            align-items: center;
+                            padding: 8px 12px;
+                            background: #f8f9fa;
+                            border: 2px solid #e9ecef;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            font-size: 13px;
+                        " class="subscription-option">
+                            <input type="checkbox" name="subscription_types" value="fairy_tales" 
+                                   style="margin-right: 8px; transform: scale(1.1);">
+                            <span>🧚‍♀️ Терапевтические сказки</span>
+                        </label>
+                        
+                        <label style="
+                            display: flex;
+                            align-items: center;
+                            padding: 8px 12px;
+                            background: #f8f9fa;
+                            border: 2px solid #e9ecef;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            font-size: 13px;
+                        " class="subscription-option">
+                            <input type="checkbox" name="subscription_types" value="audio" 
+                                   style="margin-right: 8px; transform: scale(1.1);">
+                            <span>🎧 Аудио-контент</span>
+                        </label>
+                        
+                        <label style="
+                            display: flex;
+                            align-items: center;
+                            padding: 8px 12px;
+                            background: #f8f9fa;
+                            border: 2px solid #e9ecef;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            font-size: 13px;
+                        " class="subscription-option">
+                            <input type="checkbox" name="subscription_types" value="shop" 
+                                   style="margin-right: 8px; transform: scale(1.1);">
+                            <span>🛒 Запуск магазина</span>
+                        </label>
+                        
+                        <label style="
+                            display: flex;
+                            align-items: center;
+                            padding: 8px 12px;
+                            background: #f8f9fa;
+                            border: 2px solid #e9ecef;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            font-size: 13px;
+                        " class="subscription-option">
+                            <input type="checkbox" name="subscription_types" value="special" 
+                                   style="margin-right: 8px; transform: scale(1.1);">
+                            <span>✨ Специальные предложения</span>
+                        </label>
+                    </div>
+                    
+                    <div style="margin-top: 10px;">
+                        <label style="
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            padding: 10px;
+                            background: linear-gradient(135deg, #ffd700, #ffed4e);
+                            border: 2px solid #f39c12;
+                            border-radius: 10px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            font-weight: 600;
+                            font-size: 13px;
+                            color: #8b4513;
+                        " class="subscription-option special">
+                            <input type="checkbox" name="subscription_types" value="all" 
+                                   style="margin-right: 8px; transform: scale(1.2);">
+                            <span>🌟 Подписаться на всё сразу!</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 12px; margin-top: 20px;">
+                    <button onclick="submitSubscription()" style="
+                        flex: 1;
+                        background: linear-gradient(135deg, #2B5AA0, #1e4080);
+                        color: white;
+                        border: none;
+                        padding: 12px 20px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-weight: 700;
+                        font-size: 15px;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 3px 12px rgba(43, 90, 160, 0.3);
+                    ">
+                        🚀 Подписаться
+                    </button>
+                    <button onclick="closeOurSubscriptionModal()" style="
+                        background: #6c757d;
+                        color: white;
+                        border: none;
+                        padding: 12px 20px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 14px;
+                        transition: all 0.3s ease;
+                    ">
+                        Отмена
+                    </button>
+                </div>
+                
+                <div id="subscription-result" style="
+                    margin-top: 15px;
+                    padding: 12px;
+                    border-radius: 8px;
+                    display: none;
+                    font-weight: 600;
+                    font-size: 14px;
+                "></div>
+                
+                <div style="margin-top: 15px; font-size: 11px; color: #999; text-align: center;">
+                    🔒 Мы ценим вашу конфиденциальность. Никому не передаем ваши данные.
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Добавляем CSS анимации
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideInUp {
+            from { 
+                opacity: 0;
+                transform: translateY(50px) scale(0.95);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        @keyframes fadeOut {
+            from { 
+                opacity: 1; 
+                transform: scale(1);
+            }
+            to { 
+                opacity: 0;
+                transform: scale(0.95);
+            }
+        }
+        
+        .subscription-option:hover {
+            background: #e3f2fd !important;
+            border-color: #2B5AA0 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(43, 90, 160, 0.2);
+        }
+        
+        .subscription-option.special:hover {
+            background: linear-gradient(135deg, #ffed4e, #ffd700) !important;
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+        }
+        
+        .subscription-option input:checked {
+            accent-color: #2B5AA0;
+        }
+        
+        #subscription-email:focus {
+            border-color: #2B5AA0;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(43, 90, 160, 0.1);
+        }
+        
+        .close-btn:hover {
+            color: #dc3545 !important;
+            transform: scale(1.1);
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Фокус на поле email
+    setTimeout(() => {
+        const emailField = document.getElementById('subscription-email');
+        if (emailField) emailField.focus();
+    }, 400);
+    
+    // 🔧 Настраиваем крестик отдельно
+    const closeBtn = modal.querySelector('.close-btn');
+    if (closeBtn) {
+        closeBtn.onclick = null;
+        closeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeOurSubscriptionModal();
+            return false;
+        }, true);
+    }
+    
+    // Закрытие по клику вне модального окна
+    modal.querySelector('.modal-overlay').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeOurSubscriptionModal();
+        }
+    });
+    
+    // Закрытие по Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeOurSubscriptionModal();
+        }
+    });
+    
+    // Обработка "Подписаться на всё"
+    const allCheckbox = modal.querySelector('input[value="all"]');
+    const otherCheckboxes = modal.querySelectorAll('input[name="subscription_types"]:not([value="all"])');
+    
+    allCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            otherCheckboxes.forEach(cb => {
+                cb.checked = true;
+                cb.parentElement.style.background = '#e3f2fd';
+                cb.parentElement.style.borderColor = '#2B5AA0';
+            });
+        } else {
+            otherCheckboxes.forEach(cb => {
+                cb.checked = false;
+                cb.parentElement.style.background = '#f8f9fa';
+                cb.parentElement.style.borderColor = '#e9ecef';
+            });
+        }
+    });
+    
+    // Обработка индивидуальных чекбоксов
+    otherCheckboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            if (!this.checked) {
+                allCheckbox.checked = false;
+                allCheckbox.parentElement.style.background = 'linear-gradient(135deg, #ffd700, #ffed4e)';
+                allCheckbox.parentElement.style.borderColor = '#f39c12';
+            }
+            
+            // Визуальная обратная связь
+            if (this.checked) {
+                this.parentElement.style.background = '#e3f2fd';
+                this.parentElement.style.borderColor = '#2B5AA0';
+            } else {
+                this.parentElement.style.background = '#f8f9fa';
+                this.parentElement.style.borderColor = '#e9ecef';
+            }
+            
+            // Проверяем, все ли отмечены
+            const allChecked = Array.from(otherCheckboxes).every(checkbox => checkbox.checked);
+            if (allChecked) {
+                allCheckbox.checked = true;
+                allCheckbox.parentElement.style.background = 'linear-gradient(135deg, #90EE90, #32CD32)';
+                allCheckbox.parentElement.style.borderColor = '#28a745';
+            }
+        });
+    });
+}
+
+// Закрытие модального окна
+function closeOurSubscriptionModal() {
+    console.log('💫 Закрываем модальное окно...');
+    
+    // Ищем модальное окно по ID (приоритет)
+    let modal = document.getElementById('our-subscription-modal');
+    
+    if (!modal) {
+        // Если по ID не нашли, ищем по классам
+        modal = document.querySelector('.subscription-modal') || 
+                document.querySelector('[class*="subscription"]') ||
+                document.querySelector('.modal-overlay')?.parentElement;
+    }
+    
+    if (modal) {
+        console.log('✅ Найдено модальное окно:', modal);
+        
+        // Добавляем анимацию закрытия
+        modal.style.animation = 'fadeOut 0.3s ease forwards';
+        modal.style.opacity = '0';
+        modal.style.transform = 'scale(0.9)';
+        
+        setTimeout(() => {
+            if (modal && modal.parentNode) {
+                modal.remove();
+                console.log('🗑️ Модальное окно удалено');
+            }
+        }, 300);
+    } else {
+        console.log('❌ Модальное окно не найдено!');
+        // Принудительно удаляем все возможные модальные окна
+        const allModals = document.querySelectorAll('.subscription-modal, .modal-overlay, [class*="modal"], #our-subscription-modal');
+        console.log('🧹 Найдено модальных окон для удаления:', allModals.length);
+        allModals.forEach((m, index) => {
+            console.log(`🧹 Удаляем модальное окно ${index + 1}:`, m);
+            m.remove();
+        });
+    }
+}
+
+// Отправка формы подписки
+function submitSubscription() {
+    const email = document.getElementById('subscription-email').value.trim();
+    const resultDiv = document.getElementById('subscription-result');
+    
+    // Проверка email
+    if (!email || !email.includes('@')) {
+        resultDiv.style.display = 'block';
+        resultDiv.style.background = '#f8d7da';
+        resultDiv.style.color = '#721c24';
+        resultDiv.innerHTML = '⚠️ Пожалуйста, введите корректный email адрес';
+        return;
+    }
+    
+    // Получаем выбранные типы подписок
+    const selectedTypes = [];
+    const checkboxes = document.querySelectorAll('input[name="subscription_types"]:checked');
+    checkboxes.forEach(cb => selectedTypes.push(cb.value));
+    
+    if (selectedTypes.length === 0) {
+        resultDiv.style.display = 'block';
+        resultDiv.style.background = '#fff3cd';
+        resultDiv.style.color = '#856404';
+        resultDiv.innerHTML = '📝 Пожалуйста, выберите хотя бы один тип подписки';
+        return;
+    }
+    
+    // Сохраняем в localStorage (для демо)
+    try {
+        const subscriptions = JSON.parse(localStorage.getItem('subscriptions') || '[]');
+        const newSubscription = {
+            email: email,
+            types: selectedTypes,
+            date: new Date().toISOString(),
+            id: Date.now()
+        };
+        
+        // Проверяем, нет ли уже такого email
+        const existingIndex = subscriptions.findIndex(sub => sub.email === email);
+        if (existingIndex !== -1) {
+            subscriptions[existingIndex] = newSubscription; // Обновляем
+        } else {
+            subscriptions.push(newSubscription); // Добавляем новый
+        }
+        
+        localStorage.setItem('subscriptions', JSON.stringify(subscriptions));
+        
+        // Показываем успех
+        resultDiv.style.display = 'block';
+        resultDiv.style.background = '#d4edda';
+        resultDiv.style.color = '#155724';
+        
+        const typeNames = {
+            stories: 'видео-рассказы',
+            books: 'книги', 
+            fairy_tales: 'сказки',
+            audio: 'аудио',
+            shop: 'магазин',
+            special: 'спецпредложения',
+            all: 'всё'
+        };
+        
+        const selectedNames = selectedTypes.map(type => typeNames[type] || type).join(', ');
+        
+        resultDiv.innerHTML = `
+            ✅ Отлично! Вы подписались на: <strong>${selectedNames}</strong><br>
+            <small>Мы сообщим вам о всех новинках!</small>
+        `;
+        
+        // Закрываем через 3 секунды
+        setTimeout(() => {
+            closeOurSubscriptionModal();
+        }, 3000);
+        
+    } catch (error) {
+        resultDiv.style.display = 'block';
+        resultDiv.style.background = '#f8d7da';
+        resultDiv.style.color = '#721c24';
+        resultDiv.innerHTML = '❌ Ошибка. Попробуйте позже.';
+        console.error('Subscription error:', error);
+    }
+}
+</script>
 {% endblock %}

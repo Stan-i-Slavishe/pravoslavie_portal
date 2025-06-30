@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Главная - {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+<!-- Героическая секция -->
+<div class="hero-section">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <h1>
+                <span class="orthodox-cross"></span>
+                Добро пожаловать в {{ site_settings.site_name|default:"Православный портал" }}
+            </h1>
+            <p class="lead">{{ site_settings.site_description|default:"Духовные рассказы, книги и аудио для современного человека" }}</p>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="#stories" class="btn btn-primary">
+                    <i class="bi bi-play-circle me-2"></i>
+                    Видео-рассказы
+                </a>
+                <a href="#books" class="btn btn-outline-light">
+                    <i class="bi bi-book me-2"></i>
+                    Библиотека
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-4 text-center d-none d-lg-block">
+            <i class="bi bi-heart-fill" style="font-size: 6rem; color: var(--accent-color); opacity: 0.2;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Заголовок разделов -->
+<div class="text-center mb-5">
+    <h2>Наши разделы</h2>
+    <p class="lead text-muted">Выберите интересующий вас раздел для изучения православной культуры</p>
+</div>
+
+<!-- Основные разделы -->
+<div class="row g-4 mb-5">
+    <!-- Видео-рассказы -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-play-circle-fill section-icon icon-stories"></i>
+                </div>
+                <h5 class="card-title">Видео-рассказы</h5>
+                <p class="card-text">Духовные истории и свидетельства, которые вдохновляют и поучают. Смотрите реальные истории о вере и духовном опыте.</p>
+                {% if story_categories %}
+                    <div class="mb-3">
+                        {% for category in story_categories %}
+                            <span class="badge" style="background-color: {{ category.color }}; color: white; margin: 0.1rem;">{{ category.name }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="mb-3">
+                        <span class="badge bg-danger text-white">Духовные истории</span>
+                        <span class="badge bg-warning text-white">Чудеса</span>
+                        <span class="badge bg-info text-white">Святые</span>
+                    </div>
+                {% endif %}
+                <a href="#stories" class="btn btn-primary w-100">
+                    <i class="bi bi-arrow-right me-2"></i>
+                    Перейти к рассказам
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Библиотека -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-book-fill section-icon icon-books"></i>
+                </div>
+                <h5 class="card-title">Библиотека</h5>
+                <p class="card-text">Православные книги, статьи и публикации для углубления веры. Изучайте духовную литературу от святых отцов до современных авторов.</p>
+                {% if book_categories %}
+                    <div class="mb-3">
+                        {% for category in book_categories %}
+                            <span class="badge" style="background-color: {{ category.color }}; color: white; margin: 0.1rem;">{{ category.name }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="mb-3">
+                        <span class="badge bg-success text-white">Богословие</span>
+                        <span class="badge bg-primary text-white">Жития</span>
+                        <span class="badge bg-secondary text-white">Молитвы</span>
+                    </div>
+                {% endif %}
+                <a href="#books" class="btn btn-primary w-100">
+                    <i class="bi bi-arrow-right me-2"></i>
+                    Перейти к библиотеке
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Аудио -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-music-note-beamed section-icon icon-audio"></i>
+                </div>
+                <h5 class="card-title">Аудио-контент</h5>
+                <p class="card-text">Проповеди, акафисты, духовная музыка и аудиокниги. Слушайте духовный контент в любое удобное время.</p>
+                {% if audio_categories %}
+                    <div class="mb-3">
+                        {% for category in audio_categories %}
+                            <span class="badge" style="background-color: {{ category.color }}; color: white; margin: 0.1rem;">{{ category.name }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="mb-3">
+                        <span class="badge bg-info text-white">Проповеди</span>
+                        <span class="badge bg-warning text-white">Акафисты</span>
+                        <span class="badge bg-dark text-white">Псалмы</span>
+                    </div>
+                {% endif %}
+                <a href="#audio" class="btn btn-primary w-100">
+                    <i class="bi bi-arrow-right me-2"></i>
+                    Перейти к аудио
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Популярные теги -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="text-center mb-4">
+            <h3>Популярные темы</h3>
+            <p class="text-muted">Исследуйте контент по интересующим вас темам</p>
+        </div>
+        <div class="tag-cloud text-center">
+            {% if popular_tags %}
+                {% for tag in popular_tags %}
+                    <a href="#tag-{{ tag.slug }}" class="badge rounded-pill tag-link" style="background-color: {{ tag.color|default:'#74b9ff' }}; color: white;">
+                        {{ tag.name }}
+                    </a>
+                {% endfor %}
+            {% else %}
+                <!-- Демо теги -->
+                <a href="#" class="badge rounded-pill tag-link" style="background-color: #e74c3c; color: white;">вера</a>
+                <a href="#" class="badge rounded-pill tag-link" style="background-color: #3498db; color: white;">исповедь</a>
+                <a href="#" class="badge rounded-pill tag-link" style="background-color: #2ecc71; color: white;">воспитание</a>
+                <a href="#" class="badge rounded-pill tag-link" style="background-color: #f39c12; color: white;">молитва</a>
+                <a href="#" class="badge rounded-pill tag-link" style="background-color: #9b59b6; color: white;">любовь</a>
+                <a href="#" class="badge rounded-pill tag-link" style="background-color: #1abc9c; color: white;">надежда</a>
+                <a href="#" class="badge rounded-pill tag-link" style="background-color: #34495e; color: white;">покаяние</a>
+                <a href="#" class="badge rounded-pill tag-link" style="background-color: #e67e22; color: white;">пост</a>
+                <a href="#" class="badge rounded-pill tag-link" style="background-color: #95a5a6; color: white;">праздники</a>
+            {% endif %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="#tags" class="btn btn-outline-secondary">
+                <i class="bi bi-tags me-2"></i>
+                Все теги
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Дополнительные возможности -->
+<div class="row mb-5">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-heart-fill me-3" style="font-size: 2rem; color: var(--accent-color);"></i>
+                    <h5 class="card-title mb-0">Избранное</h5>
+                </div>
+                <p class="card-text">Сохраняйте понравившиеся материалы в личную коллекцию для быстрого доступа.</p>
+                <a href="#register" class="btn btn-outline-primary">
+                    Создать аккаунт
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-bell-fill me-3" style="font-size: 2rem; color: var(--books-color);"></i>
+                    <h5 class="card-title mb-0">Подписка</h5>
+                </div>
+                <p class="card-text">Получайте уведомления о новых материалах и эксклюзивный контент.</p>
+                <a href="#subscription" class="btn btn-outline-primary">
+                    Узнать больше
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Призыв к действию -->
+<div class="cta-section">
+    <div class="row align-items-center">
+        <div class="col-lg-8 mx-auto text-center">
+            <h3>Присоединяйтесь к нашему сообществу</h3>
+            <p>Более 1000 православных христиан уже используют наш портал для духовного роста</p>
+            <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+                <a href="#register" class="btn btn-primary">
+                    <i class="bi bi-person-plus me-2"></i>
+                    Создать аккаунт
+                </a>
+                <a href="#login" class="btn btn-outline-secondary">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                    Войти
+                </a>
+                <a href="#contact" class="btn btn-outline-secondary">
+                    <i class="bi bi-envelope me-2"></i>
+                    Связаться с нами
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

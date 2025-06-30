@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ story.title }} - Православный портал{% endblock %}
+
+{% block content %}
+<style>
+    /* ВСТРОЕННЫЕ СТИЛИ - ДОЛЖНЫ РАБОТАТЬ */
+    .story-video-container {
+        position: relative !important;
+        background: #000 !important;
+        border-radius: 15px !important;
+        overflow: hidden !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3) !important;
+        margin-bottom: 30px !important;
+        min-height: 500px !important;
+    }
+    
+    .youtube-iframe {
+        width: 100% !important;
+        height: 500px !important;
+        border: none !important;
+        display: block !important;
+        border-radius: 15px !important;
+    }
+    
+    .video-info {
+        position: absolute !important;
+        bottom: 15px !important;
+        left: 15px !important;
+        background: rgba(0,0,0,0.8) !important;
+        color: white !important;
+        padding: 10px 15px !important;
+        border-radius: 8px !important;
+        font-size: 0.85rem !important;
+        z-index: 15 !important;
+        backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+    }
+    
+    .video-controls {
+        position: absolute !important;
+        top: 10px !important;
+        right: 10px !important;
+        z-index: 20 !important;
+        display: flex !important;
+    }
+    
+    .control-btn {
+        background: rgba(0,0,0,0.8) !important;
+        color: white !important;
+        border: none !important;
+        padding: 8px 10px !important;
+        border-radius: 6px !important;
+        margin-left: 5px !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+        backdrop-filter: blur(10px) !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+        font-size: 14px !important;
+    }
+    
+    .control-btn:hover {
+        background: rgba(0,0,0,0.9) !important;
+        color: white !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    }
+</style>
+
+<div class="row">
+    <!-- Основной контент -->
+    <div class="col-lg-8">
+        <!-- Видео -->
+        <div class="story-video-container">
+            <!-- Управление -->
+            <div class="video-controls">
+                <button class="control-btn" onclick="showIframe()" title="Показать видео здесь">
+                    <i class="bi bi-play-circle"></i>
+                </button>
+                <button class="control-btn" onclick="showFallback()" title="Открыть на YouTube">
+                    <i class="bi bi-youtube"></i>
+                </button>
+            </div>
+            
+            <!-- YouTube iframe -->
+            {% if story.youtube_embed_id %}
+            <iframe 
+                id="youtube-iframe"
+                class="youtube-iframe"
+                src="https://www.youtube.com/embed/{{ story.youtube_embed_id }}?autoplay=0&rel=0&modestbranding=1"
+                allowfullscreen 
+                loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                title="{{ story.title }}"
+                onload="handleIframeLoad()"
+                onerror="handleIframeError()">
+            </iframe>
+            {% endif %}
+            
+            <!-- Информация о видео -->
+            {% if story.youtube_embed_id %}
+            <div class="video-info">
+                🎥 YouTube ID: {{ story.youtube_embed_id }}
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Заголовок -->
+        <h1>{{ story.title }}</h1>
+        <p>{{ story.description }}</p>
+        
+        <!-- Статистика -->
+        <div class="mt-3">
+            <span class="badge bg-primary">👁️ {{ story.views_count }} просмотров</span>
+            <span class="badge bg-success">❤️ {{ likes_count }} лайков</span>
+            <span class="badge bg-info">📅 {{ story.created_at|date:"d.m.Y" }}</span>
+        </div>
+    </div>
+    
+    <!-- Сайдбар -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h5>📊 Статистика</h5>
+                <p><strong>{{ story.views_count }}</strong> просмотров</p>
+                <p><strong>{{ likes_count }}</strong> лайков</p>
+                <p>Опубликовано {{ story.created_at|date:"d.m.Y" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+console.log('Simple video player loaded');
+
+function showIframe() {
+    document.getElementById('youtube-iframe').style.display = 'block';
+    console.log('Showing iframe');
+}
+
+function showFallback() {
+    window.open('{{ story.youtube_url }}', '_blank');
+    console.log('Opening YouTube');
+}
+
+function handleIframeLoad() {
+    console.log('YouTube iframe loaded successfully');
+}
+
+function handleIframeError() {
+    console.log('YouTube iframe failed to load');
+}
+</script>
+{% endblock %}

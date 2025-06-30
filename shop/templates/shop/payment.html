@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Оплата заказа #{{ order.short_id }} - {{ site_settings.site_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.payment-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.payment-form {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.75rem;
+    padding: 2rem;
+}
+
+.order-info {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.payment-method {
+    border: 2px solid #e0e0e0;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.payment-method:hover {
+    border-color: #3498db;
+    background: #f8f9fa;
+}
+
+.payment-method.active {
+    border-color: #3498db;
+    background: #e3f2fd;
+}
+
+.payment-method input[type="radio"] {
+    margin-right: 0.75rem;
+}
+
+.payment-icon {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    margin-right: 1rem;
+    font-size: 1.2rem;
+}
+
+.order-summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.order-summary-item:last-child {
+    border-bottom: none;
+    font-weight: 600;
+    padding-top: 1rem;
+    border-top: 2px solid #dee2e6;
+}
+
+.security-note {
+    background: #e8f5e8;
+    border: 1px solid #d4edda;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.test-payment-note {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="payment-container">
+        <h1 class="mb-4 text-center">
+            <i class="bi bi-credit-card me-2"></i>
+            Оплата заказа #{{ order.short_id }}
+        </h1>
+        
+        <!-- Информация о заказе -->
+        <div class="order-info">
+            <h5 class="mb-3">Детали заказа</h5>
+            
+            <div class="row mb-3">
+                <div class="col-sm-6">
+                    <strong>Заказ:</strong> #{{ order.short_id }}
+                </div>
+                <div class="col-sm-6">
+                    <strong>Дата:</strong> {{ order.created_at|date:"d.m.Y H:i" }}
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-sm-6">
+                    <strong>Покупатель:</strong> {{ order.full_name }}
+                </div>
+                <div class="col-sm-6">
+                    <strong>Email:</strong> {{ order.email }}
+                </div>
+            </div>
+            
+            <!-- Товары в заказе -->
+            <div class="order-items">
+                {% for item in order.items.all %}
+                    <div class="order-summary-item">
+                        <span>{{ item.product_title }} {% if item.quantity > 1 %}x{{ item.quantity }}{% endif %}</span>
+                        <span>{{ item.total_price }}₽</span>
+                    </div>
+                {% endfor %}
+                
+                <div class="order-summary-item">
+                    <span>Итого к оплате:</span>
+                    <span class="text-primary">{{ order.total_amount }}₽</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Форма оплаты -->
+        <div class="payment-form">
+            <!-- Уведомление о тестовом режиме -->
+            <div class="test-payment-note">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <strong>Тестовый режим:</strong> Это демонстрационная оплата. Реальные деньги не списываются.
+                В продакшене здесь будет интеграция с реальной платежной системой.
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <h5 class="mb-3">Выберите способ оплаты</h5>
+                
+                <!-- Тестовая оплата -->
+                <label class="payment-method active">
+                    <input type="radio" name="payment_method" value="test" checked>
+                    <div class="d-flex align-items-center">
+                        <div class="payment-icon">
+                            <i class="bi bi-credit-card text-primary"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold">Тестовая оплата</div>
+                            <div class="text-muted small">Демонстрационный платеж для тестирования</div>
+                        </div>
+                    </div>
+                </label>
+                
+                <!-- Другие способы оплаты (заглушки) -->
+                <label class="payment-method">
+                    <input type="radio" name="payment_method" value="card" disabled>
+                    <div class="d-flex align-items-center">
+                        <div class="payment-icon">
+                            <i class="bi bi-credit-card-2-front text-muted"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold">Банковская карта</div>
+                            <div class="text-muted small">Visa, MasterCard, МИР (скоро)</div>
+                        </div>
+                    </div>
+                </label>
+                
+                <label class="payment-method">
+                    <input type="radio" name="payment_method" value="yookassa" disabled>
+                    <div class="d-flex align-items-center">
+                        <div class="payment-icon">
+                            <i class="bi bi-wallet2 text-muted"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold">ЮKassa</div>
+                            <div class="text-muted small">Карты, кошельки, банки (скоро)</div>
+                        </div>
+                    </div>
+                </label>
+                
+                <!-- Информация о безопасности -->
+                <div class="security-note">
+                    <i class="bi bi-shield-check me-2"></i>
+                    <strong>Безопасность:</strong> Все платежи защищены SSL-шифрованием. 
+                    Мы не храним данные банковских карт.
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="bi bi-lock me-2"></i>
+                        Оплатить {{ order.total_amount }}₽
+                    </button>
+                    <a href="{% url 'shop:checkout' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>
+                        Вернуться к оформлению
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Дополнительная информация -->
+        <div class="mt-4 text-center text-muted small">
+            <p>
+                <i class="bi bi-info-circle me-1"></i>
+                После успешной оплаты ссылки для скачивания будут отправлены на email {{ order.email }}
+            </p>
+            <p>
+                Возникли вопросы? <a href="mailto:support@pravoslavie-portal.ru">Напишите нам</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Переключение способов оплаты
+    const paymentMethods = document.querySelectorAll('.payment-method');
+    const radioButtons = document.querySelectorAll('input[name="payment_method"]');
+    
+    paymentMethods.forEach(method => {
+        method.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            if (radio && !radio.disabled) {
+                radio.checked = true;
+                
+                // Убираем активный класс у всех
+                paymentMethods.forEach(m => m.classList.remove('active'));
+                
+                // Добавляем активный класс к выбранному
+                this.classList.add('active');
+            }
+        });
+    });
+    
+    // Обработка отправки формы
+    const form = document.querySelector('form');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    form.addEventListener('submit', function(e) {
+        // Блокируем кнопку для предотвращения двойной отправки
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="bi bi-hourglass me-2"></i>Обрабатываем платеж...';
+        
+        // Показываем уведомление
+        setTimeout(() => {
+            if (submitBtn.disabled) {
+                alert('Обрабатываем ваш платеж. Пожалуйста, не закрывайте страницу.');
+            }
+        }, 2000);
+    });
+});
+</script>
+{% endblock %}

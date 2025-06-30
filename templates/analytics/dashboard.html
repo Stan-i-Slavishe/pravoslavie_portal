@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Аналитика покупательских намерений{% endblock %}
+
+{% block extra_css %}
+<style>
+.analytics-dashboard {
+    padding: 20px;
+    background: #f8f9fa;
+    min-height: 100vh;
+}
+
+.stats-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #2B5AA0;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+.table-container {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.alert-info {
+    border-left: 4px solid #2B5AA0;
+    background: #e8f2ff;
+}
+
+.content-type-book { color: #28a745; }
+.content-type-fairy_tale { color: #ff6b9d; }
+.content-type-subscription { color: #ffc107; }
+.content-type-audio { color: #6f42c1; }
+.content-type-product { color: #007bff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-dashboard">
+    <div class="container-fluid">
+        
+        <!-- Заголовок -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1><i class="fas fa-chart-line"></i> Аналитика покупательских намерений</h1>
+                <p class="text-muted">Отслеживание интереса к платному контенту до запуска системы оплаты</p>
+            </div>
+        </div>
+
+        <!-- Основная статистика -->
+        <div class="stats-grid">
+            <div class="stats-card">
+                <div class="stat-number">{{ stats.total_intents }}</div>
+                <div class="stat-label">Всего кликов на "Купить"</div>
+                <small class="text-success">+{{ stats.intents_today }} сегодня</small>
+            </div>
+            
+            <div class="stats-card">
+                <div class="stat-number">{{ stats.unique_users }}</div>
+                <div class="stat-label">Уникальных пользователей</div>
+                <small class="text-info">Показывали интерес к покупке</small>
+            </div>
+            
+            <div class="stats-card">
+                <div class="stat-number">{{ stats.total_subscribers }}</div>
+                <div class="stat-label">Подписались на уведомления</div>
+                <small class="text-warning">Готовы купить при запуске</small>
+            </div>
+            
+            <div class="stats-card">
+                <div class="stat-number">{{ stats.intents_week }}</div>
+                <div class="stat-label">Кликов за неделю</div>
+                <small class="text-primary">{{ stats.intents_month }} за месяц</small>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Топ контента -->
+            <div class="col-lg-6">
+                <div class="table-container">
+                    <div class="p-3">
+                        <h5>🔥 Самый желанный контент</h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Контент</th>
+                                    <th class="text-end">Клики</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for content in top_content|slice:":5" %}
+                                <tr>
+                                    <td>
+                                        <span class="content-type-{{ content.content_type }}">
+                                            <i class="fas fa-{% if content.content_type == 'book' %}book{% elif content.content_type == 'fairy_tale' %}magic{% elif content.content_type == 'subscription' %}crown{% elif content.content_type == 'product' %}shopping-bag{% else %}headphones{% endif %}"></i>
+                                        </span>
+                                        <strong>{{ content.title|truncatechars:40 }}</strong>
+                                        <br><small class="text-muted">{{ content.content_type|title }} (ID: {{ content.object_id }})</small>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="badge bg-danger">{{ content.purchase_intents }} кликов</span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-center text-muted">Пока нет данных</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Статистика по типам контента -->
+            <div class="col-lg-6">
+                <div class="table-container">
+                    <div class="p-3">
+                        <h5>📊 Интерес по типам контента</h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Тип</th>
+                                    <th class="text-end">Клики</th>
+                                    <th class="text-end">Пользователи</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for content in content_stats %}
+                                <tr>
+                                    <td>
+                                        <span class="content-type-{{ content.content_type }}">
+                                            <i class="fas fa-{% if content.content_type == 'book' %}book{% elif content.content_type == 'fairy_tale' %}magic{% elif content.content_type == 'subscription' %}crown{% else %}headphones{% endif %}"></i>
+                                            {{ content.content_type|title }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <strong>{{ content.total_clicks }}</strong>
+                                    </td>
+                                    <td class="text-end">
+                                        <small class="text-muted">{{ content.unique_users }}</small>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">Пока нет данных</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Статистика по кнопкам -->
+            <div class="col-lg-6">
+                <div class="table-container">
+                    <div class="p-3">
+                        <h5>🎯 Популярные действия</h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Действие</th>
+                                    <th class="text-end">Клики</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for button in button_stats %}
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-{% if button.button_type == 'buy' %}shopping-cart{% elif button.button_type == 'download' %}download{% elif button.button_type == 'subscribe' %}crown{% else %}play{% endif %}"></i>
+                                        {{ button.button_type|title }}
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="badge bg-primary">{{ button.total_clicks }}</span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-center text-muted">Пока нет данных</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IP адреса -->
+            <div class="col-lg-6">
+                <div class="table-container">
+                    <div class="p-3">
+                        <h5>📱 IP адреса пользователей</h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>IP адрес</th>
+                                    <th class="text-end">Клики</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ip in ip_stats %}
+                                <tr>
+                                    <td>{{ ip.ip_address|default:"Неизвестно" }}</td>
+                                    <td class="text-end">{{ ip.clicks }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-center text-muted">Пока нет данных</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Горячие пользователи -->
+        {% if hot_users %}
+        <div class="row">
+            <div class="col-12">
+                <div class="table-container">
+                    <div class="p-3">
+                        <h5>🔥 Готовы платить (>70% вероятность)</h5>
+                    </div>
+                    <div class="p-3">
+                        {% for user in hot_users|slice:":10" %}
+                        <div class="alert alert-warning d-flex justify-content-between align-items-center mb-2">
+                            <span>
+                                <i class="fas fa-user"></i>
+                                {% if user.user %}
+                                    {{ user.user.username }}
+                                {% else %}
+                                    Анон_{{ user.session_key|slice:":8" }}
+                                {% endif %}
+                            </span>
+                            <span>
+                                <strong>{{ user.purchase_probability|floatformat:0 }}%</strong>
+                                <small class="text-muted">
+                                    ({{ user.total_purchase_intents }} кликов, {{ user.total_page_views }} просмотров)
+                                </small>
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Инсайты и рекомендации -->
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-lightbulb"></i> Инсайты и рекомендации</h5>
+                    <ul class="mb-0">
+                        {% if stats.total_intents > 100 %}
+                        <li><strong>Высокий интерес!</strong> Более 100 кликов на покупку - можно запускать платежную систему</li>
+                        {% endif %}
+                        
+                        {% if stats.total_subscribers > 50 %}
+                        <li><strong>Готовая аудитория:</strong> {{ stats.total_subscribers }} человек подписались на уведомления</li>
+                        {% endif %}
+                        
+                        {% for content in top_content|slice:":1" %}
+                        <li><strong>Хит продаж:</strong> {{ content.content_type|title }} #{{ content.object_id }} - {{ content.purchase_intents }} кликов</li>
+                        {% endfor %}
+                        
+                        {% if hot_users.count > 10 %}
+                        <li><strong>Горячие лиды:</strong> {{ hot_users.count }} пользователей с высокой вероятностью покупки</li>
+                        {% endif %}
+                        
+                        {% if stats.total_intents == 0 %}
+                        <li><strong>Начало сбора данных:</strong> Добавьте заглушки на кнопки покупки для начала аналитики</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Действия -->
+        <div class="row">
+            <div class="col-12 text-center">
+                <button onclick="location.reload()" class="btn btn-primary">
+                    <i class="fas fa-sync"></i> Обновить статистику
+                </button>
+                <a href="/admin/analytics/purchaseintent/" class="btn btn-secondary">
+                    <i class="fas fa-cog"></i> Управление в админке
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Автообновление каждые 30 секунд
+setInterval(() => {
+    fetch('/analytics/api/stats/')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Статистика обновлена:', data);
+        })
+        .catch(error => console.log('Ошибка обновления:', error));
+}, 30000);
+</script>
+{% endblock %}

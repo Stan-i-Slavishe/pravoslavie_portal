@@ -6,5 +6,4 @@ class AccountsConfig(AppConfig):
     verbose_name = 'Пользователи и профили'
     
     def ready(self):
-        # Пока закомментируем
-        pass
+        import accounts.signals  # Подключаем сигналы

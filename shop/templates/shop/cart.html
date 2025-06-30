@@ -1,12 +1,239 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}{{ title }} - Православный портал{% endblock %}
+{% block title %}Корзина - {{ site_settings.site_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.cart-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.cart-item {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.cart-item:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.cart-item-image {
+    width: 80px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    background: #f5f5f5;
+}
+
+.cart-item-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.cart-item-price {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #e74c3c;
+}
+
+.cart-item-price.free {
+    color: #27ae60;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.quantity-btn {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quantity-btn:hover {
+    background: #f8f9fa;
+    border-color: #007bff;
+}
+
+.quantity-display {
+    font-weight: 600;
+    min-width: 30px;
+    text-align: center;
+}
+
+.cart-summary {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    position: sticky;
+    top: 20px;
+}
+
+.empty-cart {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #666;
+}
+
+.empty-cart i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.total-row {
+    font-size: 1.2rem;
+    font-weight: 700;
+    border-top: 2px solid #dee2e6;
+    padding-top: 1rem;
+    margin-top: 1rem;
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h1>{{ title }}</h1>
-        <p>Страница находится в разработке...</p>
+<div class="container py-4">
+    <div class="cart-container">
+        <h1 class="mb-4">
+            <i class="bi bi-cart3 me-2"></i>
+            Корзина
+        </h1>
+        
+        {% if cart and items %}
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Товары в корзине -->
+                    {% for item in items %}
+                        <div class="cart-item">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    {% if item.product.image %}
+                                        <img src="{{ item.product.image.url }}" alt="{{ item.product.title }}" class="cart-item-image">
+                                    {% elif item.product.content_object.cover %}
+                                        <img src="{{ item.product.content_object.cover.url }}" alt="{{ item.product.title }}" class="cart-item-image">
+                                    {% else %}
+                                        <div class="cart-item-image d-flex align-items-center justify-content-center" 
+                                             style="background: linear-gradient(45deg, #3498db, #2980b9);">
+                                            <i class="bi bi-{% if item.product.product_type == 'book' %}book{% elif item.product.product_type == 'audio' %}music-note{% else %}star{% endif %}" 
+                                               style="font-size: 1.5rem; color: white;"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col">
+                                    <div class="cart-item-title">{{ item.product.title }}</div>
+                                    <div class="text-muted small">{{ item.product.get_product_type_display }}</div>
+                                    <div class="cart-item-price {% if item.product.price == 0 %}free{% endif %}">
+                                        {% if item.product.price > 0 %}
+                                            {{ item.product.price }}₽
+                                        {% else %}
+                                            Бесплатно
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-auto">
+                                    {% if not item.product.is_digital %}
+                                        <div class="quantity-controls">
+                                            <form method="post" action="{% url 'shop:update_cart_item' item_id=item.id %}" style="display: inline;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="decrease">
+                                                <button type="submit" class="quantity-btn">
+                                                    <i class="bi bi-dash"></i>
+                                                </button>
+                                            </form>
+                                            
+                                            <span class="quantity-display">{{ item.quantity }}</span>
+                                            
+                                            <form method="post" action="{% url 'shop:update_cart_item' item_id=item.id %}" style="display: inline;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="increase">
+                                                <button type="submit" class="quantity-btn">
+                                                    <i class="bi bi-plus"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted small">Цифровой товар</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-auto">
+                                    <div class="fw-bold">{{ item.total_price }}₽</div>
+                                    <form method="post" action="{% url 'shop:update_cart_item' item_id=item.id %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="remove">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="col-lg-4">
+                    <!-- Итоги заказа -->
+                    <div class="cart-summary">
+                        <h5 class="mb-3">Итого</h5>
+                        
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Товаров:</span>
+                            <span>{{ cart.total_items }}</span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Сумма:</span>
+                            <span>{{ cart.total_price }}₽</span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between total-row">
+                            <span>К оплате:</span>
+                            <span class="text-primary">{{ cart.total_price }}₽</span>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-3">
+                            <a href="{% url 'shop:checkout' %}" class="btn btn-primary btn-lg">
+                                <i class="bi bi-credit-card me-2"></i>
+                                Оформить заказ
+                            </a>
+                            <a href="{% url 'shop:catalog' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>
+                                Продолжить покупки
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- Пустая корзина -->
+            <div class="empty-cart">
+                <i class="bi bi-cart-x"></i>
+                <h3>Ваша корзина пуста</h3>
+                <p>Добавьте товары из каталога, чтобы сделать заказ</p>
+                <a href="{% url 'shop:catalog' %}" class="btn btn-primary">
+                    <i class="bi bi-shop me-2"></i>
+                    Перейти в магазин
+                </a>
+            </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

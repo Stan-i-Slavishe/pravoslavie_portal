@@ -1,0 +1,154 @@
+<!-- templates/analytics/widgets/subscribe_button.html -->
+
+<div class="subscribe-widget" id="subscribeWidget">
+    <div class="subscribe-popup" id="subscribePopup" style="display: none;">
+        <div class="popup-content">
+            <span class="close-popup" onclick="closeSubscribePopup()">&times;</span>
+            <h3>🔔 Уведомить о запуске платежей</h3>
+            <p>Узнайте первыми, когда станут доступны покупки!</p>
+            
+            <form id="quickSubscribeForm">
+                {% csrf_token %}
+                <input type="email" 
+                       id="quickEmail" 
+                       placeholder="Ваш email" 
+                       required 
+                       style="width: 100%; padding: 10px; margin: 10px 0; border: 2px solid #ddd; border-radius: 5px;">
+                
+                <input type="hidden" id="interestedContent" value="">
+                
+                <button type="submit" 
+                        style="width: 100%; padding: 12px; background: #2B5AA0; color: white; border: none; border-radius: 5px; font-weight: bold;">
+                    ✅ Подписаться
+                </button>
+            </form>
+            
+            <div id="subscribeResult" style="display: none; margin-top: 10px; padding: 10px; border-radius: 5px;"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+.subscribe-widget .subscribe-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.subscribe-widget .popup-content {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 400px;
+    width: 90%;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.subscribe-widget .close-popup {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+}
+
+.subscribe-widget .close-popup:hover {
+    color: #333;
+}
+
+.subscribe-widget h3 {
+    color: #2B5AA0;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.subscribe-widget p {
+    text-align: center;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.subscribe-result-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.subscribe-result-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+</style>
+
+<script>
+function showSubscribePopup(contentType = '') {
+    document.getElementById('interestedContent').value = contentType;
+    document.getElementById('subscribePopup').style.display = 'flex';
+}
+
+function closeSubscribePopup() {
+    document.getElementById('subscribePopup').style.display = 'none';
+}
+
+// Закрытие по клику вне попапа
+document.getElementById('subscribePopup').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeSubscribePopup();
+    }
+});
+
+// Обработка формы подписки
+document.getElementById('quickSubscribeForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('quickEmail').value;
+    const interestedIn = document.getElementById('interestedContent').value;
+    const resultDiv = document.getElementById('subscribeResult');
+    
+    // Отправляем AJAX запрос
+    fetch('/analytics/subscribe-notifications/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            email: email,
+            interested_in: interestedIn,
+            source_page: window.location.href
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        resultDiv.style.display = 'block';
+        if (data.success) {
+            resultDiv.className = 'subscribe-result-success';
+            resultDiv.innerHTML = '✅ ' + data.message;
+            
+            // Закрываем через 2 секунды
+            setTimeout(() => {
+                closeSubscribePopup();
+                resultDiv.style.display = 'none';
+            }, 2000);
+        } else {
+            resultDiv.className = 'subscribe-result-error';
+            resultDiv.innerHTML = '❌ ' + (data.error || 'Ошибка подписки');
+        }
+    })
+    .catch(error => {
+        resultDiv.style.display = 'block';
+        resultDiv.className = 'subscribe-result-error';
+        resultDiv.innerHTML = '❌ Ошибка соединения';
+    });
+});
+</script>

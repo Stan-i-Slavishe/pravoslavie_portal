@@ -1,0 +1,100 @@
+{% extends 'shop/emails/base_email.html' %}
+
+{% block title %}Заказ #{{ order.short_id }} оплачен - Инструкции по скачиванию{% endblock %}
+
+{% block header_title %}Заказ оплачен! 🎉{% endblock %}
+
+{% block content %}
+<p>Здравствуйте, <strong>{{ order.full_name }}</strong>!</p>
+
+<p>Отличная новость! Ваш заказ успешно оплачен и готов к скачиванию.</p>
+
+<div class="order-info">
+    <h3>✅ Информация об оплаченном заказе</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 5px 0;"><strong>Номер заказа:</strong></td>
+            <td style="padding: 5px 0;">#{{ order.short_id }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 5px 0;"><strong>Дата оплаты:</strong></td>
+            <td style="padding: 5px 0;">{{ order.paid_at|date:"d.m.Y H:i" }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 5px 0;"><strong>Сумма:</strong></td>
+            <td style="padding: 5px 0;"><strong>{{ order.total_amount }}₽</strong></td>
+        </tr>
+    </table>
+</div>
+
+<div class="download-section">
+    <h3 style="margin-top: 0; color: #155724;">📥 Скачать ваши материалы</h3>
+    
+    {% for item in order.items.all %}
+        {% if item.product.is_digital and not item.is_fairy_tale %}
+        <div style="margin: 15px 0; padding: 15px; background-color: white; border-radius: 6px; border: 1px solid #c3e6c3;">
+            <div style="font-weight: 600; margin-bottom: 8px;">{{ item.product_title }}</div>
+            <div style="font-size: 14px; color: #666; margin-bottom: 10px;">
+                {{ item.product.get_product_type_display }} • {{ item.quantity }} шт.
+            </div>
+            <a href="{{ site_url }}/shop/download/{{ item.id }}/" 
+               class="download-link">
+                💾 Скачать {{ item.product_title }}
+            </a>
+        </div>
+        {% endif %}
+    {% endfor %}
+    
+    {% if order.items.fairy_tale %}
+    <div style="margin: 15px 0; padding: 15px; background-color: #fff3e0; border-radius: 6px; border: 1px solid #ffcc80;">
+        <h4 style="margin-top: 0; color: #e65100;">🧚‍♀️ Персонализированные сказки</h4>
+        {% for item in order.items.all %}
+            {% if item.is_fairy_tale %}
+            <div style="margin: 10px 0;">
+                <div style="font-weight: 600;">{{ item.product_title }}</div>
+                <div style="font-size: 14px; color: #666;">
+                    Персонализация: {{ item.get_personalization_summary }}
+                </div>
+                {% if item.fairy_tale_status == 'ready' %}
+                <a href="{{ site_url }}/shop/download/{{ item.id }}/" 
+                   class="download-link" style="background-color: #ff9800;">
+                    ✨ Скачать готовую сказку
+                </a>
+                {% else %}
+                <div style="color: #e65100; font-weight: 600; margin-top: 5px;">
+                    ⏳ Сказка в работе (готовность: 2-3 дня)
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% endfor %}
+        <p style="font-size: 14px; margin: 10px 0 0 0;">
+            <strong>Примечание:</strong> Персонализированные сказки создаются индивидуально. 
+            Как только ваша сказка будет готова, мы пришлем отдельное уведомление.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<div style="background-color: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h3 style="margin-top: 0; color: #1565c0;">📋 Важная информация</h3>
+    <ul style="margin: 0; padding-left: 20px;">
+        <li>Ссылки для скачивания действуют <strong>90 дней</strong> с момента покупки</li>
+        <li>Материалы можно скачивать <strong>неограниченное количество раз</strong></li>
+        <li>Все покупки сохраняются в вашем <a href="{{ site_url }}/shop/my-purchases/">личном кабинете</a></li>
+        <li>Если возникнут проблемы со скачиванием, обращайтесь в поддержку</li>
+    </ul>
+</div>
+
+<p style="text-align: center; margin: 30px 0;">
+    <a href="{{ site_url }}/shop/my-purchases/" 
+       style="display: inline-block; background-color: #2B5AA0; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+        🏠 Мои покупки
+    </a>
+</p>
+
+<p>Спасибо за покупку! Мы надеемся, что наши материалы принесут пользу вам и вашей семье.</p>
+
+<p>С уважением,<br>
+<strong>Команда {{ site_name }}</strong></p>
+{% endblock %}

@@ -1,0 +1,67 @@
+// Удаление рассказа из плейлиста
+function removeFromPlaylist(storyId, playlistId) {
+    {% if user.is_authenticated %}
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch('{% url "stories:remove_from_playlist" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'story_id': storyId,
+                'playlist_id': playlistId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showToast(data.message, 'error');
+            }
+        })
+        .catch(err => {
+            console.error('Playlist remove error:', err);
+            showToast('Ошибка при удалении из плейлиста', 'error');
+        });
+    {% else %}
+        window.location.href = "{% url 'account_login' %}";
+    {% endif %}
+}
+
+// 📱 УНИВЕРСАЛЬНАЯ ФУНКЦИЯ УВЕДОМЛЕНИЙ
+function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
+    
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show`;
+    toast.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 3000);
+}
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.style.cssText = 'position: fixed; top: 0; right: 0; z-index: 9999; padding: 20px;';
+    document.body.appendChild(container);
+    return container;
+}
+</script>
+{% endblock %}

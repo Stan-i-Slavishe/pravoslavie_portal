@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Избранные сказки{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="bi bi-heart me-2"></i>
+                Мои избранные сказки
+            </h1>
+            
+            {% if favorites %}
+                <div class="row">
+                    {% for favorite in favorites %}
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">{{ favorite.template.title }}</h6>
+                                <p class="card-text small text-muted">
+                                    {{ favorite.template.short_description|truncatechars:100 }}
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    {% if favorite.template.is_free %}
+                                        <span class="text-success fw-bold">Бесплатно</span>
+                                    {% else %}
+                                        <span class="fw-bold">от {{ favorite.template.base_price }} ₽</span>
+                                    {% endif %}
+                                    <a href="{% url 'fairy_tales:detail' favorite.template.slug %}" 
+                                       class="btn btn-sm btn-primary">
+                                        Подробнее
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-heart" style="font-size: 4rem; color: #dee2e6;"></i>
+                    <h3 class="text-muted mt-3">Избранных сказок нет</h3>
+                    <p class="text-muted">Добавьте понравившиеся сказки в избранное</p>
+                    <a href="{% url 'fairy_tales:list' %}" class="btn btn-primary">
+                        Посмотреть каталог
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

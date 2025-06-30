@@ -1,0 +1,77 @@
+/* Стили для админки Stories */
+
+.field-youtube_preview iframe {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin: 10px 0;
+}
+
+.field-youtube_url input {
+    width: 100%;
+    font-family: monospace;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+}
+
+.field-youtube_embed_id input {
+    background-color: #e9ecef;
+    color: #6c757d;
+}
+
+.fieldset h2 {
+    background: linear-gradient(90deg, #2B5AA0, #4a7bc8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.form-row .field-views_count {
+    background-color: #f0f9ff;
+    border-left: 4px solid #0ea5e9;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.form-row .field-is_featured label {
+    color: #d97706;
+    font-weight: bold;
+}
+
+.form-row .field-is_published label {
+    color: #059669;
+    font-weight: bold;
+}
+
+/* Стили для списка рассказов */
+.change-list .field-title {
+    font-weight: bold;
+    color: #2B5AA0;
+}
+
+.change-list .field-views_count {
+    text-align: center;
+    font-weight: bold;
+    color: #059669;
+}
+
+.change-list .true {
+    color: #059669;
+    font-weight: bold;
+}
+
+.change-list .false {
+    color: #dc2626;
+    font-weight: bold;
+}
+
+/* Адаптивность для превью видео */
+@media (max-width: 768px) {
+    .field-youtube_preview iframe {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16/9;
+    }
+}

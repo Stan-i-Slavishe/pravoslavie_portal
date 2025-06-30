@@ -10,7 +10,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-producti
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,testserver', cast=lambda v: [s.strip() for s in v.split(',')])
 
 # Application definition
 DJANGO_APPS = [
@@ -30,6 +30,12 @@ THIRD_PARTY_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    # Провайдеры социальных сетей
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.vk',
+    'allauth.socialaccount.providers.telegram',
+    'allauth.socialaccount.providers.mailru',
+    'allauth.socialaccount.providers.yandex',
 ]
 
 LOCAL_APPS = [
@@ -40,6 +46,9 @@ LOCAL_APPS = [
     'books',          # книги и публикации
     'shop',           # цифровой магазин
     'audio',          # аудио-контент
+    'fairy_tales',    # терапевтические сказки
+    'analytics',      # аналитика покупательских намерений
+
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -85,8 +94,7 @@ DATABASES = {
         'USER': config('DB_USER', default=''),
         'PASSWORD': config('DB_PASSWORD', default=''),
         'HOST': config('DB_HOST', default=''),
-        'PORT': config('DB_PORT', default='', cast=int) if config('DB_PORT', default='') else '',
-       
+        'PORT': config('DB_PORT', default=''),
     }
 }
 
@@ -157,51 +165,159 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 # Sites framework
 SITE_ID = 1
 
-# Allauth settings
+# Allauth settings (обновленные настройки)
 AUTHENTICATION_BACKENDS = [
+    'accounts.backends.EmailOrUsernameModelBackend',  # Наш кастомный backend
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# Новые настройки вместо устаревших (упрощенные)
+ACCOUNT_EMAIL_VERIFICATION = 'none'  # Отключаем подтверждение email
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False  # Не входим автоматически
+
+# Ограничения на попытки входа (исправленный формат)
+# ACCOUNT_RATE_LIMITS = {
+#     'login_failed': '5/5m',  # Временно отключаем
+# }
+
+# Настройки социальных провайдеров
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'OAUTH_PKCE_ENABLED': True,
+    },
+    'vk': {
+        'METHOD': 'oauth2',
+        'SCOPE': ['email'],
+        'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
+        'INIT_PARAMS': {'cookie': True},
+        'FIELDS': [
+            'id',
+            'email', 
+            'name',
+            'first_name',
+            'last_name',
+            'verified',
+            'locale',
+            'timezone',
+            'link',
+            'gender',
+            'updated_time'
+        ],
+        'EXCHANGE_TOKEN': True,
+        'LOCALE_FUNC': 'path.to.callable',
+        'VERIFIED_EMAIL': False
+    },
+    'telegram': {
+        'TOKEN': config('TELEGRAM_BOT_TOKEN', default=''),
+    },
+    'mailru': {
+        'SCOPE': ['userinfo'],
+    },
+    'yandex': {
+        'SCOPE': ['login:email', 'login:info'],
+    }
+}
+
+# Настройки аккаунтов (упрощенные)
+ACCOUNT_USER_MODEL_USERNAME_FIELD = 'username'
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_VERIFICATION = 'none'  # Для упрощения на этапе разработки
+ACCOUNT_USERNAME_REQUIRED = False  # Отключаем обязательность username
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'  # Поддерживаем оба способа
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USER_DISPLAY = lambda user: user.username or user.email
+
+# После входа через соцсети
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_SIGNUP_FORM_CLASS = None  # Убираем кастомную форму
+ACCOUNT_SESSION_REMEMBER = True
+
+# Дополнительные настройки для исправления проблем
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_EMAIL_REQUIRED = False
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
+
+# Автоматический вход после регистрации (упрощенно)
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False
+ACCOUNT_LOGOUT_ON_GET = False
 
 # Redis настройки
 REDIS_URL = config('REDIS_URL', default='redis://localhost:6379/0')
 
-# Кеширование с Redis
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': REDIS_URL,
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        },
-        'KEY_PREFIX': 'pravoslavie_portal',
-        'TIMEOUT': 300,  # 5 минут по умолчанию
+# Кеширование с Redis (только если Redis доступен)
+try:
+    import redis
+    # Проверяем подключение к Redis
+    r = redis.Redis.from_url(REDIS_URL)
+    r.ping()
+    
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': REDIS_URL,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            },
+            'KEY_PREFIX': 'pravoslavie_portal',
+            'TIMEOUT': 300,  # 5 минут по умолчанию
+        }
     }
-}
-
-# Сессии в Redis
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-SESSION_CACHE_ALIAS = 'default'
+    
+    # Сессии в Redis
+    SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+    SESSION_CACHE_ALIAS = 'default'
+    
+except (ImportError, redis.ConnectionError, redis.ResponseError):
+    # Fallback к локальному кешу если Redis недоступен
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+            'TIMEOUT': 300,
+            'OPTIONS': {
+                'MAX_ENTRIES': 1000,
+            }
+        }
+    }
+    
+    # Сессии в базе данных
+    SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+    
+    print("⚠️  Redis недоступен, используется локальное кеширование")
 SESSION_COOKIE_AGE = 86400  # 24 часа
 
 # Celery настройки
-CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://localhost:6379/1')
-CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default='redis://localhost:6379/1')
+try:
+    import redis
+    r = redis.Redis.from_url(config('CELERY_BROKER_URL', default='redis://localhost:6379/1'))
+    r.ping()
+    
+    CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://localhost:6379/1')
+    CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default='redis://localhost:6379/1')
+    CELERY_TASK_ALWAYS_EAGER = config('CELERY_TASK_ALWAYS_EAGER', default=False, cast=bool)
+    
+except (ImportError, redis.ConnectionError, redis.ResponseError):
+    # Fallback - выполняем задачи синхронно
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_BROKER_URL = 'memory://'
+    CELERY_RESULT_BACKEND = 'cache+memory://'
+    
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
-
-# Настройки задач
-CELERY_TASK_ALWAYS_EAGER = config('CELERY_TASK_ALWAYS_EAGER', default=False, cast=bool)
 CELERY_TASK_EAGER_PROPAGATES = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 CELERY_TASK_ACKS_LATE = True
@@ -274,10 +390,33 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@pravoslavie-portal.ru')
 SERVER_EMAIL = config('SERVER_EMAIL', default='server@pravoslavie-portal.ru')
 
-# Настройки для allauth
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 5
-ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 300  # 5 минут
+# Список администраторов для уведомлений
+ADMIN_EMAIL_LIST = config('ADMIN_EMAIL_LIST', default='admin@pravoslavie-portal.ru', cast=lambda v: [s.strip() for s in v.split(',')])
+
+# 🔐 БЕЗОПАСНОСТЬ (базовая) - дополнительные настройки
+# HTTPS настройки для продакшена
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 год
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
+    X_FRAME_OPTIONS = 'DENY'
+
+# Дополнительные настройки безопасности
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Защита от брутфорса
+AXES_ENABLED = config('AXES_ENABLED', default=False, cast=bool)
+if AXES_ENABLED:
+    AXES_FAILURE_LIMIT = 5
+    AXES_COOLOFF_TIME = 1  # 1 час
+    AXES_RESET_ON_SUCCESS = True

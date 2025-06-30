@@ -58,6 +58,43 @@ h1, h2, h3, h4, h5, h6 {
     padding: 20px;
 }
 
+/* Социальные кнопки */
+.social-btn-telegram {
+    background-color: #0088cc;
+    border-color: #0088cc;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.social-btn-telegram:hover {
+    background-color: #006699;
+    border-color: #006699;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 136, 204, 0.3);
+}
+
+.social-btn-youtube {
+    background-color: #FF0000;
+    border-color: #FF0000;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.social-btn-youtube:hover {
+    background-color: #CC0000;
+    border-color: #CC0000;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 0, 0, 0.3);
+}
+
+/* Отступы для иконок в социальных кнопках */
+.social-btn-telegram i,
+.social-btn-youtube i {
+    font-size: 1.1rem;
+}
+
 /* Адаптивность */
 @media (max-width: 768px) {
     .container {
@@ -66,5 +103,11 @@ h1, h2, h3, h4, h5, h6 {
     
     h1 {
         font-size: 1.8rem;
+    }
+    
+    /* Адаптивные социальные кнопки */
+    .social-btn-telegram,
+    .social-btn-youtube {
+        margin-bottom: 10px;
     }
 }

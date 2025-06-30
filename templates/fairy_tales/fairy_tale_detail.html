@@ -1,0 +1,843 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ fairy_tale.title }} - Терапевтические сказки{% endblock %}
+
+{% block extra_head %}
+<meta name="object-id" content="{{ fairy_tale.id }}">
+<meta name="content-type" content="fairy_tale">
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .fairy-tale-hero {
+        background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .price-card {
+        background: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-radius: 15px;
+        padding: 1.5rem;
+        position: sticky;
+        top: 2rem;
+    }
+    
+    .therapeutic-goals {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin: 1rem 0;
+    }
+    
+    .goal-badge {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+    }
+    
+    .template-preview {
+        background: #f8f9fa;
+        border-left: 4px solid #4ecdc4;
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 0 10px 10px 0;
+        font-style: italic;
+        line-height: 1.6;
+    }
+    
+    .reviews-section {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-top: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .review-card {
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .rating-stars {
+        color: #ffc107;
+        margin-right: 0.5rem;
+    }
+    
+    .related-tales {
+        background: #f8f9fa;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-top: 2rem;
+    }
+    
+    .tale-card {
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+        height: 100%;
+    }
+    
+    .tale-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+    
+    .favorite-btn {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(255,255,255,0.9);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .favorite-btn:hover {
+        background: white;
+        transform: scale(1.1);
+    }
+    
+    .favorite-btn.favorited {
+        color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="fairy-tale-hero">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb bg-transparent p-0 mb-2">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'fairy_tales:list' %}" class="text-white-50">Сказки</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'fairy_tales:category' fairy_tale.category.slug %}" class="text-white-50">
+                                {{ fairy_tale.category.name }}
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">
+                            {{ fairy_tale.title }}
+                        </li>
+                    </ol>
+                </nav>
+                
+                <h1 class="display-5 fw-bold mb-3">{{ fairy_tale.title }}</h1>
+                <p class="lead">{{ fairy_tale.short_description }}</p>
+                
+                <!-- Возраст и цели -->
+                <div class="d-flex align-items-center flex-wrap gap-3 mt-3">
+                    <span class="badge bg-white text-dark fs-6">
+                        <i class="bi bi-people me-1"></i> {{ fairy_tale.age_range_display }}
+                    </span>
+                    
+                    {% if avg_rating %}
+                    <span class="text-white">
+                        <span class="rating-stars">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= avg_rating %}
+                                    <i class="bi bi-star-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                        {{ avg_rating|floatformat:1 }} ({{ reviews.count }} отзывов)
+                    </span>
+                    {% endif %}
+                    
+                    <span class="text-white">
+                        <i class="bi bi-eye me-1"></i> {{ fairy_tale.views_count }} просмотров
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <!-- Основной контент -->
+        <div class="col-lg-8">
+            <!-- Терапевтические цели -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-heart-pulse text-primary me-2"></i>
+                        Терапевтические цели
+                    </h5>
+                    <div class="therapeutic-goals">
+                        {% for goal in fairy_tale.get_therapeutic_goals_display %}
+                            <span class="goal-badge">{{ goal }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Описание и предпросмотр -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">О сказке</h5>
+                    <p>{{ fairy_tale.short_description }}</p>
+                    
+                    <h6 class="mt-4">Пример содержания:</h6>
+                    <div class="template-preview">
+                        {{ fairy_tale.content_template|truncatewords:50 }}
+                        <br><small class="text-muted">
+                            <em>* В персонализированной версии [имя ребенка], [возраст] и другие данные будут заменены на ваши</em>
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Автор и дополнительная информация -->
+            {% if fairy_tale.author %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Об авторе</h5>
+                    <p><strong>{{ fairy_tale.author }}</strong></p>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Отзывы -->
+            {% if reviews %}
+            <div class="reviews-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3>Отзывы родителей</h3>
+                    {% if user.is_authenticated %}
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reviewModal">
+                            Оставить отзыв
+                        </button>
+                    {% endif %}
+                </div>
+                
+                {% for review in reviews %}
+                <div class="review-card">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1">{{ review.title }}</h6>
+                            <small class="text-muted">{{ review.author.first_name|default:review.author.username }}</small>
+                        </div>
+                        <div class="rating-stars">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= review.rating %}
+                                    <i class="bi bi-star-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <p class="mb-2">{{ review.content|truncatewords:30 }}</p>
+                    
+                    {% if review.helped_with_problem is not None or review.child_liked is not None %}
+                    <div class="small text-muted">
+                        {% if review.helped_with_problem %}
+                            <span class="badge bg-success me-2">Помогла с проблемой</span>
+                        {% endif %}
+                        {% if review.child_liked %}
+                            <span class="badge bg-info">Понравилась ребенку</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Боковая панель -->
+        <div class="col-lg-4">
+            <div class="price-card">
+                <!-- Кнопка избранного -->
+                {% if user.is_authenticated %}
+                <button class="favorite-btn {% if is_favorited %}favorited{% endif %}" 
+                        onclick="toggleFavorite({{ fairy_tale.id }})">
+                    <i class="bi bi-heart{% if is_favorited %}-fill{% endif %}"></i>
+                </button>
+                {% endif %}
+                
+                <div class="text-center mb-3">
+                    {% if fairy_tale.is_free %}
+                        <div class="h4 text-success mb-0">Бесплатно</div>
+                        <small class="text-muted">Базовая версия</small>
+                    {% else %}
+                        <div class="h4 mb-0">от {{ fairy_tale.base_price|floatformat:0 }} ₽</div>
+                        <small class="text-muted">Персонализация</small>
+                    {% endif %}
+                </div>
+                
+                <!-- Опции -->
+                <div class="mb-3">
+                    <h6>Дополнительные опции:</h6>
+                    <ul class="list-unstyled small">
+                        {% if fairy_tale.has_audio_option %}
+                        <li>
+                            <i class="bi bi-volume-up text-primary me-2"></i>
+                            Озвучка: +{{ fairy_tale.audio_price|floatformat:0 }} ₽
+                        </li>
+                        {% endif %}
+                        
+                        {% if fairy_tale.has_illustration_option %}
+                        <li>
+                            <i class="bi bi-image text-warning me-2"></i>
+                            Иллюстрации: +{{ fairy_tale.illustration_price|floatformat:0 }} ₽
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                
+                <!-- Кнопки действий -->
+                <div class="d-grid gap-2">
+                    {% if fairy_tale.is_free %}
+                        <a href="#" class="btn btn-success btn-lg" 
+                           onclick="downloadFreeTale()"
+                           data-analytics-track="true"
+                           data-content-type="fairy_tale"
+                           data-object-id="{{ fairy_tale.id }}"
+                           data-button-type="download">
+                        <i class="bi bi-download me-2"></i> Скачать бесплатно
+                        </a>
+                    {% endif %}
+                    
+                    {% if shop_product %}
+                        <!-- Перенаправляем в магазин -->
+                        <a href="#" 
+                           class="btn btn-primary btn-lg"
+                           data-analytics-track="true"
+                           data-content-type="fairy_tale"
+                           data-object-id="{{ fairy_tale.id }}"
+                           data-button-type="buy"
+                           onclick="showDevelopmentMessage(event)">
+                            <i class="bi bi-cart-plus me-2"></i> Заказать сказку
+                        </a>
+                        
+                        <!-- Надпись о разработке -->
+                        <div class="alert alert-warning mt-3 mb-0" style="border-radius: 10px; font-size: 0.9rem; padding: 0.75rem;">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                <div>
+                                    <strong>Покупка сказок в разработке</strong><br>
+                                    <small>Кликните кнопку, чтобы оставить заявку</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <small class="text-muted text-center d-block mt-2">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Персонализация через корзину магазина
+                        </small>
+                    {% else %}
+                        <!-- Если товар не найден, оставляем старую систему -->
+                        <a href="#" 
+                           class="btn btn-primary btn-lg"
+                           data-analytics-track="true"
+                           data-content-type="fairy_tale"
+                           data-object-id="{{ fairy_tale.id }}"
+                           data-button-type="read_full"
+                           onclick="showDevelopmentMessage(event)">
+                            <i class="bi bi-magic me-2"></i> Персонализировать
+                        </a>
+                        
+                        <!-- Надпись о разработке -->
+                        <div class="alert alert-warning mt-3 mb-0" style="border-radius: 10px; font-size: 0.9rem; padding: 0.75rem;">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                <div>
+                                    <strong>Покупка сказок в разработке</strong><br>
+                                    <small>Кликните кнопку, чтобы оставить заявку</small>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <button class="btn btn-outline-secondary" onclick="shareTale()">
+                        <i class="bi bi-share me-2"></i> Поделиться
+                    </button>
+                </div>
+                
+                <!-- Информация о доставке -->
+                <hr>
+                <div class="small text-muted">
+                    <div class="mb-2">
+                        <i class="bi bi-clock me-2"></i>
+                        <strong>Сроки:</strong> 1-3 рабочих дня
+                    </div>
+                    <div class="mb-2">
+                        <i class="bi bi-envelope me-2"></i>
+                        <strong>Доставка:</strong> на email
+                    </div>
+                    <div>
+                        <i class="bi bi-shield-check me-2"></i>
+                        <strong>Гарантия:</strong> 100% возврат средств
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Похожие сказки -->
+    {% if related_fairy_tales %}
+    <div class="related-tales">
+        <h3 class="mb-4">Похожие сказки</h3>
+        <div class="row">
+            {% for tale in related_fairy_tales %}
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card tale-card h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ tale.title|truncatechars:60 }}</h6>
+                        <p class="card-text small text-muted">
+                            {{ tale.short_description|truncatechars:80 }}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            {% if tale.is_free %}
+                                <span class="text-success fw-bold">Бесплатно</span>
+                            {% else %}
+                                <span class="fw-bold">от {{ tale.base_price|floatformat:0 }} ₽</span>
+                            {% endif %}
+                            <a href="{% url 'fairy_tales:detail' tale.slug %}" 
+                               class="btn btn-sm btn-outline-primary"
+                               data-analytics-track="true"
+                               data-content-type="fairy_tale"
+                               data-object-id="{{ tale.id }}"
+                               data-button-type="read_full">
+                                Подробнее
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Модальное окно для отзыва -->
+{% if user.is_authenticated %}
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'fairy_tales:add_review' fairy_tale.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Оставить отзыв</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Оценка</label>
+                        <div class="rating-input">
+                            {% for i in "12345" %}
+                            <input type="radio" name="rating" value="{{ forloop.counter }}" 
+                                   id="star{{ forloop.counter }}" required>
+                            <label for="star{{ forloop.counter }}">
+                                <i class="bi bi-star"></i>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="reviewTitle" class="form-label">Заголовок</label>
+                        <input type="text" class="form-control" id="reviewTitle" 
+                               name="title" required maxlength="200">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="reviewContent" class="form-label">Отзыв</label>
+                        <textarea class="form-control" id="reviewContent" 
+                                  name="content" rows="4" required minlength="20"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Помогла ли сказка с проблемой?</label>
+                                <div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" 
+                                               name="helped_with_problem" value="yes" id="helped_yes">
+                                        <label class="form-check-label" for="helped_yes">Да</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" 
+                                               name="helped_with_problem" value="no" id="helped_no">
+                                        <label class="form-check-label" for="helped_no">Нет</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Понравилась ли ребенку?</label>
+                                <div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" 
+                                               name="child_liked" value="yes" id="liked_yes">
+                                        <label class="form-check-label" for="liked_yes">Да</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" 
+                                               name="child_liked" value="no" id="liked_no">
+                                        <label class="form-check-label" for="liked_no">Нет</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Отмена
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Отправить отзыв
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Модальное окно для поделиться -->
+<div class="modal fade" id="shareModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-share"></i> Поделиться сказкой
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-grid gap-2">
+                    <!-- WhatsApp -->
+                    <button type="button" class="btn btn-success d-flex align-items-center" onclick="shareToWhatsApp()">
+                        <i class="bi bi-whatsapp me-2"></i>
+                        WhatsApp
+                    </button>
+                    
+                    <!-- Telegram -->
+                    <button type="button" class="btn btn-primary d-flex align-items-center" onclick="shareToTelegram()">
+                        <i class="bi bi-telegram me-2"></i>
+                        Telegram
+                    </button>
+                    
+                    <!-- VKontakte -->
+                    <button type="button" class="btn btn-vk d-flex align-items-center" onclick="shareToVK()">
+                        <svg class="me-2" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.408 0 15.684 0zM18.028 14.025c.637.586 1.309 1.139 1.861 1.801.246.297.483.605.663.973.254.521.022 1.095-.415 1.126l-2.729.001c-.703.057-1.259-.229-1.726-.693-.367-.367-.704-.752-1.055-1.129-.146-.158-.298-.307-.477-.421-.418-.268-.781-.177-.994.282-.221.465-.272.966-.287 1.467-.024.732-.184.924-.917.958-1.565.074-3.048-.169-4.395-1.093-1.197-.821-2.135-1.936-2.91-3.226C5.28 12.012 4.15 9.982 3.1 7.901c-.247-.49-.071-.748.484-.758.921-.017 1.843-.017 2.764 0 .389.008.637.244.784.602.579 1.418 1.298 2.742 2.289 3.917.247.293.497.586.822.784.361.22.668.117.854-.265.118-.243.168-.513.188-.784.062-.849.056-1.699-.007-2.548-.043-.579-.25-.985-.822-1.096-.286-.056-.244-.166-.105-.334.226-.273.44-.442.867-.442h3.184c.501.099.612.325.68.828l.007 3.533c-.004.203.101.807.467.94.294.106.487-.139.662-.331.807-.883 1.384-1.917 1.907-2.995.228-.471.421-.967.617-1.461.152-.386.39-.578.85-.568l2.898.007c.086 0 .173.001.259.016.531.094.676.329.508.844-.272.835-.711 1.555-1.169 2.262-.484.748-.999 1.47-1.479 2.22-.447.698-.415 1.046.118 1.613z"/>
+                        </svg>
+                        ВКонтакте
+                    </button>
+                    
+                    <!-- Facebook -->
+                    <button type="button" class="btn btn-primary d-flex align-items-center" 
+                            style="background-color: #1877F2; border-color: #1877F2;" onclick="shareToFacebook()">
+                        <i class="bi bi-facebook me-2"></i>
+                        Facebook
+                    </button>
+                    
+                    <!-- Одноклассники -->
+                    <button type="button" class="btn d-flex align-items-center" 
+                            style="background-color: #EE8208; border-color: #EE8208; color: white;" onclick="shareToOK()">
+                        <span class="me-2" style="font-weight: bold; font-size: 14px;">ОК</span>
+                        Одноклассники
+                    </button>
+                    
+                    <!-- Копировать ссылку -->
+                    <button type="button" class="btn btn-outline-secondary d-flex align-items-center" onclick="copyToClipboard()">
+                        <i class="bi bi-clipboard me-2"></i>
+                        Копировать ссылку
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Функция для показа сообщения "В разработке"
+function showDevelopmentMessage(event) {
+    event.preventDefault();
+    
+    // Создаем красивое уведомление
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-info alert-dismissible fade show position-fixed';
+    notification.style.cssText = `
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        border-left: 4px solid #4ecdc4;
+    `;
+    
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="bi bi-tools text-primary me-3" style="font-size: 1.5rem;"></i>
+            <div>
+                <strong>Спасибо за интерес! 😊</strong><br>
+                <small>Покупка сказок пока в разработке</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Автоматически убираем через 5 секунд
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+    
+    // Анимация кнопки
+    const button = event.target.closest('a, button');
+    if (button) {
+        const originalText = button.innerHTML;
+        button.style.transform = 'scale(1.05)';
+        button.innerHTML = '<i class="bi bi-check me-2"></i> Учтено!';
+        
+        setTimeout(() => {
+            button.style.transform = 'scale(1)';
+            button.innerHTML = originalText;
+        }, 1500);
+    }
+}
+function toggleFavorite(templateId) {
+    fetch(`{% url 'fairy_tales:toggle_favorite' 0 %}`.replace('0', templateId), {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const btn = document.querySelector('.favorite-btn');
+            const icon = btn.querySelector('i');
+            
+            if (data.is_favorited) {
+                btn.classList.add('favorited');
+                icon.className = 'bi bi-heart-fill';
+            } else {
+                btn.classList.remove('favorited');
+                icon.className = 'bi bi-heart';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка. Попробуйте еще раз.');
+    });
+}
+
+function downloadFreeTale() {
+    // TODO: Реализовать скачивание бесплатной сказки
+    alert('Функция скачивания в разработке');
+}
+
+function shareTale() {
+    // Показываем модальное окно с вариантами поделиться
+    const modal = document.getElementById('shareModal');
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+}
+
+function shareToWhatsApp() {
+    const text = encodeURIComponent(`{{ fairy_tale.title }}\n\n{{ fairy_tale.short_description }}\n\n${window.location.href}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+}
+
+function shareToTelegram() {
+    const text = encodeURIComponent(`{{ fairy_tale.title }}\n\n{{ fairy_tale.short_description }}`);
+    const url = encodeURIComponent(window.location.href);
+    window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
+}
+
+function shareToVK() {
+    const title = encodeURIComponent('{{ fairy_tale.title }}');
+    const description = encodeURIComponent('{{ fairy_tale.short_description }}');
+    const url = encodeURIComponent(window.location.href);
+    window.open(`https://vk.com/share.php?url=${url}&title=${title}&description=${description}`, '_blank');
+}
+
+function shareToFacebook() {
+    const url = encodeURIComponent(window.location.href);
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+}
+
+function shareToOK() {
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent('{{ fairy_tale.title }}');
+    const description = encodeURIComponent('{{ fairy_tale.short_description }}');
+    window.open(`https://connect.ok.ru/offer?url=${url}&title=${title}&description=${description}`, '_blank');
+}
+
+function copyToClipboard() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+        // Показываем уведомление
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+        alert.style.top = '20px';
+        alert.style.right = '20px';
+        alert.style.zIndex = '9999';
+        alert.innerHTML = `
+            <i class="bi bi-check-circle"></i> Ссылка скопирована в буфер обмена!
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alert);
+        
+        // Автоматически убираем через 3 секунды
+        setTimeout(() => {
+            if (alert.parentNode) {
+                alert.remove();
+            }
+        }, 3000);
+        
+        // Закрываем модальное окно
+        const modal = bootstrap.Modal.getInstance(document.getElementById('shareModal'));
+        modal.hide();
+    }).catch(() => {
+        alert('Не удалось скопировать ссылку');
+    });
+}
+
+// Стилизация рейтинга
+document.addEventListener('DOMContentLoaded', function() {
+    const ratingInputs = document.querySelectorAll('.rating-input input[type="radio"]');
+    const ratingLabels = document.querySelectorAll('.rating-input label');
+    
+    ratingLabels.forEach((label, index) => {
+        label.addEventListener('mouseenter', () => {
+            for (let i = 0; i <= index; i++) {
+                ratingLabels[i].querySelector('i').className = 'bi bi-star-fill';
+            }
+            for (let i = index + 1; i < ratingLabels.length; i++) {
+                ratingLabels[i].querySelector('i').className = 'bi bi-star';
+            }
+        });
+        
+        label.addEventListener('click', () => {
+            ratingInputs[index].checked = true;
+        });
+    });
+    
+    document.querySelector('.rating-input').addEventListener('mouseleave', () => {
+        const checked = document.querySelector('.rating-input input[type="radio"]:checked');
+        const checkedIndex = checked ? Array.from(ratingInputs).indexOf(checked) : -1;
+        
+        ratingLabels.forEach((label, index) => {
+            if (index <= checkedIndex) {
+                label.querySelector('i').className = 'bi bi-star-fill';
+            } else {
+                label.querySelector('i').className = 'bi bi-star';
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.rating-input {
+    display: flex;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+}
+
+.rating-input input[type="radio"] {
+    display: none;
+}
+
+.rating-input label {
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: #dee2e6;
+    transition: color 0.2s ease;
+}
+
+.rating-input label:hover {
+    color: #ffc107;
+}
+
+.rating-input input[type="radio"]:checked ~ label,
+.rating-input label:hover {
+    color: #ffc107;
+}
+
+/* Стили для кнопок социальных сетей */
+.btn-whatsapp {
+    background-color: #25d366;
+    border-color: #25d366;
+}
+
+.btn-whatsapp:hover {
+    background-color: #128c7e;
+    border-color: #128c7e;
+}
+
+.btn-telegram {
+    background-color: #0088cc;
+    border-color: #0088cc;
+}
+
+.btn-telegram:hover {
+    background-color: #006699;
+    border-color: #006699;
+}
+
+.btn-vk {
+    background-color: #4c75a3;
+    border-color: #4c75a3;
+    color: white;
+}
+
+.btn-vk:hover {
+    background-color: #3b5998;
+    border-color: #3b5998;
+    color: white;
+}
+
+#shareModal .modal-body {
+    padding: 1.5rem;
+}
+
+#shareModal .btn {
+    justify-content: flex-start;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+#shareModal .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+</style>
+{% endblock %}

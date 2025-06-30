@@ -1,0 +1,371 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.title }} - {{ site_settings.site_name }}{% endblock %}
+
+{% block description %}{{ product.description }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.product-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.product-image {
+    width: 100%;
+    max-width: 400px;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    border-radius: 0.75rem;
+    background: #f5f5f5;
+}
+
+.product-placeholder {
+    width: 100%;
+    max-width: 400px;
+    aspect-ratio: 3/4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(45deg, #3498db, #2980b9);
+    border-radius: 0.75rem;
+    color: white;
+}
+
+.product-info {
+    padding: 2rem;
+}
+
+.product-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.product-price {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.product-price.free {
+    color: #28a745;
+}
+
+.product-price.paid {
+    color: #e74c3c;
+}
+
+.product-meta {
+    margin-bottom: 2rem;
+}
+
+.meta-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.meta-item:last-child {
+    border-bottom: none;
+}
+
+.product-description {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    color: #555;
+}
+
+.product-actions {
+    margin-bottom: 2rem;
+}
+
+.btn-add-to-cart {
+    font-size: 1.1rem;
+    padding: 1rem 2rem;
+    transition: all 0.3s ease;
+}
+
+.btn-add-to-cart:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.already-purchased {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.content-preview {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.breadcrumb-nav {
+    margin-bottom: 2rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="product-container">
+        <!-- Хлебные крошки -->
+        <nav class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Главная</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'shop:catalog' %}">Магазин</a></li>
+                <li class="breadcrumb-item active">{{ product.title }}</li>
+            </ol>
+        </nav>
+        
+        <div class="row">
+            <!-- Изображение товара -->
+            <div class="col-lg-5">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
+                {% elif product.content_object.cover %}
+                    <img src="{{ product.content_object.cover.url }}" alt="{{ product.title }}" class="product-image">
+                {% else %}
+                    <div class="product-placeholder">
+                        <i class="bi bi-{% if product.product_type == 'book' %}book{% elif product.product_type == 'audio' %}music-note{% else %}star{% endif %}" 
+                           style="font-size: 4rem;"></i>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Информация о товаре -->
+            <div class="col-lg-7">
+                <div class="product-info">
+                    <h1 class="product-title">{{ product.title }}</h1>
+                    
+                    <div class="product-price {% if product.price == 0 %}free{% else %}paid{% endif %}">
+                        {% if product.price > 0 %}
+                            {{ product.price }}₽
+                        {% else %}
+                            Бесплатно
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Мета-информация -->
+                    <div class="product-meta">
+                        <div class="meta-item">
+                            <span><strong>Тип:</strong></span>
+                            <span>{{ product.get_product_type_display }}</span>
+                        </div>
+                        
+                        {% if product.content_object %}
+                            {% if product.content_object.author %}
+                            <div class="meta-item">
+                                <span><strong>Автор:</strong></span>
+                                <span>{{ product.content_object.author }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if product.content_object.pages %}
+                            <div class="meta-item">
+                                <span><strong>Страниц:</strong></span>
+                                <span>{{ product.content_object.pages }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if product.content_object.format %}
+                            <div class="meta-item">
+                                <span><strong>Формат:</strong></span>
+                                <span>{{ product.content_object.get_format_display }}</span>
+                            </div>
+                            {% endif %}
+                        {% endif %}
+                        
+                        <div class="meta-item">
+                            <span><strong>Цифровой товар:</strong></span>
+                            <span>{% if product.is_digital %}Да{% else %}Нет{% endif %}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Описание -->
+                    {% if product.description %}
+                        <div class="product-description">
+                            {{ product.description|linebreaks }}
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Уже куплено -->
+                    {% if is_purchased %}
+                        <div class="already-purchased">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            <strong>Вы уже приобрели этот товар!</strong>
+                            <br>
+                            <small>Доступен для скачивания в разделе "Мои покупки"</small>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Действия -->
+                    <div class="product-actions">
+                        {% if user.is_authenticated %}
+                            {% if is_purchased %}
+                                <div class="d-grid gap-2 d-md-block">
+                                    <a href="{% url 'shop:my_purchases' %}" 
+                                       class="btn btn-success btn-lg">
+                                        <i class="bi bi-download me-2"></i>
+                                        Скачать
+                                    </a>
+                                    <a href="{% url 'shop:catalog' %}" 
+                                       class="btn btn-outline-primary btn-lg">
+                                        <i class="bi bi-shop me-2"></i>
+                                        Другие товары
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="d-grid gap-2 d-md-block">
+                                    <a href="{% url 'shop:add_to_cart' product_id=product.id %}" 
+                                       class="btn btn-primary btn-lg btn-add-to-cart">
+                                        <i class="bi bi-cart-plus me-2"></i>
+                                        Добавить в корзину
+                                    </a>
+                                    <a href="{% url 'shop:catalog' %}" 
+                                       class="btn btn-outline-secondary btn-lg">
+                                        <i class="bi bi-arrow-left me-2"></i>
+                                        Назад к каталогу
+                                    </a>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'account_login' %}" 
+                                   class="btn btn-primary btn-lg">
+                                    <i class="bi bi-person me-2"></i>
+                                    Войти для покупки
+                                </a>
+                                <a href="{% url 'account_signup' %}" 
+                                   class="btn btn-outline-primary btn-lg">
+                                    <i class="bi bi-person-plus me-2"></i>
+                                    Регистрация
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Дополнительная информация -->
+                    <div class="small text-muted">
+                        <p>
+                            <i class="bi bi-shield-check me-1"></i>
+                            Безопасная покупка через защищенное соединение
+                        </p>
+                        <p>
+                            <i class="bi bi-download me-1"></i>
+                            Мгновенное получение после оплаты
+                        </p>
+                        <p>
+                            <i class="bi bi-infinity me-1"></i>
+                            Неограниченное количество скачиваний
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Контент превью -->
+        {% if content_object and content_object.content %}
+            <div class="content-preview">
+                <h4 class="mb-3">
+                    <i class="bi bi-eye me-2"></i>
+                    Предварительный просмотр
+                </h4>
+                <div class="content-text">
+                    {{ content_object.content|truncatewords:100|linebreaks }}
+                </div>
+                {% if not is_purchased %}
+                    <div class="text-center mt-3">
+                        <em class="text-muted">Полный текст доступен после покупки</em>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+        
+        <!-- Связанные товары -->
+        <div class="mt-5">
+            <h4 class="mb-4">Рекомендуемые товары</h4>
+            <div class="row g-3">
+                <!-- Здесь можно добавить логику похожих товаров -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-shop" style="font-size: 2rem; color: #ccc;"></i>
+                            <h6 class="card-title mt-2">Другие товары</h6>
+                            <p class="card-text text-muted">Посмотрите наш полный каталог</p>
+                            <a href="{% url 'shop:catalog' %}" class="btn btn-outline-primary">
+                                Перейти в каталог
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработка добавления в корзину
+    const addToCartBtn = document.querySelector('.btn-add-to-cart');
+    
+    if (addToCartBtn) {
+        addToCartBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const url = this.href;
+            
+            // Блокируем кнопку
+            this.disabled = true;
+            this.innerHTML = '<i class="bi bi-hourglass me-2"></i>Добавляем...';
+            
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Успешно добавлено
+                    this.innerHTML = '<i class="bi bi-check me-2"></i>Добавлено в корзину';
+                    this.classList.remove('btn-primary');
+                    this.classList.add('btn-success');
+                    
+                    // Показываем кнопку перехода в корзину
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="bi bi-cart me-2"></i>Перейти в корзину';
+                        this.href = '{% url "shop:cart" %}';
+                        this.disabled = false;
+                    }, 2000);
+                } else {
+                    // Ошибка
+                    this.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>Ошибка';
+                    this.classList.add('btn-danger');
+                    this.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                this.innerHTML = '<i class="bi bi-cart-plus me-2"></i>Добавить в корзину';
+                this.disabled = false;
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

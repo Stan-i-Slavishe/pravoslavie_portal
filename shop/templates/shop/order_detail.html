@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Заказ #{{ order.short_id }} - {{ site_settings.site_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.order-container {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.order-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.75rem;
+    padding: 2rem;
+}
+
+.order-status {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-paid {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-completed {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.status-cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.info-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #eee;
+}
+
+.info-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.info-row:last-child {
+    margin-bottom: 0;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.order-item:last-child {
+    border-bottom: none;
+}
+
+.total-row {
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-top: 2px solid #dee2e6;
+    padding-top: 1rem;
+    margin-top: 1rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="order-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Заказ #{{ order.short_id }}</h1>
+            <span class="order-status status-{{ order.status }}">
+                {{ order.get_status_display }}
+            </span>
+        </div>
+        
+        <div class="order-card">
+            <!-- Основная информация о заказе -->
+            <div class="info-section">
+                <h5 class="mb-3">Информация о заказе</h5>
+                
+                <div class="info-row">
+                    <span><strong>Номер заказа:</strong></span>
+                    <span>#{{ order.short_id }}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span><strong>Дата создания:</strong></span>
+                    <span>{{ order.created_at|date:"d.m.Y H:i" }}</span>
+                </div>
+                
+                {% if order.paid_at %}
+                <div class="info-row">
+                    <span><strong>Дата оплаты:</strong></span>
+                    <span>{{ order.paid_at|date:"d.m.Y H:i" }}</span>
+                </div>
+                {% endif %}
+                
+                {% if order.payment_method %}
+                <div class="info-row">
+                    <span><strong>Способ оплаты:</strong></span>
+                    <span>{{ order.payment_method }}</span>
+                </div>
+                {% endif %}
+                
+                {% if order.payment_id %}
+                <div class="info-row">
+                    <span><strong>ID платежа:</strong></span>
+                    <span>{{ order.payment_id }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Контактная информация -->
+            <div class="info-section">
+                <h5 class="mb-3">Контактная информация</h5>
+                
+                <div class="info-row">
+                    <span><strong>Покупатель:</strong></span>
+                    <span>{{ order.full_name }}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span><strong>Email:</strong></span>
+                    <span>{{ order.email }}</span>
+                </div>
+                
+                {% if order.phone %}
+                <div class="info-row">
+                    <span><strong>Телефон:</strong></span>
+                    <span>{{ order.phone }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Товары в заказе -->
+            <div class="info-section">
+                <h5 class="mb-3">Товары</h5>
+                
+                {% for item in order.items.all %}
+                    <div class="order-item">
+                        <div>
+                            <strong>{{ item.product_title }}</strong>
+                            {% if item.quantity > 1 %}
+                                <br><small class="text-muted">Количество: {{ item.quantity }}</small>
+                            {% endif %}
+                            {% if item.is_downloaded %}
+                                <br><small class="text-success">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    Скачано {{ item.download_count }} раз
+                                </small>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <strong>{{ item.total_price }}₽</strong>
+                        </div>
+                    </div>
+                {% endfor %}
+                
+                <div class="order-item total-row">
+                    <span>Итого к оплате:</span>
+                    <span class="text-success">{{ order.total_amount }}₽</span>
+                </div>
+            </div>
+            
+            <!-- Действия -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                {% if order.status == 'pending' %}
+                    <a href="{% url 'shop:payment' order_id=order.order_id %}" 
+                       class="btn btn-primary">
+                        <i class="bi bi-credit-card me-2"></i>
+                        Оплатить заказ
+                    </a>
+                {% endif %}
+                
+                {% if order.status == 'paid' or order.status == 'completed' %}
+                    <a href="{% url 'shop:my_purchases' %}" 
+                       class="btn btn-success">
+                        <i class="bi bi-download me-2"></i>
+                        Скачать покупки
+                    </a>
+                {% endif %}
+                
+                <a href="{% url 'shop:my_orders' %}" 
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Все заказы
+                </a>
+            </div>
+            
+            {% if order.notes %}
+            <!-- Заметки -->
+            <div class="info-section">
+                <h5 class="mb-3">Заметки</h5>
+                <p class="text-muted">{{ order.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Дополнительная информация -->
+        <div class="mt-4 text-center text-muted small">
+            <p>
+                <i class="bi bi-info-circle me-1"></i>
+                При возникновении вопросов обращайтесь в 
+                <a href="{% url 'core:contact' %}">службу поддержки</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

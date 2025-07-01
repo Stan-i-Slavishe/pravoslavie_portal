@@ -1,0 +1,57 @@
+/* ПРИНУДИТЕЛЬНЫЕ СТИЛИ ДЛЯ СТАТИСТИКИ КОММЕНТАРИЕВ */
+
+/* Принудительное отображение блока комментариев */
+.story-meta .meta-item {
+    display: inline-flex !important;
+    align-items: center !important;
+    margin-right: 1rem !important;
+    margin-bottom: 0.5rem !important;
+    color: #6c757d !important;
+    font-size: 0.9rem !important;
+    visibility: visible !important;
+}
+
+.story-meta .meta-item i {
+    margin-right: 0.5rem !important;
+    color: #e74c3c !important;
+}
+
+/* Принудительное отображение иконки комментариев */
+.story-meta .meta-item i.bi-chat-dots {
+    color: #28a745 !important;
+    font-size: 1rem !important;
+    display: inline-block !important;
+}
+
+/* Принудительное отображение текста счетчика */
+#comments-count-meta {
+    color: #495057 !important;
+    font-weight: 500 !important;
+    display: inline !important;
+}
+
+/* Боковая панель - принудительное отображение */
+.sidebar-stats .col-4 {
+    display: block !important;
+    visibility: visible !important;
+}
+
+#comments-count-sidebar {
+    color: #28a745 !important;
+    font-weight: 700 !important;
+    font-size: 1.5rem !important;
+    display: block !important;
+}
+
+/* Тест - если блок вообще не виден */
+.story-meta {
+    border: 2px solid red !important;
+    background: yellow !important;
+    padding: 10px !important;
+}
+
+.meta-item:nth-child(4) {
+    background: lime !important;
+    border: 2px solid blue !important;
+    padding: 5px !important;
+}

@@ -360,6 +360,61 @@
                 <h1>{{ story.title }}</h1>
                 <p class="lead">{{ story.description|linebreaksbr }}</p>
                 
+                <!-- Действия -->
+                <div class="story-actions mb-2">
+                    <button class="btn btn-outline-danger {% if user_liked %}active{% endif %}" 
+                            onclick="toggleLike({{ story.id }})">
+                        <i class="bi bi-heart{% if user_liked %}-fill{% endif %} me-2"></i>
+                        <span id="like-text">Нравится</span>
+                        <span id="like-count">({{ likes_count|default:"0" }})</span>
+                    </button>
+                    
+                    <button class="btn btn-outline-primary ms-3" onclick="toggleShareSection()">
+                        <i class="bi bi-share me-2"></i>
+                        Поделиться
+                    </button>
+                </div>
+                
+                <!-- Блок поделиться -->
+                <div id="shareSection" class="share-section mt-3" style="display: none;">
+                    <h5 class="share-title">
+                        <i class="bi bi-share me-2"></i>
+                        Поделиться рассказом
+                    </h5>
+                    <p class="text-muted mb-3">Расскажите друзьям об этом рассказе</p>
+                    
+                    <div class="share-buttons">
+                        <a href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text={{ story.title }}" 
+                           class="btn btn-outline-primary me-2" 
+                           target="_blank" 
+                           title="Поделиться в Telegram">
+                            <i class="bi bi-telegram"></i>
+                            Telegram
+                        </a>
+                        
+                        <a href="https://vk.com/share.php?url={{ request.build_absolute_uri }}&title={{ story.title }}" 
+                           class="btn btn-outline-primary me-2" 
+                           target="_blank" 
+                           title="Поделиться ВКонтакте">
+                            <i class="bi bi-person-vcard"></i>
+                            ВКонтакте
+                        </a>
+                        
+                        <a href="https://wa.me/?text={{ story.title }} {{ request.build_absolute_uri }}" 
+                           class="btn btn-outline-success me-2" 
+                           target="_blank" 
+                           title="Поделиться в WhatsApp">
+                            <i class="bi bi-whatsapp"></i>
+                            WhatsApp
+                        </a>
+                        
+                        <button class="btn btn-outline-secondary" onclick="copyToClipboard()">
+                            <i class="bi bi-link-45deg"></i>
+                            Скопировать ссылку
+                        </button>
+                    </div>
+                </div>
+                
                 {% if story.tags.exists %}
                     <div class="tag-list">
                         {% for tag in story.tags.all %}
@@ -483,10 +538,106 @@
         </div>
     </div>
 </div>
+
+{% csrf_token %}
 {% endblock %}
 
 {% block extra_js %}
 <script>
+// Функция лайка рассказа
+function toggleLike(storyId) {
+    {% if user.is_authenticated %}
+        const csrfToken = getCSRFToken();
+        
+        fetch('/stories/' + storyId + '/like/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const likeBtn = document.querySelector('.btn[onclick*="toggleLike"]');
+                const likeIcon = likeBtn.querySelector('i');
+                const likeCount = document.getElementById('like-count');
+                
+                if (data.liked) {
+                    likeBtn.classList.add('active');
+                    likeIcon.classList.add('bi-heart-fill');
+                    likeIcon.classList.remove('bi-heart');
+                } else {
+                    likeBtn.classList.remove('active');
+                    likeIcon.classList.add('bi-heart');
+                    likeIcon.classList.remove('bi-heart-fill');
+                }
+                
+                likeCount.textContent = '(' + data.likes_count + ')';
+                showNotification(data.liked ? 'Лайк добавлен!' : 'Лайк убран!', 'success');
+            }
+        })
+        .catch(err => {
+            console.error('Like error:', err);
+            showNotification('Ошибка при обработке лайка', 'danger');
+        });
+    {% else %}
+        window.location.href = "{% url 'account_login' %}";
+    {% endif %}
+}
+
+// Переключение блока поделиться
+function toggleShareSection() {
+    const shareSection = document.getElementById('shareSection');
+    
+    if (shareSection.style.display === 'none' || shareSection.style.display === '') {
+        shareSection.style.display = 'block';
+        setTimeout(() => {
+            shareSection.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest'
+            });
+        }, 100);
+    } else {
+        shareSection.style.display = 'none';
+    }
+}
+
+// Копирование ссылки в буфер обмена
+function copyToClipboard() {
+    const url = window.location.href;
+    
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+            showNotification('Ссылка скопирована в буфер обмена!', 'success');
+        }).catch(() => {
+            fallbackCopyToClipboard(url);
+        });
+    } else {
+        fallbackCopyToClipboard(url);
+    }
+}
+
+// Запасной метод копирования
+function fallbackCopyToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        document.execCommand('copy');
+        showNotification('Ссылка скопирована!', 'success');
+    } catch (err) {
+        showNotification('Ошибка копирования. Скопируйте ссылку вручную.', 'danger');
+    }
+    
+    document.body.removeChild(textArea);
+}
+
 // Глобальные переменные
 let currentPage = 1;
 let totalPages = 1;

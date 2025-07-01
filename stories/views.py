@@ -30,6 +30,16 @@ class StoryListView(ListView):
     def get_queryset(self):
         queryset = Story.objects.filter(is_published=True).select_related('category').prefetch_related('tags')
         
+        # Добавляем подсчет комментариев
+        try:
+            from .models import StoryComment
+            queryset = queryset.annotate(
+                comments_count=Count('comments', filter=Q(comments__is_approved=True, comments__parent=None))
+            )
+        except:
+            # Если модель комментариев еще не создана
+            pass
+        
         # Поиск
         search_query = self.request.GET.get('search')
         if search_query:

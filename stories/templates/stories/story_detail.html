@@ -82,7 +82,7 @@
                 {% endif %}
                 
                 <!-- Действия -->
-                <div class="story-actions mb-2">
+                <div class="story-actions mb-4">
                     <button class="btn btn-outline-danger {% if user_liked %}active{% endif %}" 
                             onclick="toggleLike({{ story.id }})">
                         <i class="bi bi-heart{% if user_liked %}-fill{% endif %} me-2"></i>
@@ -97,27 +97,41 @@
                 </div>
                 
                 <!-- Блок поделиться -->
-                <div id="shareSection" class="share-section mt-2" style="display: none;">
-                    <div class="share-buttons d-flex gap-2 flex-wrap">
-                        <a href="https://wa.me/?text={{ story.title|urlencode }} {{ request.build_absolute_uri|urlencode }}" 
-                           class="btn btn-success btn-sm" 
-                           target="_blank" 
-                           title="Поделиться в WhatsApp">
-                            <i class="bi bi-whatsapp me-1"></i>
-                            WhatsApp
-                        </a>
-                        
-                        <a href="https://t.me/share/url?url={{ request.build_absolute_uri|urlencode }}&text={{ story.title|urlencode }}" 
-                           class="btn btn-info btn-sm" 
+                <div id="shareSection" class="share-section mt-3" style="display: none;">
+                    <h5 class="share-title">
+                        <i class="bi bi-share me-2"></i>
+                        Поделиться рассказом
+                    </h5>
+                    <p class="text-muted mb-3">Расскажите друзьям об этом рассказе</p>
+                    
+                    <div class="share-buttons">
+                        <a href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text={{ story.title }}" 
+                           class="btn btn-outline-primary me-2" 
                            target="_blank" 
                            title="Поделиться в Telegram">
-                            <i class="bi bi-telegram me-1"></i>
+                            <i class="bi bi-telegram"></i>
                             Telegram
                         </a>
                         
-                        <button class="btn btn-outline-secondary btn-sm" onclick="copyToClipboard()">
-                            <i class="bi bi-link-45deg me-1"></i>
-                            Скопировать
+                        <a href="https://vk.com/share.php?url={{ request.build_absolute_uri }}&title={{ story.title }}" 
+                           class="btn btn-outline-primary me-2" 
+                           target="_blank" 
+                           title="Поделиться ВКонтакте">
+                            <i class="bi bi-person-vcard"></i>
+                            ВКонтакте
+                        </a>
+                        
+                        <a href="https://wa.me/?text={{ story.title }} {{ request.build_absolute_uri }}" 
+                           class="btn btn-outline-success me-2" 
+                           target="_blank" 
+                           title="Поделиться в WhatsApp">
+                            <i class="bi bi-whatsapp"></i>
+                            WhatsApp
+                        </a>
+                        
+                        <button class="btn btn-outline-secondary" onclick="copyToClipboard()">
+                            <i class="bi bi-link-45deg"></i>
+                            Скопировать ссылку
                         </button>
                     </div>
                 </div>

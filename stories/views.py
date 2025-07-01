@@ -144,8 +144,10 @@ class StoryDetailView(DetailView):
             ).select_related('user').prefetch_related('replies').order_by('-is_pinned', '-created_at')[:5]
             
             context['comments'] = comments
+            # Правильный подсчет: только основные комментарии (не ответы)
             context['comments_count'] = StoryComment.objects.filter(
                 story=story, 
+                parent=None,  # Только основные комментарии
                 is_approved=True
             ).count()
             
@@ -572,6 +574,63 @@ def load_comments(request, story_id):
             'current_page': page,
             'total_pages': paginator.num_pages,
             'total_comments': paginator.count
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
+
+
+def load_more_comments(request, story_id):
+    """Загрузка дополнительных комментариев (для кнопки 'Показать еще')"""
+    try:
+        story = get_object_or_404(Story, id=story_id, is_published=True)
+        offset = int(request.GET.get('offset', 0))
+        limit = 5  # Загружаем по 5 комментариев за раз
+        
+        # Получаем основные комментарии (не ответы) с offset
+        comments = StoryComment.objects.filter(
+            story=story,
+            parent=None,
+            is_approved=True
+        ).select_related('user').prefetch_related('replies').order_by('-is_pinned', '-created_at')[offset:offset + limit]
+        
+        # Проверяем, есть ли еще комментарии
+        total_comments = StoryComment.objects.filter(
+            story=story,
+            parent=None,
+            is_approved=True
+        ).count()
+        
+        has_more = (offset + limit) < total_comments
+        
+        # Получаем реакции пользователя если он авторизован
+        user_reactions = {}
+        if request.user.is_authenticated:
+            reactions = CommentReaction.objects.filter(
+                comment__in=[c.id for c in comments],
+                user=request.user
+            ).values('comment_id', 'reaction_type')
+            user_reactions = {r['comment_id']: r['reaction_type'] for r in reactions}
+        
+        # Рендерим HTML для новых комментариев
+        comments_html = ''
+        for comment in comments:
+            comment_html = render_to_string('stories/comment_item.html', {
+                'comment': comment,
+                'user': request.user,
+                'user_reactions': user_reactions
+            })
+            comments_html += comment_html
+        
+        return JsonResponse({
+            'status': 'success',
+            'comments_html': comments_html,
+            'has_more': has_more,
+            'loaded_count': len(comments),
+            'total_comments': total_comments
         })
         
     except Exception as e:

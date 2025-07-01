@@ -16,6 +16,9 @@ body {
     color: var(--dark-green);
     margin: 0;
     padding: 0;
+    /* Глобальные правила для корректного переноса текста */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -109,5 +112,87 @@ h1, h2, h3, h4, h5, h6 {
     .social-btn-telegram,
     .social-btn-youtube {
         margin-bottom: 10px;
+    }
+}
+
+/* Правила для корректного переноса длинного текста */
+.comment-text,
+.story-description,
+.book-description,
+.fairy-tale-content,
+.user-content,
+.review-text {
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: pre-wrap !important;
+    max-width: 100% !important;
+    hyphens: auto;
+}
+
+/* Общие правила для flex-контейнеров */
+.flex-grow-1,
+.comment-content,
+.content-wrapper {
+    min-width: 0 !important;
+    overflow: hidden;
+}
+
+/* Предотвращаем горизонтальное переполнение */
+body, html {
+    overflow-x: hidden;
+}
+
+.container,
+.container-fluid {
+    overflow-x: hidden;
+}
+
+/* УЛЬТРАКОМПАКТНЫЕ стили для комментариев - уменьшено на 50% */
+.comment-item {
+    margin-bottom: 0.075rem !important;
+    padding: 0.175rem !important;
+}
+
+.comment-header {
+    margin-bottom: 0.05rem !important;
+}
+
+.comment-text {
+    line-height: 1.2 !important;
+    margin-bottom: 0.125rem !important;
+}
+
+.comment-actions {
+    margin-top: 0.075rem !important;
+    padding-top: 0.075rem !important;
+}
+
+.comment-reaction-group .btn {
+    padding: 0.125rem 0.25rem !important;
+    font-size: 0.75rem !important;
+    margin-right: 0.125rem !important;
+}
+
+/* Ультракомпактные стили для мобильных устройств */
+@media (max-width: 768px) {
+    .comment-item {
+        margin-bottom: 0.05rem !important;
+        padding: 0.125rem !important;
+    }
+    
+    .comment-text {
+        line-height: 1.15 !important;
+        margin-bottom: 0.1rem !important;
+    }
+    
+    .comment-actions {
+        margin-top: 0.05rem !important;
+        padding-top: 0.05rem !important;
+    }
+    
+    .comment-reaction-group .btn {
+        padding: 0.1rem 0.2rem !important;
+        font-size: 0.7rem !important;
     }
 }

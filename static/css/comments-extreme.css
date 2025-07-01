@@ -1,0 +1,157 @@
+/*
+ЭКСТРЕМАЛЬНО КОМПАКТНЫЕ СТИЛИ ДЛЯ КОММЕНТАРИЕВ
+Если нужен максимально минимальный вид
+*/
+
+/* Экстремально компактный режим - еще меньше отступов */
+.extreme-compact .comment-item {
+    margin-bottom: 0.025rem !important;
+    padding: 0.1rem !important;
+    border-radius: 2px !important;
+    font-size: 0.85rem !important;
+}
+
+.extreme-compact .comment-header {
+    margin-bottom: 0.025rem !important;
+    font-size: 0.8rem !important;
+}
+
+.extreme-compact .comment-text {
+    line-height: 1.1 !important;
+    margin-bottom: 0.075rem !important;
+    font-size: 0.85rem !important;
+}
+
+.extreme-compact .comment-actions {
+    margin-top: 0.025rem !important;
+    padding-top: 0.025rem !important;
+    border-top: none !important;
+}
+
+.extreme-compact .comment-reaction-group .btn {
+    padding: 0.075rem 0.15rem !important;
+    font-size: 0.65rem !important;
+    margin-right: 0.075rem !important;
+    min-width: 35px !important;
+    border-radius: 10px !important;
+}
+
+.extreme-compact .comment-author {
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+}
+
+.extreme-compact small.text-muted {
+    font-size: 0.65rem !important;
+}
+
+/* Минимальные аватары */
+.extreme-compact .comment-avatar img,
+.extreme-compact .avatar-placeholder {
+    width: 30px !important;
+    height: 30px !important;
+}
+
+/* Убираем лишние элементы для экстремальной компактности */
+.extreme-compact .comment-item:hover {
+    background-color: transparent !important;
+    border-left-color: #e74c3c !important;
+}
+
+/* Мобильная версия экстремально компактных комментариев */
+@media (max-width: 768px) {
+    .extreme-compact .comment-item {
+        margin-bottom: 0.01rem !important;
+        padding: 0.075rem !important;
+    }
+    
+    .extreme-compact .comment-text {
+        line-height: 1.05 !important;
+        margin-bottom: 0.05rem !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .extreme-compact .comment-actions {
+        margin-top: 0.01rem !important;
+        padding-top: 0.01rem !important;
+    }
+    
+    .extreme-compact .comment-reaction-group .btn {
+        padding: 0.05rem 0.1rem !important;
+        font-size: 0.6rem !important;
+        min-width: 30px !important;
+    }
+    
+    .extreme-compact .comment-avatar img,
+    .extreme-compact .avatar-placeholder {
+        width: 25px !important;
+        height: 25px !important;
+    }
+}
+
+/* Минимализм - убираем почти все украшения */
+.minimal-extreme .comment-item {
+    margin-bottom: 0.05rem !important;
+    padding: 0.125rem !important;
+    background: transparent !important;
+    border: none !important;
+    border-left: 1px solid #ddd !important;
+}
+
+.minimal-extreme .comment-actions {
+    border-top: none !important;
+    margin-top: 0.05rem !important;
+    padding-top: 0 !important;
+}
+
+.minimal-extreme .comment-reaction-group .btn {
+    background: transparent !important;
+    border: 1px solid #ddd !important;
+    padding: 0.1rem 0.2rem !important;
+    font-size: 0.7rem !important;
+}
+
+/* Плоский экстремальный дизайн */
+.flat-extreme .comment-item {
+    margin-bottom: 0.03rem !important;
+    padding: 0.1rem 0.15rem !important;
+    background: #fafafa !important;
+    border: none !important;
+    border-left: 2px solid #007bff !important;
+    border-radius: 0 !important;
+}
+
+.flat-extreme .comment-text {
+    line-height: 1.15 !important;
+    margin-bottom: 0.08rem !important;
+}
+
+.flat-extreme .comment-actions {
+    margin-top: 0.05rem !important;
+    padding-top: 0.05rem !important;
+    border-top: 1px solid #eee !important;
+}
+
+/*
+Как использовать экстремальные стили:
+
+1. Экстремально компактный:
+   <div class="extreme-compact">
+       <!-- комментарии -->
+   </div>
+
+2. Минимальный экстремальный:
+   <div class="minimal-extreme">
+       <!-- комментарии -->
+   </div>
+
+3. Плоский экстремальный:
+   <div class="flat-extreme">
+       <!-- комментарии -->
+   </div>
+
+4. Комбинированный (самый компактный):
+   <div class="extreme-compact minimal-extreme">
+       <!-- комментарии -->
+   </div>
+*/

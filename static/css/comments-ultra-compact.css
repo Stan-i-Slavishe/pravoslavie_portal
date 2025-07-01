@@ -1,0 +1,123 @@
+/* 
+УЛЬТРАКОМПАКТНЫЕ СТИЛИ ДЛЯ КОММЕНТАРИЕВ
+Если нужен максимально сжатый вид - добавьте эти стили
+*/
+
+/* Ультракомпактный режим */
+.ultra-compact-comments .comment-item {
+    margin-bottom: 0.05rem !important;
+    padding: 0.2rem !important;
+    border-radius: 4px;
+}
+
+.ultra-compact-comments .comment-header {
+    margin-bottom: 0 !important;
+}
+
+.ultra-compact-comments .comment-text {
+    line-height: 1.2 !important;
+    margin-bottom: 0.1rem !important;
+    font-size: 0.9rem;
+}
+
+.ultra-compact-comments .comment-actions {
+    margin-top: 0.05rem !important;
+    padding-top: 0.05rem !important;
+    border-top: none !important;
+}
+
+.ultra-compact-comments .comment-reaction-group .btn {
+    padding: 0.15rem 0.35rem !important;
+    font-size: 0.75rem !important;
+    margin-right: 0.15rem !important;
+}
+
+.ultra-compact-comments .comment-author {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.ultra-compact-comments .text-muted {
+    font-size: 0.7rem;
+}
+
+/* Минимальный режим - только самое необходимое */
+.minimal-comments .comment-item {
+    margin-bottom: 0.1rem !important;
+    padding: 0.25rem !important;
+    background: transparent !important;
+}
+
+.minimal-comments .comment-item:hover {
+    background-color: #f8f9fa !important;
+}
+
+.minimal-comments .comment-header {
+    margin-bottom: 0 !important;
+}
+
+.minimal-comments .comment-text {
+    line-height: 1.25 !important;
+    margin-bottom: 0.15rem !important;
+}
+
+.minimal-comments .comment-actions {
+    margin-top: 0.1rem !important;
+    padding-top: 0.1rem !important;
+}
+
+.minimal-comments .comment-reaction-group .btn {
+    padding: 0.2rem 0.4rem !important;
+    font-size: 0.8rem !important;
+}
+
+/* Компактный режим с тенями */
+.compact-with-shadows .comment-item {
+    margin-bottom: 0.1rem !important;
+    padding: 0.3rem !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1px solid #f0f0f0;
+}
+
+.compact-with-shadows .comment-item:hover {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
+}
+
+/* Плоский дизайн */
+.flat-comments .comment-item {
+    margin-bottom: 0.1rem !important;
+    padding: 0.3rem !important;
+    border: none !important;
+    border-left: 3px solid #e74c3c !important;
+    background: #fafafa !important;
+}
+
+.flat-comments .comment-actions {
+    border-top: 1px solid #e0e0e0 !important;
+    margin-top: 0.1rem !important;
+    padding-top: 0.1rem !important;
+}
+
+/* Как применить эти стили:
+
+1. Ультракомпактный:
+   <div class="ultra-compact-comments">
+       <!-- комментарии -->
+   </div>
+
+2. Минимальный:
+   <div class="minimal-comments">
+       <!-- комментарии -->
+   </div>
+
+3. С тенями:
+   <div class="compact-with-shadows">
+       <!-- комментарии -->
+   </div>
+
+4. Плоский:
+   <div class="flat-comments">
+       <!-- комментарии -->
+   </div>
+*/

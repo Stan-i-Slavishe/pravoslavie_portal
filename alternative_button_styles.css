@@ -1,0 +1,109 @@
+/* АЛЬТЕРНАТИВНЫЕ СТИЛИ КНОПКИ - СИНЕ-ЗЕЛЕНЫЕ ТОНА */
+
+/* Вариант 1: Синий градиент */
+.add-comment-btn-blue {
+    background: linear-gradient(135deg, #3498db, #2980b9) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+    text-transform: none;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.add-comment-btn-blue:hover {
+    background: linear-gradient(135deg, #2980b9, #21618c) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+    color: white !important;
+}
+
+/* Вариант 2: Зеленый градиент */
+.add-comment-btn-green {
+    background: linear-gradient(135deg, #27ae60, #229954) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+    text-transform: none;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.add-comment-btn-green:hover {
+    background: linear-gradient(135deg, #229954, #1e8449) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+    color: white !important;
+}
+
+/* Вариант 3: Православные тона (золотисто-зеленый) */
+.add-comment-btn-orthodox {
+    background: linear-gradient(135deg, #d4af37, #b8941f) !important;
+    border: none !important;
+    color: #2d4a2d !important;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+    text-transform: none;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.add-comment-btn-orthodox:hover {
+    background: linear-gradient(135deg, #b8941f, #9c7a1a) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+    color: #2d4a2d !important;
+}
+
+/* Вариант 4: Темный элегантный */
+.add-comment-btn-dark {
+    background: linear-gradient(135deg, #34495e, #2c3e50) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(52, 73, 94, 0.3);
+    text-transform: none;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.add-comment-btn-dark:hover {
+    background: linear-gradient(135deg, #2c3e50, #1b2631) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(52, 73, 94, 0.4);
+    color: white !important;
+}
+
+/*
+ИНСТРУКЦИЯ ПО СМЕНЕ СТИЛЯ:
+
+В файле comments_section.html замените класс кнопки:
+
+Красный (текущий):    class="btn btn-primary btn-sm add-comment-btn"
+Синий:               class="btn btn-primary btn-sm add-comment-btn-blue"  
+Зеленый:             class="btn btn-primary btn-sm add-comment-btn-green"
+Православный:        class="btn btn-primary btn-sm add-comment-btn-orthodox"
+Темный:              class="btn btn-primary btn-sm add-comment-btn-dark"
+*/

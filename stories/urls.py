@@ -19,6 +19,7 @@ urlpatterns = [
     # Новые URL'ы для комментариев
     path('<int:story_id>/comments/add/', views.add_comment, name='add_comment'),
     path('<int:story_id>/comments/load/', views.load_comments, name='load_comments'),
+    path('<int:story_id>/comments/load-more/', views.load_more_comments, name='load_more_comments'),
     path('comments/<int:comment_id>/reaction/', views.comment_reaction, name='comment_reaction'),
     path('comments/<int:comment_id>/edit/', views.edit_comment, name='edit_comment'),
     path('comments/<int:comment_id>/delete/', views.delete_comment, name='delete_comment'),

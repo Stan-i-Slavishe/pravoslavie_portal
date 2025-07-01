@@ -65,6 +65,33 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
+/* УЛЬТРАКОМПАКТНЫЕ стили для комментариев в stories - уменьшено на 50% */
+.stories-page .comment-item {
+    margin-bottom: 0.075rem;
+    padding: 0.175rem;
+    transition: all 0.2s ease;
+}
+
+.stories-page .comment-header {
+    margin-bottom: 0.05rem;
+}
+
+.stories-page .comment-text {
+    line-height: 1.2;
+    margin-bottom: 0.125rem;
+}
+
+.stories-page .comment-actions {
+    margin-top: 0.075rem;
+    padding-top: 0.075rem;
+}
+
+.stories-page .comment-reaction-group .btn {
+    padding: 0.125rem 0.25rem;
+    font-size: 0.75rem;
+    margin-right: 0.125rem;
+}
+
 /* Адаптивность */
 @media (max-width: 768px) {
     .stories-page .youtube-iframe {
@@ -73,5 +100,26 @@
     
     .stories-page .story-video-container {
         min-height: 300px;
+    }
+    
+    /* Ультракомпактные комментарии на мобильных - уменьшено на 50% */
+    .stories-page .comment-item {
+        margin-bottom: 0.05rem;
+        padding: 0.125rem;
+    }
+    
+    .stories-page .comment-text {
+        line-height: 1.15;
+        margin-bottom: 0.1rem;
+    }
+    
+    .stories-page .comment-actions {
+        margin-top: 0.05rem;
+        padding-top: 0.05rem;
+    }
+    
+    .stories-page .comment-reaction-group .btn {
+        padding: 0.1rem 0.2rem;
+        font-size: 0.7rem;
     }
 }

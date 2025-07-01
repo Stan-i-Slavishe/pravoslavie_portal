@@ -12,12 +12,22 @@
         </h5>
         
         {% if user.is_authenticated %}
-            <button class="btn btn-outline-primary btn-sm" onclick="scrollToCommentForm()">
+            <button class="btn btn-outline-primary btn-sm d-none d-md-inline-flex" onclick="scrollToCommentForm()">
                 <i class="bi bi-plus-circle me-1"></i>
                 Добавить комментарий
             </button>
         {% endif %}
     </div>
+    
+    <!-- Мобильная кнопка добавления комментария -->
+    {% if user.is_authenticated %}
+        <div class="mobile-comment-button d-md-none mb-4">
+            <button class="btn btn-primary w-100" onclick="scrollToCommentForm()">
+                <i class="bi bi-plus-circle me-2"></i>
+                Добавить комментарий
+            </button>
+        </div>
+    {% endif %}
 
     <!-- Форма добавления комментария (скрыта на мобильных) -->
     {% if user.is_authenticated %}
@@ -96,8 +106,8 @@
                             <i class="bi bi-chat-plus me-2"></i>
                             Новый комментарий
                         </h6>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="hideMobileCommentForm()">
-                            <i class="bi bi-x"></i>
+                        <button class="btn-close-custom" onclick="hideMobileCommentForm()" aria-label="Закрыть">
+                            <i class="bi bi-chevron-down"></i>
                         </button>
                     </div>
                     
@@ -247,6 +257,97 @@
     box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.25);
 }
 
+/* Мобильная кнопка добавления комментария */
+.mobile-comment-button {
+    animation: fadeInUp 0.3s ease;
+}
+
+.mobile-comment-button .btn {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.mobile-comment-button .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+    background: linear-gradient(135deg, #c0392b, #a93226);
+}
+
+.mobile-comment-button .btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(231, 76, 60, 0.3);
+}
+
+.mobile-comment-button .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.mobile-comment-button .btn:hover::before {
+    left: 100%;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Кнопка закрытия мобильной формы */
+.btn-close-custom {
+    background: #f8f9fa;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    padding: 0;
+}
+
+.btn-close-custom:hover {
+    background: #e9ecef;
+    color: #495057;
+    transform: scale(1.1);
+}
+
+.btn-close-custom:active {
+    transform: scale(0.95);
+    background: #dee2e6;
+}
+
+.btn-close-custom i {
+    font-size: 1.2rem;
+    transition: transform 0.2s ease;
+}
+
+.btn-close-custom:hover i {
+    transform: translateY(1px);
+}
+
 @media (max-width: 768px) {
     .comments-section {
         padding: 1rem;
@@ -266,6 +367,11 @@
 </style>
 
 <script>
+// ✅ ИСПРАВЛЕНИЕ: Отслеживание состояния пагинации
+let currentPage = 1;
+let isLoading = false;
+let storyId = {{ story.id }};
+
 // Скрипт для работы с комментариями
 document.addEventListener('DOMContentLoaded', function() {
     const commentForm = document.getElementById('commentForm');
@@ -508,15 +614,81 @@ function updateCommentsCounter() {
 }
 
 function loadMoreComments() {
+    // ✅ ИСПРАВЛЕНИЕ: Защита от повторной загрузки
+    if (isLoading) {
+        console.log('⚠️ Загрузка уже выполняется');
+        return;
+    }
+    
+    isLoading = true;
     const loadBtn = document.getElementById('loadMoreBtn');
     if (loadBtn) {
         loadBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Загрузка...';
         loadBtn.disabled = true;
         
-        setTimeout(() => {
+        // ✅ ИСПРАВЛЕНИЕ: Правильный расчет следующей страницы
+        const nextPage = currentPage + 1;
+        console.log('📄 Загружаем страницу:', nextPage);
+        
+        // ✅ ИСПРАВЛЕНИЕ: Правильный URL без Django тегов
+        fetch(`/stories/${storyId}/comments/load/?page=${nextPage}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Добавляем новые комментарии к списку
+                const commentsList = document.getElementById('commentsList');
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = data.comments_html;
+                
+                // Добавляем каждый комментарий с анимацией
+                const newComments = tempDiv.children;
+                for (let comment of newComments) {
+                    // Анимация появления
+                    comment.style.opacity = '0';
+                    comment.style.transform = 'translateY(20px)';
+                    commentsList.appendChild(comment);
+                    
+                    setTimeout(() => {
+                        comment.style.transition = 'all 0.3s ease';
+                        comment.style.opacity = '1';
+                        comment.style.transform = 'translateY(0)';
+                    }, 100);
+                }
+                
+                // ✅ ИСПРАВЛЕНИЕ: Обновляем номер текущей страницы
+                currentPage = nextPage;
+                
+                // Обновляем счетчик
+                updateCommentsCounter();
+                
+                // Проверяем, есть ли еще комментарии
+                if (!data.has_next) {
+                    // Убираем кнопку, если комментарии закончились
+                    loadBtn.parentElement.innerHTML = '<p class="text-muted text-center mt-3"><i class="bi bi-check-circle me-2"></i>Все комментарии загружены</p>';
+                } else {
+                    // Восстанавливаем кнопку
+                    loadBtn.innerHTML = '<i class="bi bi-arrow-down-circle me-2"></i>Показать еще комментарии';
+                    loadBtn.disabled = false;
+                }
+                
+                showToast(`Загружено еще ${newComments.length} комментариев (страница ${nextPage})`, 'success');
+            } else {
+                showToast('Ошибка при загрузке комментариев', 'error');
+                loadBtn.innerHTML = '<i class="bi bi-arrow-down-circle me-2"></i>Показать еще комментарии';
+                loadBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Произошла ошибка при загрузке', 'error');
             loadBtn.innerHTML = '<i class="bi bi-arrow-down-circle me-2"></i>Показать еще комментарии';
             loadBtn.disabled = false;
-        }, 1000);
+        })
+        .finally(() => {
+            // ✅ ИСПРАВЛЕНИЕ: Сброс флага загрузки
+            isLoading = false;
+            console.log('✅ Загрузка завершена. Текущая страница:', currentPage);
+        });
     }
 }
 </script>

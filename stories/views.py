@@ -537,7 +537,7 @@ def load_comments(request, story_id):
     try:
         story = get_object_or_404(Story, id=story_id, is_published=True)
         page = int(request.GET.get('page', 1))
-        per_page = 10
+        per_page = 5  # По 5 комментариев на страницу
         
         # Получаем основные комментарии (не ответы)
         comments = StoryComment.objects.filter(
@@ -552,11 +552,13 @@ def load_comments(request, story_id):
         # Получаем реакции пользователя если он авторизован
         user_reactions = {}
         if request.user.is_authenticated:
-            reactions = CommentReaction.objects.filter(
-                comment__in=[c.id for c in page_obj.object_list],
-                user=request.user
-            ).values('comment_id', 'reaction_type')
-            user_reactions = {r['comment_id']: r['reaction_type'] for r in reactions}
+            comment_ids = [c.id for c in page_obj.object_list]
+            if comment_ids:
+                reactions = CommentReaction.objects.filter(
+                    comment_id__in=comment_ids,
+                    user=request.user
+                ).values('comment_id', 'reaction_type')
+                user_reactions = {r['comment_id']: r['reaction_type'] for r in reactions}
         
         comments_html = render_to_string('stories/comments_list.html', {
             'comments': page_obj.object_list,
@@ -571,11 +573,12 @@ def load_comments(request, story_id):
             'has_previous': page_obj.has_previous(),
             'current_page': page,
             'total_pages': paginator.num_pages,
-            'total_comments': paginator.count
+            'total_comments': paginator.count,
+            'loaded_comments': len(page_obj.object_list)
         })
         
     except Exception as e:
         return JsonResponse({
             'status': 'error',
-            'message': str(e)
+            'message': f'Ошибка при загрузке комментариев: {str(e)}'
         }, status=500)

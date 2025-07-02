@@ -1,7 +1,6 @@
 from django.views.generic import ListView, DetailView
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.db.models import Count, Q
 from django.contrib import messages
 from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
@@ -21,24 +20,7 @@ from django.template.loader import render_to_string
 from django.utils.html import escape
 
 
-
-# ==========================================
-# БАЗОВЫЙ MIXIN ДЛЯ ПОДСЧЕТА КОММЕНТАРИЕВ  
-# ==========================================
-
-class StoryQuerysetMixin:
-    """Миксин для добавления подсчета комментариев к queryset"""
-    
-    def get_base_queryset(self):
-        """Возвращает базовый queryset с аннотациями"""
-        return Story.objects.filter(is_published=True).select_related('category').prefetch_related('tags').annotate(
-            # Подсчитываем только основные комментарии (не ответы)
-            comments_count=Count('comments', filter=Q(comments__is_approved=True, comments__parent=None)),
-            # Подсчитываем лайки
-            likes_count=Count('likes', distinct=True)
-        )
-
-class StoryListView(StoryQuerysetMixin, ListView):
+class StoryListView(ListView):
     """Список всех видео-рассказов"""
     model = Story
     template_name = 'stories/story_list.html'
@@ -46,7 +28,7 @@ class StoryListView(StoryQuerysetMixin, ListView):
     paginate_by = 12
     
     def get_queryset(self):
-        queryset = self.get_base_queryset()
+        queryset = Story.objects.filter(is_published=True).select_related('category').prefetch_related('tags')
         
         # Добавляем подсчет комментариев
         queryset = queryset.annotate(
@@ -167,7 +149,7 @@ class StoryDetailView(DetailView):
             ).select_related('user').prefetch_related('replies').order_by('-is_pinned', '-created_at')[:5]
             
             context['comments'] = comments
-            # ИСПРАВЛЕНИЕ: Правильный подсчет только основных комментариев (не ответы)
+            # Правильный подсчет: только основные комментарии (не ответы)
             context['comments_count'] = StoryComment.objects.filter(
                 story=story, 
                 parent=None,  # Только основные комментарии
@@ -244,7 +226,7 @@ def story_view_count(request, story_id):
         }, status=400)
 
 
-class StoryCategoryView(StoryQuerysetMixin, ListView):
+class StoryCategoryView(ListView):
     """Рассказы по категории"""
     model = Story
     template_name = 'stories/story_list.html'
@@ -253,9 +235,10 @@ class StoryCategoryView(StoryQuerysetMixin, ListView):
     
     def get_queryset(self):
         category_slug = self.kwargs.get('category_slug')
-        return self.get_base_queryset().filter(
+        return Story.objects.filter(
+            is_published=True,
             category__slug=category_slug
-        ).order_by('-created_at')
+        ).select_related('category').prefetch_related('tags').order_by('-created_at')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -272,7 +255,7 @@ class StoryCategoryView(StoryQuerysetMixin, ListView):
         return context
 
 
-class StoryTagView(StoryQuerysetMixin, ListView):
+class StoryTagView(ListView):
     """Рассказы по тегу"""
     model = Story
     template_name = 'stories/story_list.html'
@@ -281,9 +264,10 @@ class StoryTagView(StoryQuerysetMixin, ListView):
     
     def get_queryset(self):
         tag_slug = self.kwargs.get('tag_slug')
-        return self.get_base_queryset().filter(
+        return Story.objects.filter(
+            is_published=True,
             tags__slug=tag_slug
-        ).order_by('-created_at')
+        ).select_related('category').prefetch_related('tags').order_by('-created_at')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -301,7 +285,7 @@ class StoryTagView(StoryQuerysetMixin, ListView):
 
 
 @method_decorator(cache_page(60 * 15), name='dispatch')
-class PopularStoriesView(StoryQuerysetMixin, ListView):
+class PopularStoriesView(ListView):
     """Популярные рассказы"""
     model = Story
     template_name = 'stories/story_list.html'
@@ -309,7 +293,9 @@ class PopularStoriesView(StoryQuerysetMixin, ListView):
     paginate_by = 12
     
     def get_queryset(self):
-        return self.get_base_queryset().order_by(
+        return Story.objects.filter(
+            is_published=True
+        ).select_related('category').prefetch_related('tags').order_by(
             '-views_count', '-created_at'
         )
     
@@ -322,7 +308,7 @@ class PopularStoriesView(StoryQuerysetMixin, ListView):
 
 
 @method_decorator(cache_page(60 * 15), name='dispatch')
-class FeaturedStoriesView(StoryQuerysetMixin, ListView):
+class FeaturedStoriesView(ListView):
     """Рекомендуемые рассказы"""
     model = Story
     template_name = 'stories/story_list.html'
@@ -330,9 +316,10 @@ class FeaturedStoriesView(StoryQuerysetMixin, ListView):
     paginate_by = 12
     
     def get_queryset(self):
-        return self.get_base_queryset().filter(
+        return Story.objects.filter(
+            is_published=True,
             is_featured=True
-        ).order_by('-created_at')
+        ).select_related('category').prefetch_related('tags').order_by('-created_at')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -342,7 +329,7 @@ class FeaturedStoriesView(StoryQuerysetMixin, ListView):
         return context
 
 
-class StorySearchView(StoryQuerysetMixin, ListView):
+class StorySearchView(ListView):
     """Поиск по рассказам с расширенными возможностями"""
     model = Story
     template_name = 'stories/search_results.html'
@@ -354,12 +341,13 @@ class StorySearchView(StoryQuerysetMixin, ListView):
         if not query:
             return Story.objects.none()
         
-        return self.get_base_queryset().filter(
+        return Story.objects.filter(
             Q(title__icontains=query) |
             Q(description__icontains=query) |
             Q(tags__name__icontains=query) |
-            Q(category__name__icontains=query)
-        ).distinct().order_by('-created_at')
+            Q(category__name__icontains=query),
+            is_published=True
+        ).select_related('category').prefetch_related('tags').distinct().order_by('-created_at')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

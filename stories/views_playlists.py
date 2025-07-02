@@ -519,7 +519,8 @@ def enhanced_story_detail(request, slug):
             'replies__user'
         ).order_by('-is_pinned', '-created_at')[:5]  # Первые 5 комментариев
         
-        comments_count = story.comments.filter(is_approved=True).count()
+        # ИСПРАВЛЕНИЕ: Считаем только основные комментарии (без ответов)
+        comments_count = story.comments.filter(is_approved=True, parent=None).count()
         
         # Получаем реакции пользователя на комментарии
         user_reactions = {}

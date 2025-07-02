@@ -1,7 +1,6 @@
 from django.views.generic import ListView, DetailView
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.db.models import Count, Q
 from django.contrib import messages
 from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
@@ -167,7 +166,7 @@ class StoryDetailView(DetailView):
             ).select_related('user').prefetch_related('replies').order_by('-is_pinned', '-created_at')[:5]
             
             context['comments'] = comments
-            # ИСПРАВЛЕНИЕ: Правильный подсчет только основных комментариев (не ответы)
+            # Правильный подсчет: только основные комментарии (не ответы)
             context['comments_count'] = StoryComment.objects.filter(
                 story=story, 
                 parent=None,  # Только основные комментарии

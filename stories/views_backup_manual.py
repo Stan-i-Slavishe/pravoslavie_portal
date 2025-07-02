@@ -1,7 +1,6 @@
 from django.views.generic import ListView, DetailView
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.db.models import Count, Q
 from django.contrib import messages
 from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
@@ -167,7 +166,7 @@ class StoryDetailView(DetailView):
             ).select_related('user').prefetch_related('replies').order_by('-is_pinned', '-created_at')[:5]
             
             context['comments'] = comments
-            # ИСПРАВЛЕНИЕ: Правильный подсчет только основных комментариев (не ответы)
+            # Правильный подсчет: только основные комментарии (не ответы)
             context['comments_count'] = StoryComment.objects.filter(
                 story=story, 
                 parent=None,  # Только основные комментарии
@@ -253,9 +252,10 @@ class StoryCategoryView(StoryQuerysetMixin, ListView):
     
     def get_queryset(self):
         category_slug = self.kwargs.get('category_slug')
-        return self.get_base_queryset().filter(
+        return Story.objects.filter(
+            is_published=True,
             category__slug=category_slug
-        ).order_by('-created_at')
+        ).select_related('category').prefetch_related('tags').order_by('-created_at')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -281,9 +281,10 @@ class StoryTagView(StoryQuerysetMixin, ListView):
     
     def get_queryset(self):
         tag_slug = self.kwargs.get('tag_slug')
-        return self.get_base_queryset().filter(
+        return Story.objects.filter(
+            is_published=True,
             tags__slug=tag_slug
-        ).order_by('-created_at')
+        ).select_related('category').prefetch_related('tags').order_by('-created_at')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -309,7 +310,9 @@ class PopularStoriesView(StoryQuerysetMixin, ListView):
     paginate_by = 12
     
     def get_queryset(self):
-        return self.get_base_queryset().order_by(
+        return Story.objects.filter(
+            is_published=True
+        ).select_related('category').prefetch_related('tags').order_by(
             '-views_count', '-created_at'
         )
     
@@ -330,9 +333,10 @@ class FeaturedStoriesView(StoryQuerysetMixin, ListView):
     paginate_by = 12
     
     def get_queryset(self):
-        return self.get_base_queryset().filter(
+        return Story.objects.filter(
+            is_published=True,
             is_featured=True
-        ).order_by('-created_at')
+        ).select_related('category').prefetch_related('tags').order_by('-created_at')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -354,12 +358,13 @@ class StorySearchView(StoryQuerysetMixin, ListView):
         if not query:
             return Story.objects.none()
         
-        return self.get_base_queryset().filter(
+        return Story.objects.filter(
             Q(title__icontains=query) |
             Q(description__icontains=query) |
             Q(tags__name__icontains=query) |
-            Q(category__name__icontains=query)
-        ).distinct().order_by('-created_at')
+            Q(category__name__icontains=query),
+            is_published=True
+        ).select_related('category').prefetch_related('tags').distinct().order_by('-created_at')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

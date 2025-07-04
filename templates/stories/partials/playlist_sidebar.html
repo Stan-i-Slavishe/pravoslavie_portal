@@ -1,0 +1,100 @@
+<!-- templates/stories/partials/playlist_sidebar.html -->
+
+<div class="card-body p-0">
+    <!-- Быстрые действия -->
+    <div class="quick-actions border-bottom">
+        <button class="btn btn-sm btn-outline-secondary w-100 rounded-0 watch-later-btn 
+                       {% if story.id in story_in_watch_later %}active{% endif %}"
+                data-story-id="{{ story.id }}"
+                title="Добавить в 'Посмотреть позже'">
+            <i class="{% if story.id in story_in_watch_later %}fas fa-clock text-primary{% else %}far fa-clock{% endif %}"></i>
+            <span class="ms-2 btn-text">
+                {% if story.id in story_in_watch_later %}В списке ожидания{% else %}Посмотреть позже{% endif %}
+            </span>
+        </button>
+        
+        <button class="btn btn-sm btn-outline-danger w-100 rounded-0 favorites-btn 
+                       {% if story.id in story_in_favorites %}active{% endif %}"
+                data-story-id="{{ story.id }}"
+                title="Добавить в избранное">
+            <i class="{% if story.id in story_in_favorites %}fas fa-heart text-danger{% else %}far fa-heart{% endif %}"></i>
+            <span class="ms-2 btn-text">
+                {% if story.id in story_in_favorites %}В избранном{% else %}В избранное{% endif %}
+            </span>
+        </button>
+    </div>
+    
+    <!-- Пользовательские плейлисты -->
+    {% if user_playlists %}
+        <div class="user-playlists" style="max-height: 300px; overflow-y: auto;">
+            {% for playlist in user_playlists %}
+                <div class="playlist-item d-flex align-items-center justify-content-between p-2 border-bottom">
+                    <div class="playlist-info flex-grow-1">
+                        <div class="d-flex align-items-center">
+                            <input type="checkbox" 
+                                   class="form-check-input me-2 playlist-checkbox"
+                                   data-playlist-id="{{ playlist.id }}"
+                                   data-story-id="{{ story.id }}"
+                                   {% if playlist.id in story_in_playlists %}checked{% endif %}>
+                            <div class="playlist-details" style="cursor: pointer;" onclick="document.querySelector('[data-playlist-id=\"{{ playlist.id }}\"]').click()">
+                                <h6 class="mb-0 small">{{ playlist.title }}</h6>
+                                <small class="text-muted">
+                                    {{ playlist.calculated_stories_count|default:playlist.stories_count }} рассказов
+                                    {% if playlist.playlist_type == 'public' %}
+                                        <i class="bi bi-globe2 ms-1" title="Публичный"></i>
+                                    {% else %}
+                                        <i class="bi bi-lock ms-1" title="Приватный"></i>
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="playlist-actions">
+                        {% if playlist.creator == user %}
+                            <a href="{% url 'stories:playlist_detail' playlist.slug %}" 
+                               class="btn btn-sm btn-outline-secondary"
+                               title="Открыть плейлист">
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        {% elif playlist.is_public %}
+                            <a href="{% url 'stories:public_playlist_detail' playlist.creator.id playlist.slug %}" 
+                               class="btn btn-sm btn-outline-secondary"
+                               title="Открыть плейлист">
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center p-3">
+            <div class="text-muted mb-2">
+                <i class="bi bi-music-note-list" style="font-size: 2rem;"></i>
+            </div>
+            <p class="text-muted small mb-2">У вас пока нет плейлистов</p>
+            <button class="btn btn-sm btn-primary" onclick="showCreatePlaylistModal()">
+                Создать первый плейлист
+            </button>
+        </div>
+    {% endif %}
+    
+    <!-- Ссылки на системные плейлисты -->
+    <div class="system-playlists border-top">
+        <a href="{% url 'stories:watch_later' %}" 
+           class="btn btn-sm btn-link w-100 text-start rounded-0 text-decoration-none">
+            <i class="bi bi-clock-history me-2"></i>
+            Посмотреть позже
+        </a>
+        <a href="{% url 'stories:favorites' %}" 
+           class="btn btn-sm btn-link w-100 text-start rounded-0 text-decoration-none">
+            <i class="bi bi-heart-fill me-2 text-danger"></i>
+            Избранное
+        </a>
+        <a href="{% url 'stories:playlists_list' %}" 
+           class="btn btn-sm btn-link w-100 text-start rounded-0 text-decoration-none">
+            <i class="bi bi-collection me-2"></i>
+            Все плейлисты
+        </a>
+    </div>
+</div>

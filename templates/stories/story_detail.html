@@ -5,6 +5,75 @@
 
 {% block description %}{{ story.description|default:"Духовный рассказ на портале Добрые истории" }}{% endblock %}
 
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+/* Стили для плейлистов в сайдбаре */
+.playlist-item:hover {
+    background-color: #f8f9fa;
+}
+
+.playlist-checkbox {
+    cursor: pointer;
+}
+
+.watch-later-btn:hover,
+.favorites-btn:hover {
+    transform: translateX(2px);
+    transition: transform 0.2s ease;
+}
+
+.watch-later-btn.active {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
+}
+
+.favorites-btn.active {
+    background-color: #ffebee;
+    border-color: #f44336;
+}
+
+.system-playlists .btn-link {
+    color: #6c757d;
+    padding: 8px 16px;
+}
+
+.system-playlists .btn-link:hover {
+    color: #495057;
+    background-color: #f8f9fa;
+}
+
+.quick-actions .btn {
+    border-radius: 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.playlist-info {
+    transition: all 0.2s ease;
+}
+
+.playlist-info:hover {
+    background-color: rgba(0,123,255,0.1);
+    border-radius: 4px;
+}
+
+#toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1055;
+    max-width: 350px;
+}
+
+.toast-notification {
+    margin-bottom: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
     <!-- YouTube Video Player -->
@@ -127,8 +196,27 @@
             {% include 'stories/comments_section.html' %}
         </div>
         
-        <!-- Боковая панель -->
+        <!-- Правая боковая панель -->
         <div class="col-lg-4">
+            <!-- Плейлисты (только для авторизованных пользователей) -->
+            {% if user.is_authenticated %}
+            <div class="card mb-4" id="playlist-sidebar">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-music-note-list"></i>
+                        Плейлисты
+                    </h5>
+                    <button class="btn btn-sm btn-outline-primary" 
+                            onclick="showCreatePlaylistModal()"
+                            title="Создать плейлист">
+                        <i class="bi bi-plus"></i>
+                    </button>
+                </div>
+                
+                {% include 'stories/partials/playlist_sidebar.html' %}
+            </div>
+            {% endif %}
+            
             <!-- Статистика -->
             <div class="card mb-4">
                 <div class="card-header">
@@ -185,6 +273,86 @@
         </div>
     </div>
 </div>
+
+<!-- Модальное окно создания плейлиста -->
+{% if user.is_authenticated %}
+<div class="modal fade" id="createPlaylistModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Создать новый плейлист
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createPlaylistForm">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="playlistName" class="form-label">Название плейлиста</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="playlistName" 
+                               name="name" 
+                               placeholder="Введите название плейлиста"
+                               maxlength="200"
+                               required>
+                        <div class="form-text">Максимум 200 символов</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="playlistDescription" class="form-label">Описание (необязательно)</label>
+                        <textarea class="form-control" 
+                                  id="playlistDescription" 
+                                  name="description" 
+                                  rows="3"
+                                  placeholder="Краткое описание плейлиста"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="playlistIsPublic" 
+                                   name="is_public">
+                            <label class="form-check-label" for="playlistIsPublic">
+                                <i class="bi bi-globe2 me-1"></i>
+                                Сделать плейлист публичным
+                            </label>
+                            <div class="form-text">
+                                Публичные плейлисты могут видеть другие пользователи
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="addCurrentStory" 
+                                   name="add_current_story"
+                                   checked>
+                            <label class="form-check-label" for="addCurrentStory">
+                                Добавить текущий рассказ в плейлист
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Отмена
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Создать плейлист
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 {% csrf_token %}
 {% endblock %}
@@ -295,11 +463,13 @@ function showToast(message, type = 'info') {
     const toastContainer = document.getElementById('toast-container') || createToastContainer();
     
     const toast = document.createElement('div');
-    toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show`;
-    toast.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show toast-notification`;
     
     toast.innerHTML = `
-        ${message}
+        <div class="d-flex align-items-center">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+            <span>${message}</span>
+        </div>
         <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
     `;
     
@@ -315,9 +485,269 @@ function showToast(message, type = 'info') {
 function createToastContainer() {
     const container = document.createElement('div');
     container.id = 'toast-container';
-    container.style.cssText = 'position: fixed; top: 0; right: 0; z-index: 9999; padding: 20px;';
     document.body.appendChild(container);
     return container;
 }
+
+// ===== ПЛЕЙЛИСТЫ =====
+{% if user.is_authenticated %}
+class PlaylistSidebar {
+    constructor() {
+        this.csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+        this.storyId = {{ story.id }};
+        this.initEventListeners();
+    }
+
+    initEventListeners() {
+        // Обработчики для быстрых действий
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.watch-later-btn')) {
+                e.preventDefault();
+                this.toggleWatchLater(e.target.closest('.watch-later-btn'));
+            }
+            
+            if (e.target.closest('.favorites-btn')) {
+                e.preventDefault();
+                this.toggleFavorites(e.target.closest('.favorites-btn'));
+            }
+        });
+
+        // Обработчики для чекбоксов плейлистов
+        document.addEventListener('change', (e) => {
+            if (e.target.classList.contains('playlist-checkbox')) {
+                this.togglePlaylistItem(e.target);
+            }
+        });
+
+        // Форма создания плейлиста
+        const form = document.getElementById('createPlaylistForm');
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.createPlaylist();
+            });
+        }
+    }
+
+    async toggleWatchLater(button) {
+        try {
+            button.disabled = true;
+            
+            const response = await fetch('/stories/playlists/toggle-watch-later/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.csrfToken
+                },
+                body: JSON.stringify({ story_id: this.storyId })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.updateWatchLaterButton(button, data.action);
+                showToast(data.message, 'success');
+            } else {
+                showToast(data.message, 'error');
+            }
+        } catch (error) {
+            console.error('Watch later error:', error);
+            showToast('Произошла ошибка', 'error');
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+    async toggleFavorites(button) {
+        try {
+            button.disabled = true;
+            
+            const response = await fetch('/stories/playlists/toggle-favorites/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.csrfToken
+                },
+                body: JSON.stringify({ story_id: this.storyId })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.updateFavoritesButton(button, data.action);
+                showToast(data.message, 'success');
+            } else {
+                showToast(data.message, 'error');
+            }
+        } catch (error) {
+            console.error('Favorites error:', error);
+            showToast('Произошла ошибка', 'error');
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+    async togglePlaylistItem(checkbox) {
+        const playlistId = checkbox.dataset.playlistId;
+        const isChecked = checkbox.checked;
+        const action = isChecked ? 'add' : 'remove';
+        
+        try {
+            const url = action === 'add' ? 
+                '/stories/playlists/add-to-playlist/' : 
+                '/stories/playlists/remove-from-playlist/';
+                
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.csrfToken
+                },
+                body: JSON.stringify({ 
+                    story_id: this.storyId,
+                    playlist_id: playlistId
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast(data.message, 'success');
+            } else {
+                // Возвращаем чекбокс в исходное состояние
+                checkbox.checked = !isChecked;
+                showToast(data.message, 'error');
+            }
+        } catch (error) {
+            console.error('Playlist toggle error:', error);
+            // Возвращаем чекбокс в исходное состояние
+            checkbox.checked = !isChecked;
+            showToast('Произошла ошибка', 'error');
+        }
+    }
+
+    async createPlaylist() {
+        const form = document.getElementById('createPlaylistForm');
+        const formData = new FormData(form);
+        
+        // Добавляем текущий рассказ, если отмечено
+        if (document.getElementById('addCurrentStory').checked) {
+            formData.append('initial_story_id', this.storyId);
+        }
+        
+        try {
+            const response = await fetch('/stories/playlist/create/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': this.csrfToken
+                },
+                body: formData
+            });
+
+            if (response.ok) {
+                // Закрываем модальное окно
+                const modal = bootstrap.Modal.getInstance(document.getElementById('createPlaylistModal'));
+                modal.hide();
+                
+                // Очищаем форму
+                form.reset();
+                
+                // Перезагружаем сайдбар
+                this.reloadPlaylistSidebar();
+                
+                showToast('Плейлист создан успешно!', 'success');
+            } else {
+                const errorData = await response.json();
+                showToast(errorData.message || 'Ошибка создания плейлиста', 'error');
+            }
+        } catch (error) {
+            console.error('Create playlist error:', error);
+            showToast('Произошла ошибка при создании плейлиста', 'error');
+        }
+    }
+
+    async reloadPlaylistSidebar() {
+        try {
+            const response = await fetch(`/stories/{{ story.slug }}/sidebar-playlists/`);
+            const html = await response.text();
+            
+            const sidebar = document.getElementById('playlist-sidebar');
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            
+            const newSidebarContent = tempDiv.querySelector('.card-body');
+            if (newSidebarContent) {
+                const currentSidebarContent = sidebar.querySelector('.card-body');
+                if (currentSidebarContent) {
+                    currentSidebarContent.innerHTML = newSidebarContent.innerHTML;
+                }
+            }
+        } catch (error) {
+            console.error('Reload sidebar error:', error);
+            // Просто перезагружаем страницу в случае ошибки
+            window.location.reload();
+        }
+    }
+
+    updateWatchLaterButton(button, action) {
+        const icon = button.querySelector('i');
+        const text = button.querySelector('.btn-text');
+        
+        if (action === 'added') {
+            icon.className = 'fas fa-clock text-primary';
+            if (text) text.textContent = 'В списке ожидания';
+            button.classList.add('active');
+        } else {
+            icon.className = 'far fa-clock';
+            if (text) text.textContent = 'Посмотреть позже';
+            button.classList.remove('active');
+        }
+    }
+
+    updateFavoritesButton(button, action) {
+        const icon = button.querySelector('i');
+        const text = button.querySelector('.btn-text');
+        
+        if (action === 'added') {
+            icon.className = 'fas fa-heart text-danger';
+            if (text) text.textContent = 'В избранном';
+            button.classList.add('active');
+        } else {
+            icon.className = 'far fa-heart';
+            if (text) text.textContent = 'В избранное';
+            button.classList.remove('active');
+        }
+    }
+}
+
+// Глобальные функции для совместимости
+function showCreatePlaylistModal() {
+    const modal = new bootstrap.Modal(document.getElementById('createPlaylistModal'));
+    modal.show();
+    
+    // Фокус на поле ввода названия
+    setTimeout(() => {
+        document.getElementById('playlistName').focus();
+    }, 300);
+}
+
+function togglePlaylistStory(playlistId, storyId) {
+    const checkbox = document.querySelector(`[data-playlist-id="${playlistId}"]`);
+    if (checkbox) {
+        // Не переключаем состояние, а просто запускаем событие
+        checkbox.dispatchEvent(new Event('change'));
+    }
+}
+
+// Инициализация плейлистов
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof bootstrap !== 'undefined') {
+        window.playlistSidebar = new PlaylistSidebar();
+        console.log('🎵 Плейлист сайдбар инициализирован');
+    } else {
+        console.warn('Bootstrap не найден, некоторые функции могут не работать');
+    }
+});
+{% endif %}
 </script>
 {% endblock %}

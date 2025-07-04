@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Изменить плейлист - {{ playlist.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">
+                        <i class="bi bi-pencil me-2"></i>
+                        Изменить плейлист
+                    </h2>
+                </div>
+                
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Название плейлиста *</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="name" 
+                                   name="name" 
+                                   value="{{ playlist.title }}"
+                                   required 
+                                   maxlength="200">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Описание</label>
+                            <textarea class="form-control" 
+                                      id="description" 
+                                      name="description" 
+                                      rows="3" 
+                                      maxlength="500">{{ playlist.description }}</textarea>
+                        </div>
+                        
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="is_public" 
+                                   name="is_public"
+                                   {% if playlist.playlist_type == 'public' %}checked{% endif %}>
+                            <label class="form-check-label" for="is_public">
+                                <strong>Публичный плейлист</strong>
+                                <br>
+                                <small class="text-muted">
+                                    Другие пользователи смогут найти и посмотреть этот плейлист
+                                </small>
+                            </label>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-1"></i>
+                                Сохранить изменения
+                            </button>
+                            <a href="{% url 'stories:playlist_detail' slug=playlist.slug %}" class="btn btn-outline-secondary">
+                                Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ playlist.name }}{% endblock %}
+{% block title %}{{ playlist.title }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -251,7 +251,7 @@
                 <i class="fas fa-list"></i>
             </div>
             <div class="playlist-details">
-                <h1>{{ playlist.name }}</h1>
+                <h1>{{ playlist.title }}</h1>
                 <div class="playlist-meta">
                     <span>
                         <i class="fas fa-video me-1"></i>
@@ -260,6 +260,10 @@
                     <span>
                         <i class="fas {% if playlist.is_public %}fa-globe{% else %}fa-lock{% endif %} me-1"></i>
                         {% if playlist.is_public %}Публичный{% else %}Приватный{% endif %}
+                    </span>
+                    <span>
+                        <i class="fas fa-user me-1"></i>
+                        {{ playlist.creator.username }}
                     </span>
                     <span>
                         <i class="fas fa-calendar me-1"></i>
@@ -272,16 +276,18 @@
                     </div>
                 {% endif %}
                 <div class="playlist-actions">
-                    <a href="{% url 'stories:edit_playlist' playlist.slug %}" class="btn-action">
-                        <i class="fas fa-edit me-1"></i>
-                        Редактировать
-                    </a>
+                    {% if can_edit %}
+                        <a href="{% url 'stories:edit_playlist' playlist.slug %}" class="btn-action">
+                            <i class="fas fa-edit me-1"></i>
+                            Редактировать
+                        </a>
+                    {% endif %}
                     <a href="{% url 'stories:playlists_list' %}" class="btn-action">
                         <i class="fas fa-arrow-left me-1"></i>
                         К плейлистам
                     </a>
-                    {% if playlist.is_public %}
-                        <a href="{% url 'stories:public_playlist_detail' playlist.user.id playlist.slug %}" class="btn-action">
+                    {% if playlist.is_public and not is_public_view %}
+                        <a href="{% url 'stories:public_playlist_detail' playlist.creator.id playlist.slug %}" class="btn-action">
                             <i class="fas fa-external-link-alt me-1"></i>
                             Публичная ссылка
                         </a>
@@ -296,6 +302,7 @@
     <div class="row">
         <div class="col-12">
             {% if playlist_items %}
+                {% if can_edit %}
                 <div class="playlist-controls">
                     <div class="d-flex justify-content-between align-items-center">
                         <h3 class="mb-0">
@@ -317,14 +324,17 @@
                         </div>
                     </div>
                 </div>
+                {% endif %}
                 
                 <div id="playlist-items">
                     {% for item in playlist_items %}
                         <div class="story-item" data-story-id="{{ item.story.id }}" data-order="{{ item.order }}">
                             <div class="story-content">
+                                {% if can_edit %}
                                 <div class="drag-handle d-none">
                                     <i class="fas fa-grip-vertical"></i>
                                 </div>
+                                {% endif %}
                                 <div class="story-thumbnail">
                                     <i class="fas fa-video"></i>
                                 </div>
@@ -358,10 +368,12 @@
                                 </div>
                                 <div class="story-actions">
                                     <div class="story-order">{{ item.order }}</div>
+                                    {% if can_edit %}
                                     <button class="btn-remove" onclick="removeFromPlaylist({{ item.story.id }})">
                                         <i class="fas fa-times me-1"></i>
                                         Удалить
                                     </button>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -372,11 +384,13 @@
                 <div class="empty-playlist">
                     <i class="fas fa-video"></i>
                     <h3>Плейлист пуст</h3>
-                    <p>Добавьте рассказы в этот плейлист, чтобы создать свою коллекцию</p>
+                    <p>{% if can_edit %}Добавьте рассказы в этот плейлист, чтобы создать свою коллекцию{% else %}В этом плейлисте пока нет рассказов{% endif %}</p>
+                    {% if can_edit %}
                     <a href="{% url 'stories:list' %}" class="btn btn-primary">
                         <i class="fas fa-plus me-2"></i>
                         Найти рассказы
                     </a>
+                    {% endif %}
                 </div>
             {% endif %}
         </div>
@@ -385,6 +399,7 @@
 {% endblock %}
 
 {% block extra_js %}
+{% if can_edit %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 <script>
 let sortable = null;
@@ -565,4 +580,5 @@ function showMessage(message, type) {
     }, 5000);
 }
 </script>
+{% endif %}
 {% endblock %}

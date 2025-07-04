@@ -10,12 +10,36 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <style>
 /* Стили для плейлистов в сайдбаре */
+.playlist-item {
+    transition: all 0.2s ease;
+}
+
 .playlist-item:hover {
     background-color: #f8f9fa;
+    transform: translateX(2px);
 }
 
 .playlist-checkbox {
     cursor: pointer;
+}
+
+.playlist-details:hover {
+    color: var(--orthodox-blue, #2B5AA0);
+}
+
+.playlist-actions button {
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+
+.playlist-item:hover .playlist-actions button {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.watch-later-btn .btn-text,
+.favorites-btn .btn-text {
+    color: #2d3748 !important; /* Темный текст для читаемости */
 }
 
 .watch-later-btn:hover,
@@ -27,11 +51,21 @@
 .watch-later-btn.active {
     background-color: #e3f2fd;
     border-color: #2196f3;
+    color: #1976d2 !important;
+}
+
+.watch-later-btn.active .btn-text {
+    color: #1976d2 !important;
 }
 
 .favorites-btn.active {
     background-color: #ffebee;
     border-color: #f44336;
+    color: #d32f2f !important;
+}
+
+.favorites-btn.active .btn-text {
+    color: #d32f2f !important;
 }
 
 .system-playlists .btn-link {
@@ -47,6 +81,13 @@
 .quick-actions .btn {
     border-radius: 0;
     border-bottom: 1px solid #dee2e6;
+    color: #495057 !important; /* Базовый темный цвет */
+    font-weight: 500;
+}
+
+.quick-actions .btn:hover {
+    background-color: #f8f9fa !important;
+    color: #343a40 !important;
 }
 
 .playlist-info {
@@ -56,6 +97,39 @@
 .playlist-info:hover {
     background-color: rgba(0,123,255,0.1);
     border-radius: 4px;
+}
+
+/* Адаптивное видео */
+.video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 соотношение */
+    height: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.video-placeholder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #6c757d;
+}
+
+.video-placeholder i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
 }
 
 #toast-container {
@@ -71,18 +145,73 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     border: none;
 }
+
+/* Стили для метаданных рассказа */
+.story-meta {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #e74c3c;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #495057;
+    white-space: nowrap;
+}
+
+.meta-item i {
+    color: #6c757d;
+    font-size: 1rem;
+}
+
+.meta-item a {
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.meta-item a:hover {
+    color: #c53030 !important;
+    text-decoration: underline !important;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .video-container {
+        margin-bottom: 20px;
+    }
+    
+    .story-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.75rem;
+    }
+    
+    .meta-item {
+        font-size: 0.85rem;
+    }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <!-- YouTube Video Player -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="video-container">
+<div class="container">
+    <div class="row">
+        <!-- Левая колонка с видео и контентом -->
+        <div class="col-lg-8">
+            <!-- YouTube Video Player -->
+            <div class="video-container mb-4">
                 {% if story.youtube_embed_id %}
                     <div class="embed-responsive embed-responsive-16by9">
-                        <iframe width="100%" height="500" 
+                        <iframe width="100%" 
                                 src="https://www.youtube.com/embed/{{ story.youtube_embed_id }}" 
                                 frameborder="0" 
                                 allowfullscreen>
@@ -95,14 +224,6 @@
                     </div>
                 {% endif %}
             </div>
-        </div>
-    </div>
-</div>
-
-<div class="container">
-    <div class="row">
-        <!-- Левая колонка с контентом -->
-        <div class="col-lg-8">
             <!-- Контент рассказа -->
             <div class="story-content">
                 <h1 class="story-title">{{ story.title }}</h1>
@@ -695,11 +816,11 @@ class PlaylistSidebar {
         
         if (action === 'added') {
             icon.className = 'fas fa-clock text-primary';
-            if (text) text.textContent = 'В списке ожидания';
+            if (text) text.textContent = 'Добавить в посмотреть позже';
             button.classList.add('active');
         } else {
             icon.className = 'far fa-clock';
-            if (text) text.textContent = 'Посмотреть позже';
+            if (text) text.textContent = 'Добавить в посмотреть позже';
             button.classList.remove('active');
         }
     }
@@ -710,11 +831,11 @@ class PlaylistSidebar {
         
         if (action === 'added') {
             icon.className = 'fas fa-heart text-danger';
-            if (text) text.textContent = 'В избранном';
+            if (text) text.textContent = 'Добавить в избранное';
             button.classList.add('active');
         } else {
             icon.className = 'far fa-heart';
-            if (text) text.textContent = 'В избранное';
+            if (text) text.textContent = 'Добавить в избранное';
             button.classList.remove('active');
         }
     }

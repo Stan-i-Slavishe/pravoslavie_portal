@@ -199,6 +199,106 @@
         font-size: 0.85rem;
     }
 }
+
+/* Стили для кнопки добавления плейлиста */
+.btn-add-playlist {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    position: relative;
+    overflow: hidden;
+    text-transform: none;
+    letter-spacing: 0.3px;
+    min-width: 110px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transform: translateZ(0);
+}
+
+.btn-add-playlist:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
+    color: white;
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #c084fc 100%);
+}
+
+.btn-add-playlist:active {
+    transform: translateY(0) scale(1.01);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.5);
+    transition: all 0.1s ease;
+}
+
+.btn-add-playlist:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+}
+
+/* Анимация блика */
+.btn-add-playlist::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-add-playlist:hover::before {
+    left: 100%;
+}
+
+/* Анимация иконки */
+.btn-add-playlist i {
+    font-size: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.btn-add-playlist:hover i {
+    transform: rotate(90deg) scale(1.1);
+}
+
+/* Эффект пульса при нажатии */
+.btn-add-playlist::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.btn-add-playlist:active::after {
+    width: 120%;
+    height: 120%;
+}
+
+/* Адаптивность кнопки */
+@media (max-width: 768px) {
+    .btn-add-playlist {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        min-width: 100px;
+        border-radius: 10px;
+    }
+    
+    .btn-add-playlist i {
+        font-size: 0.9rem;
+    }
+}
 </style>
 {% endblock %}
 
@@ -327,10 +427,11 @@
                         <i class="bi bi-music-note-list"></i>
                         Плейлисты
                     </h5>
-                    <button class="btn btn-sm btn-outline-primary" 
+                    <button class="btn btn-add-playlist" 
                             onclick="showCreatePlaylistModal()"
-                            title="Создать плейлист">
+                            title="Создать новый плейлист">
                         <i class="bi bi-plus"></i>
+                        Новый
                     </button>
                 </div>
                 

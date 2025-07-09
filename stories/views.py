@@ -190,6 +190,27 @@ class StoryDetailView(DetailView):
             context['comments_count'] = 0
             context['user_reactions'] = {}
         
+        # Добавляем плейлисты пользователя для сайдбара
+        if self.request.user.is_authenticated:
+            try:
+                # Импортируем модель Playlist
+                from .models import Playlist
+                
+                # Получаем плейлисты пользователя (ограничиваем до 5 для сайдбара)
+                user_playlists = Playlist.objects.filter(
+                    creator=self.request.user
+                ).annotate(
+                    calculated_stories_count=Count('playlist_items')
+                ).order_by('-created_at')[:5]
+                
+                context['user_playlists'] = user_playlists
+                
+            except Exception as e:
+                # Если модели плейлистов еще не созданы или есть ошибка
+                context['user_playlists'] = []
+        else:
+            context['user_playlists'] = []
+        
         return context
 
 

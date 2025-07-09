@@ -134,8 +134,10 @@ async function loadUserPlaylists() {
         // Временно используем статические данные
         // TODO: заменить на реальный API вызов
         userPlaylists = [
-            { id: 1, title: 'Бородa', stories_count: 3 },
-            { id: 2, title: 'Школьные истории', stories_count: 2 }
+            { id: 1, title: 'Клондайк', stories_count: 1, created_at: '09.07.2025', is_private: true },
+            { id: 2, title: 'Кака теста', stories_count: 1, created_at: '09.07.2025', is_private: true },
+            { id: 3, title: 'Посмотреть позже', stories_count: 1, created_at: '09.07.2025', is_private: true },
+            { id: 4, title: 'Праздничные истории', stories_count: 0, created_at: '09.07.2025', is_private: false }
         ];
         
         console.log('✅ Плейлисты загружены:', userPlaylists);
@@ -160,16 +162,33 @@ function updatePlaylistUI() {
     if (userPlaylists.length > 0) {
         userPlaylists.forEach(playlist => {
             playlistHTML += `
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox" 
-                           id="playlist_${playlist.id}" 
-                           data-playlist-id="${playlist.id}"
-                           onchange="togglePlaylistItem(${playlist.id})">
-                    <label class="form-check-label" for="playlist_${playlist.id}">
-                        <i class="bi bi-music-note-list me-2"></i>
-                        ${playlist.title} 
-                        <span class="text-muted">(${playlist.stories_count} рассказов)</span>
-                    </label>
+                <div class="playlist-item">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-play-circle play-icon me-3" style="font-size: 1.2rem; color: #2196f3;"></i>
+                        <div class="flex-grow-1">
+                            <div class="playlist-title">${playlist.title}</div>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <small class="text-muted story-count">${playlist.stories_count} рассказов</small>
+                                <small class="text-muted playlist-date">
+                                    <i class="bi bi-${playlist.is_private ? 'lock' : 'globe'} me-1"></i>
+                                    ${playlist.is_private ? 'Приватный' : 'Публичный'}
+                                </small>
+                            </div>
+                            <div class="playlist-date mt-1">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    ${playlist.created_at}
+                                </small>
+                            </div>
+                        </div>
+                        <div class="playlist-actions ms-2">
+                            <input class="form-check-input" type="checkbox" 
+                                   id="playlist_${playlist.id}" 
+                                   data-playlist-id="${playlist.id}"
+                                   onchange="togglePlaylistItem(${playlist.id})"
+                                   style="transform: scale(1.2);">
+                        </div>
+                    </div>
                 </div>
             `;
         });
@@ -243,17 +262,13 @@ async function togglePlaylistItem(playlistId) {
             showToast(data.message || 'Действие выполнено успешно!', 'success');
             
             // Обновляем счетчик в UI
-            const label = document.querySelector(`label[for="playlist_${playlistId}"]`);
-            if (label) {
-                const playlist = userPlaylists.find(p => p.id === playlistId);
-                if (playlist) {
-                    playlist.stories_count += isChecked ? 1 : -1;
-                    // Обновляем текст лейбла
-                    label.innerHTML = `
-                        <i class="bi bi-music-note-list me-2"></i>
-                        ${playlist.title} 
-                        <span class="text-muted">(${playlist.stories_count} рассказов)</span>
-                    `;
+            const playlist = userPlaylists.find(p => p.id === playlistId);
+            if (playlist) {
+                playlist.stories_count += isChecked ? 1 : -1;
+                // Обновляем счетчик в UI
+                const storyCountElement = document.querySelector(`#playlist_${playlistId}`).closest('.playlist-item').querySelector('.story-count');
+                if (storyCountElement) {
+                    storyCountElement.textContent = `${playlist.stories_count} рассказов`;
                 }
             }
         } else {

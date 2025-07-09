@@ -1,57 +1,56 @@
 <!-- templates/stories/partials/playlist_sidebar.html -->
 
-<div class="card-body p-0">
+<div class="card-body">
     {% if user.is_authenticated %}
         <!-- Список плейлистов пользователя -->
         <div class="user-playlists" style="max-height: 400px; overflow-y: auto;">
             {% if user_playlists %}
                 {% for playlist in user_playlists %}
-                    <div class="playlist-item d-flex align-items-center justify-content-between p-3 border-bottom" 
-                         style="transition: all 0.2s ease;">
-                        <div class="playlist-info flex-grow-1 d-flex align-items-center">
-                            <!-- Иконка видео вместо галочки -->
-                            <div class="playlist-icon me-3">
-                                <i class="bi bi-play-circle-fill text-primary" style="font-size: 1.5rem;"></i>
+                    <div class="playlist-item"
+                         onclick="window.location.href='{% if playlist.get_absolute_url %}{{ playlist.get_absolute_url }}{% else %}#{% endif %}'">
+                        <div class="d-flex align-items-center justify-content-between p-3">
+                            <div class="playlist-info flex-grow-1 d-flex align-items-center">
+                                <!-- Иконка видео вместо галочки -->
+                                <div class="playlist-icon me-3">
+                                    <i class="bi bi-play-circle-fill text-primary" style="font-size: 1.5rem;"></i>
+                                </div>
+                                
+                                <div class="playlist-details flex-grow-1">
+                                    <h6 class="mb-1 fw-bold text-dark">{{ playlist.title }}</h6>
+                                    <div class="playlist-meta d-flex align-items-center gap-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-collection me-1"></i>
+                                            {{ playlist.calculated_stories_count|default:playlist.stories_count|default:0 }} рассказов
+                                        </small>
+                                        {% if playlist.playlist_type == 'public' %}
+                                            <span class="badge bg-success-subtle text-success" style="font-size: 0.65rem;">
+                                                <i class="bi bi-globe2 me-1"></i>Публичный
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary-subtle text-secondary" style="font-size: 0.65rem;">
+                                                <i class="bi bi-lock me-1"></i>Приватный
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted d-block mt-1">
+                                        <i class="bi bi-calendar3 me-1"></i>
+                                        {{ playlist.created_at|date:"d.m.Y" }}
+                                    </small>
+                                </div>
                             </div>
                             
-                            <div class="playlist-details flex-grow-1">
-                                <h6 class="mb-1 fw-bold text-dark">{{ playlist.title }}</h6>
-                                <div class="playlist-meta d-flex align-items-center gap-2">
-                                    <small class="text-muted">
-                                        <i class="bi bi-collection me-1"></i>
-                                        {{ playlist.calculated_stories_count|default:playlist.stories_count|default:0 }} рассказов
-                                    </small>
-                                    {% if playlist.playlist_type == 'public' %}
-                                        <span class="badge bg-success-subtle text-success" style="font-size: 0.65rem;">
-                                            <i class="bi bi-globe2 me-1"></i>Публичный
-                                        </span>
-                                    {% else %}
-                                        <span class="badge bg-secondary-subtle text-secondary" style="font-size: 0.65rem;">
-                                            <i class="bi bi-lock me-1"></i>Приватный
-                                        </span>
-                                    {% endif %}
-                                </div>
-                                <small class="text-muted d-block mt-1">
-                                    <i class="bi bi-calendar3 me-1"></i>
-                                    {{ playlist.created_at|date:"d.m.Y" }}
-                                </small>
+                            <!-- Стрелочка справа -->
+                            <div class="playlist-action ms-2">
+                                <i class="bi bi-chevron-right text-muted" 
+                                   style="font-size: 0.9rem;"
+                                   title="Открыть плейлист"></i>
                             </div>
-                        </div>
-                        
-                        <!-- Стрелочка справа -->
-                        <div class="playlist-action ms-2">
-                            <button class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center"
-                                    onclick="window.location.href='{% if playlist.get_absolute_url %}{{ playlist.get_absolute_url }}{% else %}#{% endif %}'"
-                                    style="width: 36px; height: 36px; border-radius: 50%; transition: all 0.2s ease;"
-                                    title="Открыть плейлист">
-                                <i class="bi bi-arrow-right"></i>
-                            </button>
                         </div>
                     </div>
                 {% endfor %}
                 
                 <!-- Ссылка на все плейлисты -->
-                <div class="text-center p-3 border-top bg-light">
+                <div class="text-center p-3">
                     <a href="{% url 'stories:playlists_list' %}" 
                        class="btn btn-sm btn-outline-primary text-decoration-none">
                         <i class="bi bi-collection me-1"></i>
@@ -104,45 +103,59 @@
 </div>
 
 <style>
-/* Стили для сайдбара плейлистов */
+/* Стили для сайдбара плейлистов - МИНИМАЛЬНАЯ ВЕРСИЯ */
+.user-playlists {
+    background: transparent !important;
+    padding: 0 8px !important;
+}
+
+.user-playlists * {
+    background: transparent !important;
+}
+
+.card-body {
+    background: transparent !important;
+}
+
+.playlist-item {
+    margin: 4px 4px !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+    background-color: transparent !important;
+}
+
 .playlist-item:hover {
-    background-color: #f8f9fa !important;
-    transform: translateX(2px);
-    cursor: pointer;
+    background-color: rgba(13, 110, 253, 0.1) !important;
+    margin-left: -4px !important;
+    margin-right: -4px !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    border-bottom: none !important;
 }
 
-.playlist-item:hover .playlist-icon i {
+.playlist-item:hover .playlist-action i {
     color: #0d6efd !important;
-    transform: scale(1.1);
-}
-
-.playlist-item:hover .playlist-action button {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-    color: white;
-    transform: scale(1.05);
+    transform: translateX(3px) !important;
 }
 
 .playlist-item:hover .playlist-details h6 {
     color: #0d6efd !important;
 }
 
-.playlist-icon i {
-    transition: all 0.3s ease;
+/* Переходы только для активных элементов */
+.playlist-action i {
+    transition: all 0.3s ease !important;
 }
 
-.playlist-action button {
-    transition: all 0.3s ease;
-}
-
-.playlist-action button:hover {
-    transform: scale(1.1) !important;
+.playlist-details h6 {
+    transition: all 0.3s ease !important;
 }
 
 /* Анимация для пустого состояния */
 .no-playlists i,
 .auth-required i {
-    animation: gentle-pulse 2s ease-in-out infinite;
+    animation: gentle-pulse 2s ease-in-out infinite !important;
 }
 
 @keyframes gentle-pulse {
@@ -153,6 +166,10 @@
 /* Адаптивность */
 @media (max-width: 768px) {
     .playlist-item {
+        margin: 2px 4px !important;
+    }
+    
+    .playlist-item .p-3 {
         padding: 0.75rem !important;
     }
     
@@ -168,9 +185,8 @@
         font-size: 0.75rem !important;
     }
     
-    .playlist-action button {
-        width: 32px !important;
-        height: 32px !important;
+    .playlist-action i {
+        font-size: 0.8rem !important;
     }
 }
 

@@ -3,6 +3,10 @@
 
 {% block title %}{{ story.title }} - Добрые истории{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/stories.css' %}">
+{% endblock %}
+
 {% block description %}{{ story.description|default:"Духовный рассказ на портале Добрые истории" }}{% endblock %}
 
 {% block content %}
@@ -171,6 +175,9 @@
                 </div>
             </div>
 
+            <!-- Плейлисты -->
+            {% include 'stories/playlist_section_complete.html' %}
+            
             <!-- Похожие рассказы -->
             {% if related_stories %}
                 <div class="card">

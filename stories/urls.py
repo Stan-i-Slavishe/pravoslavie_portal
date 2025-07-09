@@ -25,6 +25,7 @@ urlpatterns = [
     
     # Плейлист URLs - Основные функции
     path('playlists/', views_playlists.playlists_list, name='playlists_list'),
+    path('playlists/', views_playlists.playlists_list, name='playlists'),  # Alias для совместимости
     path('playlists/public/', views_playlists.public_playlists, name='public_playlists'),
     path('playlists/watch-later/', views_playlists.watch_later_playlist, name='watch_later'),
     path('playlists/favorites/', views_playlists.favorites_playlist, name='favorites'),

@@ -21,7 +21,7 @@
             {% if user_playlists %}
                 {% for playlist in user_playlists %}
                     <div class="playlist-item"
-                         onclick="window.location.href='{% if playlist.get_absolute_url %}{{ playlist.get_absolute_url }}{% else %}#{% endif %}'">
+                         onclick="event.stopPropagation(); showPlaylistModal({{ playlist.id }}, '{{ playlist.title|escapejs }}')">
                         <div class="d-flex align-items-center justify-content-between p-3">
                             <div class="playlist-info flex-grow-1 d-flex align-items-center">
                                 <!-- Иконка видео вместо галочки -->

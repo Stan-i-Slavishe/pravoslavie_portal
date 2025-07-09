@@ -43,6 +43,9 @@ urlpatterns = [
     path('playlist/<str:slug>/delete/', views_playlists.delete_playlist, name='delete_playlist'),
     path('playlist/<str:slug>/reorder/', views_playlists.reorder_playlist, name='reorder_playlist'),
     
+    # ВАЖНО! Модальное окно плейлиста - ПЕРЕМЕЩАЕМ ВЫШЕ story detail
+    path('playlist/<int:playlist_id>/modal-content/', views_playlists.playlist_modal_content, name='playlist_modal_content'),
+    
     # Публичные плейлисты
     path('u/<int:user_id>/playlist/<str:slug>/', views_playlists.public_playlist_detail, name='public_playlist_detail'),
     

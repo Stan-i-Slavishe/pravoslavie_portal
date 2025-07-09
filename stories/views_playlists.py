@@ -71,6 +71,36 @@ def get_story_recommendations(story, user=None, limit=6):
 
 
 @login_required
+def playlist_modal_content(request, playlist_id):
+    """AJAX: Загрузка содержимого плейлиста для модального окна"""
+    try:
+        playlist = get_object_or_404(Playlist, id=playlist_id, creator=request.user)
+        
+        # Получаем элементы плейлиста с информацией о рассказах
+        playlist_items = PlaylistItem.objects.filter(
+            playlist=playlist
+        ).select_related(
+            'story', 'story__category'
+        ).prefetch_related(
+            'story__tags'
+        ).order_by('order')
+        
+        context = {
+            'playlist': playlist,
+            'playlist_items': playlist_items,
+        }
+        
+        # Рендерим шаблон содержимого плейлиста
+        html = render_to_string('stories/playlist_modal_content.html', context, request)
+        return HttpResponse(html)
+        
+    except Exception as e:
+        return HttpResponse(
+            f'<div class="alert alert-danger m-3">Ошибка загрузки плейлиста: {e}</div>'
+        )
+
+
+@login_required
 def playlists_list(request):
     """Список плейлистов пользователя"""
     if not Playlist:

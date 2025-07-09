@@ -299,6 +299,238 @@
         font-size: 0.9rem;
     }
 }
+
+/* Стили для модального окна плейлиста */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.playlist-story-item {
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+}
+
+.playlist-story-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border-color: #007bff;
+}
+
+.playlist-story-thumbnail {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.playlist-story-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.playlist-story-item:hover .playlist-story-thumbnail img {
+    transform: scale(1.05);
+}
+
+.play-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.7);
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.playlist-story-item:hover .play-overlay {
+    opacity: 1;
+}
+
+.story-duration {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.story-views-count {
+    color: #6c757d;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.remove-from-playlist-btn {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+    opacity: 0.8;
+    box-shadow: 0 2px 4px rgba(220,53,69,0.3);
+}
+
+.remove-from-playlist-btn:hover {
+    background: linear-gradient(135deg, #c82333, #a71e2a);
+    transform: scale(1.1);
+    opacity: 1;
+    box-shadow: 0 4px 8px rgba(220,53,69,0.4);
+    color: white;
+}
+
+.remove-from-playlist-btn:focus {
+    box-shadow: 0 0 0 3px rgba(220,53,69,0.25);
+    color: white;
+}
+
+.remove-from-playlist-btn:active {
+    transform: scale(0.95);
+}
+
+.playlist-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.story-meta-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.story-category {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.story-category:hover {
+    background: linear-gradient(135deg, #0056b3, #004085);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.story-tags {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.story-tag {
+    background: #f8f9fa;
+    color: #6c757d;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.story-tag:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+/* Анимация вращения */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Пустое состояние плейлиста */
+.empty-playlist {
+    animation: gentle-fade-in 0.5s ease-in-out;
+}
+
+@keyframes gentle-fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Адаптивность модального окна */
+@media (max-width: 768px) {
+    .playlist-modal-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 15px;
+    }
+    
+    .playlist-story-item {
+        border-radius: 8px;
+    }
+    
+    .playlist-story-thumbnail {
+        height: 200px;
+    }
+    
+    .remove-from-playlist-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+    
+    .story-meta-info {
+        gap: 8px;
+    }
+}
+
+@media (max-width: 576px) {
+    .modal-xl {
+        max-width: 95vw;
+    }
+    
+    .playlist-modal-grid {
+        padding: 10px;
+        gap: 12px;
+    }
+    
+    .playlist-story-thumbnail {
+        height: 180px;
+    }
+}
 </style>
 {% endblock %}
 
@@ -571,6 +803,31 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно просмотра плейлиста -->
+<div class="modal fade" id="playlistViewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-primary text-white">
+                <h5 class="modal-title d-flex align-items-center">
+                    <i class="bi bi-music-note-list me-2"></i>
+                    <span id="playlistModalTitle">Плейлист</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="playlistModalContent">
+                    <div class="text-center p-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Загружаем содержимое плейлиста...</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -951,6 +1208,163 @@ function showCreatePlaylistModal() {
     setTimeout(() => {
         document.getElementById('playlistName').focus();
     }, 300);
+}
+
+// Функция показа модального окна плейлиста
+function showPlaylistModal(playlistId, playlistTitle) {
+    const modal = new bootstrap.Modal(document.getElementById('playlistViewModal'));
+    const modalTitle = document.getElementById('playlistModalTitle');
+    const modalContent = document.getElementById('playlistModalContent');
+    
+    // Устанавливаем заголовок
+    modalTitle.textContent = playlistTitle;
+    
+    // Показываем модальное окно
+    modal.show();
+    
+    // Загружаем содержимое плейлиста
+    loadPlaylistContent(playlistId);
+}
+
+// Функция загрузки содержимого плейлиста
+async function loadPlaylistContent(playlistId) {
+    const modalContent = document.getElementById('playlistModalContent');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    try {
+        const response = await fetch(`/stories/playlist/${playlistId}/modal-content/`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }
+        });
+        
+        if (response.ok) {
+            const html = await response.text();
+            modalContent.innerHTML = html;
+            
+            // Инициализируем функции удаления после загрузки
+            initializePlaylistModalFunctions();
+        } else {
+            modalContent.innerHTML = `
+                <div class="text-center p-5">
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Ошибка загрузки плейлиста
+                    </div>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading playlist:', error);
+        modalContent.innerHTML = `
+            <div class="text-center p-5">
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-wifi-off me-2"></i>
+                    Проблема с подключением
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Инициализация функций модального окна
+function initializePlaylistModalFunctions() {
+    // Обработчики кнопок удаления
+    document.querySelectorAll('.remove-from-playlist-btn').forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const storyId = this.dataset.storyId;
+            const playlistId = this.dataset.playlistId;
+            const storyTitle = this.dataset.storyTitle;
+            
+            if (confirm(`Удалить "${storyTitle}" из плейлиста?`)) {
+                await removeStoryFromPlaylistModal(storyId, playlistId, this);
+            }
+        });
+    });
+    
+    // Обработчики кликов на видео (переход к просмотру)
+    document.querySelectorAll('.playlist-story-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            if (!e.target.closest('.remove-from-playlist-btn')) {
+                const storyUrl = this.dataset.storyUrl;
+                if (storyUrl) {
+                    window.open(storyUrl, '_blank');
+                }
+            }
+        });
+    });
+}
+
+// Функция удаления истории из плейлиста в модальном окне
+async function removeStoryFromPlaylistModal(storyId, playlistId, buttonElement) {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    try {
+        buttonElement.disabled = true;
+        buttonElement.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i>';
+        
+        const response = await fetch('/stories/playlists/remove-from-playlist/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ 
+                story_id: storyId,
+                playlist_id: playlistId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Удаляем элемент из DOM с анимацией
+            const storyElement = buttonElement.closest('.playlist-story-item');
+            storyElement.style.transition = 'all 0.3s ease';
+            storyElement.style.opacity = '0';
+            storyElement.style.transform = 'translateX(-100%)';
+            
+            setTimeout(() => {
+                storyElement.remove();
+                
+                // Проверяем, остались ли элементы
+                const remainingItems = document.querySelectorAll('.playlist-story-item');
+                if (remainingItems.length === 0) {
+                    document.getElementById('playlistModalContent').innerHTML = `
+                        <div class="text-center p-5">
+                            <div class="mb-4">
+                                <i class="bi bi-music-note-list text-muted" style="font-size: 4rem;"></i>
+                            </div>
+                            <h5 class="text-muted">Плейлист пуст</h5>
+                            <p class="text-muted">Все рассказы были удалены из плейлиста</p>
+                        </div>
+                    `;
+                }
+            }, 300);
+            
+            showToast(data.message, 'success');
+            
+            // Обновляем сайдбар
+            if (window.playlistSidebar) {
+                window.playlistSidebar.reloadPlaylistSidebar();
+            }
+        } else {
+            showToast(data.message, 'error');
+            buttonElement.disabled = false;
+            buttonElement.innerHTML = '<i class="bi bi-trash"></i>';
+        }
+    } catch (error) {
+        console.error('Remove error:', error);
+        showToast('Произошла ошибка при удалении', 'error');
+        buttonElement.disabled = false;
+        buttonElement.innerHTML = '<i class="bi bi-trash"></i>';
+    }
 }
 
 function togglePlaylistStory(playlistId, storyId) {

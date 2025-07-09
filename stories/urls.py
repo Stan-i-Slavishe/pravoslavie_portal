@@ -30,6 +30,12 @@ urlpatterns = [
     path('playlists/watch-later/', views_playlists.watch_later_playlist, name='watch_later'),
     path('playlists/favorites/', views_playlists.favorites_playlist, name='favorites'),
     
+    # AJAX операции с элементами плейлистов - ПЕРЕНОСИМ ВЫШЕ!
+    path('playlists/add-to-playlist/', views_playlists.add_to_playlist, name='add_to_playlist'),
+    path('playlists/remove-from-playlist/', views_playlists.remove_from_playlist, name='remove_from_playlist'),
+    path('playlists/toggle-watch-later/', views_playlists.toggle_watch_later, name='toggle_watch_later'),
+    path('playlists/toggle-favorites/', views_playlists.toggle_favorites, name='toggle_favorites'),
+    
     # CRUD операции с плейлистами
     path('playlist/create/', views_playlists.create_playlist, name='create_playlist'),
     path('playlist/<str:slug>/', views_playlists.playlist_detail, name='playlist_detail'),
@@ -39,12 +45,6 @@ urlpatterns = [
     
     # Публичные плейлисты
     path('u/<int:user_id>/playlist/<str:slug>/', views_playlists.public_playlist_detail, name='public_playlist_detail'),
-    
-    # AJAX операции с элементами плейлистов
-    path('playlists/add-to-playlist/', views_playlists.add_to_playlist, name='add_to_playlist'),
-    path('playlists/remove-from-playlist/', views_playlists.remove_from_playlist, name='remove_from_playlist'),
-    path('playlists/toggle-watch-later/', views_playlists.toggle_watch_later, name='toggle_watch_later'),
-    path('playlists/toggle-favorites/', views_playlists.toggle_favorites, name='toggle_favorites'),
     
     # Частичные шаблоны и дополнительные функции
     path('<slug:story_slug>/sidebar-playlists/', views_playlists.sidebar_playlists_partial, name='sidebar_playlists_partial'),

@@ -122,15 +122,16 @@ function removeFromPlaylist(playlistId, storyId) {
     if (confirm('Удалить рассказ из плейлиста?')) {
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         
-        fetch('/stories/playlist/remove-story/', {
+        fetch('/stories/playlists/remove-from-playlist/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify({
-                playlist_id: playlistId,
-                story_id: storyId
+                story_id: storyId,
+                playlist_id: playlistId
             })
         })
         .then(response => response.json())

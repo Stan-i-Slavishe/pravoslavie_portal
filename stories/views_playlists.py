@@ -317,10 +317,30 @@ def add_to_playlist(request):
 @require_http_methods(["POST"])
 def remove_from_playlist(request):
     """AJAX: Удаление рассказа из плейлиста"""
+    print(f"Headers: {dict(request.headers)}")
+    print(f"Content-Type: {request.content_type}")
+    print(f"Body: {request.body[:200]}")
+    
+    # Проверяем, что это AJAX запрос
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        print("Not an AJAX request")
+        return JsonResponse({
+            'success': False,
+            'message': 'Недопустимый тип запроса'
+        })
+    
     try:
         data = json.loads(request.body)
+        print(f"Parsed data: {data}")
         story_id = data.get('story_id')
         playlist_id = data.get('playlist_id')
+        
+        if not story_id or not playlist_id:
+            print("Missing parameters")
+            return JsonResponse({
+                'success': False,
+                'message': 'Не указаны обязательные параметры'
+            })
         
         story = get_object_or_404(Story, id=story_id)
         playlist = get_object_or_404(Playlist, id=playlist_id, creator=request.user)
@@ -332,6 +352,7 @@ def remove_from_playlist(request):
         )
         
         playlist_item.delete()
+        print(f"Deleted playlist item for story {story_id}")
         
         # Переупорядочиваем оставшиеся элементы
         remaining_items = PlaylistItem.objects.filter(
@@ -343,12 +364,20 @@ def remove_from_playlist(request):
                 item.order = i
                 item.save(update_fields=['order'])
         
+        print("Success! Returning JSON response")
         return JsonResponse({
             'success': True,
             'message': f'Рассказ удален из плейлиста "{playlist.title}"'
         })
         
+    except json.JSONDecodeError as e:
+        print(f"JSON decode error: {e}")
+        return JsonResponse({
+            'success': False,
+            'message': 'Неверный формат данных'
+        })
     except Exception as e:
+        print(f"General error: {e}")
         return JsonResponse({
             'success': False,
             'message': 'Произошла ошибка при удалении'

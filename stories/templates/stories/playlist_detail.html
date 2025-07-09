@@ -507,18 +507,37 @@ function removeFromPlaylist(storyId) {
         return;
     }
     
-    fetch(`{% url 'stories:remove_from_playlist' %}`, {
+    const url = '/stories/playlists/remove-from-playlist/';
+    console.log('Hardcoded URL:', url);
+    console.log('Sending request to:', url);
+    
+    fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({
             story_id: storyId,
             playlist_id: {{ playlist.id }}
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers.get('content-type'));
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Response is not JSON');
+        }
+        
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             // Удаляем элемент из DOM с анимацией
@@ -550,8 +569,8 @@ function removeFromPlaylist(storyId) {
         }
     })
     .catch(error => {
-        showMessage('Произошла ошибка при удалении', 'error');
         console.error('Error:', error);
+        showMessage('Произошла ошибка при удалении', 'error');
     });
 }
 

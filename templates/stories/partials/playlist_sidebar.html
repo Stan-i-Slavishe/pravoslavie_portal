@@ -1,6 +1,20 @@
 <!-- templates/stories/partials/playlist_sidebar.html -->
 
-<div class="card-body">
+<!-- Красивый блок разворачивания плейлистов -->
+<div class="d-flex justify-content-center align-items-center mb-3 p-2 bg-light rounded" 
+     style="cursor: pointer; transition: all 0.2s ease;"
+     onclick="togglePlaylistsVisibility()"
+     onmouseover="this.style.backgroundColor='#e9ecef'"
+     onmouseout="this.style.backgroundColor='#f8f9fa'">
+    <span class="me-2 text-muted fw-medium" id="toggleText">Развернуть плейлисты</span>
+    <button class="btn btn-sm btn-outline-secondary border-0" 
+            id="togglePlaylistsBtn" 
+            title="Развернуть/свернуть список">
+        <i class="bi bi-chevron-down" id="toggleIcon"></i>
+    </button>
+</div>
+
+<div class="card-body" id="playlistsContainer">
     {% if user.is_authenticated %}
         <!-- Список плейлистов пользователя -->
         <div class="user-playlists" style="max-height: 400px; overflow-y: auto;">
@@ -209,3 +223,55 @@
     background: #a8a8a8;
 }
 </style>
+
+<script>
+/* Функция сворачивания/разворачивания плейлистов */
+function togglePlaylistsVisibility() {
+    const container = document.getElementById('playlistsContainer');
+    const toggleBtn = document.getElementById('togglePlaylistsBtn');
+    const toggleIcon = document.getElementById('toggleIcon');
+    const toggleText = document.getElementById('toggleText');
+    
+    if (container.style.display === 'none') {
+        // Разворачиваем
+        container.style.display = 'block';
+        toggleIcon.className = 'bi bi-chevron-up';
+        toggleText.textContent = 'Свернуть плейлисты';
+        toggleBtn.title = 'Свернуть список';
+    } else {
+        // Сворачиваем
+        container.style.display = 'none';
+        toggleIcon.className = 'bi bi-chevron-down';
+        toggleText.textContent = 'Развернуть плейлисты';
+        toggleBtn.title = 'Развернуть список';
+    }
+    
+    // Сохраняем состояние в localStorage
+    const isCollapsed = container.style.display === 'none';
+    localStorage.setItem('playlistsCollapsed', isCollapsed.toString());
+}
+
+/* Устанавливаем свернутое состояние по умолчанию */
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('playlistsContainer');
+    const toggleIcon = document.getElementById('toggleIcon');
+    const toggleBtn = document.getElementById('togglePlaylistsBtn');
+    const toggleText = document.getElementById('toggleText');
+    
+    // По умолчанию свернуто, если не было сохранено другое состояние
+    const savedState = localStorage.getItem('playlistsCollapsed');
+    const isCollapsed = savedState === null ? true : savedState === 'true';
+    
+    if (isCollapsed && container) {
+        container.style.display = 'none';
+        toggleIcon.className = 'bi bi-chevron-down';
+        toggleText.textContent = 'Развернуть плейлисты';
+        toggleBtn.title = 'Развернуть список';
+    } else if (container) {
+        container.style.display = 'block';
+        toggleIcon.className = 'bi bi-chevron-up';
+        toggleText.textContent = 'Свернуть плейлисты';
+        toggleBtn.title = 'Свернуть список';
+    }
+});
+</script>

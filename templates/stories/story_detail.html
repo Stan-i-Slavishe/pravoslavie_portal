@@ -673,7 +673,8 @@
 
 #saveToPlaylistModal .modal-footer {
     padding: 10px 20px 20px 20px;
-    justify-content: flex-start;
+    justify-content: center;
+    display: flex;
 }
 
 #saveToPlaylistModal .btn-link {
@@ -1053,7 +1054,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer border-0 pt-0">
+            <div class="modal-footer border-0 pt-0 justify-content-center">
                 <button type="button" class="btn btn-link text-decoration-none" 
                         onclick="showCreatePlaylistModal(); bootstrap.Modal.getInstance(document.getElementById('saveToPlaylistModal')).hide();">
                     <i class="bi bi-plus-circle me-1"></i>

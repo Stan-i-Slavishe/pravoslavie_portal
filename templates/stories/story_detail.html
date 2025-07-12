@@ -531,6 +531,185 @@
         height: 180px;
     }
 }
+
+/* Стили для модального окна "Сохранить в плейлист" */
+.save-playlist-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.save-playlist-item:hover {
+    background-color: #f8f9fa;
+}
+
+.save-playlist-item:last-child {
+    border-bottom: none;
+}
+
+.save-playlist-checkbox {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    cursor: pointer;
+    accent-color: #007bff;
+}
+
+.save-playlist-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.save-playlist-title {
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: #212529;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.save-playlist-meta {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin: 2px 0 0 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.save-playlist-privacy {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.save-playlist-privacy i {
+    font-size: 0.75rem;
+}
+
+.save-playlist-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.save-playlist-loading .save-playlist-checkbox {
+    position: relative;
+}
+
+.save-playlist-loading .save-playlist-checkbox::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    margin: -6px 0 0 -6px;
+    border: 2px solid #007bff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Пустое состояние */
+.save-playlist-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+}
+
+.save-playlist-empty i {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.save-playlist-empty h6 {
+    margin-bottom: 8px;
+    color: #495057;
+}
+
+/* Ошибка */
+.save-playlist-error {
+    text-align: center;
+    padding: 40px 20px;
+    color: #dc3545;
+}
+
+.save-playlist-error i {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.7;
+}
+
+.save-playlist-error .btn {
+    margin-top: 16px;
+}
+
+/* Модальное окно */
+#saveToPlaylistModal .modal-content {
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    border: none;
+}
+
+#saveToPlaylistModal .modal-header {
+    padding: 20px 20px 10px 20px;
+}
+
+#saveToPlaylistModal .modal-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #212529;
+}
+
+#saveToPlaylistModal .modal-footer {
+    padding: 10px 20px 20px 20px;
+    justify-content: flex-start;
+}
+
+#saveToPlaylistModal .btn-link {
+    color: #007bff;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 8px 0;
+}
+
+#saveToPlaylistModal .btn-link:hover {
+    color: #0056b3;
+    text-decoration: none;
+}
+
+/* Адаптивность */
+@media (max-width: 576px) {
+    .save-playlist-item {
+        padding: 10px 16px;
+    }
+    
+    .save-playlist-title {
+        font-size: 0.9rem;
+    }
+    
+    .save-playlist-meta {
+        font-size: 0.75rem;
+    }
+    
+    #saveToPlaylistModal .modal-header {
+        padding: 16px 16px 8px 16px;
+    }
+    
+    #saveToPlaylistModal .modal-footer {
+        padding: 8px 16px 16px 16px;
+    }
+}
 </style>
 {% endblock %}
 
@@ -588,12 +767,23 @@
                     
                     <!-- Добавляем кнопку "Сохранить" -->
                     <div class="meta-item">
-                        <button class="btn btn-sm btn-outline-secondary" 
-                                style="border: none; background: none; color: #495057; padding: 0;"
-                                title="Сохранить">
-                            <i class="bi bi-bookmark me-1"></i>
-                            <span>Сохранить</span>
-                        </button>
+                        {% if user.is_authenticated %}
+                            <button class="btn btn-sm btn-outline-secondary" 
+                                    style="border: none; background: none; color: #495057; padding: 0;"
+                                    onclick="showSaveToPlaylistModal()"
+                                    title="Сохранить в плейлист">
+                                <i class="bi bi-bookmark me-1"></i>
+                                <span>Сохранить</span>
+                            </button>
+                        {% else %}
+                            <a href="{% url 'account_login' %}" 
+                               class="btn btn-sm btn-outline-secondary" 
+                               style="border: none; background: none; color: #495057; padding: 0; text-decoration: none;"
+                               title="Войдите, чтобы сохранить">
+                                <i class="bi bi-bookmark me-1"></i>
+                                <span>Сохранить</span>
+                            </a>
+                        {% endif %}
                     </div>
                 </div>
                 
@@ -837,6 +1027,38 @@
                         <p class="mt-3 text-muted">Загружаем содержимое плейлиста...</p>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно "Сохранить в плейлист" -->
+<div class="modal fade" id="saveToPlaylistModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title">
+                    <i class="bi bi-bookmark me-2"></i>
+                    Выберите плейлист
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="savePlaylistContent">
+                    <div class="text-center p-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                        <p class="mt-3 mb-0 text-muted">Загружаем плейлисты...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-link text-decoration-none" 
+                        onclick="showCreatePlaylistModal(); bootstrap.Modal.getInstance(document.getElementById('saveToPlaylistModal')).hide();">
+                    <i class="bi bi-plus-circle me-1"></i>
+                    Создать новый плейлист
+                </button>
             </div>
         </div>
     </div>
@@ -1218,6 +1440,213 @@ function showCreatePlaylistModal() {
     setTimeout(() => {
         document.getElementById('playlistName').focus();
     }, 300);
+}
+
+// Функция открытия модального окна "Сохранить в плейлист"
+function showSaveToPlaylistModal() {
+    const modal = new bootstrap.Modal(document.getElementById('saveToPlaylistModal'));
+    modal.show();
+    
+    // Загружаем плейлисты
+    loadUserPlaylistsForSave();
+}
+
+// Загрузка плейлистов пользователя для сохранения
+async function loadUserPlaylistsForSave() {
+    const content = document.getElementById('savePlaylistContent');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const storyId = {{ story.id }};
+    
+    try {
+        const response = await fetch('/stories/playlists/for-save/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ story_id: storyId })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                renderPlaylistsForSave(data.playlists);
+            } else {
+                console.error('Server returned success=false:', data);
+                showSavePlaylistError();
+            }
+        } else if (response.status === 503) {
+            // Сервис недоступен (модели не готовы)
+            console.warn('Playlist service unavailable (503)');
+            showSavePlaylistUnavailable();
+        } else {
+            console.error('HTTP error:', response.status, response.statusText);
+            showSavePlaylistError();
+        }
+    } catch (error) {
+        console.error('Network error loading playlists:', error);
+        showSavePlaylistError();
+    }
+}
+
+// Отображение плейлистов для сохранения
+function renderPlaylistsForSave(playlists) {
+    const content = document.getElementById('savePlaylistContent');
+    
+    if (!playlists || playlists.length === 0) {
+        content.innerHTML = `
+            <div class="save-playlist-empty">
+                <i class="bi bi-music-note-list"></i>
+                <h6>Плейлистов пока нет</h6>
+                <p class="mb-0">Создайте свой первый плейлист</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const playlistsHtml = playlists.map(playlist => `
+        <div class="save-playlist-item" data-playlist-id="${playlist.id}">
+            <input type="checkbox" 
+                   class="save-playlist-checkbox" 
+                   data-playlist-id="${playlist.id}"
+                   ${playlist.contains_story ? 'checked' : ''}
+                   onchange="toggleStoryInPlaylist(${playlist.id}, this)">
+            <div class="save-playlist-info">
+                <div class="save-playlist-title">${playlist.title}</div>
+                <div class="save-playlist-meta">
+                    <span class="save-playlist-privacy">
+                        <i class="bi bi-${playlist.is_public ? 'globe2' : 'lock'}"></i>
+                        ${playlist.is_public ? 'Публичный' : 'Приватный'}
+                    </span>
+                    <span>•</span>
+                    <span>${playlist.stories_count} ${getStoriesCountText(playlist.stories_count)}</span>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    content.innerHTML = playlistsHtml;
+}
+
+// Вспомогательная функция для подсчёта рассказов
+function getStoriesCountText(count) {
+    const lastDigit = count % 10;
+    const lastTwoDigits = count % 100;
+    
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+        return 'рассказов';
+    }
+    
+    if (lastDigit === 1) {
+        return 'рассказ';
+    } else if (lastDigit >= 2 && lastDigit <= 4) {
+        return 'рассказа';
+    } else {
+        return 'рассказов';
+    }
+}
+
+// Отображение ошибки
+function showSavePlaylistError() {
+    const content = document.getElementById('savePlaylistContent');
+    content.innerHTML = `
+        <div class="save-playlist-error">
+            <i class="bi bi-exclamation-triangle"></i>
+            <h6>Ошибка загрузки</h6>
+            <p class="mb-0">Не удалось загрузить плейлисты</p>
+            <button class="btn btn-sm btn-outline-primary" onclick="loadUserPlaylistsForSave()">
+                <i class="bi bi-arrow-clockwise me-1"></i>
+                Попробовать снова
+            </button>
+        </div>
+    `;
+}
+
+// Отображение сообщения о недоступности функции
+function showSavePlaylistUnavailable() {
+    const content = document.getElementById('savePlaylistContent');
+    content.innerHTML = `
+        <div class="save-playlist-error">
+            <i class="bi bi-tools"></i>
+            <h6>Функция временно недоступна</h6>
+            <p class="mb-0">Плейлисты находятся в разработке.<br>Попробуйте позже.</p>
+            <div class="mt-3">
+                <button class="btn btn-sm btn-outline-success" onclick="window.location.reload()">
+                    <i class="bi bi-arrow-clockwise me-1"></i>
+                    Обновить страницу
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// Добавление/удаление рассказа из плейлиста
+async function toggleStoryInPlaylist(playlistId, checkbox) {
+    const storyId = {{ story.id }};
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const isChecked = checkbox.checked;
+    const playlistItem = checkbox.closest('.save-playlist-item');
+    
+    // Отключаем чекбокс и показываем загрузку
+    checkbox.disabled = true;
+    playlistItem.classList.add('save-playlist-loading');
+    
+    try {
+        const url = isChecked ? 
+            '/stories/playlists/add-to-playlist/' : 
+            '/stories/playlists/remove-from-playlist/';
+            
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ 
+                story_id: storyId,
+                playlist_id: playlistId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Обновляем счётчик рассказов в плейлисте
+            const metaElement = playlistItem.querySelector('.save-playlist-meta');
+            const currentCount = data.stories_count;
+            
+            const countText = metaElement.innerHTML.replace(
+                /\d+ рассказ[а-я]*/,
+                `${currentCount} ${getStoriesCountText(currentCount)}`
+            );
+            metaElement.innerHTML = countText;
+            
+            // Показываем уведомление
+            const action = isChecked ? 'добавлен в' : 'удален из';
+            const playlistName = playlistItem.querySelector('.save-playlist-title').textContent;
+            showToast(`Рассказ ${action} плейлист "${playlistName}"`, 'success');
+            
+            // Обновляем сайдбар, если он есть
+            if (window.playlistSidebar) {
+                window.playlistSidebar.reloadPlaylistSidebar();
+            }
+        } else {
+            // Возвращаем чекбокс в исходное состояние
+            checkbox.checked = !isChecked;
+            showToast(data.message || 'Произошла ошибка', 'error');
+        }
+    } catch (error) {
+        console.error('Toggle playlist error:', error);
+        // Возвращаем чекбокс в исходное состояние
+        checkbox.checked = !isChecked;
+        showToast('Произошла ошибка при обновлении плейлиста', 'error');
+    } finally {
+        // Включаем чекбокс и убираем загрузку
+        checkbox.disabled = false;
+        playlistItem.classList.remove('save-playlist-loading');
+    }
 }
 
 // Функция показа модального окна плейлиста

@@ -35,6 +35,7 @@ urlpatterns = [
     path('playlists/remove-from-playlist/', views_playlists.remove_from_playlist, name='remove_from_playlist'),
     path('playlists/toggle-watch-later/', views_playlists.toggle_watch_later, name='toggle_watch_later'),
     path('playlists/toggle-favorites/', views_playlists.toggle_favorites, name='toggle_favorites'),
+    path('playlists/for-save/', views_playlists.playlists_for_save, name='playlists_for_save'),
     
     # CRUD операции с плейлистами
     path('playlist/create/', views_playlists.create_playlist, name='create_playlist'),

@@ -1,7 +1,7 @@
 <!-- templates/stories/partials/playlist_sidebar.html -->
 
 <!-- Красивый блок разворачивания плейлистов -->
-<div class="d-flex justify-content-center align-items-center mb-3 p-2 bg-light rounded" 
+<div class="d-flex justify-content-center align-items-center mb-0 p-1 bg-light rounded" 
      style="cursor: pointer; transition: all 0.2s ease;"
      onclick="togglePlaylistsVisibility()"
      onmouseover="this.style.backgroundColor='#e9ecef'"
@@ -245,6 +245,35 @@
     color: #ffffff !important;
     background-color: #0d6efd !important;
     border-color: #0d6efd !important;
+}
+
+/* УЛЬТРА СЖАТИЕ - на 75% меньше расстояние */
+#playlistsContainer {
+    margin-top: -0.25rem !important;
+    padding-top: 0.25rem !important;
+    transform: translateY(0) !important;
+}
+
+.playlist-item:first-child {
+    margin-top: -0.25rem !important;
+    padding-top: 0.25rem !important;
+}
+
+/* Дополнительное сжатие кнопки */
+.d-flex.justify-content-center.align-items-center.mb-0 {
+    margin-bottom: 0.125rem !important;
+    line-height: 1.2 !important;
+}
+
+/* ГАРМОНИЧНОЕ СЖАТИЕ - баланс компактности и читаемости */
+.user-playlists {
+    margin-top: -0.25rem !important;
+    transform: translateY(-0.125rem) !important;
+}
+
+/* Первый плейлист с гармоничным отступом */
+.playlist-item:first-child .d-flex {
+    padding-top: 0.75rem !important;
 }
 </style>
 

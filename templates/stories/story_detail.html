@@ -535,6 +535,176 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Стили для эффекта "читать далее" */
+.story-content-wrapper {
+    position: relative;
+}
+
+.story-content-wrapper.collapsed .read-more-btn {
+    margin-top: -15px; /* Поднимаем кнопку чтобы она перекрывала градиент */
+    margin-bottom: 20px;
+}
+
+.story-description {
+    line-height: 1.6;
+    font-size: 1rem;
+    color: #2c3e50;
+    text-align: justify;
+    transition: all 0.5s ease;
+    overflow: hidden;
+}
+
+.story-description.collapsed {
+    max-height: 8.5em; /* Примерно 7-8 строк при line-height 1.6 */
+    position: relative;
+}
+
+.story-description.collapsed::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3em; /* Высота градиента */
+    background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.3) 30%,
+        rgba(255, 255, 255, 0.7) 60%,
+        rgba(255, 255, 255, 0.9) 80%,
+        rgba(255, 255, 255, 1) 100%
+    );
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 1; /* Чтобы градиент был поверх текста, но под кнопкой */
+}
+
+.story-description.expanded {
+    max-height: none;
+}
+
+.story-description.expanded::after {
+    opacity: 0;
+}
+
+.read-more-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 12px 28px;
+    border-radius: 25px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    position: relative;
+    overflow: hidden;
+    text-transform: none;
+    letter-spacing: 0.5px;
+    margin: 20px 0;
+    display: block;
+    transform: translateZ(0);
+    cursor: pointer;
+    width: 100%; /* На всю ширину блока */
+    z-index: 2;
+}
+
+.read-more-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+    color: white;
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.read-more-btn:active {
+    transform: translateY(0) scale(1.02);
+    transition: all 0.1s ease;
+}
+
+.read-more-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+}
+
+/* Анимация блика */
+.read-more-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.read-more-btn:hover::before {
+    left: 100%;
+}
+
+/* Анимация иконки */
+.read-more-btn i {
+    transition: transform 0.3s ease;
+    margin-left: 8px;
+}
+
+.read-more-btn:hover i {
+    transform: translateX(3px);
+}
+
+.read-more-btn.expanded i {
+    transform: rotate(180deg);
+}
+
+/* Эффект пульса при клике */
+.read-more-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.4s, height 0.4s;
+}
+
+.read-more-btn:active::after {
+    width: 120%;
+    height: 120%;
+}
+
+/* Адаптивность для кнопки читать далее */
+@media (max-width: 768px) {
+    .read-more-btn {
+        padding: 10px 24px;
+        font-size: 0.9rem;
+        margin: 15px 0;
+    }
+
+    .story-description.collapsed {
+        max-height: 7.5em; /* Меньше строк на мобильных */
+    }
+
+    .story-description.collapsed::after {
+        height: 2.5em;
+    }
+}
+
+@media (max-width: 576px) {
+    .read-more-btn {
+        padding: 8px 20px;
+        font-size: 0.85rem;
+        border-radius: 20px;
+        margin: 12px 0;
+    }
+
+    .story-description.collapsed {
+        max-height: 6.5em; /* Еще меньше строк на маленьких экранах */
+    }
+}
+
 /* Адаптивность модального окна */
 @media (max-width: 768px) {
     .playlist-modal-grid {
@@ -834,8 +1004,14 @@
                 </div>
                 
                 {% if story.description %}
-                    <div class="story-description mb-4">
-                        {{ story.description|linebreaks }}
+                    <div class="story-content-wrapper">
+                        <div class="story-description collapsed mb-4" id="storyDescription">
+                            {{ story.description|linebreaks }}
+                        </div>
+                        <button class="read-more-btn" id="readMoreBtn" onclick="toggleReadMore()" style="display: none;">
+                            <span id="readMoreText">Читать остальное</span>
+                            <i class="bi bi-chevron-down" id="readMoreIcon"></i>
+                        </button>
                     </div>
                 {% endif %}
                 
@@ -1119,7 +1295,85 @@
 // JavaScript для интерактивности страницы
 document.addEventListener('DOMContentLoaded', function() {
     console.log('📱 Страница рассказа загружена');
+    checkIfReadMoreNeeded();
 });
+
+// Функция "читать далее"
+function toggleReadMore() {
+    const wrapper = document.querySelector('.story-content-wrapper');
+    const description = document.getElementById('storyDescription');
+    const btn = document.getElementById('readMoreBtn');
+    const text = document.getElementById('readMoreText');
+    const icon = document.getElementById('readMoreIcon');
+    
+    if (description.classList.contains('collapsed')) {
+        // Разворачиваем
+        description.classList.remove('collapsed');
+        description.classList.add('expanded');
+        wrapper.classList.remove('collapsed');
+        btn.classList.add('expanded');
+        text.textContent = 'Свернуть';
+        icon.classList.remove('bi-chevron-down');
+        icon.classList.add('bi-chevron-up');
+    } else {
+        // Сворачиваем
+        description.classList.remove('expanded');
+        description.classList.add('collapsed');
+        wrapper.classList.add('collapsed');
+        btn.classList.remove('expanded');
+        text.textContent = 'Читать остальное';
+        icon.classList.remove('bi-chevron-up');
+        icon.classList.add('bi-chevron-down');
+        
+        // Плавная прокрутка к заголовку поста после сворачивания
+        setTimeout(() => {
+            const storyTitle = document.querySelector('.story-title') || document.querySelector('h1');
+            if (storyTitle) {
+                storyTitle.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                    inline: 'nearest'
+                });
+            }
+        }, 150); // Небольшая задержка для завершения анимации сворачивания
+    }
+}
+
+// Проверяем, нужна ли кнопка "читать далее"
+function checkIfReadMoreNeeded() {
+    const wrapper = document.querySelector('.story-content-wrapper');
+    const description = document.getElementById('storyDescription');
+    const btn = document.getElementById('readMoreBtn');
+    
+    if (!description || !btn || !wrapper) return;
+    
+    // Временно убираем ограничение высоты
+    const originalMaxHeight = description.style.maxHeight;
+    description.style.maxHeight = 'none';
+    description.classList.remove('collapsed');
+    
+    const fullHeight = description.scrollHeight;
+    
+    // Возвращаем ограничение
+    description.style.maxHeight = originalMaxHeight;
+    description.classList.add('collapsed');
+    
+    // Получаем высоту в свернутом состоянии
+    const collapsedHeight = parseFloat(getComputedStyle(description).maxHeight);
+    
+    // Если контент помещается в свернутом виде, скрываем кнопку
+    if (fullHeight <= collapsedHeight * 1.2) { // небольшой запас
+        btn.style.display = 'none';
+        description.classList.remove('collapsed');
+        wrapper.classList.remove('collapsed');
+    } else {
+        btn.style.display = 'block';
+        wrapper.classList.add('collapsed');
+    }
+}
+
+// Проверяем при изменении размера окна
+window.addEventListener('resize', checkIfReadMoreNeeded);
 
 // Функция лайка рассказа
 function toggleLike(storyId) {

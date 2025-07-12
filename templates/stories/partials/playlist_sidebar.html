@@ -14,7 +14,7 @@
     </button>
 </div>
 
-<div class="card-body" id="playlistsContainer">
+<div class="card-body" id="playlistsContainer" style="display: none;">
     {% if user.is_authenticated %}
         <!-- Список плейлистов пользователя -->
         <div class="user-playlists" style="max-height: 400px; overflow-y: auto;">
@@ -270,32 +270,42 @@ function togglePlaylistsVisibility() {
         toggleBtn.title = 'Развернуть список';
     }
     
-    // Сохраняем состояние в localStorage
-    const isCollapsed = container.style.display === 'none';
-    localStorage.setItem('playlistsCollapsed', isCollapsed.toString());
+    // Сохраняем состояние в localStorage (временно отключено)
+    // const isCollapsed = container.style.display === 'none';
+    // localStorage.setItem('playlistsCollapsed', isCollapsed.toString());
 }
 
 /* Устанавливаем свернутое состояние по умолчанию */
 document.addEventListener('DOMContentLoaded', function() {
+    // Очищаем сохраненное состояние
+    localStorage.removeItem('playlistsCollapsed');
+    
     const container = document.getElementById('playlistsContainer');
     const toggleIcon = document.getElementById('toggleIcon');
     const toggleBtn = document.getElementById('togglePlaylistsBtn');
     const toggleText = document.getElementById('toggleText');
     
-    // По умолчанию свернуто, если не было сохранено другое состояние
-    const savedState = localStorage.getItem('playlistsCollapsed');
-    const isCollapsed = savedState === null ? true : savedState === 'true';
+    // Принудительно сворачиваем по умолчанию (игнорируем сохраненное состояние)
+    // const savedState = localStorage.getItem('playlistsCollapsed');
+    // const isCollapsed = savedState === 'false' ? false : true;
     
-    if (isCollapsed && container) {
-        container.style.display = 'none';
-        toggleIcon.className = 'bi bi-chevron-down';
-        toggleText.textContent = 'Развернуть плейлисты';
-        toggleBtn.title = 'Развернуть список';
-    } else if (container) {
-        container.style.display = 'block';
-        toggleIcon.className = 'bi bi-chevron-up';
-        toggleText.textContent = 'Свернуть плейлисты';
-        toggleBtn.title = 'Свернуть список';
+    // Всегда свернуто по умолчанию
+    const isCollapsed = true;
+    
+    if (container) {
+        if (isCollapsed) {
+            // Оставляем свернутым
+            container.style.display = 'none';
+            toggleIcon.className = 'bi bi-chevron-down';
+            toggleText.textContent = 'Развернуть плейлисты';
+            toggleBtn.title = 'Развернуть список';
+        } else {
+            // Пользователь ранее развернул
+            container.style.display = 'block';
+            toggleIcon.className = 'bi bi-chevron-up';
+            toggleText.textContent = 'Свернуть плейлисты';
+            toggleBtn.title = 'Свернуть список';
+        }
     }
 });
 </script>

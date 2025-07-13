@@ -1,0 +1,477 @@
+<!-- МОБИЛЬНЫЙ ВИДЖЕТ ПЛЕЙЛИСТОВ -->
+{% if user.is_authenticated %}
+<div class="mobile-playlist-widget d-lg-none mb-4" style="display: block !important;">
+    <div class="card bg-light border-0 shadow-sm">
+        <div class="card-body py-3">
+            <!-- Заголовок с кнопкой свернуть/развернуть -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0 text-primary">
+                    <i class="bi bi-music-note-list me-2"></i>
+                    📱 Мобильные плейлисты
+                </h6>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary me-2" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#playlistModal">
+                        <i class="bi bi-plus"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" 
+                            onclick="toggleMobilePlaylistContent()">
+                        <i class="bi bi-chevron-down" id="mobilePlaylistToggleIcon"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Контент плейлистов (изначально свернут) -->
+            <div id="mobilePlaylistContent" style="display: none;">
+                <div id="mobilePlaylistContainer">
+                    <!-- Здесь будут загружены плейлисты через JavaScript -->
+                    <div class="text-center py-3">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                        <p class="mt-2 text-muted small">Загрузка плейлистов...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- Для неавторизованных пользователей на мобильных -->
+<div class="mobile-playlist-widget d-lg-none mb-4" style="display: block !important;">
+    <div class="card bg-light border-0 shadow-sm">
+        <div class="card-body py-3 text-center">
+            <div class="d-flex align-items-center justify-content-center">
+                <i class="bi bi-music-note-list text-muted me-2"></i>
+                <span class="text-muted small">
+                    <a href="{% url 'account_login' %}" class="text-decoration-none">Войдите</a> 
+                    для создания плейлистов
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Модальное окно для просмотра содержимого плейлиста (мобильная версия) -->
+<div class="modal fade" id="mobilePlaylistContentModal" tabindex="-1" aria-labelledby="mobilePlaylistContentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mobilePlaylistContentModalLabel">
+                    <i class="bi bi-music-note-list me-2"></i>
+                    <span id="modalPlaylistTitle">Плейлист</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modalPlaylistContent">
+                    <!-- Здесь будет содержимое плейлиста -->
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Загрузка содержимого плейлиста...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x"></i>
+                    Закрыть
+                </button>
+                <button type="button" class="btn btn-primary" onclick="editCurrentPlaylist()">
+                    <i class="bi bi-pencil"></i>
+                    Редактировать
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CSS стили для мобильного виджета плейлистов -->
+<style>
+/* Принудительное отображение на мобильных */
+@media (max-width: 991.98px) {
+    .mobile-playlist-widget {
+        display: block !important;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* Скрываем на десктопе */
+@media (min-width: 992px) {
+    .mobile-playlist-widget {
+        display: none !important;
+    }
+}
+
+/* Стили для мобильного виджета плейлистов */
+.mobile-playlist-widget .card {
+    border-radius: 15px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.mobile-playlist-widget .playlist-item {
+    background: white;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 1px solid #e3e6ea;
+    transition: all 0.2s ease;
+}
+
+.mobile-playlist-widget .playlist-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background: #f8f9fa;
+}
+
+.mobile-playlist-widget .playlist-title {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.9rem;
+    line-height: 1.3;
+}
+
+.mobile-playlist-widget .story-count {
+    color: #6c757d;
+    font-size: 0.75rem;
+}
+
+.mobile-playlist-widget .playlist-date {
+    color: #adb5bd;
+    font-size: 0.7rem;
+}
+
+.mobile-playlist-widget .play-icon {
+    color: #007bff !important;
+    font-size: 1.1rem;
+}
+
+/* Анимация для кнопки свернуть/развернуть */
+#mobilePlaylistToggleIcon {
+    transition: transform 0.3s ease;
+}
+
+#mobilePlaylistToggleIcon.rotated {
+    transform: rotate(180deg);
+}
+
+/* Плавное появление контента */
+#mobilePlaylistContent {
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+#mobilePlaylistContent.show {
+    display: block !important;
+}
+
+/* Отладочные стили */
+.debug-mobile-widget {
+    border: 2px solid red !important;
+    background: yellow !important;
+}
+</style>
+
+<script>
+// Переключение видимости мобильного контента плейлистов
+function toggleMobilePlaylistContent() {
+    const content = document.getElementById('mobilePlaylistContent');
+    const icon = document.getElementById('mobilePlaylistToggleIcon');
+    
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        icon.classList.add('rotated');
+        icon.classList.remove('bi-chevron-down');
+        icon.classList.add('bi-chevron-up');
+        
+        // Используем те же данные, что и для десктопа
+        if (typeof userPlaylists !== 'undefined' && userPlaylists.length > 0) {
+            updateMobilePlaylistUI(userPlaylists);
+        } else {
+            loadMobileUserPlaylists();
+        }
+    } else {
+        content.style.display = 'none';
+        icon.classList.remove('rotated');
+        icon.classList.remove('bi-chevron-up');
+        icon.classList.add('bi-chevron-down');
+    }
+}
+
+// Загрузка плейлистов для мобильной версии
+function loadMobileUserPlaylists() {
+    console.log('📱 Обновление мобильных плейлистов...');
+    
+    // Используем глобальные данные плейлистов
+    if (typeof userPlaylists !== 'undefined') {
+        updateMobilePlaylistUI(userPlaylists);
+    } else {
+        // Запасные данные
+        const fallbackPlaylists = [
+            { id: 1, title: 'Клондайк', stories_count: 1, created_at: '09.07.2025', is_private: true },
+            { id: 2, title: 'Кака теста', stories_count: 1, created_at: '09.07.2025', is_private: true },
+            { id: 3, title: 'Посмотреть позже', stories_count: 1, created_at: '09.07.2025', is_private: true },
+            { id: 4, title: 'Праздничные истории', stories_count: 0, created_at: '09.07.2025', is_private: false }
+        ];
+        updateMobilePlaylistUI(fallbackPlaylists);
+    }
+}
+
+// Обновление мобильного интерфейса плейлистов
+function updateMobilePlaylistUI(playlists) {
+    const mobilePlaylistContainer = document.getElementById('mobilePlaylistContainer');
+    if (!mobilePlaylistContainer) {
+        console.log('⚠️  Мобильный контейнер плейлистов не найден');
+        return;
+    }
+    
+    let playlistHTML = '';
+    
+    if (playlists.length > 0) {
+        playlists.forEach(playlist => {
+            playlistHTML += `
+                <div class="playlist-item" onclick="openMobilePlaylistModal(${playlist.id}, '${playlist.title}')" style="cursor: pointer;">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-play-circle play-icon me-2"></i>
+                        <div class="flex-grow-1">
+                            <div class="playlist-title">${playlist.title}</div>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <small class="story-count">${playlist.stories_count} рассказов</small>
+                                <small class="playlist-date">
+                                    <i class="bi bi-${playlist.is_private ? 'lock' : 'globe'} me-1"></i>
+                                    ${playlist.is_private ? 'Приватный' : 'Публичный'}
+                                </small>
+                            </div>
+                        </div>
+                        <div class="playlist-actions ms-2">
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        // Добавляем системные плейлисты
+        playlistHTML += renderMobileSystemPlaylists();
+    } else {
+        playlistHTML = `
+            <div class="text-center text-muted py-3">
+                <i class="bi bi-music-note-list fs-5 d-block mb-2"></i>
+                <small>У вас пока нет плейлистов</small>
+                <br>
+                <small class="text-primary">Создайте свой первый!</small>
+            </div>
+        `;
+    }
+    
+    mobilePlaylistContainer.innerHTML = playlistHTML;
+}
+
+// Отображение системных плейлистов для мобильного виджета
+function renderMobileSystemPlaylists() {
+    const systemPlaylists = [
+        { id: 'favorites', title: 'Избранное', icon: 'heart', count: 5 },
+        { id: 'watch_later', title: 'Посмотреть позже', icon: 'clock', count: 3 },
+        { id: 'history', title: 'История просмотров', icon: 'clock-history', count: 15 }
+    ];
+    
+    let html = '<hr class="my-3"><h6 class="text-muted mb-2">Системные плейлисты</h6>';
+    
+    systemPlaylists.forEach(playlist => {
+        html += `
+            <div class="playlist-item" onclick="openSystemPlaylistModal('${playlist.id}', '${playlist.title}')" style="cursor: pointer;">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-${playlist.icon} play-icon me-2" style="color: #6c757d;"></i>
+                    <div class="flex-grow-1">
+                        <div class="playlist-title">${playlist.title}</div>
+                        <div class="mt-1">
+                            <small class="story-count text-muted">${playlist.count} элементов</small>
+                        </div>
+                    </div>
+                    <div class="playlist-actions ms-2">
+                        <i class="bi bi-chevron-right text-muted"></i>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    return html;
+}
+
+// Открытие модального окна плейлиста для мобильного виджета
+function openMobilePlaylistModal(playlistId, playlistTitle) {
+    console.log(`📱 Открытие модального окна плейлиста: ${playlistTitle} (ID: ${playlistId})`);
+    
+    // Обновляем заголовок модального окна
+    document.getElementById('modalPlaylistTitle').textContent = playlistTitle;
+    
+    // Показываем модальное окно
+    const modal = new bootstrap.Modal(document.getElementById('mobilePlaylistContentModal'));
+    modal.show();
+    
+    // Загружаем содержимое плейлиста
+    loadPlaylistContent(playlistId);
+}
+
+// Открытие системного плейлиста
+function openSystemPlaylistModal(playlistId, playlistTitle) {
+    console.log(`📱 Открытие системного плейлиста: ${playlistTitle} (ID: ${playlistId})`);
+    
+    // Обновляем заголовок модального окна
+    document.getElementById('modalPlaylistTitle').textContent = playlistTitle;
+    
+    // Показываем модальное окно
+    const modal = new bootstrap.Modal(document.getElementById('mobilePlaylistContentModal'));
+    modal.show();
+    
+    // Загружаем содержимое системного плейлиста
+    loadSystemPlaylistContent(playlistId);
+}
+
+// Загрузка содержимого плейлиста
+function loadPlaylistContent(playlistId) {
+    const modalContent = document.getElementById('modalPlaylistContent');
+    
+    // Пока показываем тестовое содержимое
+    setTimeout(() => {
+        modalContent.innerHTML = `
+            <div class="list-group list-group-flush">
+                <div class="list-group-item d-flex align-items-center">
+                    <img src="https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg" 
+                         class="rounded me-3" 
+                         style="width: 80px; height: 60px; object-fit: cover;" 
+                         alt="Миниатюра">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">Да почему он у вас читает</h6>
+                        <small class="text-muted">
+                            <i class="bi bi-eye me-1"></i>3 просмотра
+                            <i class="bi bi-calendar3 ms-2 me-1"></i>03.07.2025
+                        </small>
+                    </div>
+                    <div class="ms-2">
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeFromPlaylist(${playlistId}, 1)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="list-group-item d-flex align-items-center">
+                    <img src="https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg" 
+                         class="rounded me-3" 
+                         style="width: 80px; height: 60px; object-fit: cover;" 
+                         alt="Миниатюра">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">Деньги здесь не помогут</h6>
+                        <small class="text-muted">
+                            <i class="bi bi-eye me-1"></i>1 просмотр
+                            <i class="bi bi-calendar3 ms-2 me-1"></i>03.07.2025
+                        </small>
+                    </div>
+                    <div class="ms-2">
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeFromPlaylist(${playlistId}, 2)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="text-center py-3 text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Всего в плейлисте: 2 рассказа
+                </div>
+            </div>
+        `;
+    }, 800);
+}
+
+// Загрузка содержимого системного плейлиста
+function loadSystemPlaylistContent(playlistId) {
+    const modalContent = document.getElementById('modalPlaylistContent');
+    
+    setTimeout(() => {
+        let content = '';
+        
+        switch(playlistId) {
+            case 'favorites':
+                content = `
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex align-items-center">
+                            <i class="bi bi-heart-fill text-danger me-3 fs-4"></i>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">Православные рассказы</h6>
+                                <small class="text-muted">Любимые истории</small>
+                            </div>
+                        </div>
+                        <div class="text-center py-3 text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            5 избранных рассказов
+                        </div>
+                    </div>
+                `;
+                break;
+            case 'watch_later':
+                content = `
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex align-items-center">
+                            <i class="bi bi-clock text-primary me-3 fs-4"></i>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">Сохраненные рассказы</h6>
+                                <small class="text-muted">К просмотру позже</small>
+                            </div>
+                        </div>
+                        <div class="text-center py-3 text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            3 рассказа в очереди
+                        </div>
+                    </div>
+                `;
+                break;
+            case 'history':
+                content = `
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex align-items-center">
+                            <i class="bi bi-clock-history text-secondary me-3 fs-4"></i>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">Последние просмотры</h6>
+                                <small class="text-muted">История просмотренных рассказов</small>
+                            </div>
+                        </div>
+                        <div class="text-center py-3 text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            15 просмотренных рассказов
+                        </div>
+                    </div>
+                `;
+                break;
+            default:
+                content = '<p class="text-center text-muted">Неизвестный плейлист</p>';
+        }
+        
+        modalContent.innerHTML = content;
+    }, 600);
+}
+
+// Удаление рассказа из плейлиста
+function removeFromPlaylist(playlistId, storyId) {
+    console.log(`🗑️ Удаление рассказа ${storyId} из плейлиста ${playlistId}`);
+    showToast('Рассказ удален из плейлиста', 'success');
+    
+    // TODO: Реальная логика удаления через API
+}
+
+// Редактирование текущего плейлиста
+function editCurrentPlaylist() {
+    console.log('✏️ Редактирование плейлиста');
+    showToast('Функция редактирования будет добавлена позже', 'info');
+    
+    // TODO: Логика редактирования плейлиста
+}
+
+console.log('📱 Мобильный виджет плейлистов загружен');
+</script>

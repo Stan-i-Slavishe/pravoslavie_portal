@@ -99,6 +99,101 @@
     border-radius: 4px;
 }
 
+/* Стили для мобильного виджета плейлистов */
+.playlist-mobile-widget {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.playlist-mobile-widget:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+}
+
+.playlist-mobile-list {
+    border-radius: 8px;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.playlist-mobile-item {
+    display: flex;
+    align-items: center;
+    padding: 3px 6px;
+    margin: 1px 0;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background: transparent;
+}
+
+.playlist-mobile-item:hover {
+    background: rgba(0,123,255,0.1);
+    transform: translateX(2px);
+}
+
+.playlist-mobile-item:active {
+    transform: scale(0.98);
+    background: rgba(0,123,255,0.2);
+}
+
+/* Убираем активное состояние для обычных плейлистов */
+/* .playlist-mobile-item.active - убрано, так как теперь они открывают модальные окна */
+
+.playlist-mobile-name {
+    flex: 1;
+    font-size: 0.65rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.playlist-mobile-count {
+    font-size: 0.6rem;
+    color: #6c757d;
+    background: rgba(108,117,125,0.1);
+    padding: 1px 4px;
+    border-radius: 8px;
+    margin-left: 4px;
+    min-width: 16px;
+    text-align: center;
+}
+
+.playlist-mobile-item.active .playlist-mobile-count {
+    color: rgba(255,255,255,0.9);
+    background: rgba(255,255,255,0.2);
+}
+
+/* Системные плейлисты */
+.playlist-mobile-item.system-playlist {
+    font-weight: 500;
+}
+
+.playlist-mobile-item.system-playlist.active {
+    background: linear-gradient(135deg, rgba(108,117,125,0.1), rgba(108,117,125,0.2));
+    color: #495057;
+    border: 1px solid rgba(108,117,125,0.3);
+}
+
+.playlist-mobile-item.system-playlist.active[data-playlist-id="favorites"] {
+    background: linear-gradient(135deg, rgba(220,53,69,0.1), rgba(220,53,69,0.2));
+    color: #721c24;
+    border: 1px solid rgba(220,53,69,0.3);
+}
+
+/* Анимация загрузки для мобильного виджета */
+@keyframes mobile-playlist-pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+.mobile-playlist-loading {
+    animation: mobile-playlist-pulse 1.5s infinite;
+}
+
 /* Адаптивное видео */
 .video-container {
     position: relative;
@@ -230,7 +325,7 @@
 /* Адаптивность */
 @media (max-width: 768px) {
     .video-container {
-        margin-bottom: 20px;
+        margin-bottom: 15px; /* Уменьшили отступ, так как добавили мобильный виджет */
     }
     
     .story-meta {
@@ -242,6 +337,43 @@
     
     .meta-item {
         font-size: 0.85rem;
+    }
+    
+    /* Увеличиваем размер мобильного виджета на планшетах */
+    .playlist-mobile-list {
+        max-height: 100px !important;
+    }
+    
+    .playlist-mobile-name {
+        font-size: 0.7rem;
+    }
+    
+    .playlist-mobile-count {
+        font-size: 0.65rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .playlist-mobile-widget {
+        margin-bottom: 12px;
+    }
+    
+    .playlist-mobile-list {
+        max-height: 80px !important;
+    }
+    
+    .playlist-mobile-item {
+        padding: 2px 4px;
+    }
+    
+    .playlist-mobile-name {
+        font-size: 0.6rem;
+    }
+    
+    .playlist-mobile-count {
+        font-size: 0.55rem;
+        padding: 0px 3px;
+        min-width: 14px;
     }
 }
 
@@ -951,6 +1083,38 @@
                     </div>
                 {% endif %}
             </div>
+            
+            <!-- Мобильный виджет плейлистов между видео и заголовком -->
+            {% if user.is_authenticated %}
+            <div class="playlist-mobile-widget mb-3 d-lg-none">
+                <div class="card border-0" style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); border-radius: 16px;">
+                    <div class="card-body p-2">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <small class="text-muted d-flex align-items-center mb-0">
+                                <i class="bi bi-music-note-list me-1" style="font-size: 0.9rem;"></i>
+                                Плейлисты
+                            </small>
+                            <button class="btn btn-sm btn-outline-primary px-2 py-1" 
+                                    onclick="showSaveToPlaylistModal()"
+                                    style="font-size: 0.7rem; border-radius: 12px;">
+                                <i class="bi bi-bookmark-plus" style="font-size: 0.8rem;"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Компактный список плейлистов для мобильных -->
+                        <div class="playlist-mobile-list" id="mobilePlaylistList" style="max-height: 80px; overflow-y: auto;">
+                            <div class="text-center text-muted py-1">
+                                <small style="font-size: 0.7rem;">
+                                    <i class="bi bi-three-dots" style="font-size: 0.8rem;"></i>
+                                    Загрузка...
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
             <!-- Контент рассказа -->
             <div class="story-content">
                 <h1 class="story-title">{{ story.title }}</h1>
@@ -1980,6 +2144,11 @@ async function toggleStoryInPlaylist(playlistId, checkbox) {
             if (window.playlistSidebar) {
                 window.playlistSidebar.reloadPlaylistSidebar();
             }
+            
+            // Обновляем мобильный виджет
+            if (document.getElementById('mobilePlaylistList')) {
+                loadMobilePlaylistWidget();
+            }
         } else {
             // Возвращаем чекбокс в исходное состояние
             checkbox.checked = !isChecked;
@@ -2162,11 +2331,227 @@ function togglePlaylistStory(playlistId, storyId) {
     }
 }
 
+// Функция загрузки плейлистов для мобильного виджета
+async function loadMobilePlaylistWidget() {
+    const mobileList = document.getElementById('mobilePlaylistList');
+    if (!mobileList) return;
+    
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const storyId = {{ story.id }};
+    
+    try {
+        const response = await fetch('/stories/playlists/for-save/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ story_id: storyId })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.playlists) {
+                renderMobilePlaylists(data.playlists);
+            } else {
+                showMobilePlaylistEmpty();
+            }
+        } else {
+            showMobilePlaylistError();
+        }
+    } catch (error) {
+        console.error('Mobile playlist load error:', error);
+        showMobilePlaylistError();
+    }
+}
+
+// Отображение плейлистов в мобильном виджете
+function renderMobilePlaylists(playlists) {
+    const mobileList = document.getElementById('mobilePlaylistList');
+    if (!mobileList) return;
+    
+    // Создаем системные плейлисты
+    const systemPlaylists = [
+        {
+            id: 'watch-later',
+            title: 'Посмотреть позже',
+            icon: 'far fa-clock',
+            color: '#6c757d',
+            contains_story: false, // Можно добавить логику проверки позже
+            stories_count: ''
+        },
+        {
+            id: 'favorites',
+            title: 'Избранное',
+            icon: 'far fa-heart',
+            color: '#dc3545',
+            contains_story: false, // Можно добавить логику проверки избранного
+            stories_count: ''
+        }
+    ];
+    
+    // Отображаем системные плейлисты
+    const systemPlaylistsHtml = systemPlaylists.map(playlist => `
+        <div class="playlist-mobile-item system-playlist" 
+             data-playlist-id="${playlist.id}"
+             onclick="showSystemPlaylistModal('${playlist.id}', '${playlist.title}')"
+             style="border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer;">
+            <i class="${playlist.icon} me-2" style="color: ${playlist.color}; font-size: 0.8rem; width: 12px;"></i>
+            <div class="playlist-mobile-name">${playlist.title}</div>
+            <div class="playlist-mobile-count">${playlist.stories_count}</div>
+        </div>
+    `).join('');
+    
+    // Обычные плейлисты
+    let userPlaylistsHtml = '';
+    if (playlists && playlists.length > 0) {
+        // Отображаем только первые 2-3 плейлиста (так как есть системные)
+        const limitedPlaylists = playlists.slice(0, 3);
+        
+        userPlaylistsHtml = limitedPlaylists.map(playlist => `
+            <div class="playlist-mobile-item" 
+                 data-playlist-id="${playlist.id}"
+                 onclick="showPlaylistModal(${playlist.id}, '${playlist.title.replace(/'/g, "\\'")}')"
+                 style="cursor: pointer;">
+                <i class="bi bi-music-note-list me-2" style="color: #007bff; font-size: 0.8rem; width: 12px;"></i>
+                <div class="playlist-mobile-name">${playlist.title}</div>
+                <div class="playlist-mobile-count">${playlist.stories_count}</div>
+            </div>
+        `).join('');
+    }
+    
+    // Объединяем все плейлисты
+    const allPlaylistsHtml = systemPlaylistsHtml + userPlaylistsHtml;
+    
+    if (allPlaylistsHtml) {
+        mobileList.innerHTML = allPlaylistsHtml;
+    } else {
+        showMobilePlaylistEmpty();
+    }
+}
+
+// Пустое состояние мобильного виджета
+function showMobilePlaylistEmpty() {
+    const mobileList = document.getElementById('mobilePlaylistList');
+    if (mobileList) {
+        mobileList.innerHTML = `
+            <div class="text-center text-muted py-2">
+                <small style="font-size: 0.65rem;">
+                    <i class="bi bi-music-note-list" style="font-size: 0.7rem;"></i>
+                    Плейлистов нет
+                </small>
+            </div>
+        `;
+    }
+}
+
+// Ошибка загрузки мобильного виджета
+function showMobilePlaylistError() {
+    const mobileList = document.getElementById('mobilePlaylistList');
+    if (mobileList) {
+        mobileList.innerHTML = `
+            <div class="text-center text-muted py-1">
+                <small style="font-size: 0.6rem; color: #dc3545;">
+                    <i class="bi bi-exclamation-triangle" style="font-size: 0.7rem;"></i>
+                    Ошибка
+                </small>
+            </div>
+        `;
+    }
+}
+
+// Открытие модального окна для системных плейлистов
+function showSystemPlaylistModal(playlistType, playlistTitle) {
+    // Пока что показываем сообщение о разработке
+    const modal = new bootstrap.Modal(document.getElementById('playlistViewModal'));
+    const modalTitle = document.getElementById('playlistModalTitle');
+    const modalContent = document.getElementById('playlistModalContent');
+    
+    // Устанавливаем заголовок
+    modalTitle.textContent = playlistTitle;
+    
+    // Показываем модальное окно
+    modal.show();
+    
+    // Заглушка для системных плейлистов
+    let icon = '';
+    let description = '';
+    
+    if (playlistType === 'watch-later') {
+        icon = 'bi-clock';
+        description = 'Рассказы, которые вы сохранили для просмотра позже';
+    } else if (playlistType === 'favorites') {
+        icon = 'bi-heart-fill';
+        description = 'Ваши любимые рассказы';
+    }
+    
+    modalContent.innerHTML = `
+        <div class="text-center p-5">
+            <div class="mb-4">
+                <i class="bi ${icon} text-muted" style="font-size: 4rem;"></i>
+            </div>
+            <h5 class="text-muted">Функция в разработке</h5>
+            <p class="text-muted">${description}</p>
+            <p class="text-muted small">Скоро будет доступно!</p>
+        </div>
+    `;
+}
+
+// Переключение системных плейлистов (Позже/Избранное)
+function toggleSystemPlaylist(playlistType, element) {
+    const isActive = element.classList.contains('active');
+    
+    // Временно отключаем элемент
+    element.style.pointerEvents = 'none';
+    element.style.opacity = '0.6';
+    
+    // Определяем, какую кнопку нажать
+    let targetButton;
+    if (playlistType === 'watch-later') {
+        targetButton = document.querySelector('.watch-later-btn');
+    } else if (playlistType === 'favorites') {
+        targetButton = document.querySelector('.favorites-btn');
+    }
+    
+    if (targetButton) {
+        // Имитируем клик по соответствующей кнопке
+        targetButton.click();
+        
+        // Обновляем визуальное состояние через небольшую задержку
+        setTimeout(() => {
+            // Проверяем, стала ли кнопка активной
+            const isButtonActive = targetButton.classList.contains('active');
+            
+            if (isButtonActive) {
+                element.classList.add('active');
+            } else {
+                element.classList.remove('active');
+            }
+            
+            // Возвращаем интерактивность
+            element.style.pointerEvents = '';
+            element.style.opacity = '';
+        }, 500);
+    } else {
+        // Кнопка не найдена, возвращаем состояние
+        element.style.pointerEvents = '';
+        element.style.opacity = '';
+        showToast('Ошибка: кнопка не найдена', 'error');
+    }
+}
+
 // Инициализация плейлистов
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof bootstrap !== 'undefined') {
         window.playlistSidebar = new PlaylistSidebar();
         console.log('🎵 Плейлист сайдбар инициализирован');
+        
+        // Загружаем мобильный виджет плейлистов
+        if (document.getElementById('mobilePlaylistList')) {
+            loadMobilePlaylistWidget();
+            console.log('📱 Мобильный виджет плейлистов инициализирован');
+        }
     } else {
         console.warn('Bootstrap не найден, некоторые функции могут не работать');
     }

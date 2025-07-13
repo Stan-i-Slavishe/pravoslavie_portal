@@ -1,5 +1,8 @@
 <!-- ПОЛНАЯ СЕКЦИЯ ПЛЕЙЛИСТОВ ДЛЯ story_detail.html -->
 
+<!-- МОБИЛЬНЫЙ ВИДЖЕТ ПЛЕЙЛИСТОВ (добавлен в левую колонку) -->
+{% include 'stories/mobile/playlist_widget_mobile.html' %}
+
 {% if user.is_authenticated %}
 <!-- Плейлисты -->
 <div class="card mt-4">

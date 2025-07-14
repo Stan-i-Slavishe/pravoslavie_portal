@@ -2366,48 +2366,20 @@ async function loadMobilePlaylistWidget() {
     }
 }
 
-// Отображение плейлистов в мобильном виджете
+// Отображение плейлистов в мобильном виджете (БЕЗ СИСТЕМНЫХ ПЛЕЙЛИСТОВ)
 function renderMobilePlaylists(playlists) {
     const mobileList = document.getElementById('mobilePlaylistList');
     if (!mobileList) return;
     
-    // Создаем системные плейлисты
-    const systemPlaylists = [
-        {
-            id: 'watch-later',
-            title: 'Посмотреть позже',
-            icon: 'far fa-clock',
-            color: '#6c757d',
-            contains_story: false, // Можно добавить логику проверки позже
-            stories_count: ''
-        },
-        {
-            id: 'favorites',
-            title: 'Избранное',
-            icon: 'far fa-heart',
-            color: '#dc3545',
-            contains_story: false, // Можно добавить логику проверки избранного
-            stories_count: ''
-        }
-    ];
+    // УБРАНО: Создание системных плейлистов "Посмотреть позже" и "Избранное"
+    // УБРАНО: systemPlaylists массив
+    // УБРАНО: systemPlaylistsHtml генерация
     
-    // Отображаем системные плейлисты
-    const systemPlaylistsHtml = systemPlaylists.map(playlist => `
-        <div class="playlist-mobile-item system-playlist" 
-             data-playlist-id="${playlist.id}"
-             onclick="showSystemPlaylistModal('${playlist.id}', '${playlist.title}')"
-             style="border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer;">
-            <i class="${playlist.icon} me-2" style="color: ${playlist.color}; font-size: 0.8rem; width: 12px;"></i>
-            <div class="playlist-mobile-name">${playlist.title}</div>
-            <div class="playlist-mobile-count">${playlist.stories_count}</div>
-        </div>
-    `).join('');
-    
-    // Обычные плейлисты
+    // Только пользовательские плейлисты
     let userPlaylistsHtml = '';
     if (playlists && playlists.length > 0) {
-        // Отображаем только первые 2-3 плейлиста (так как есть системные)
-        const limitedPlaylists = playlists.slice(0, 3);
+        // Теперь показываем больше плейлистов (так как нет системных)
+        const limitedPlaylists = playlists.slice(0, 6); // Увеличено с 3 до 6
         
         userPlaylistsHtml = limitedPlaylists.map(playlist => `
             <div class="playlist-mobile-item" 
@@ -2421,17 +2393,15 @@ function renderMobilePlaylists(playlists) {
         `).join('');
     }
     
-    // Объединяем все плейлисты
-    const allPlaylistsHtml = systemPlaylistsHtml + userPlaylistsHtml;
-    
-    if (allPlaylistsHtml) {
-        mobileList.innerHTML = allPlaylistsHtml;
+    // Отображаем только пользовательские плейлисты (БЕЗ СИСТЕМНЫХ)
+    if (userPlaylistsHtml) {
+        mobileList.innerHTML = userPlaylistsHtml;
     } else {
         showMobilePlaylistEmpty();
     }
 }
 
-// Пустое состояние мобильного виджета
+// Пустое состояние мобильного виджета (обновлено)
 function showMobilePlaylistEmpty() {
     const mobileList = document.getElementById('mobilePlaylistList');
     if (mobileList) {
@@ -2439,7 +2409,11 @@ function showMobilePlaylistEmpty() {
             <div class="text-center text-muted py-2">
                 <small style="font-size: 0.65rem;">
                     <i class="bi bi-music-note-list" style="font-size: 0.7rem;"></i>
-                    Плейлистов нет
+                    У вас пока нет плейлистов
+                </small>
+                <br>
+                <small style="font-size: 0.6rem; color: #007bff;">
+                    Создайте свой первый!
                 </small>
             </div>
         `;
@@ -2461,85 +2435,11 @@ function showMobilePlaylistError() {
     }
 }
 
-// Открытие модального окна для системных плейлистов
-function showSystemPlaylistModal(playlistType, playlistTitle) {
-    // Пока что показываем сообщение о разработке
-    const modal = new bootstrap.Modal(document.getElementById('playlistViewModal'));
-    const modalTitle = document.getElementById('playlistModalTitle');
-    const modalContent = document.getElementById('playlistModalContent');
-    
-    // Устанавливаем заголовок
-    modalTitle.textContent = playlistTitle;
-    
-    // Показываем модальное окно
-    modal.show();
-    
-    // Заглушка для системных плейлистов
-    let icon = '';
-    let description = '';
-    
-    if (playlistType === 'watch-later') {
-        icon = 'bi-clock';
-        description = 'Рассказы, которые вы сохранили для просмотра позже';
-    } else if (playlistType === 'favorites') {
-        icon = 'bi-heart-fill';
-        description = 'Ваши любимые рассказы';
-    }
-    
-    modalContent.innerHTML = `
-        <div class="text-center p-5">
-            <div class="mb-4">
-                <i class="bi ${icon} text-muted" style="font-size: 4rem;"></i>
-            </div>
-            <h5 class="text-muted">Функция в разработке</h5>
-            <p class="text-muted">${description}</p>
-            <p class="text-muted small">Скоро будет доступно!</p>
-        </div>
-    `;
-}
+// УБРАНО: showSystemPlaylistModal - функция для системных плейлистов
+// Системные плейлисты "Посмотреть позже" и "Избранное" больше не поддерживаются
 
-// Переключение системных плейлистов (Позже/Избранное)
-function toggleSystemPlaylist(playlistType, element) {
-    const isActive = element.classList.contains('active');
-    
-    // Временно отключаем элемент
-    element.style.pointerEvents = 'none';
-    element.style.opacity = '0.6';
-    
-    // Определяем, какую кнопку нажать
-    let targetButton;
-    if (playlistType === 'watch-later') {
-        targetButton = document.querySelector('.watch-later-btn');
-    } else if (playlistType === 'favorites') {
-        targetButton = document.querySelector('.favorites-btn');
-    }
-    
-    if (targetButton) {
-        // Имитируем клик по соответствующей кнопке
-        targetButton.click();
-        
-        // Обновляем визуальное состояние через небольшую задержку
-        setTimeout(() => {
-            // Проверяем, стала ли кнопка активной
-            const isButtonActive = targetButton.classList.contains('active');
-            
-            if (isButtonActive) {
-                element.classList.add('active');
-            } else {
-                element.classList.remove('active');
-            }
-            
-            // Возвращаем интерактивность
-            element.style.pointerEvents = '';
-            element.style.opacity = '';
-        }, 500);
-    } else {
-        // Кнопка не найдена, возвращаем состояние
-        element.style.pointerEvents = '';
-        element.style.opacity = '';
-        showToast('Ошибка: кнопка не найдена', 'error');
-    }
-}
+// УБРАНО: toggleSystemPlaylist - функция переключения системных плейлистов
+// Системные плейлисты удалены для стабильности
 
 // Инициализация плейлистов
 document.addEventListener('DOMContentLoaded', function() {

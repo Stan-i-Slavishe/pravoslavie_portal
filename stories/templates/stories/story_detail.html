@@ -38,6 +38,9 @@
     <div class="row">
         <!-- Левая колонка с контентом -->
         <div class="col-lg-8">
+            <!-- МОБИЛЬНЫЙ ВИДЖЕТ ПЛЕЙЛИСТОВ (только для мобильных) -->
+            {% include 'stories/mobile/playlist_widget_mobile.html' %}
+            
             <!-- Контент рассказа -->
             <div class="story-content">
                 <h1 class="story-title">{{ story.title }}</h1>

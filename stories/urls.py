@@ -30,6 +30,9 @@ urlpatterns = [
     path('playlists/watch-later/', views_playlists.watch_later_playlist, name='watch_later'),
     path('playlists/favorites/', views_playlists.favorites_playlist, name='favorites'),
     
+    # Системные плейлисты API
+    path('system-playlist/<str:playlist_type>/', views_playlists.system_playlist_content, name='system_playlist_content'),
+    
     # AJAX операции с элементами плейлистов - ПЕРЕНОСИМ ВЫШЕ!
     path('playlists/add-to-playlist/', views_playlists.add_to_playlist, name='add_to_playlist'),
     path('playlists/remove-from-playlist/', views_playlists.remove_from_playlist, name='remove_from_playlist'),

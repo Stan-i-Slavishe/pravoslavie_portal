@@ -925,6 +925,96 @@ def watch_later_playlist(request):
         return redirect('stories:playlists_list')
 
 
+def system_playlist_content(request, playlist_type):
+    """Загрузка содержимого системного плейлиста для AJAX"""
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'message': 'Необходима авторизация'
+        }, status=401)
+    
+    try:
+        stories = []
+        
+        if playlist_type == 'favorites':
+            # Получаем избранные рассказы
+            if UserPlaylistPreference:
+                try:
+                    prefs = UserPlaylistPreference.objects.get(user=request.user)
+                    favorites_playlist = prefs.get_or_create_favorites()
+                    playlist_items = PlaylistItem.objects.filter(
+                        playlist=favorites_playlist
+                    ).select_related('story').order_by('-added_at')[:20]
+                    
+                    for item in playlist_items:
+                        story = item.story
+                        stories.append({
+                            'id': story.id,
+                            'title': story.title,
+                            'slug': story.slug,
+                            'youtube_id': getattr(story, 'youtube_embed_id', None),
+                            'views_count': getattr(story, 'views_count', 0),
+                            'created_at': story.created_at.strftime('%d.%m.%Y') if story.created_at else 'Недавно'
+                        })
+                except UserPlaylistPreference.DoesNotExist:
+                    pass
+        
+        elif playlist_type == 'watch_later':
+            # Получаем рассказы "Посмотреть позже"
+            if UserPlaylistPreference:
+                try:
+                    prefs = UserPlaylistPreference.objects.get(user=request.user)
+                    watch_later_playlist = prefs.get_or_create_watch_later()
+                    playlist_items = PlaylistItem.objects.filter(
+                        playlist=watch_later_playlist
+                    ).select_related('story').order_by('-added_at')[:20]
+                    
+                    for item in playlist_items:
+                        story = item.story
+                        stories.append({
+                            'id': story.id,
+                            'title': story.title,
+                            'slug': story.slug,
+                            'youtube_id': getattr(story, 'youtube_embed_id', None),
+                            'views_count': getattr(story, 'views_count', 0),
+                            'created_at': story.created_at.strftime('%d.%m.%Y') if story.created_at else 'Недавно'
+                        })
+                except UserPlaylistPreference.DoesNotExist:
+                    pass
+        
+        elif playlist_type == 'history':
+            # Получаем историю просмотров
+            if StoryView:
+                story_views = StoryView.objects.filter(
+                    user=request.user
+                ).select_related('story').order_by('-viewed_at')[:20]
+                
+                for view in story_views:
+                    story = view.story
+                    stories.append({
+                        'id': story.id,
+                        'title': story.title,
+                        'slug': story.slug,
+                        'youtube_id': getattr(story, 'youtube_embed_id', None),
+                        'views_count': getattr(story, 'views_count', 0),
+                        'created_at': view.viewed_at.strftime('%d.%m.%Y') if view.viewed_at else 'Недавно'
+                    })
+        
+        return JsonResponse({
+            'success': True,
+            'stories': stories,
+            'playlist_type': playlist_type,
+            'message': f'Загружено {len(stories)} рассказов'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Ошибка загрузки: {str(e)}',
+            'stories': []
+        }, status=500)
+
+
 @login_required
 @require_http_methods(["POST"])
 def playlists_for_save(request):

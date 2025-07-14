@@ -1240,7 +1240,7 @@
                     <div class="card-body p-2">
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <small class="text-muted d-flex align-items-center mb-0">
-                                <i class="bi bi-music-note-list me-1" style="font-size: 0.9rem;"></i>
+                                <i class="bi bi-collection-play text-muted me-1" style="font-size: 0.9rem;"></i>
                                 Плейлисты
                             </small>
                             <button class="btn btn-sm btn-outline-primary px-2 py-1" 
@@ -1415,7 +1415,7 @@
             <div class="card mb-4" id="playlist-sidebar">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">
-                        <i class="bi bi-music-note-list"></i>
+                        <i class="bi bi-collection-play"></i>
                         Плейлисты
                     </h5>
                     <button class="btn btn-add-playlist" 
@@ -1572,7 +1572,7 @@
         <div class="modal-content">
             <div class="modal-header bg-gradient-primary text-white">
                 <h5 class="modal-title d-flex align-items-center">
-                    <i class="bi bi-music-note-list me-2"></i>
+                    <i class="bi bi-collection-play me-2"></i>
                     <span id="playlistModalTitle">Плейлист</span>
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -2468,7 +2468,7 @@ async function removeStoryFromPlaylistModal(storyId, playlistId, buttonElement) 
                     document.getElementById('playlistModalContent').innerHTML = `
                         <div class="text-center p-5">
                             <div class="mb-4">
-                                <i class="bi bi-music-note-list text-muted" style="font-size: 4rem;"></i>
+                                <i class="bi bi-collection-play text-muted" style="font-size: 4rem;"></i>
                             </div>
                             <h5 class="text-muted">Плейлист пуст</h5>
                             <p class="text-muted">Все рассказы были удалены из плейлиста</p>
@@ -2559,7 +2559,7 @@ function renderMobilePlaylists(playlists) {
                  data-playlist-id="${playlist.id}"
                  onclick="showPlaylistModal(${playlist.id}, '${playlist.title.replace(/'/g, "\\'")}')"
                  style="cursor: pointer;">
-                <i class="bi bi-music-note-list me-2" style="color: #007bff; font-size: 0.8rem; width: 12px;"></i>
+                <i class="bi bi-collection-play me-2" style="color: #007bff; font-size: 0.8rem; width: 12px;"></i>
                 <div class="playlist-mobile-name">${playlist.title}</div>
                 <div class="playlist-mobile-count">${playlist.stories_count}</div>
             </div>
@@ -2581,7 +2581,7 @@ function showMobilePlaylistEmpty() {
         mobileList.innerHTML = `
             <div class="text-center text-muted py-2">
                 <small style="font-size: 0.65rem;">
-                    <i class="bi bi-music-note-list" style="font-size: 0.7rem;"></i>
+                    <i class="bi bi-collection-play" style="font-size: 0.7rem;"></i>
                     У вас пока нет плейлистов
                 </small>
                 <br>

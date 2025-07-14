@@ -1,7 +1,24 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ story.title }} - Добрые истории{% endblock %}
+{% block title %}{{ story.title }} - Добрые истории<!-- Дополнительные стили для адаптивной видимости текста -->
+<style>
+/* Скрытие/показ текста в зависимости от размера экрана для метаданных */
+@media (max-width: 576px) {
+    /* Дополнительные оптимизации для очень маленьких экранов */
+    .story-meta .meta-item span {
+        max-width: 70px;
+    }
+    
+    .story-meta .meta-item .btn span {
+        max-width: none;
+    }
+}
+
+/* Кнопка в метаданных остается с прежним дизайном */
+</style>
+
+{% endblock %}
 
 {% block description %}{{ story.description|default:"Духовный рассказ на портале Добрые истории" }}{% endblock %}
 
@@ -322,22 +339,97 @@
     text-decoration: underline !important;
 }
 
-/* Адаптивность */
+/* Мобильная адаптация - горизонтальное расположение 2x2+1 */
 @media (max-width: 768px) {
     .video-container {
-        margin-bottom: 15px; /* Уменьшили отступ, так как добавили мобильный виджет */
+        margin-bottom: 15px;
     }
     
     .story-meta {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto;
+        gap: 0.75rem 1rem;
         padding: 0.75rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-radius: 12px;
+        border-left: 3px solid #e74c3c;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        animation: fadeInUp 0.6s ease-out;
     }
     
     .meta-item {
         font-size: 0.85rem;
+        gap: 0.4rem;
+        white-space: nowrap;
+        overflow: hidden;
+        transition: all 0.2s ease;
+        padding: 0.25rem;
+        border-radius: 6px;
+        animation: slideInScale 0.4s ease-out;
+        animation-delay: calc(var(--item-index, 0) * 0.1s);
     }
+    
+    .meta-item:hover {
+        background-color: rgba(231, 76, 60, 0.1);
+        transform: scale(1.02);
+    }
+    
+    .meta-item i {
+        font-size: 0.9rem;
+        min-width: 16px;
+        text-align: center;
+    }
+    
+    .meta-item a {
+        color: #e74c3c;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .meta-item a:hover {
+        color: #c53030 !important;
+        text-decoration: none !important;
+    }
+    
+    /* Первый ряд - дата и просмотры */
+    .meta-item:nth-child(1) { 
+        grid-column: 1; 
+        grid-row: 1; 
+        --item-index: 1;
+    }
+    .meta-item:nth-child(2) { 
+        grid-column: 2; 
+        grid-row: 1; 
+        --item-index: 2;
+    }
+    
+    /* Второй ряд - лайки и категория */
+    .meta-item:nth-child(3) { 
+        grid-column: 1; 
+        grid-row: 2; 
+        --item-index: 3;
+    }
+    .meta-item:nth-child(4) { 
+        grid-column: 2; 
+        grid-row: 2; 
+        --item-index: 4;
+    }
+    
+    /* Третий элемент (кнопка сохранить) - по левой стороне */
+    .meta-item:nth-child(5) { 
+        grid-column: 1 / -1; 
+        grid-row: 3; 
+        justify-self: start;
+        --item-index: 5;
+    }
+    
+    /* Цветовая схема для разных типов метаданных */
+    .meta-item:nth-child(1) i { color: #28a745; } /* Дата - зеленый */
+    .meta-item:nth-child(2) i { color: #007bff; } /* Просмотры - синий */
+    .meta-item:nth-child(3) i { color: #dc3545; } /* Лайки - красный */
+    .meta-item:nth-child(4) i { color: #fd7e14; } /* Категория - оранжевый */
+    .meta-item:nth-child(5) i { color: #6f42c1; } /* Кнопка - фиолетовый */
     
     /* Увеличиваем размер мобильного виджета на планшетах */
     .playlist-mobile-list {
@@ -877,6 +969,63 @@
     .playlist-story-thumbnail {
         height: 180px;
     }
+    
+    /* Дополнительные стили для маленьких экранов метаданных */
+    .story-meta {
+        gap: 0.5rem 0.75rem;
+        padding: 0.6rem;
+        border-radius: 10px;
+    }
+    
+    .meta-item {
+        font-size: 0.8rem;
+        gap: 0.3rem;
+    }
+    
+    .meta-item i {
+        font-size: 0.85rem;
+        min-width: 14px;
+    }
+    
+    /* Компактные тексты для маленьких экранов */
+    .meta-item span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 80px;
+    }
+    
+    /* Исключение для кнопки - не обрезаем */
+    .meta-item .btn span {
+        max-width: none;
+        overflow: visible;
+        text-overflow: initial;
+        white-space: nowrap;
+    }
+    
+    /* Кнопка в метаданных остается с обычным стилем */
+}
+
+/* Анимации для мобильных метаданных */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 /* Стили для модального окна "Сохранить в плейлист" */
@@ -1120,32 +1269,56 @@
                 <h1 class="story-title">{{ story.title }}</h1>
                 
                 <div class="story-meta mb-4">
+                    <!-- Дата публикации -->
                     <div class="meta-item">
                         <i class="bi bi-calendar3"></i>
-                        <span>{{ story.created_at|date:"d F Y" }}</span>
+                        <span class="d-none d-md-inline">{{ story.created_at|date:"d F Y" }}</span>
+                        <span class="d-md-none">{{ story.created_at|date:"d.m.Y" }}</span>
                     </div>
                     
+                    <!-- Количество просмотров -->
                     <div class="meta-item">
                         <i class="bi bi-eye"></i>
-                        <span>{{ story.views_count|default:"0" }} просмотров</span>
+                        <span class="d-none d-md-inline">{{ story.views_count|default:"0" }} просмотров</span>
+                        <span class="d-md-none">{{ story.views_count|default:"0" }}</span>
                     </div>
                     
+                    <!-- Количество лайков -->
                     <div class="meta-item">
                         <i class="bi bi-heart"></i>
-                        <span>{{ likes_count|default:"0" }} лайков</span>
+                        <span class="d-none d-md-inline">{{ likes_count|default:"0" }} лайков</span>
+                        <span class="d-md-none">{{ likes_count|default:"0" }}</span>
                     </div>
                     
+                    <!-- Категория рассказа -->
                     {% if story.category %}
                         <div class="meta-item">
                             <i class="bi bi-folder"></i>
                             <a href="{% url 'stories:list' %}?category={{ story.category.slug }}" 
                                style="color: #e74c3c; text-decoration: none;">
-                                {{ story.category.name }}
+                                <span class="d-none d-md-inline">{{ story.category.name }}</span>
+                                <span class="d-md-none">{{ story.category.name|truncatechars:12 }}</span>
                             </a>
                         </div>
+                    {% else %}
+                        <!-- Если нет категории, показываем теги -->
+                        {% if story.tags.all %}
+                            <div class="meta-item">
+                                <i class="bi bi-tags"></i>
+                                <span class="d-none d-md-inline">Теги</span>
+                                <span class="d-md-none">{{ story.tags.all.0.name|truncatechars:10 }}</span>
+                            </div>
+                        {% else %}
+                            <!-- Если ни категории, ни тегов - показываем тип контента -->
+                            <div class="meta-item">
+                                <i class="bi bi-play-circle"></i>
+                                <span class="d-none d-md-inline">Видео-рассказ</span>
+                                <span class="d-md-none">Видео</span>
+                            </div>
+                        {% endif %}
                     {% endif %}
                     
-                    <!-- Добавляем кнопку "Сохранить" -->
+                    <!-- Кнопка "Сохранить" -->
                     <div class="meta-item">
                         {% if user.is_authenticated %}
                             <button class="btn btn-sm btn-outline-secondary" 

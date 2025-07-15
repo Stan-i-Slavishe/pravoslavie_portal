@@ -303,6 +303,58 @@
     border: none;
 }
 
+/* Стили для кнопок действий (Нравится и Поделиться) */
+.story-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Мобильная адаптация - горизонтальное расположение кнопок */
+@media screen and (max-width: 768px) {
+    .story-content .story-actions {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+        margin-bottom: 1rem !important;
+        width: 100% !important;
+    }
+    
+    .story-content .story-actions .btn {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 10px 8px !important;
+        font-size: 0.9rem !important;
+        border-radius: 8px !important;
+        text-align: center !important;
+        margin: 0 !important;
+        flex: 1 !important;
+    }
+    
+    .story-content .story-actions .btn i {
+        margin-right: 6px !important;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .story-content .story-actions {
+        gap: 6px !important;
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .story-content .story-actions .btn {
+        padding: 8px 6px !important;
+        font-size: 0.85rem !important;
+        border-radius: 6px !important;
+    }
+    
+    .story-content .story-actions .btn i {
+        margin-right: 4px !important;
+        font-size: 0.9rem !important;
+    }
+}
+
 /* Стили для метаданных рассказа */
 .story-meta {
     display: flex;
@@ -1371,7 +1423,7 @@
                         <span id="like-count">({{ likes_count|default:"0" }})</span>
                     </button>
                     
-                    <button class="btn btn-outline-primary ms-3" onclick="toggleShareSection()">
+                    <button class="btn btn-outline-primary" onclick="toggleShareSection()">
                         <i class="bi bi-share me-2"></i>
                         Поделиться
                     </button>

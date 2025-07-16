@@ -43,7 +43,7 @@ class StoryListView(StoryQuerysetMixin, ListView):
     model = Story
     template_name = 'stories/story_list.html'
     context_object_name = 'stories'
-    paginate_by = 12
+    paginate_by = 9
     
     def get_queryset(self):
         queryset = self.get_base_queryset()
@@ -270,7 +270,7 @@ class StoryCategoryView(StoryQuerysetMixin, ListView):
     model = Story
     template_name = 'stories/story_list.html'
     context_object_name = 'stories'
-    paginate_by = 12
+    paginate_by = 9
     
     def get_queryset(self):
         category_slug = self.kwargs.get('category_slug')
@@ -298,7 +298,7 @@ class StoryTagView(StoryQuerysetMixin, ListView):
     model = Story
     template_name = 'stories/story_list.html'
     context_object_name = 'stories'
-    paginate_by = 12
+    paginate_by = 9
     
     def get_queryset(self):
         tag_slug = self.kwargs.get('tag_slug')
@@ -327,7 +327,7 @@ class PopularStoriesView(StoryQuerysetMixin, ListView):
     model = Story
     template_name = 'stories/story_list.html'
     context_object_name = 'stories'
-    paginate_by = 12
+    paginate_by = 9
     
     def get_queryset(self):
         return self.get_base_queryset().order_by(
@@ -348,7 +348,7 @@ class FeaturedStoriesView(StoryQuerysetMixin, ListView):
     model = Story
     template_name = 'stories/story_list.html'
     context_object_name = 'stories'
-    paginate_by = 12
+    paginate_by = 9
     
     def get_queryset(self):
         return self.get_base_queryset().filter(

@@ -318,13 +318,59 @@ class Story(models.Model):
     def save(self, *args, **kwargs):
         # Автоматическое создание slug из заголовка
         if not self.slug:
-            self.slug = slugify(self.title, allow_unicode=True)
+            # Транслитерация кириллицы
+            self.slug = self.create_safe_slug(self.title)
         
         # Извлечение YouTube ID из URL
         if self.youtube_url and not self.youtube_embed_id:
             self.youtube_embed_id = self.extract_youtube_id(self.youtube_url)
         
         super().save(*args, **kwargs)
+    
+    def create_safe_slug(self, title):
+        """Создает безопасный slug с транслитерацией"""
+        # Словарь для транслитерации
+        cyrillic_to_latin = {
+            'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd',
+            'е': 'e', 'ё': 'yo', 'ж': 'zh', 'з': 'z', 'и': 'i',
+            'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n',
+            'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't',
+            'у': 'u', 'ф': 'f', 'х': 'h', 'ц': 'ts', 'ч': 'ch',
+            'ш': 'sh', 'щ': 'sch', 'ъ': '', 'ы': 'y', 'ь': '',
+            'э': 'e', 'ю': 'yu', 'я': 'ya',
+            
+            'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D',
+            'Е': 'E', 'Ё': 'Yo', 'Ж': 'Zh', 'З': 'Z', 'И': 'I',
+            'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N',
+            'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T',
+            'У': 'U', 'Ф': 'F', 'Х': 'H', 'Ц': 'Ts', 'Ч': 'Ch',
+            'Ш': 'Sh', 'Щ': 'Sch', 'Ъ': '', 'Ы': 'Y', 'Ь': '',
+            'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya'
+        }
+        
+        # Транслитерируем кириллицу
+        transliterated = ""
+        for char in title:
+            if char in cyrillic_to_latin:
+                transliterated += cyrillic_to_latin[char]
+            else:
+                transliterated += char
+        
+        # Создаем slug
+        slug = slugify(transliterated)
+        
+        # Если slug пустой, создаем уникальный
+        if not slug:
+            slug = f"story-{hash(title) % 100000}"
+        
+        # Проверяем уникальность
+        original_slug = slug
+        counter = 1
+        while Story.objects.filter(slug=slug).exclude(id=self.id if self.id else None).exists():
+            slug = f"{original_slug}-{counter}"
+            counter += 1
+        
+        return slug
 
     def extract_youtube_id(self, url):
         """Извлекает YouTube ID из различных форматов URL"""

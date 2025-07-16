@@ -67,5 +67,5 @@ urlpatterns = [
     path('ajax/<slug:story_slug>/comments/stats/', views_comments.comments_stats, name='ajax_comments_stats'),
     
     # Story detail - ОБЯЗАТЕЛЬНО в конце, чтобы не конфликтовать с другими slug'ами
-    path('<slug:slug>/', views_playlists.enhanced_story_detail, name='detail'),
+    path('<str:slug>/', views_playlists.enhanced_story_detail, name='detail'),
 ]

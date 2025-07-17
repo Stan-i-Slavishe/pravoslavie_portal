@@ -131,6 +131,8 @@
     border-radius: 8px;
     background: rgba(255,255,255,0.6);
     border: 1px solid rgba(0,0,0,0.05);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .playlist-mobile-item {
@@ -209,6 +211,66 @@
 
 .mobile-playlist-loading {
     animation: mobile-playlist-pulse 1.5s infinite;
+}
+
+/* Стили для кнопки сворачивания мобильного виджета */
+#mobileTogglePlaylistsBtn {
+    transition: all 0.2s ease;
+    border: 1px solid #dee2e6 !important;
+    background: #f8f9fa !important;
+    color: #6c757d !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#mobileTogglePlaylistsBtn:hover {
+    background: #e9ecef !important;
+    border-color: #adb5bd !important;
+    color: #495057 !important;
+    transform: scale(1.05);
+}
+
+#mobileTogglePlaylistsBtn:active {
+    transform: scale(0.95);
+    background: #dee2e6 !important;
+}
+
+#mobileToggleIcon {
+    transition: transform 0.3s ease;
+}
+
+#mobileTogglePlaylistsBtn:hover #mobileToggleIcon {
+    transform: scale(1.1);
+}
+
+/* Отзывчивость кнопок для разных экранов */
+@media (max-width: 480px) {
+    .playlist-mobile-widget .btn {
+        padding: 4px 6px !important;
+        min-width: 24px;
+        min-height: 24px;
+    }
+    
+    .playlist-mobile-widget .btn i {
+        font-size: 0.7rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .playlist-mobile-widget .btn {
+        padding: 5px 8px !important;
+        min-width: 28px;
+        min-height: 28px;
+    }
+    
+    .playlist-mobile-widget .btn i {
+        font-size: 0.75rem !important;
+    }
+    
+    .playlist-mobile-widget .d-flex.gap-1 {
+        gap: 0.25rem !important;
+    }
 }
 
 /* Адаптивное видео */
@@ -1295,11 +1357,21 @@
                                 <i class="bi bi-collection-play text-muted me-1" style="font-size: 0.9rem;"></i>
                                 Плейлисты
                             </small>
-                            <button class="btn btn-sm btn-outline-primary px-2 py-1" 
-                                    onclick="showSaveToPlaylistModal()"
-                                    style="font-size: 0.7rem; border-radius: 12px;">
-                                <i class="bi bi-bookmark-plus" style="font-size: 0.8rem;"></i>
-                            </button>
+                            <div class="d-flex gap-1">
+                                <button class="btn btn-sm btn-outline-primary px-2 py-1" 
+                                        onclick="showSaveToPlaylistModal()"
+                                        style="font-size: 0.7rem; border-radius: 12px;"
+                                        title="Сохранить в плейлист">
+                                    <i class="bi bi-bookmark-plus" style="font-size: 0.8rem;"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary px-2 py-1" 
+                                        id="mobileTogglePlaylistsBtn"
+                                        onclick="toggleMobilePlaylistsVisibility()"
+                                        style="font-size: 0.7rem; border-radius: 12px;"
+                                        title="Свернуть/развернуть список">
+                                    <i class="bi bi-chevron-up" id="mobileToggleIcon" style="font-size: 0.8rem;"></i>
+                                </button>
+                            </div>
                         </div>
                         
                         <!-- Компактный список плейлистов для мобильных -->
@@ -2638,6 +2710,79 @@ function showMobilePlaylistError() {
 // УБРАНО: toggleSystemPlaylist - функция переключения системных плейлистов
 // Системные плейлисты удалены для стабильности
 
+// Функция сворачивания/разворачивания мобильного виджета плейлистов
+function toggleMobilePlaylistsVisibility() {
+    const mobileList = document.getElementById('mobilePlaylistList');
+    const toggleIcon = document.getElementById('mobileToggleIcon');
+    const toggleBtn = document.getElementById('mobileTogglePlaylistsBtn');
+    
+    if (!mobileList || !toggleIcon || !toggleBtn) return;
+    
+    const isVisible = mobileList.style.display !== 'none';
+    
+    if (isVisible) {
+        // Сворачиваем
+        mobileList.style.transition = 'all 0.3s ease';
+        mobileList.style.maxHeight = '0';
+        mobileList.style.opacity = '0';
+        mobileList.style.padding = '0';
+        
+        setTimeout(() => {
+            mobileList.style.display = 'none';
+        }, 300);
+        
+        toggleIcon.className = 'bi bi-chevron-down';
+        toggleBtn.title = 'Развернуть список';
+        
+        // Сохраняем состояние
+        localStorage.setItem('mobilePlaylistsCollapsed', 'true');
+    } else {
+        // Разворачиваем
+        mobileList.style.display = 'block';
+        mobileList.style.transition = 'all 0.3s ease';
+        
+        setTimeout(() => {
+            mobileList.style.maxHeight = '80px';
+            mobileList.style.opacity = '1';
+            mobileList.style.padding = '';
+        }, 10);
+        
+        toggleIcon.className = 'bi bi-chevron-up';
+        toggleBtn.title = 'Свернуть список';
+        
+        // Сохраняем состояние
+        localStorage.setItem('mobilePlaylistsCollapsed', 'false');
+    }
+}
+
+// Инициализация состояния мобильного виджета при загрузке
+function initializeMobilePlaylistsState() {
+    const mobileList = document.getElementById('mobilePlaylistList');
+    const toggleIcon = document.getElementById('mobileToggleIcon');
+    const toggleBtn = document.getElementById('mobileTogglePlaylistsBtn');
+    
+    if (!mobileList || !toggleIcon || !toggleBtn) return;
+    
+    // Проверяем сохраненное состояние (по умолчанию развернуто)
+    const isCollapsed = localStorage.getItem('mobilePlaylistsCollapsed') === 'true';
+    
+    if (isCollapsed) {
+        // Устанавливаем свернутое состояние без анимации
+        mobileList.style.display = 'none';
+        mobileList.style.maxHeight = '0';
+        mobileList.style.opacity = '0';
+        toggleIcon.className = 'bi bi-chevron-down';
+        toggleBtn.title = 'Развернуть список';
+    } else {
+        // Устанавливаем развернутое состояние (по умолчанию)
+        mobileList.style.display = 'block';
+        mobileList.style.maxHeight = '80px';
+        mobileList.style.opacity = '1';
+        toggleIcon.className = 'bi bi-chevron-up';
+        toggleBtn.title = 'Свернуть список';
+    }
+}
+
 // Инициализация плейлистов
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof bootstrap !== 'undefined') {
@@ -2646,6 +2791,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Загружаем мобильный виджет плейлистов
         if (document.getElementById('mobilePlaylistList')) {
+            initializeMobilePlaylistsState(); // Инициализируем состояние сворачивания
             loadMobilePlaylistWidget();
             console.log('📱 Мобильный виджет плейлистов инициализирован');
         }

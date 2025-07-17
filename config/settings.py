@@ -24,6 +24,7 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
+    "django_extensions",  # Для HTTPS в разработке
     'rest_framework',
     'crispy_forms',
     'crispy_bootstrap5',
@@ -396,7 +397,7 @@ ADMIN_EMAIL_LIST = config('ADMIN_EMAIL_LIST', default='admin@pravoslavie-portal.
 # 🔐 БЕЗОПАСНОСТЬ (базовая) - дополнительные настройки
 # HTTPS настройки для продакшена
 if not DEBUG:
-    SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = False
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -420,3 +421,40 @@ if AXES_ENABLED:
     AXES_FAILURE_LIMIT = 5
     AXES_COOLOFF_TIME = 1  # 1 час
     AXES_RESET_ON_SUCCESS = True
+
+# =====================================
+# HTTPS НАСТРОЙКИ ДЛЯ РАЗРАБОТКИ
+# =====================================
+
+# Разрешаем как HTTP так и HTTPS в разработке
+SECURE_SSL_REDIRECT = False  # Не принуждаем к HTTPS
+
+# Настройки для работы с HTTPS в разработке
+if DEBUG:
+    # В разработке поддерживаем и HTTP и HTTPS
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    
+    # Для HTTPS запросов используем secure cookies
+    SESSION_COOKIE_SECURE = False  # Работает и с HTTP и с HTTPS
+    CSRF_COOKIE_SECURE = False     # Работает и с HTTP и с HTTPS
+    
+    # Отключаем HSTS для разработки
+    SECURE_HSTS_SECONDS = 0
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
+    
+    # Доверенные источники для CSRF (для HTTPS)
+    CSRF_TRUSTED_ORIGINS = [
+        'http://127.0.0.1:8000',
+        'http://localhost:8000',
+        'https://127.0.0.1:8000',
+        'https://localhost:8000',
+    ]
+else:
+    # Продакшен - строгие настройки
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True

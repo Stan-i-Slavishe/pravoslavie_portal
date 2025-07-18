@@ -112,7 +112,14 @@ def playlists_list(request):
             creator=request.user
         ).annotate(
             calculated_stories_count=Count('playlist_items')
+        ).prefetch_related(
+            'playlist_items__story'
         ).order_by('-created_at')
+        
+        # Добавляем информацию о первом рассказе каждого плейлиста для превью
+        for playlist in playlists:
+            first_item = playlist.playlist_items.order_by('order').first()
+            playlist.first_story = first_item.story if first_item else None
         
         # Пагинация
         paginator = Paginator(playlists, 12)

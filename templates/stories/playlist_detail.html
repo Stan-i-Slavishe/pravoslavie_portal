@@ -3,37 +3,57 @@
 
 {% block title %}{{ playlist.title }} - Плейлист{% endblock %}
 
+{% block extra_css %}
+<!-- Стили плейлистов теперь в static/css/azbyka-style.css -->
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
     <div class="row">
         <div class="col-12">
             <!-- Заголовок плейлиста -->
-            <div class="d-flex justify-content-between align-items-start mb-4">
-                <div>
-                    <h1>{{ playlist.title }}</h1>
-                    {% if playlist.description %}
-                        <p class="text-muted">{{ playlist.description }}</p>
-                    {% endif %}
-                    <div class="d-flex gap-3 text-muted">
-                        <span><i class="bi bi-collection me-1"></i>{{ playlist_items.count }} рассказов</span>
-                        <span><i class="bi bi-calendar me-1"></i>{{ playlist.created_at|date:"d F Y" }}</span>
-                        <span>
-                            {% if playlist.playlist_type == 'public' %}
-                                <i class="bi bi-globe me-1"></i>Публичный
-                            {% else %}
-                                <i class="bi bi-lock me-1"></i>Приватный
-                            {% endif %}
-                        </span>
+            <div class="playlist-header">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <h1 class="playlist-title">{{ playlist.title }}</h1>
+                        {% if playlist.description %}
+                            <p class="playlist-description">{{ playlist.description }}</p>
+                        {% endif %}
+                        <div class="playlist-meta">
+                            <span><i class="bi bi-collection"></i>{{ playlist_items.count }} рассказов</span>
+                            <span><i class="bi bi-calendar"></i>{{ playlist.created_at|date:"d F Y" }}</span>
+                            <span>
+                                {% if playlist.playlist_type == 'public' %}
+                                    <i class="bi bi-globe"></i>Публичный
+                                {% else %}
+                                    <i class="bi bi-lock"></i>Приватный
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="playlist-actions d-none d-md-block">
+                        <div class="btn-group">
+                            <a href="{% url 'stories:edit_playlist' slug=playlist.slug %}" class="btn btn-outline-primary">
+                                <i class="bi bi-pencil me-1"></i>Изменить
+                            </a>
+                            <a href="{% url 'stories:playlists' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i>К плейлистам
+                            </a>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="btn-group">
-                    <a href="{% url 'stories:edit_playlist' slug=playlist.slug %}" class="btn btn-outline-primary">
-                        <i class="bi bi-pencil me-1"></i>Изменить
-                    </a>
-                    <a href="{% url 'stories:playlists' %}" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left me-1"></i>К плейлистам
-                    </a>
+                <!-- Мобильные кнопки действий -->
+                <div class="playlist-actions d-md-none">
+                    <div class="btn-group w-100">
+                        <a href="{% url 'stories:edit_playlist' slug=playlist.slug %}" class="btn btn-outline-primary">
+                            <i class="bi bi-pencil me-1"></i>Изменить
+                        </a>
+                        <a href="{% url 'stories:playlists' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>К плейлистам
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -42,7 +62,7 @@
                 <div class="row">
                     {% for item in playlist_items %}
                         <div class="col-12 mb-3">
-                            <div class="card">
+                            <div class="card story-card">
                                 <div class="card-body">
                                     <div class="row align-items-center">
                                         <div class="col-md-1 text-center">

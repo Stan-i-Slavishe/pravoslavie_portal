@@ -4,220 +4,38 @@
 {% block title %}{{ playlist.title }}{% endblock %}
 
 {% block extra_css %}
-<style>
-.playlist-header {
-    background: linear-gradient(135deg, var(--orthodox-blue, #2B5AA0) 0%, #1e3f73 100%);
-    color: white;
-    padding: 40px 0;
-    margin-bottom: 30px;
-}
-
-.playlist-info {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.playlist-icon {
-    width: 80px;
-    height: 80px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-}
-
-.playlist-details h1 {
-    margin: 0 0 10px 0;
-    font-size: 2rem;
-    font-weight: 700;
-}
-
-.playlist-meta {
-    display: flex;
-    gap: 20px;
-    font-size: 0.9rem;
-    opacity: 0.9;
-}
-
-.playlist-description {
-    margin-top: 15px;
-    line-height: 1.6;
-    opacity: 0.95;
-}
-
-.playlist-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.btn-action {
-    padding: 8px 16px;
-    border: 2px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.1);
-    color: white;
-    text-decoration: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-}
-
-.btn-action:hover {
-    background: rgba(255,255,255,0.2);
-    color: white;
-    border-color: rgba(255,255,255,0.5);
-}
-
-.story-item {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-.story-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-}
-
-.story-content {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-}
-
-.story-thumbnail {
-    width: 120px;
-    height: 90px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6c757d;
-    font-size: 2rem;
-    flex-shrink: 0;
-}
-
-.story-info {
-    flex: 1;
-}
-
-.story-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--orthodox-blue, #2B5AA0);
-    margin-bottom: 8px;
-}
-
-.story-title a {
-    text-decoration: none;
-    color: inherit;
-}
-
-.story-title a:hover {
-    text-decoration: underline;
-}
-
-.story-description {
-    color: #666;
-    line-height: 1.5;
-    margin-bottom: 10px;
-}
-
-.story-meta {
-    display: flex;
-    gap: 15px;
-    font-size: 0.85rem;
-    color: #888;
-}
-
-.story-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: flex-end;
-}
-
-.story-order {
-    background: var(--gold-accent, #D4AF37);
-    color: white;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-
-.btn-remove {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.btn-remove:hover {
-    background: #c82333;
-}
-
-.empty-playlist {
-    text-align: center;
-    padding: 60px 20px;
-    color: #666;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.empty-playlist i {
-    font-size: 4rem;
-    color: #ccc;
-    margin-bottom: 20px;
-}
-
-.playlist-controls {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
-}
-
-.sortable-item {
-    cursor: move;
-}
-
-.sortable-item:hover {
-    background: #f8f9fa;
-}
-
-.drag-handle {
-    color: #ccc;
-    margin-right: 15px;
-    cursor: grab;
-}
-
-.drag-handle:active {
-    cursor: grabbing;
-}
-
-@media (max-width: 768px) {
-    .playlist-info {
+<!-- Стили плейлистов теперь в static/css/azbyka-style.css -->
+{% endblock %}
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+    }
+    
+    /* КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ для мобильных метаданных */
+    .playlist-meta {
         flex-direction: column;
+        gap: 8px;
+        align-items: center;
+        width: 100%;
+    }
+    
+    .playlist-meta span {
+        justify-content: center;
+        font-size: 0.85rem;
+        min-width: auto;
         text-align: center;
+    }
+    
+    .playlist-actions {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+        max-width: 250px;
+        margin: 15px auto 0;
+    }
+    
+    .btn-action {
+        text-align: center;
+        padding: 10px 16px;
     }
     
     .story-content {
@@ -234,10 +52,24 @@
         justify-content: center;
         width: 100%;
     }
+}
+
+/* Дополнительные исправления для очень маленьких экранов */
+@media (max-width: 480px) {
+    .playlist-header {
+        padding: 15px 0;
+    }
     
-    .playlist-actions {
-        flex-wrap: wrap;
-        justify-content: center;
+    .playlist-details h1 {
+        font-size: 1.3rem;
+    }
+    
+    .playlist-meta span {
+        font-size: 0.8rem;
+    }
+    
+    .playlist-meta span i {
+        margin-right: 6px !important;
     }
 }
 </style>

@@ -76,6 +76,9 @@
         border-radius: 4px;
         font-size: 0.85rem;
         font-weight: 500;
+        z-index: 20; /* Добавляем z-index */
+        white-space: nowrap; /* Не переносим текст */
+        max-width: calc(100% - 16px); /* Ограничиваем ширину */
     }
     
     .playlist-fallback {
@@ -270,13 +273,70 @@
             gap: 1rem;
         }
         
-        /* Показываем оверлей на мобильных */
+        /* Показываем только иконку воспроизведения на мобильных */
         .playlist-overlay {
-            opacity: 0.8;
+            opacity: 0; /* Убираем затемнение на мобильных */
+        }
+        
+        /* ИСПРАВЛЕННЫЙ БЕЙДЖ КОЛИЧЕСТВА РАССКАЗОВ НА МОБИЛЬНЫХ */
+        .playlist-count-badge {
+            position: absolute !important;
+            bottom: 8px !important;
+            right: 8px !important;
+            background: rgba(0,0,0,0.9) !important;
+            color: white !important;
+            padding: 3px 6px !important;
+            border-radius: 3px !important;
+            font-size: 0.75rem !important;
+            font-weight: 600 !important;
+            z-index: 25 !important; /* Выше всех элементов включая play иконку */
+            pointer-events: none !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6) !important;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        
+        /* Показываем только иконку play без фона */
+        .playlist-play-icon {
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            z-index: 15 !important; /* Меньше чем у бейджа */
+            color: white !important;
+            background: rgba(0, 0, 0, 0.8) !important;
+            border-radius: 50% !important;
+            width: 60px !important;
+            height: 60px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 1.8rem !important;
+            pointer-events: none !important;
+            opacity: 0.95 !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: 2px solid rgba(255, 255, 255, 0.2) !important;
+        }
+        
+        /* Дополнительное позиционирование для мобильных */
+        .youtube-thumbnail {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        .youtube-thumbnail img {
+            position: relative;
+            z-index: 1;
         }
         
         .playlist-thumbnail:hover .playlist-overlay {
-            opacity: 1;
+            opacity: 0.9; /* Показываем полный оверлей только при hover */
         }
     }
 </style>
@@ -305,7 +365,7 @@
                 <div class="row g-4">
                     {% for playlist in page_obj.object_list %}
                         <div class="col-lg-4 col-md-6 col-sm-12">
-                            <div class="card playlist-card{% if playlist.playlist_type == 'featured' %} featured{% endif %}" data-type="{{ playlist.playlist_type }}">
+                            <div class="card playlist-card" data-type="{% if playlist.is_public %}public{% else %}private{% endif %}">
                                 <!-- Превью плейлиста -->
                                 <div class="playlist-thumbnail {% if playlist.first_story.youtube_embed_id %}has-video{% endif %}">
                                     {% if playlist.first_story and playlist.first_story.youtube_embed_id %}
@@ -317,6 +377,15 @@
                                                 style="width: 100%; height: 100%; object-fit: cover;"
                                                 onerror="this.src='https://img.youtube.com/vi/{{ playlist.first_story.youtube_embed_id }}/hqdefault.jpg'"
                                             >
+                                            <!-- Иконка воспроизведения непосредственно на изображении -->
+                                            <div class="playlist-play-icon d-md-none">
+                                                <i class="bi bi-play-fill"></i>
+                                            </div>
+                                            <!-- Бейдж количества рассказов -->
+                                            <div class="playlist-count-badge">
+                                                <i class="bi bi-collection me-1"></i>
+                                                {{ playlist.calculated_stories_count }}
+                                            </div>
                                         </div>
                                     {% elif playlist.cover_image %}
                                         <!-- Кастомная обложка -->
@@ -325,10 +394,20 @@
                                             alt="{{ playlist.title }}"
                                             style="width: 100%; height: 100%; object-fit: cover;"
                                         >
+                                        <!-- Бейдж количества рассказов -->
+                                        <div class="playlist-count-badge">
+                                            <i class="bi bi-collection me-1"></i>
+                                            {{ playlist.calculated_stories_count }}
+                                        </div>
                                     {% else %}
                                         <!-- Градиентный фон по умолчанию -->
                                         <div class="playlist-fallback">
                                             <i class="bi bi-collection-play"></i>
+                                        </div>
+                                        <!-- Бейдж количества рассказов -->
+                                        <div class="playlist-count-badge">
+                                            <i class="bi bi-collection me-1"></i>
+                                            {{ playlist.calculated_stories_count }}
                                         </div>
                                     {% endif %}
                                     
@@ -338,15 +417,9 @@
                                         <div>Смотреть плейлист</div>
                                     </div>
                                     
-                                    <!-- Бейдж количества рассказов -->
-                                    <div class="playlist-count-badge">
-                                        <i class="bi bi-collection me-1"></i>
-                                        {{ playlist.calculated_stories_count }}
-                                    </div>
-                                    
                                     <!-- Бейдж типа плейлиста -->
-                                    <div class="playlist-type-badge {% if playlist.playlist_type == 'public' %}badge-public{% else %}badge-private{% endif %}">
-                                        {% if playlist.playlist_type == 'public' %}
+                                    <div class="playlist-type-badge {% if playlist.is_public %}badge-public{% else %}badge-private{% endif %}">
+                                        {% if playlist.is_public %}
                                             <i class="bi bi-globe me-1"></i>Публичный
                                         {% else %}
                                             <i class="bi bi-lock me-1"></i>Приватный

@@ -91,6 +91,7 @@
 .playlist-count-badge {
     backdrop-filter: blur(10px);
     font-family: 'Segoe UI', system-ui, sans-serif;
+    z-index: 20 !important; /* Всегда поверх других элементов */
 }
 
 .playlist-type-badge {
@@ -256,6 +257,27 @@
         min-width: 36px;
         padding: 0.375rem 0.4rem;
     }
+    
+    /* ИСПРАВЛЕНИЕ БЕЙДЖА КОЛИЧЕСТВА РАССКАЗОВ НА МОБИЛЬНЫХ */
+    .playlist-count-badge {
+        position: absolute !important;
+        bottom: 8px !important;
+        right: 8px !important;
+        background: rgba(0,0,0,0.9) !important;
+        color: white !important;
+        padding: 3px 6px !important;
+        border-radius: 3px !important;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+        z-index: 30 !important; /* Выше всех элементов */
+        pointer-events: none !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6) !important;
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+    }
 }
 
 /* Темная тема (опционально) */
@@ -341,7 +363,7 @@
     }
     
     .playlist-overlay {
-        opacity: 0.8;
+        opacity: 0; /* Полностью убираем оверлей на мобильных */
     }
 }
 

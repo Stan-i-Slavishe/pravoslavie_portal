@@ -237,7 +237,7 @@
     }
     
     .playlist-actions {
-        flex-direction: row; /* Горизонтальное расположение на мобильных */
+        display: block !important; /* Основной контейнер */
     }
     
     .playlist-actions .btn {
@@ -245,20 +245,27 @@
         font-size: 0.8rem;
     }
     
-    /* Кнопка "Смотреть" занимает больше места */
+    /* Кнопка "Смотреть" на всю ширину */
     .playlist-actions .btn-play {
-        flex: 2;
+        width: 100% !important;
+        margin-bottom: 8px !important;
+        display: block !important;
     }
     
-    /* Кнопки "Изменить" и "Удалить" компактные */
+    /* Кнопки "Изменить" и "Удалить" горизонтально */
     .playlist-actions .btn-edit,
     .playlist-actions .btn-delete {
-        flex: 0 0 auto;
-        min-width: 36px;
-        padding: 0.375rem 0.4rem;
+        display: inline-block !important;
+        width: calc(50% - 2px) !important;
+        margin: 0 !important;
+        vertical-align: top !important;
     }
     
-    /* ИСПРАВЛЕНИЕ БЕЙДЖА КОЛИЧЕСТВА РАССКАЗОВ НА МОБИЛЬНЫХ */
+    .playlist-actions .btn-edit {
+        margin-right: 4px !important;
+    }
+    
+    /* Мобильная адаптация для бейджа количества рассказов */
     .playlist-count-badge {
         position: absolute !important;
         bottom: 8px !important;
@@ -269,7 +276,7 @@
         border-radius: 3px !important;
         font-size: 0.75rem !important;
         font-weight: 600 !important;
-        z-index: 30 !important; /* Выше всех элементов */
+        z-index: 30 !important;
         pointer-events: none !important;
         border: 1px solid rgba(255, 255, 255, 0.3) !important;
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6) !important;

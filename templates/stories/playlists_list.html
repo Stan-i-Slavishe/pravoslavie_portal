@@ -236,31 +236,42 @@
     }
     
     @media (max-width: 768px) {
+        /* Основные настройки для мобильных кнопок */
         .playlist-actions {
-            flex-direction: row; /* Изменено с column на row */
-            gap: 0.25rem; /* Уменьшаем отступы между кнопками */
+            display: block !important;
         }
         
         .playlist-actions .btn {
             font-size: 0.75rem;
             padding: 0.375rem 0.5rem;
-            white-space: nowrap; /* Не переносим текст */
+            white-space: nowrap;
+            transition: none !important;
         }
         
-        /* Делаем кнопку "Смотреть" на всю ширину, а остальные маленькими */
+        /* Отключаем все hover эффекты на мобильных */
+        .playlist-actions .btn:hover,
+        .playlist-actions .btn:active,
+        .playlist-actions .btn:focus {
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        /* Кнопка "Смотреть" на всю ширину */
         .playlist-actions .btn-play {
-            flex: 1; /* Занимает оставшееся место */
-            min-width: 0; /* Позволяем сжиматься */
+            width: 100% !important;
+            margin-bottom: 8px !important;
+            display: block !important;
+            text-align: center !important;
         }
         
-        .playlist-actions .btn-edit,
-        .playlist-actions .btn-delete {
-            flex: 0 0 auto; /* Не растягиваются */
-            width: 36px; /* Фиксированная ширина для иконок */
-            padding: 0.375rem 0.25rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        /* Мобильные кнопки редактирования */
+        .playlist-actions .d-flex.gap-1 {
+            margin-top: 8px !important;
+        }
+        
+        .playlist-actions .d-flex.gap-1 .btn {
+            font-size: 0.75rem !important;
+            padding: 0.375rem 0.5rem !important;
         }
         
         .page-header {
@@ -276,6 +287,35 @@
         /* Показываем только иконку воспроизведения на мобильных */
         .playlist-overlay {
             opacity: 0; /* Убираем затемнение на мобильных */
+        }
+        
+        /* ОТОБРАЖЕНИЕ БЕЙДЖА ТИПА ПЛЕЙЛИСТА НА МОБИЛЬНЫХ */
+        .playlist-type-badge {
+            position: absolute !important;
+            top: 8px !important;
+            left: 8px !important;
+            padding: 3px 6px !important;
+            border-radius: 3px !important;
+            font-size: 0.7rem !important;
+            font-weight: 600 !important;
+            z-index: 20 !important;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        
+        .badge-public {
+            background: rgba(40, 167, 69, 0.9) !important;
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        .badge-private {
+            background: rgba(108, 117, 125, 0.9) !important;
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
         }
         
         /* ИСПРАВЛЕННЫЙ БЕЙДЖ КОЛИЧЕСТВА РАССКАЗОВ НА МОБИЛЬНЫХ */
@@ -339,6 +379,30 @@
             opacity: 0.9; /* Показываем полный оверлей только при hover */
         }
     }
+    
+    /* ОТКЛЮЧАЕМ ВСЕ АНИМАЦИИ НА TOUCH УСТРОЙСТВАХ */
+    @media (hover: none) and (pointer: coarse) {
+        .playlist-actions .btn {
+            transition: none !important;
+            transform: none !important;
+        }
+        
+        .playlist-actions .btn:hover,
+        .playlist-actions .btn:active,
+        .playlist-actions .btn:focus,
+        .playlist-actions .btn:visited {
+            transform: none !important;
+            box-shadow: none !important;
+            background: inherit !important;
+        }
+        
+        .btn-play:hover,
+        .btn-play:active,
+        .btn-play:focus {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            transform: none !important;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -353,7 +417,7 @@
                         <i class="bi bi-collection-play me-2"></i>
                         Мои плейлисты
                     </h1>
-                    <button class="btn create-playlist-btn" onclick="showCreatePlaylistModal()">
+                    <button class="btn create-playlist-btn" onclick="if(typeof showCreatePlaylistModal !== 'undefined') showCreatePlaylistModal(); else alert('Ошибка: функция недоступна');">
                         <i class="bi bi-plus-circle me-2"></i>
                         Создать плейлист
                     </button>
@@ -488,12 +552,22 @@
                                         <a href="{% url 'stories:playlist_detail' slug=playlist.slug %}" class="btn btn-play">
                                             <i class="bi bi-play me-1"></i><span>Смотреть</span>
                                         </a>
-                                        <a href="{% url 'stories:edit_playlist' slug=playlist.slug %}" class="btn btn-edit">
-                                            <i class="bi bi-pencil"></i><span class="d-none d-md-inline ms-1">Изменить</span>
-                                        </a>
-                                        <button class="btn btn-delete" onclick="deletePlaylist('{{ playlist.slug }}', '{{ playlist.title|addslashes }}')">
-                                            <i class="bi bi-trash"></i><span class="d-none d-md-inline ms-1">Удалить</span>
-                                        </button>
+                                        <div class="d-flex gap-1 d-md-none">
+                                            <a href="{% url 'stories:edit_playlist' slug=playlist.slug %}" class="btn btn-edit flex-fill">
+                                                <i class="bi bi-pencil"></i><span class="ms-1">Изменить</span>
+                                            </a>
+                                            <button class="btn btn-delete flex-fill" onclick="if(typeof deletePlaylist !== 'undefined') deletePlaylist('{{ playlist.slug }}', '{{ playlist.title|addslashes }}'); else alert('Ошибка: функция недоступна');">
+                                                <i class="bi bi-trash"></i><span class="ms-1">Удалить</span>
+                                            </button>
+                                        </div>
+                                        <div class="d-none d-md-flex gap-2">
+                                            <a href="{% url 'stories:edit_playlist' slug=playlist.slug %}" class="btn btn-edit">
+                                                <i class="bi bi-pencil"></i><span class="ms-1">Изменить</span>
+                                            </a>
+                                            <button class="btn btn-delete" onclick="if(typeof deletePlaylist !== 'undefined') deletePlaylist('{{ playlist.slug }}', '{{ playlist.title|addslashes }}'); else alert('Ошибка: функция недоступна');">
+                                                <i class="bi bi-trash"></i><span class="ms-1">Удалить</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -544,7 +618,7 @@
                     </div>
                     <h3>У вас пока нет плейлистов</h3>
                     <p class="mb-4">Создайте свой первый плейлист и добавляйте в него любимые рассказы</p>
-                    <button class="btn create-playlist-btn" onclick="showCreatePlaylistModal()">
+                    <button class="btn create-playlist-btn" onclick="if(typeof showCreatePlaylistModal !== 'undefined') showCreatePlaylistModal(); else alert('Ошибка: функция недоступна');">
                         <i class="bi bi-plus-circle me-2"></i>
                         Создать первый плейлист
                     </button>
@@ -571,7 +645,7 @@ function showCreatePlaylistModal() {
             <div class="modal-content border-0 shadow">
                 <div class="modal-header bg-gradient border-0">
                     <h5 class="modal-title text-dark fw-bold">
-                        <i class="bi bi-plus-circle me-2"></i>Создать новый плейлист
+                        <i class="bi bi-plus-circle me-2"></i>Новый плейлист
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
@@ -612,7 +686,6 @@ function showCreatePlaylistModal() {
     modal.addEventListener('shown.bs.modal', function() {
         modal.querySelector('input[name="name"]').focus();
     });
-}
 }
 
 function createPlaylist() {
@@ -731,6 +804,19 @@ function confirmDelete(slug) {
 
 // Улучшенная обработка ошибок загрузки изображений
 document.addEventListener('DOMContentLoaded', function() {
+    // Проверяем, что все функции определены
+    if (typeof deletePlaylist === 'undefined') {
+        console.error('Функция deletePlaylist не определена!');
+    }
+    if (typeof showCreatePlaylistModal === 'undefined') {
+        console.error('Функция showCreatePlaylistModal не определена!');
+    }
+    if (typeof createPlaylist === 'undefined') {
+        console.error('Функция createPlaylist не определена!');
+    }
+    
+    console.log('Плейлисты: все JavaScript функции загружены успешно');
+    
     const images = document.querySelectorAll('.playlist-thumbnail img');
     images.forEach(img => {
         img.addEventListener('error', function() {

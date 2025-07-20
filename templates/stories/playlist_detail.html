@@ -5,6 +5,28 @@
 
 {% block extra_css %}
 <!-- Стили плейлистов теперь в static/css/azbyka-style.css -->
+<style>
+/* Исправляем отступы между иконками и текстом в метаданных плейлиста */
+.playlist-meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.playlist-meta span {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.playlist-meta span i {
+    margin-right: 0.5rem !important;
+    flex-shrink: 0;
+}
+</style>
 {% endblock %}
 
 {% block content %}

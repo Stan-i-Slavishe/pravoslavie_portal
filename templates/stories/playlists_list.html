@@ -378,6 +378,21 @@
         .playlist-thumbnail:hover .playlist-overlay {
             opacity: 0.9; /* Показываем полный оверлей только при hover */
         }
+        
+        /* Скрываем дату создания плейлиста на мобильных */
+        .playlist-meta {
+            display: none !important;
+        }
+        
+        /* Уменьшаем отступы для компактности */
+        .playlist-info {
+            padding: 1rem !important;
+        }
+        
+        /* Увеличиваем отступ между заголовком и кнопками */
+        .playlist-title {
+            margin-bottom: 1rem !important;
+        }
     }
     
     /* ОТКЛЮЧАЕМ ВСЕ АНИМАЦИИ НА TOUCH УСТРОЙСТВАХ */

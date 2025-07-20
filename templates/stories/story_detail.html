@@ -244,6 +244,17 @@
     transform: scale(1.1);
 }
 
+/* Стили для ссылки "Все плейлисты" в мобильном виджете */
+.playlist-mobile-widget .text-center a.btn {
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.playlist-mobile-widget .text-center a.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,123,255,0.3);
+}
+
 /* Отзывчивость кнопок для разных экранов */
 @media (max-width: 480px) {
     .playlist-mobile-widget .btn {
@@ -1467,6 +1478,16 @@
                                     Загрузка...
                                 </small>
                             </div>
+                        </div>
+                        
+                        <!-- Ссылка "Все плейлисты" для мобильных -->
+                        <div class="text-center mt-2 pt-1" style="border-top: 1px solid rgba(0,0,0,0.05);">
+                            <a href="{% url 'stories:playlists_list' %}" 
+                               class="btn btn-sm btn-outline-primary text-decoration-none"
+                               style="font-size: 0.75rem; padding: 4px 12px; border-radius: 15px; min-width: 120px;">
+                                <i class="bi bi-collection me-1"></i>
+                                Все плейлисты
+                            </a>
                         </div>
                     </div>
                 </div>

@@ -1,1 +1,1 @@
-# Пустой файл для создания Python пакета
+# Management commands for stories app

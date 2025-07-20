@@ -7,12 +7,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.core.paginator import Paginator
-from django.db.models import Q, Count, Avg
+from django.db.models import Q, Count, Avg, F
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.text import slugify
 from django.utils.crypto import get_random_string
 from django.template.loader import render_to_string
+from django.db import models
 import json
 
 try:
@@ -930,6 +931,65 @@ def watch_later_playlist(request):
     except Exception as e:
         messages.error(request, 'Ошибка загрузки плейлиста')
         return redirect('stories:playlists_list')
+
+
+@login_required
+@require_http_methods(["POST"])
+def remove_from_playlist(request):
+    """AJAX: Удаление рассказа из плейлиста с правильным переупорядочиванием"""
+    try:
+        # Получаем данные из JSON
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+        else:
+            # Fallback для form data
+            data = request.POST
+            
+        story_id = data.get('story_id')
+        playlist_id = data.get('playlist_id')
+        
+        if not story_id or not playlist_id:
+            return JsonResponse({
+                'success': False,
+                'message': 'Не указан ID рассказа или плейлиста'
+            }, status=400)
+        
+        story = get_object_or_404(Story, id=story_id)
+        playlist = get_object_or_404(Playlist, id=playlist_id, creator=request.user)
+        
+        playlist_item = get_object_or_404(
+            PlaylistItem,
+            playlist=playlist,
+            story=story
+        )
+        
+        # Сохраняем порядок удаляемого элемента
+        deleted_order = playlist_item.order
+        
+        # Удаляем элемент
+        playlist_item.delete()
+        
+        # Переупорядочиваем все элементы с порядком больше удаленного
+        PlaylistItem.objects.filter(
+            playlist=playlist,
+            order__gt=deleted_order
+        ).update(order=F('order') - 1)
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Рассказ удален из плейлиста "{playlist.title}"'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Ошибка в формате данных'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Произошла ошибка: {str(e)}'
+        }, status=500)
 
 
 def system_playlist_content(request, playlist_type):

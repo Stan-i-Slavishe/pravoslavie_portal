@@ -20,7 +20,7 @@
                             <p class="playlist-description">{{ playlist.description }}</p>
                         {% endif %}
                         <div class="playlist-meta">
-                            <span><i class="bi bi-collection"></i>{{ playlist_items.count }} рассказов</span>
+                            <span><i class="bi bi-collection"></i><span class="story-count" data-count="{{ playlist_items.count }}">{{ playlist_items.count }} рассказов</span></span>
                             <span><i class="bi bi-calendar"></i>{{ playlist.created_at|date:"d F Y" }}</span>
                             <span>
                                 {% if playlist.playlist_type == 'public' %}
@@ -168,5 +168,27 @@ function removeFromPlaylist(playlistId, storyId) {
         });
     }
 }
+
+// Правильное склонение слова "рассказ"
+function pluralizeStories(count) {
+    if (count % 10 === 1 && count % 100 !== 11) {
+        return `${count} рассказ`; // 1, 21, 31, 101, 121...
+    } else if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) {
+        return `${count} рассказа`; // 2, 3, 4, 22, 23, 24...
+    } else {
+        return `${count} рассказов`; // 5, 6, 7, 11, 12, 13, 14, 15, 20, 25...
+    }
+}
+
+// Применяем склонения ко всем счетчикам рассказов
+document.addEventListener('DOMContentLoaded', function() {
+    const storyCounts = document.querySelectorAll('.story-count');
+    storyCounts.forEach(element => {
+        const count = parseInt(element.getAttribute('data-count'));
+        if (!isNaN(count)) {
+            element.textContent = pluralizeStories(count);
+        }
+    });
+});
 </script>
 {% endblock %}

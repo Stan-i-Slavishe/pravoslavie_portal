@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="{% block description %}Добрые истории - духовные рассказы, книги, аудио и детские сказки{% endblock %}">
     <meta name="keywords" content="православие, духовность, рассказы, книги, аудио, детские сказки">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     
     <title>{% block title %}Добрые истории{% endblock %}</title>
     
@@ -213,13 +214,17 @@
     <script>
     function updateCartBadge() {
         fetch('{% url "shop:cart_count" %}', {
-            method: 'POST',
+            method: 'GET',  // Изменено с POST на GET
             headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
                 'X-Requested-With': 'XMLHttpRequest',
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             const badge = document.getElementById('cart-badge');
             if (badge) {
@@ -231,7 +236,14 @@
                 }
             }
         })
-        .catch(error => console.error('Ошибка обновления корзины:', error));
+        .catch(error => {
+            // Если ошибка - просто скрываем значок
+            const badge = document.getElementById('cart-badge');
+            if (badge) {
+                badge.style.display = 'none';
+            }
+            console.log('Корзина недоступна:', error.message);
+        });
     }
     
     // Обновляем при загрузке страницы

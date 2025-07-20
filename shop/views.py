@@ -78,7 +78,7 @@ def add_to_cart(request):
         return JsonResponse({'error': 'Ошибка сервера'}, status=500)
 
 def get_cart_count(request):
-    """Получить количество товаров в корзине (для AJAX)"""
+    """Получить количество товаров в корзине (для AJAX) - поддерживает GET запросы"""
     if not request.user.is_authenticated:
         return JsonResponse({'count': 0})
     
@@ -89,6 +89,10 @@ def get_cart_count(request):
             'total_price': float(cart.total_price)
         })
     except Cart.DoesNotExist:
+        return JsonResponse({'count': 0, 'total_price': 0})
+    except Exception as e:
+        # Логируем ошибку, но возвращаем корректный JSON
+        logger.warning(f'Ошибка получения корзины для пользователя {request.user}: {e}')
         return JsonResponse({'count': 0, 'total_price': 0})
 
 @login_required

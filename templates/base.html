@@ -112,8 +112,8 @@
                                 {% url 'shop:my_orders' as orders_url %}
                                 <li><a class="dropdown-item" href="{% if orders_url %}{{ orders_url }}{% else %}#orders{% endif %}"><i class="bi bi-list-ul me-2"></i> Мои заказы</a></li>
                                 
-                                {% url 'accounts:favorites' as favorites_url %}
-                                <li><a class="dropdown-item" href="{% if favorites_url %}{{ favorites_url }}{% else %}#favorites{% endif %}"><i class="bi bi-heart me-2"></i> Избранное</a></li>
+                                {% url 'books:favorites' as favorites_url %}
+                                <li><a class="dropdown-item" href="{% if favorites_url %}{{ favorites_url }}{% else %}#favorites{% endif %}"><i class="bi bi-bookmark me-2"></i> Избранные книги</a></li>
                                 
                                 {% url 'stories:playlists_list' as playlists_url %}
                                 <li><a class="dropdown-item" href="{% if playlists_url %}{{ playlists_url }}{% else %}#playlists{% endif %}"><i class="bi bi-music-note-list me-2"></i> Мои плейлисты</a></li>

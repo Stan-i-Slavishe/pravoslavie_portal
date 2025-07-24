@@ -43,7 +43,8 @@
 .book-cover-large img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    background: #f8f9fa;
 }
 
 .book-info {
@@ -344,7 +345,8 @@
 .related-cover img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    background: #f8f9fa;
 }
 
 .related-content {
@@ -534,9 +536,15 @@
                             
                             <button class="action-btn-large btn-favorite" 
                                     data-action="favorite" 
-                                    data-book-id="{{ book.id }}">
-                                <i class="bi bi-bookmark me-2"></i>
-                                В избранное
+                                    data-book-id="{{ book.id }}"
+                                    style="{% if is_favorite %}background: #f39c12; border-color: #f39c12; color: white;{% endif %}">
+                                {% if is_favorite %}
+                                    <i class="bi bi-bookmark-fill me-2"></i>
+                                    В избранном
+                                {% else %}
+                                    <i class="bi bi-bookmark me-2"></i>
+                                    В избранное
+                                {% endif %}
                             </button>
                         </div>
                     </div>
@@ -839,20 +847,74 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('[data-action="favorite"]').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
+            
+            if (!document.querySelector('meta[name="csrf-token"]')) {
+                alert('Для добавления в избранное необходимо войти в систему');
+                window.location.href = '/accounts/login/';
+                return;
+            }
+            
             const bookId = this.dataset.bookId;
+            const isCurrentlyFavorite = this.innerHTML.includes('bi-bookmark-fill');
             
-            console.log('Adding book to favorites:', bookId);
-            
-            this.style.transform = 'scale(1.1)';
-            setTimeout(() => {
-                this.style.transform = 'scale(1)';
-                this.innerHTML = '<i class="bi bi-bookmark-fill me-2"></i>В избранном';
-                this.style.background = '#f39c12';
-                this.style.borderColor = '#f39c12';
-                this.style.color = 'white';
-            }, 150);
+            // AJAX запрос
+            fetch(`/books/favorite/${bookId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.is_favorite) {
+                    // Добавлено в избранное
+                    this.innerHTML = '<i class="bi bi-bookmark-fill me-2"></i>В избранном';
+                    this.style.background = '#f39c12';
+                    this.style.borderColor = '#f39c12';
+                    this.style.color = 'white';
+                } else {
+                    // Удалено из избранного
+                    this.innerHTML = '<i class="bi bi-bookmark me-2"></i>В избранное';
+                    this.style.background = '#fff';
+                    this.style.borderColor = '#f39c12';
+                    this.style.color = '#f39c12';
+                }
+                
+                // Анимация
+                this.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+                
+                // Показываем уведомление
+                showNotification(data.message, 'success');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Ошибка при добавлении в избранное', 'error');
+            });
         });
     });
+    
+    // Функция показа уведомлений
+    function showNotification(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 3000);
+    }
     
     // Увеличение счетчика просмотров
     fetch('/books/{{ book.id }}/view/', {

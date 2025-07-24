@@ -7,6 +7,7 @@ from django.core.paginator import Paginator
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from .models import Book, Category, Tag, BookDownload, UserFavoriteBook, BookReview
+from core.utils.views import track_view_session
 
 
 def book_list(request):
@@ -71,9 +72,8 @@ def book_detail(request, slug):
         is_published=True
     )
     
-    # Увеличиваем счетчик просмотров
-    book.views_count += 1
-    book.save(update_fields=['views_count'])
+    # Отслеживаем просмотр (один раз за сессию)
+    track_view_session(request, book)
     
     # Похожие книги
     related_books = Book.objects.filter(

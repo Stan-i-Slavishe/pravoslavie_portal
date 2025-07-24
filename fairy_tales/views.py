@@ -20,6 +20,7 @@ from .models import (
     TherapeuticGoal,
     AgeGroup
 )
+from core.utils.views import track_view_session
 
 class FairyTaleListView(ListView):
     """Каталог терапевтических сказок"""
@@ -104,8 +105,10 @@ class FairyTaleDetailView(DetailView):
     
     def get_object(self):
         obj = super().get_object()
-        # Увеличиваем счетчик просмотров
-        FairyTaleTemplate.objects.filter(pk=obj.pk).update(views_count=obj.views_count + 1)
+        
+        # Отслеживаем просмотр (один раз за сессию)
+        track_view_session(self.request, obj)
+            
         return obj
     
     def get_context_data(self, **kwargs):

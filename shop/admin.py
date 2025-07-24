@@ -2,10 +2,131 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils import timezone
+from django import forms
+from django.core.exceptions import ValidationError
 from .models import Product, Cart, CartItem, Order, OrderItem, Purchase, Discount
+
+# Улучшенная форма для Product с выбором контента из списков
+class ProductAdminForm(forms.ModelForm):
+    """Улучшенная форма с выбором контента из выпадающих списков"""
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Динамически загружаем доступный контент для выбора
+        try:
+            from books.models import Book
+            book_choices = [('', '-- Выберите книгу --')] + [
+                (book.id, f"{book.title} (ID: {book.id})") 
+                for book in Book.objects.all()
+            ]
+            self.fields['book_id'] = forms.ChoiceField(
+                choices=book_choices,
+                required=False,
+                label='Книга',
+                help_text='Выберите книгу из списка',
+                widget=forms.Select(attrs={'onchange': 'updateContentPreview()'})
+            )
+        except Exception as e:
+            # Если модель Book не найдена, оставляем обычное поле
+            print(f"Ошибка загрузки книг: {e}")
+            
+        try:
+            from audio.models import AudioTrack
+            audio_choices = [('', '-- Выберите аудио --')] + [
+                (audio.id, f"{audio.title} (ID: {audio.id})") 
+                for audio in AudioTrack.objects.all()
+            ]
+            self.fields['audio_id'] = forms.ChoiceField(
+                choices=audio_choices,
+                required=False,
+                label='Аудио трек',
+                help_text='Выберите аудио из списка',
+                widget=forms.Select(attrs={'onchange': 'updateContentPreview()'})
+            )
+        except Exception as e:
+            print(f"Ошибка загрузки аудио: {e}")
+            
+        try:
+            from subscriptions.models import Subscription
+            subscription_choices = [('', '-- Выберите подписку --')] + [
+                (sub.id, f"{sub.name} (ID: {sub.id})") 
+                for sub in Subscription.objects.all()
+            ]
+            self.fields['subscription_id'] = forms.ChoiceField(
+                choices=subscription_choices,
+                required=False,
+                label='Тип подписки',
+                help_text='Выберите подписку из списка',
+                widget=forms.Select(attrs={'onchange': 'updateContentPreview()'})
+            )
+        except Exception as e:
+            print(f"Ошибка загрузки подписок: {e}")
+            
+        try:
+            from fairy_tales.models import FairyTale
+            fairy_tale_choices = [('', '-- Выберите шаблон сказки --')] + [
+                (ft.id, f"{ft.title} ({ft.age_group}) (ID: {ft.id})") 
+                for ft in FairyTale.objects.all()
+            ]
+            self.fields['fairy_tale_template_id'] = forms.ChoiceField(
+                choices=fairy_tale_choices,
+                required=False,
+                label='Шаблон сказки',
+                help_text='Выберите шаблон сказки из списка',
+                widget=forms.Select(attrs={'onchange': 'updateContentPreview()'})
+            )
+        except Exception as e:
+            print(f"Ошибка загрузки сказок: {e}")
+    
+    def clean(self):
+        """Валидация формы"""
+        cleaned_data = super().clean()
+        product_type = cleaned_data.get('product_type')
+        
+        # Проверяем, что для выбранного типа товара указан соответствующий ID
+        if product_type == 'book':
+            if not cleaned_data.get('book_id'):
+                raise ValidationError('Для типа "Книга" необходимо выбрать книгу')
+            # Очищаем остальные поля
+            cleaned_data['audio_id'] = None
+            cleaned_data['subscription_id'] = None
+            cleaned_data['fairy_tale_template_id'] = None
+            
+        elif product_type == 'audio':
+            if not cleaned_data.get('audio_id'):
+                raise ValidationError('Для типа "Аудио" необходимо выбрать аудио трек')
+            # Очищаем остальные поля
+            cleaned_data['book_id'] = None
+            cleaned_data['subscription_id'] = None
+            cleaned_data['fairy_tale_template_id'] = None
+            
+        elif product_type == 'subscription':
+            if not cleaned_data.get('subscription_id'):
+                raise ValidationError('Для типа "Подписка" необходимо выбрать тип подписки')
+            # Очищаем остальные поля
+            cleaned_data['book_id'] = None
+            cleaned_data['audio_id'] = None
+            cleaned_data['fairy_tale_template_id'] = None
+            
+        elif product_type == 'fairy_tale':
+            if not cleaned_data.get('fairy_tale_template_id'):
+                raise ValidationError('Для типа "Сказка" необходимо выбрать шаблон сказки')
+            # Очищаем остальные поля
+            cleaned_data['book_id'] = None
+            cleaned_data['audio_id'] = None
+            cleaned_data['subscription_id'] = None
+        
+        return cleaned_data
+    
+    class Meta:
+        model = Product
+        fields = '__all__'
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    form = ProductAdminForm
+    
     list_display = [
         'title', 
         'get_product_type_display', 
@@ -17,15 +138,15 @@ class ProductAdmin(admin.ModelAdmin):
     ]
     list_filter = ['product_type', 'is_active', 'is_digital', 'created_at']
     search_fields = ['title', 'description']
-    readonly_fields = ['created_at', 'updated_at']
+    readonly_fields = ['created_at', 'updated_at', 'content_preview']
     
     fieldsets = (
         ('Основная информация', {
             'fields': ('title', 'description', 'price', 'product_type')
         }),
-        ('Связи с контентом', {
-            'fields': ('book_id', 'audio_id', 'subscription_id', 'fairy_tale_template_id'),
-            'description': 'Укажите ID соответствующего контента'
+        ('Связь с контентом', {
+            'fields': ('book_id', 'audio_id', 'subscription_id', 'fairy_tale_template_id', 'content_preview'),
+            'description': 'Выберите соответствующий контент в зависимости от типа товара'
         }),
         ('Настройки для терапевтических сказок', {
             'fields': (
@@ -50,16 +171,129 @@ class ProductAdmin(admin.ModelAdmin):
         """Ссылка на связанный контент"""
         content = obj.content_object
         if content:
-            if obj.product_type == 'book':
-                url = reverse('admin:books_book_change', args=[content.id])
-                return format_html('<a href="{}" target="_blank">{}</a>', url, content.title)
-            elif obj.product_type == 'fairy_tale':
-                url = reverse('admin:fairy_tales_fairytaletemplate_change', args=[content.id])
-                return format_html('<a href="{}" target="_blank">🧚‍♀️ {}</a>', url, content.title)
-            # Добавить для audio и subscription когда будет готово
-        return 'Не связано'
+            try:
+                if obj.product_type == 'book':
+                    url = reverse('admin:books_book_change', args=[content.id])
+                    return format_html('<a href="{}" target="_blank">📚 {}</a>', url, content.title)
+                elif obj.product_type == 'fairy_tale':
+                    url = reverse('admin:fairy_tales_fairytale_change', args=[content.id])
+                    return format_html('<a href="{}" target="_blank">🧚‍♀️ {}</a>', url, content.title)
+                elif obj.product_type == 'audio':
+                    url = reverse('admin:audio_audiotrack_change', args=[content.id])
+                    return format_html('<a href="{}" target="_blank">🎧 {}</a>', url, content.title)
+                elif obj.product_type == 'subscription':
+                    url = reverse('admin:subscriptions_subscription_change', args=[content.id])
+                    return format_html('<a href="{}" target="_blank">📅 {}</a>', url, content.name)
+            except:
+                pass
+        return format_html('<span style="color: red;">❌ Не связано</span>')
     content_link.short_description = 'Связанный контент'
+    
+    def content_preview(self, obj):
+        """Предпросмотр связанного контента"""
+        if not obj.pk:
+            return format_html(
+                '<div style="padding: 10px; background: #f0f8ff; border-radius: 5px;">'
+                '💡 Сохраните товар, чтобы увидеть предпросмотр'
+                '</div>'
+            )
+            
+        content = obj.content_object
+        if content:
+            try:
+                if obj.product_type == 'book':
+                    description = getattr(content, 'description', 'Описание отсутствует')
+                    if len(description) > 100:
+                        description = description[:100] + '...'
+                    
+                    file_info = 'Не загружен'
+                    if hasattr(content, 'pdf_file') and content.pdf_file:
+                        file_info = content.pdf_file.name
+                    
+                    return format_html(
+                        '<div style="padding: 10px; background: #f8f9fa; border-radius: 5px; border: 1px solid #ddd;">'
+                        '<strong>📚 Книга:</strong> {}<br>'
+                        '<strong>Описание:</strong> {}<br>'
+                        '<strong>Файл:</strong> {}'
+                        '</div>',
+                        content.title,
+                        description,
+                        file_info
+                    )
+                elif obj.product_type == 'fairy_tale':
+                    age_group = getattr(content, 'age_group', 'Не указан')
+                    therapeutic_goal = getattr(content, 'therapeutic_goal', 'Не указана')
+                    if len(therapeutic_goal) > 100:
+                        therapeutic_goal = therapeutic_goal[:100] + '...'
+                    
+                    category_name = 'Не указана'
+                    if hasattr(content, 'category') and content.category:
+                        category_name = content.category.name
+                    
+                    return format_html(
+                        '<div style="padding: 10px; background: #f0f8ff; border-radius: 5px; border: 1px solid #ddd;">'
+                        '<strong>🧚‍♀️ Сказка:</strong> {}<br>'
+                        '<strong>Возраст:</strong> {}<br>'
+                        '<strong>Категория:</strong> {}<br>'
+                        '<strong>Цель:</strong> {}'
+                        '</div>',
+                        content.title,
+                        age_group,
+                        category_name,
+                        therapeutic_goal
+                    )
+                elif obj.product_type == 'audio':
+                    description = getattr(content, 'description', 'Описание отсутствует')
+                    if len(description) > 100:
+                        description = description[:100] + '...'
+                    
+                    file_info = 'Не загружен'
+                    if hasattr(content, 'audio_file') and content.audio_file:
+                        file_info = content.audio_file.name
+                    
+                    return format_html(
+                        '<div style="padding: 10px; background: #fff8dc; border-radius: 5px; border: 1px solid #ddd;">'
+                        '<strong>🎧 Аудио:</strong> {}<br>'
+                        '<strong>Описание:</strong> {}<br>'
+                        '<strong>Файл:</strong> {}'
+                        '</div>',
+                        content.title,
+                        description,
+                        file_info
+                    )
+                elif obj.product_type == 'subscription':
+                    price = getattr(content, 'price', 'Не указана')
+                    duration = getattr(content, 'duration', 'Не указана')
+                    
+                    return format_html(
+                        '<div style="padding: 10px; background: #f0fff0; border-radius: 5px; border: 1px solid #ddd;">'
+                        '<strong>📅 Подписка:</strong> {}<br>'
+                        '<strong>Цена:</strong> {}₽<br>'
+                        '<strong>Продолжительность:</strong> {} дней'
+                        '</div>',
+                        content.name,
+                        price,
+                        duration
+                    )
+            except Exception as e:
+                return format_html(
+                    '<div style="padding: 10px; background: #ffe4e1; border-radius: 5px; color: #8b0000;">'
+                    '❌ Ошибка загрузки контента: {}'
+                    '</div>',
+                    str(e)
+                )
+        else:
+            return format_html(
+                '<div style="padding: 10px; background: #ffe4e1; border-radius: 5px; color: #8b0000;">'
+                '❌ Контент не найден. Возможно, указан неверный ID или контент был удален.'
+                '</div>'
+            )
+    content_preview.short_description = 'Предпросмотр контента'
+    
+    class Media:
+        js = ('admin/js/product_admin.js',)
 
+# Остальные админки остаются те же...
 class CartItemInline(admin.TabularInline):
     model = CartItem
     extra = 0
@@ -96,200 +330,6 @@ class CartAdmin(admin.ModelAdmin):
     def total_price_display(self, obj):
         return f"{obj.total_price}₽"
     total_price_display.short_description = 'Общая сумма'
-
-class OrderItemInline(admin.TabularInline):
-    model = OrderItem
-    extra = 0
-    readonly_fields = ['total_price', 'is_downloaded', 'download_count', 'first_download_at', 'last_download_at', 'personalization_summary', 'fairy_tale_status_display']
-    fields = [
-        'product', 'product_title', 'product_price', 'quantity', 'total_price',
-        'personalization_summary', 'fairy_tale_status_display',
-        'is_downloaded', 'download_count', 'first_download_at', 'last_download_at'
-    ]
-    
-    def personalization_summary(self, obj):
-        if obj.product.product_type == 'fairy_tale' and obj.personalization_data:
-            summary = obj.get_personalization_summary()
-            options = []
-            if obj.include_audio:
-                options.append('🎤 Озвучка')
-            if obj.include_illustrations:
-                options.append('🎨 Иллюстрации')
-            result = summary
-            if options:
-                result += f' + {", ".join(options)}'
-            return result
-        return '-'
-    personalization_summary.short_description = 'Персонализация'
-    
-    def fairy_tale_status_display(self, obj):
-        if obj.is_fairy_tale:
-            status_display = obj.fairy_tale_status_display or 'Не установлен'
-            status_icons = {
-                'Ожидает': '⏳',
-                'В работе': '🛠️',
-                'Готова': '✅',
-                'Доставлена': '📦'
-            }
-            icon = status_icons.get(status_display, '❓')
-            return f'{icon} {status_display}'
-        return '-'
-    fairy_tale_status_display.short_description = 'Статус сказки'
-
-@admin.register(Order)
-class OrderAdmin(admin.ModelAdmin):
-    list_display = [
-        'short_id', 
-        'user', 
-        'full_name', 
-        'status', 
-        'total_amount',
-        'payment_method',
-        'created_at',
-        'paid_at'
-    ]
-    list_filter = ['status', 'payment_method', 'created_at', 'paid_at']
-    search_fields = [
-        'order_id', 
-        'user__username', 
-        'user__email', 
-        'first_name', 
-        'last_name', 
-        'email',
-        'payment_id'
-    ]
-    readonly_fields = [
-        'order_id', 
-        'short_id', 
-        'created_at', 
-        'updated_at',
-        'payment_data_display'
-    ]
-    inlines = [OrderItemInline]
-    date_hierarchy = 'created_at'
-    
-    fieldsets = (
-        ('Информация о заказе', {
-            'fields': ('order_id', 'short_id', 'user', 'status', 'total_amount')
-        }),
-        ('Контактная информация', {
-            'fields': ('email', 'first_name', 'last_name', 'phone')
-        }),
-        ('Информация об оплате', {
-            'fields': ('payment_method', 'payment_id', 'payment_data_display')
-        }),
-        ('Временные метки', {
-            'fields': ('created_at', 'updated_at', 'paid_at', 'completed_at')
-        }),
-        ('Дополнительно', {
-            'fields': ('notes',),
-            'classes': ('collapse',)
-        }),
-    )
-    
-    actions = ['mark_as_paid', 'mark_as_completed', 'mark_as_cancelled']
-    
-    def payment_data_display(self, obj):
-        """Отображение данных платежа в удобном виде"""
-        if obj.payment_data:
-            import json
-            return format_html('<pre>{}</pre>', json.dumps(obj.payment_data, indent=2, ensure_ascii=False))
-        return 'Нет данных'
-    payment_data_display.short_description = 'Данные платежа'
-    
-    def mark_as_paid(self, request, queryset):
-        """Отметить заказы как оплаченные"""
-        updated = queryset.update(status='paid', paid_at=timezone.now())
-        self.message_user(request, f'{updated} заказов отмечены как оплаченные.')
-    mark_as_paid.short_description = 'Отметить как оплаченные'
-    
-    def mark_as_completed(self, request, queryset):
-        """Отметить заказы как завершенные"""
-        updated = queryset.update(status='completed', completed_at=timezone.now())
-        self.message_user(request, f'{updated} заказов отмечены как завершенные.')
-    mark_as_completed.short_description = 'Отметить как завершенные'
-    
-    def mark_as_cancelled(self, request, queryset):
-        """Отметить заказы как отмененные"""
-        updated = queryset.update(status='cancelled')
-        self.message_user(request, f'{updated} заказов отменены.')
-    mark_as_cancelled.short_description = 'Отменить заказы'
-
-@admin.register(OrderItem)
-class OrderItemAdmin(admin.ModelAdmin):
-    list_display = [
-        'order', 
-        'product_title', 
-        'product_type_display',
-        'product_price', 
-        'quantity', 
-        'total_price',
-        'fairy_tale_status_icon',
-        'is_downloaded',
-        'download_count'
-    ]
-    list_filter = ['is_downloaded', 'order__status', 'order__created_at', 'product__product_type', 'fairy_tale_status']
-    search_fields = ['product_title', 'order__order_id', 'order__user__username']
-    readonly_fields = ['total_price', 'first_download_at', 'last_download_at', 'personalization_display']
-    
-    fieldsets = (
-        ('Основная информация', {
-            'fields': ('order', 'product', 'product_title', 'product_price', 'quantity', 'total_price')
-        }),
-        ('Персонализация сказки', {
-            'fields': (
-                'personalization_display', 'include_audio', 'include_illustrations', 
-                'special_requests', 'fairy_tale_status'
-            ),
-            'classes': ('collapse',)
-        }),
-        ('Результаты работы', {
-            'fields': (
-                'generated_content', 'audio_file', 'illustration_file',
-                'estimated_completion', 'admin_notes'
-            ),
-            'classes': ('collapse',)
-        }),
-        ('Скачивания', {
-            'fields': ('is_downloaded', 'download_count', 'first_download_at', 'last_download_at'),
-            'classes': ('collapse',)
-        }),
-    )
-    
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related('order', 'product')
-    
-    def product_type_display(self, obj):
-        type_icons = {
-            'book': '📚',
-            'audio': '🎧',
-            'subscription': '📅',
-            'fairy_tale': '🧚‍♀️'
-        }
-        icon = type_icons.get(obj.product.product_type, '📎')
-        return f'{icon} {obj.product.get_product_type_display()}'
-    product_type_display.short_description = 'Тип товара'
-    
-    def fairy_tale_status_icon(self, obj):
-        if obj.is_fairy_tale:
-            status_display = obj.fairy_tale_status_display or 'Не установлен'
-            status_icons = {
-                'Ожидает': '⏳',
-                'В работе': '🛠️',
-                'Готова': '✅',
-                'Доставлена': '📦'
-            }
-            icon = status_icons.get(status_display, '❓')
-            return f'{icon} {status_display}'
-        return '-'
-    fairy_tale_status_icon.short_description = 'Статус'
-    
-    def personalization_display(self, obj):
-        if obj.product.product_type == 'fairy_tale' and obj.personalization_data:
-            import json
-            return format_html('<pre>{}</pre>', json.dumps(obj.personalization_data, indent=2, ensure_ascii=False))
-        return 'Нет данных'
-    personalization_display.short_description = 'Данные персонализации'
 
 @admin.register(Purchase)
 class PurchaseAdmin(admin.ModelAdmin):

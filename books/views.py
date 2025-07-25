@@ -139,29 +139,43 @@ def download_book(request, book_id):
 @require_POST
 def toggle_favorite(request, book_id):
     """Добавление/удаление книги из избранного"""
-    book = get_object_or_404(Book, id=book_id)
-    
-    favorite, created = UserFavoriteBook.objects.get_or_create(
-        user=request.user,
-        book=book
-    )
-    
-    if not created:
-        favorite.delete()
-        is_favorite = False
-        message = 'Книга удалена из избранного'
-    else:
-        is_favorite = True
-        message = 'Книга добавлена в избранное'
-    
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return JsonResponse({
-            'is_favorite': is_favorite,
-            'message': message
-        })
-    
-    messages.success(request, message)
-    return redirect('books:detail', slug=book.slug)
+    try:
+        book = get_object_or_404(Book, id=book_id)
+        
+        favorite, created = UserFavoriteBook.objects.get_or_create(
+            user=request.user,
+            book=book
+        )
+        
+        if not created:
+            favorite.delete()
+            is_favorite = False
+            message = 'Книга удалена из избранного'
+        else:
+            is_favorite = True
+            message = 'Книга добавлена в избранное'
+        
+        # Всегда возвращаем JSON для AJAX запросов
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.content_type == 'application/json':
+            return JsonResponse({
+                'status': 'success',
+                'is_favorite': is_favorite,
+                'message': message
+            })
+        
+        messages.success(request, message)
+        return redirect('books:detail', slug=book.slug)
+        
+    except Exception as e:
+        # Обработка ошибок для AJAX
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.content_type == 'application/json':
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=400)
+        
+        messages.error(request, f'Ошибка: {str(e)}')
+        return redirect('books:list')
 
 
 @login_required
@@ -277,3 +291,12 @@ def search_books(request):
         })
     
     return JsonResponse({'books': books_data})
+
+
+def get_favorites_count(request):
+    """Получение количества избранных книг (AJAX)"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'count': 0})
+    
+    count = UserFavoriteBook.objects.filter(user=request.user).count()
+    return JsonResponse({'count': count})

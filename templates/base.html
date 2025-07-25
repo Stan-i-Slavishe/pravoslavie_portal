@@ -20,6 +20,7 @@
     
     <!-- Наши стили -->
     <link rel="stylesheet" href="{% static 'css/azbyka-style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navigation-badges.css' %}">
     
     <!-- Дополнительные стили -->
     {% block extra_css %}{% endblock %}
@@ -88,11 +89,21 @@
                 
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
+                        <!-- Избранное -->
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" href="{% url 'books:favorites' %}" title="Избранные книги">
+                                <i class="bi bi-bookmark"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" id="favorites-badge" style="display: none;">
+                                    0
+                                </span>
+                            </a>
+                        </li>
+                        
                         <!-- Корзина -->
                         <li class="nav-item">
-                            <a class="nav-link position-relative" href="{% url 'shop:cart' %}">
+                            <a class="nav-link position-relative" href="{% url 'shop:cart' %}" title="Корзина">
                                 <i class="bi bi-cart3"></i>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-badge" style="display: none;">
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" id="cart-badge" style="display: none;">
                                     0
                                 </span>
                             </a>
@@ -314,6 +325,44 @@
         
         console.log('✅ Система фильтрации рекламных ошибок активирована');
     })();
+    </script>
+    
+    <!-- Скрипт для обновления счетчиков в навигации -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Обновляем счетчик избранного
+        function updateFavoritesCount() {
+            {% if user.is_authenticated %}
+                fetch('/books/favorites-count/')
+                    .then(response => response.json())
+                    .then(data => {
+                        const badge = document.getElementById('favorites-badge');
+                        if (badge) {
+                            if (data.count > 0) {
+                                badge.textContent = data.count;
+                                badge.style.display = 'block';
+                            } else {
+                                badge.style.display = 'none';
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.log('Ошибка при получении количества избранного:', error);
+                    });
+            {% endif %}
+        }
+        
+        // Обновляем при загрузке страницы
+        updateFavoritesCount();
+        
+        // Обновляем при изменении избранного
+        window.updateFavoritesCount = updateFavoritesCount;
+        
+        // Обработчик событий для обновления счетчика
+        document.addEventListener('favoriteToggled', function() {
+            updateFavoritesCount();
+        });
+    });
     </script>
     
     <!-- Аналитика покупательских намерений (временно отключена) -->

@@ -20,4 +20,5 @@ urlpatterns = [
     
     # AJAX
     path('search/', views.search_books, name='search'),
+    path('favorites-count/', views.get_favorites_count, name='favorites_count'),
 ]

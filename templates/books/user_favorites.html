@@ -144,7 +144,9 @@
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    opacity: 0;
+    opacity: 0.7;
+    z-index: 10;
+    font-size: 1rem;
 }
 
 .favorite-item:hover .remove-favorite-btn {
@@ -154,6 +156,7 @@
 .remove-favorite-btn:hover {
     background: #dc3545;
     transform: scale(1.1);
+    opacity: 1 !important;
 }
 
 @keyframes pulse {
@@ -257,7 +260,7 @@
                         
                         <div class="favorite-actions">
                             <a href="{% url 'books:detail' slug=favorite.book.slug %}" 
-                               class="btn btn-primary btn-sm flex-grow-1">
+                               class="btn btn-primary btn-sm">
                                 <i class="bi bi-eye me-1"></i>
                                 Читать
                             </a>
@@ -268,6 +271,13 @@
                                     <i class="bi bi-download"></i>
                                 </a>
                             {% endif %}
+                            
+                            <button class="btn btn-outline-danger btn-sm" 
+                                    data-book-id="{{ favorite.book.id }}"
+                                    data-action="remove-favorite"
+                                    title="Убрать из избранного">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -296,8 +306,8 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Удаление из избранного
-    document.querySelectorAll('.remove-favorite-btn').forEach(btn => {
+    // Удаление из избранного (оба способа)
+    document.querySelectorAll('.remove-favorite-btn, [data-action="remove-favorite"]').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             
@@ -314,6 +324,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
                     'Content-Type': 'application/json',
                 },
             })
@@ -336,6 +347,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Показываем уведомление
                     showNotification('Книга удалена из избранного', 'success');
+                    
+                    // Обновляем счетчик в навигации
+                    if (window.updateFavoritesCount) {
+                        window.updateFavoritesCount();
+                    }
                 } else {
                     showNotification('Ошибка при удалении', 'error');
                 }

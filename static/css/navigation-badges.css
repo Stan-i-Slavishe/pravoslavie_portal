@@ -1,0 +1,45 @@
+/* Стили для бейджей в навигации */
+
+/* Базовые стили для всех бейджей навигации */
+.navbar .nav-link .badge {
+    font-size: 0.6rem !important;
+    min-width: 1.2rem;
+    height: 1.2rem;
+    line-height: 1.2rem;
+    padding: 0;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* Бейдж избранного */
+#favorites-badge {
+    background-color: #f39c12 !important;
+    color: white !important;
+}
+
+/* Бейдж корзины */
+#cart-badge {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .navbar .nav-link .badge {
+        font-size: 0.55rem !important;
+        min-width: 1rem;
+        height: 1rem;
+        line-height: 1rem;
+    }
+}
+
+/* Анимация появления */
+.navbar .nav-link .badge {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Эффект при наведении на родительский элемент */
+.navbar .nav-link:hover .badge {
+    transform: scale(1.1);
+}

@@ -863,6 +863,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
                     'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
                 },
             })
             .then(response => response.json())
@@ -889,6 +890,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Показываем уведомление
                 showNotification(data.message, 'success');
+                
+                // Обновляем счетчик в навигации
+                if (window.updateFavoritesCount) {
+                    window.updateFavoritesCount();
+                }
+                
+                // Отправляем событие об изменении избранного
+                document.dispatchEvent(new CustomEvent('favoriteToggled'));
             })
             .catch(error => {
                 console.error('Error:', error);

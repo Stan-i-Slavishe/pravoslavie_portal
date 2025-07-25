@@ -1,0 +1,63 @@
+/* Дополнительные стили для мобильных бейджей навигации */
+
+/* Убираем любые конфликтующие Bootstrap стили */
+.navbar .nav-link .badge.position-absolute {
+    position: absolute !important;
+}
+
+.navbar .nav-link .badge {
+    /* Переопределяем все возможные Bootstrap позиции */
+    top: -6px !important;
+    right: -8px !important;
+    left: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    margin: 0 !important;
+}
+
+/* Компактное позиционирование для мобильных устройств */
+@media (max-width: 768px) {
+    .navbar .nav-link .badge {
+        top: -4px !important;
+        right: -6px !important;
+    }
+    
+    /* Убираем лишние отступы в навигации */
+    .navbar .nav-link {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+}
+
+/* Очень маленькие экраны - максимально близко */
+@media (max-width: 576px) {
+    .navbar .nav-link .badge {
+        top: -3px !important;
+        right: -4px !important;
+    }
+    
+    .navbar .nav-link {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+}
+
+/* Экстра малые экраны (iPhone SE и подобные) */
+@media (max-width: 375px) {
+    .navbar .nav-link .badge {
+        top: -2px !important;
+        right: -3px !important;
+        font-size: 0.45rem !important;
+        min-width: 0.8rem;
+        height: 0.8rem;
+        line-height: 0.8rem;
+    }
+}
+
+/* Обеспечиваем корректное отображение при разных ориентациях */
+@media (orientation: landscape) and (max-height: 500px) {
+    .navbar .nav-link .badge {
+        top: -3px !important;
+        right: -5px !important;
+    }
+}

@@ -1,0 +1,105 @@
+/* Дополнительные исправления для мобильной навигации */
+
+/* Исправления для iOS Safari и других мобильных браузеров */
+@supports (-webkit-touch-callout: none) {
+    @media (max-width: 768px) {
+        .navbar .nav-link .badge {
+            position: absolute !important;
+            top: -2px !important;
+            right: -8px !important;
+            left: auto !important;
+            transform: none !important;
+            z-index: 1050;
+        }
+        
+        #favorites-badge,
+        #cart-badge {
+            top: -3px !important;
+            right: -6px !important;
+        }
+    }
+}
+
+/* Альтернативный способ позиционирования для проблемных браузеров */
+.navbar .nav-link {
+    position: relative !important;
+    display: inline-block !important;
+}
+
+/* Более надежное позиционирование бейджей */
+.navbar .nav-link .badge {
+    position: absolute !important;
+    z-index: 1050 !important;
+    pointer-events: none !important;
+}
+
+/* Специальные стили для мобильных */
+@media (max-width: 768px) {
+    /* Убираем Bootstrap классы и используем свои */
+    .navbar .nav-link .position-absolute.top-0.start-100.translate-middle {
+        position: absolute !important;
+        top: -4px !important;
+        right: -8px !important;
+        left: auto !important;
+        transform: none !important;
+    }
+    
+    /* Увеличиваем размер бейджей на 50% для лучшей видимости */
+    .navbar .nav-link .badge {
+        font-size: 0.75rem !important; /* было 0.5rem, стало +50% */
+        min-width: 1.5rem !important; /* было 1rem, стало +50% */
+        height: 1.5rem !important; /* было 1rem, стало +50% */
+        line-height: 1.5rem !important; /* было 1rem, стало +50% */
+    }
+    
+    /* Более контрастные цвета для лучшей видимости */
+    #favorites-badge {
+        background-color: #ff6b35 !important;
+        color: white !important;
+        border: 1px solid white !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+        font-weight: 700 !important; /* делаем текст жирнее */
+    }
+    
+    #cart-badge {
+        background-color: #e63946 !important;
+        color: white !important;
+        border: 1px solid white !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+        font-weight: 700 !important; /* делаем текст жирнее */
+    }
+}
+
+/* Для iPhone SE и других маленьких экранов */
+@media (max-width: 375px) {
+    .navbar .nav-link .badge {
+        font-size: 0.68rem !important; /* увеличили на 50% */
+        min-width: 1.2rem !important; /* увеличили на 50% */
+        height: 1.2rem !important; /* увеличили на 50% */
+        line-height: 1.2rem !important; /* увеличили на 50% */
+        top: -2px !important;
+        right: -4px !important;
+        font-weight: 700 !important;
+    }
+}
+
+/* Дополнительная поддержка для различных разрешений */
+@media screen and (max-device-width: 768px) and (orientation: portrait) {
+    .navbar .nav-link .badge {
+        position: absolute !important;
+        top: -3px !important;
+        right: -6px !important;
+        left: auto !important;
+        transform: none !important;
+    }
+}
+
+/* Отладочные стили (можно удалить после тестирования) */
+.debug-badge .navbar .nav-link .badge {
+    background-color: red !important;
+    color: white !important;
+    border: 2px solid yellow !important;
+    font-size: 1rem !important;
+    width: 20px !important;
+    height: 20px !important;
+}

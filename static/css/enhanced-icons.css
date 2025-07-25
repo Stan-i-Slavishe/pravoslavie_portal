@@ -1,0 +1,145 @@
+/* Enhanced Icons CSS - Улучшенные иконки для православного портала */
+
+/* Общие улучшения для всех иконок Bootstrap */
+.bi {
+    filter: saturate(1.1) brightness(1.05);
+}
+
+/* Иконки в пустых состояниях */
+.empty-state-icon {
+    opacity: 0.85 !important;
+    filter: saturate(1.3) brightness(1.15) !important;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Специальные улучшения для иконок закладок */
+.bi-bookmark, 
+.bi-bookmark-fill, 
+.bi-bookmark-heart,
+.bi-bookmark-star {
+    filter: saturate(1.4) brightness(1.2) contrast(1.1);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Иконки сердечек */
+.bi-heart,
+.bi-heart-fill {
+    filter: saturate(1.5) brightness(1.1) contrast(1.05);
+    text-shadow: 0 1px 3px rgba(255, 107, 157, 0.2);
+}
+
+/* Улучшения для иконок в навигации */
+.navbar .bi {
+    filter: saturate(1.2) brightness(1.1);
+}
+
+/* Иконки в кнопках */
+.btn .bi {
+    filter: saturate(1.1) brightness(1.05);
+}
+
+/* Большие декоративные иконки */
+.display-icon {
+    filter: saturate(1.3) brightness(1.15) contrast(1.05);
+    text-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Иконки в карточках */
+.card .bi {
+    filter: saturate(1.15) brightness(1.08);
+}
+
+/* Цветовые улучшения для православных цветов */
+.text-primary .bi {
+    filter: saturate(1.2) brightness(1.1) hue-rotate(-5deg);
+}
+
+.text-warning .bi {
+    filter: saturate(1.4) brightness(1.15) hue-rotate(5deg);
+}
+
+.text-success .bi {
+    filter: saturate(1.3) brightness(1.1) hue-rotate(-10deg);
+}
+
+/* Анимация для интерактивных иконок */
+.interactive-icon {
+    transition: all 0.2s ease;
+}
+
+.interactive-icon:hover {
+    filter: saturate(1.5) brightness(1.2) contrast(1.1);
+    transform: scale(1.05);
+}
+
+/* Специальные стили для детского контента */
+.fairy-tale-icon {
+    filter: saturate(1.4) brightness(1.2) contrast(1.05);
+    text-shadow: 0 2px 4px rgba(255, 107, 157, 0.3);
+}
+
+/* Иконки православного контента */
+.orthodox-icon {
+    filter: saturate(1.3) brightness(1.1) hue-rotate(-5deg);
+    text-shadow: 0 2px 4px rgba(74, 124, 89, 0.2);
+}
+
+/* Иконки для аудио контента */
+.audio-icon {
+    filter: saturate(1.2) brightness(1.1) contrast(1.05);
+    text-shadow: 0 2px 4px rgba(212, 175, 55, 0.3);
+}
+
+/* Мобильные улучшения */
+@media (max-width: 768px) {
+    .bi {
+        filter: saturate(1.2) brightness(1.1);
+    }
+    
+    .display-icon {
+        filter: saturate(1.4) brightness(1.2) contrast(1.1);
+    }
+}
+
+/* Темный режим (если будет добавлен) */
+@media (prefers-color-scheme: dark) {
+    .bi {
+        filter: saturate(1.1) brightness(1.3);
+    }
+    
+    .empty-state-icon {
+        filter: saturate(1.2) brightness(1.4) !important;
+    }
+}
+
+/* Улучшения для конкретных страниц */
+
+/* Страница избранных книг */
+.favorites-page .empty-favorites i {
+    opacity: 0.9 !important;
+    color: #e67e22 !important;
+    text-shadow: 0 2px 4px rgba(230, 126, 34, 0.3) !important;
+    filter: saturate(1.2) brightness(1.1) !important;
+}
+
+/* Страница избранных сказок */
+.fairy-tales-favorites .empty-state i {
+    color: #ff6b9d !important;
+    opacity: 0.8 !important;
+    text-shadow: 0 2px 4px rgba(255, 107, 157, 0.3) !important;
+    filter: saturate(1.2) brightness(1.1) !important;
+}
+
+/* Корзина покупок */
+.cart-empty .empty-state i {
+    color: #4a7c59 !important;
+    opacity: 0.85 !important;
+    filter: saturate(1.3) brightness(1.15) !important;
+}
+
+/* Пользовательские плейлисты */
+.playlists-empty .empty-state i {
+    color: #87ceeb !important;
+    opacity: 0.8 !important;
+    filter: saturate(1.4) brightness(1.2) !important;
+}

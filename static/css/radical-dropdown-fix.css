@@ -1,0 +1,48 @@
+/* РАДИКАЛЬНОЕ РЕШЕНИЕ: ПРИНУДИТЕЛЬНОЕ СКРЫТИЕ ADMIN */
+
+/* Основное решение */
+.navbar .dropdown-menu {
+    z-index: 9999 !important;
+    background-color: #ffffff !important;
+    border: 1px solid rgba(0,0,0,0.15) !important;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2) !important;
+    min-width: 300px !important;
+}
+
+/* РАДИКАЛЬНО: Скрываем все элементы содержащие "admin" внутри меню "Разделы" */
+.navbar .dropdown-menu:not(.show) + * .dropdown-menu,
+.navbar .dropdown-menu.show ~ * {
+    display: none !important;
+}
+
+/* Альтернативно: Скрываем элементы по содержимому */
+.navbar .dropdown-menu .dropdown-item:contains("admin"),
+.navbar .dropdown-menu li:contains("admin") {
+    display: none !important;
+}
+
+/* Еще более радикально: используем CSS для скрытия по тексту */
+.navbar .dropdown-menu .dropdown-item[href*="admin"],
+.navbar .dropdown-menu a[href*="admin"] {
+    display: none !important;
+}
+
+/* Супер радикально: скрываем все что после "Теги" */
+.navbar .dropdown-menu .dropdown-item:nth-child(n+3) {
+    display: none !important;
+}
+
+/* На мобильных */
+@media (max-width: 768px) {
+    .navbar .dropdown-menu {
+        min-width: 280px !important;
+        width: 90vw !important;
+        max-width: 350px !important;
+    }
+    
+    /* Радикальное скрытие всех элементов навигации кроме активного меню */
+    body:has(.navbar .dropdown.show) .navbar .nav-item:not(.dropdown.show) {
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }
+}

@@ -1,0 +1,101 @@
+/* КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ Z-INDEX - МАКСИМАЛЬНЫЙ ПРИОРИТЕТ */
+
+/* Суперкритическое исправление для dropdown меню */
+.navbar .dropdown-menu.show,
+.dropdown-menu.show {
+    z-index: 99999 !important;
+    position: absolute !important;
+    transform: translateZ(9999px) !important;
+    isolation: isolate !important;
+    contain: layout style !important;
+}
+
+/* Специально для Bootstrap 5 dropdown */
+.navbar .dropdown .dropdown-menu {
+    z-index: 99998 !important;
+    position: absolute !important;
+    will-change: transform !important;
+    backface-visibility: hidden !important;
+    perspective: 1000px !important;
+    /* УБИРАЕМ принудительное позиционирование - оставляем Bootstrap логику */
+    left: auto !important;
+    right: auto !important;
+    top: 100% !important;
+}
+
+/* Принудительное создание нового stacking context */
+.navbar .dropdown {
+    isolation: isolate !important;
+    z-index: 10000 !important;
+    position: relative !important;
+    transform: translateZ(0) !important;
+}
+
+/* Убираем z-index с конфликтующих элементов */
+.navbar .nav-item:not(.dropdown) {
+    z-index: auto !important;
+    position: static !important;
+}
+
+/* Специально для мобильных устройств */
+@media (max-width: 768px) {
+    .navbar .dropdown-menu {
+        z-index: 999999 !important;
+        position: absolute !important; /* Оставляем absolute, не fixed */
+        transform: translateZ(99999px) !important;
+        /* Убираем принудительное позиционирование */
+        /* top: auto !important; */
+        /* left: 1rem !important; */
+        /* right: 1rem !important; */
+        max-width: calc(100vw - 2rem) !important;
+    }
+    
+    .navbar .dropdown.show .dropdown-menu {
+        position: absolute !important;
+        z-index: 999999 !important;
+    }
+}
+
+/* Отключаем z-index у всех остальных элементов навигации */
+.navbar-nav .nav-item:not(.dropdown),
+.navbar-nav .nav-link:not(.dropdown-toggle) {
+    z-index: 1 !important;
+    position: relative !important;
+}
+
+/* Специальное правило для последнего dropdown (пользователь) */
+.navbar-nav .dropdown:last-child {
+    z-index: 99990 !important;
+}
+
+/* Специальное правило для предпоследнего dropdown (разделы) */
+.navbar-nav .dropdown:nth-last-child(2) {
+    z-index: 99995 !important;
+}
+
+/* Супер критическое правило - если ничего не помогает */
+body .navbar .dropdown-menu {
+    z-index: 2147483647 !important; /* Максимальное значение z-index */
+}
+
+/* Убираем overflow у родительских элементов */
+.navbar,
+.navbar-collapse,
+.navbar-nav {
+    overflow: visible !important;
+    position: relative !important;
+}
+
+/* Отладка - показывает z-index значения */
+.debug-extreme .dropdown-menu::after {
+    content: 'Z: ' attr(style);
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: lime;
+    color: black;
+    padding: 2px;
+    font-size: 8px;
+    font-weight: bold;
+    z-index: 2147483647;
+}

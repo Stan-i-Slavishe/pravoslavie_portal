@@ -1,0 +1,83 @@
+/* Исправление позиционирования dropdown меню */
+
+/* Сброс принудительного позиционирования для правильного выравнивания */
+.navbar .dropdown-menu {
+    /* Сохраняем только z-index, убираем принудительное позиционирование */
+    z-index: 99999 !important;
+    position: absolute !important;
+    /* Позволяем Bootstrap самому управлять позиционированием */
+    inset: unset !important;
+    transform: unset !important;
+    left: unset !important;
+    right: unset !important;
+    top: unset !important;
+    bottom: unset !important;
+}
+
+/* Восстанавливаем стандартное Bootstrap поведение */
+.navbar .dropdown .dropdown-menu {
+    position: absolute !important;
+    z-index: 99999 !important;
+    /* Используем стандартные Bootstrap классы для позиционирования */
+    top: 100% !important;
+    left: 0 !important;
+    /* Убираем наши transform */
+    transform: none !important;
+    will-change: auto !important;
+}
+
+/* Для правостороннего выравнивания пользовательского меню */
+.navbar-nav .dropdown:last-child .dropdown-menu {
+    left: auto !important;
+    right: 0 !important;
+}
+
+/* Мобильная версия - более мягкое исправление */
+@media (max-width: 768px) {
+    .navbar .dropdown-menu {
+        position: absolute !important;
+        z-index: 99999 !important;
+        /* Минимальные изменения позиционирования */
+        max-width: 90vw !important;
+        min-width: 200px !important;
+    }
+    
+    /* Обеспечиваем, что меню не выходит за границы экрана */
+    .navbar-nav .dropdown:last-child .dropdown-menu {
+        right: 0 !important;
+        left: auto !important;
+    }
+    
+    .navbar-nav .dropdown:not(:last-child) .dropdown-menu {
+        left: 0 !important;
+        right: auto !important;
+    }
+}
+
+/* Исправление для очень узких экранов */
+@media (max-width: 400px) {
+    .navbar .dropdown-menu {
+        max-width: 85vw !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        right: auto !important;
+    }
+}
+
+/* Убираем конфликтующие стили из предыдущих исправлений */
+.navbar .dropdown {
+    /* Оставляем только необходимые стили */
+    position: relative !important;
+    z-index: 1000 !important;
+}
+
+/* Гарантируем корректную работу Bootstrap dropdown */
+.dropdown-toggle::after {
+    display: inline-block !important;
+}
+
+.navbar .dropdown-menu.show {
+    display: block !important;
+    position: absolute !important;
+    z-index: 99999 !important;
+}

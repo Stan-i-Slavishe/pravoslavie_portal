@@ -91,9 +91,9 @@
                     {% if user.is_authenticated %}
                         <!-- Избранное -->
                         <li class="nav-item">
-                            <a class="nav-link position-relative" href="{% url 'books:favorites' %}" title="Избранные книги">
+                            <a class="nav-link" href="{% url 'books:favorites' %}" title="Избранные книги">
                                 <i class="bi bi-bookmark"></i>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" id="favorites-badge" style="display: none;">
+                                <span class="badge" id="favorites-badge" style="display: none;">
                                     0
                                 </span>
                             </a>
@@ -101,9 +101,9 @@
                         
                         <!-- Корзина -->
                         <li class="nav-item">
-                            <a class="nav-link position-relative" href="{% url 'shop:cart' %}" title="Корзина">
+                            <a class="nav-link" href="{% url 'shop:cart' %}" title="Корзина">
                                 <i class="bi bi-cart3"></i>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" id="cart-badge" style="display: none;">
+                                <span class="badge" id="cart-badge" style="display: none;">
                                     0
                                 </span>
                             </a>

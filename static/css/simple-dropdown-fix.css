@@ -1,0 +1,64 @@
+/* ПРОСТОЕ ИСПРАВЛЕНИЕ DROPDOWN - ТОЛЬКО САМОЕ НЕОБХОДИМОЕ */
+
+/* Только z-index + ПОЛНАЯ ШИРИНА для перекрытия */
+.navbar .dropdown-menu {
+    z-index: 9999 !important;
+    /* ДОБАВЛЯЕМ НЕПРОЗРАЧНЫЙ ФОН */
+    background-color: #ffffff !important;
+    border: 1px solid rgba(0,0,0,0.15) !important;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2) !important;
+    /* КРИТИЧНО: РАСШИРЯЕМ МЕНЮ НА ВСЮ ШИРИНУ */
+    min-width: 300px !important;
+    width: auto !important;
+}
+
+/* КРИТИЧНО: ПРИНУДИТЕЛЬНО СКРЫВАЕМ ADMIN КОГДА ОТКРЫТО МЕНЮ */
+.navbar .dropdown.show ~ .dropdown .nav-link,
+.navbar .dropdown.show ~ .nav-item .nav-link {
+    z-index: 1 !important;
+    opacity: 0.3 !important;
+    pointer-events: none !important;
+}
+
+/* АЛЬТЕРНАТИВНО: ПОЛНОСТЬЮ скрываем все элементы навигации кроме активного */
+.navbar .dropdown.show ~ * {
+    z-index: 1 !important;
+    position: relative !important;
+}
+
+/* Особенно для последнего dropdown (админ) */
+.navbar .dropdown.show ~ .dropdown:last-child {
+    z-index: 1 !important;
+    opacity: 0.5 !important;
+}
+
+/* Специально для мобильных - ПОЛНАЯ ШИРИНА */
+@media (max-width: 768px) {
+    .navbar .dropdown-menu {
+        z-index: 9999 !important;
+        background-color: #ffffff !important;
+        border: 1px solid rgba(0,0,0,0.2) !important;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.3) !important;
+        /* КРИТИЧНО: РАСТЯГИВАЕМ МЕНЮ */
+        min-width: 280px !important;
+        width: 90vw !important;
+        max-width: 350px !important;
+        /* Позиционирование для полного перекрытия */
+        left: 0 !important;
+        right: auto !important;
+    }
+    
+    /* НА МОБИЛЬНЫХ: полностью скрываем все остальные элементы */
+    .navbar .dropdown.show ~ * {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        z-index: 1 !important;
+    }
+    
+    /* Для правого меню (admin) - сдвигаем левее */
+    .navbar-nav .dropdown:last-child .dropdown-menu {
+        left: auto !important;
+        right: 0 !important;
+        min-width: 250px !important;
+    }
+}

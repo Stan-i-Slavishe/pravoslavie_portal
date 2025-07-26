@@ -293,6 +293,27 @@ def search_books(request):
     return JsonResponse({'books': books_data})
 
 
+@require_POST
+def track_book_view(request, book_id):
+    """Отслеживание просмотров книги (AJAX)"""
+    try:
+        book = get_object_or_404(Book, id=book_id)
+        
+        # Отслеживаем просмотр (один раз за сессию)
+        track_view_session(request, book)
+        
+        return JsonResponse({
+            'status': 'success',
+            'views_count': book.views_count
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+
+
 def get_favorites_count(request):
     """Получение количества избранных книг (AJAX)"""
     if not request.user.is_authenticated:

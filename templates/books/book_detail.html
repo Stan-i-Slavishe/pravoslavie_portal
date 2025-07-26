@@ -370,6 +370,42 @@
     font-style: italic;
 }
 
+/* Стили для отзывов */
+.review-form {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #e0e0e0;
+}
+
+.review-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.review-rating {
+    margin-bottom: 0.75rem;
+}
+
+.review-rating i {
+    color: #f39c12;
+    margin-right: 0.1rem;
+}
+
 @media (max-width: 768px) {
     .book-title {
         font-size: 1.8rem;
@@ -655,7 +691,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="review_text" class="form-label">Отзыв</label>
-                            <textarea name="text" 
+                            <textarea name="comment" 
                                       id="review_text" 
                                       class="form-control" 
                                       rows="4" 
@@ -681,7 +717,7 @@
                     {% for review in book.reviews.all %}
                         <div class="review-card">
                             <div class="review-header">
-                                <strong>{{ review.author.first_name|default:review.author.username }}</strong>
+                                <strong>{{ review.user.first_name|default:review.user.username }}</strong>
                                 <small class="text-muted">{{ review.created_at|date:"d.m.Y" }}</small>
                             </div>
                             <div class="review-rating">
@@ -693,7 +729,7 @@
                                     {% endif %}
                                 {% endfor %}
                             </div>
-                            <p class="mb-0">{{ review.text|linebreaks }}</p>
+                            <p class="mb-0">{{ review.comment|linebreaks }}</p>
                         </div>
                     {% endfor %}
                 </div>
@@ -925,13 +961,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
     
-    // Увеличение счетчика просмотров
+    // Увеличение счетчика просмотров - ВРЕМЕННО ОТКЛЮЧЕНО
+    /*
     fetch('/books/{{ book.id }}/view/', {
         method: 'POST',
         headers: {
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
         },
     });
+    */
 });
 </script>
 {% endblock %}

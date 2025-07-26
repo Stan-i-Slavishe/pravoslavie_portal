@@ -158,6 +158,11 @@ class Book(models.Model):
         return reverse('books:detail', kwargs={'slug': self.slug})
     
     @property
+    def reviews_count(self):
+        """Количество отзывов"""
+        return self.reviews.count()
+    
+    @property
     def is_available_for_download(self):
         """Доступна ли книга для скачивания"""
         return self.is_published and (self.is_free or self.file)

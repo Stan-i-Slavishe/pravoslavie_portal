@@ -11,6 +11,8 @@
     --stories-color: #e53e3e;
     --books-color: #38a169;
     --audio-color: #3182ce;
+    --fairy-tales-color: #9f7aea;
+    --shop-color: #d69e2e;
     
     /* Нейтральные цвета */
     --text-primary: #2d3748;
@@ -47,6 +49,14 @@
     gap: 1rem;
     flex-wrap: wrap;
     margin-bottom: 1.5rem;
+}
+
+/* ================== АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНОЙ НАВИГАЦИИ ================== */
+@media (max-width: 991.98px) {
+    /* Скрываем десктопную навигацию на мобильных */
+    .navbar.desktop-nav {
+        display: none !important;
+    }
 }
 
 .story-actions .btn {

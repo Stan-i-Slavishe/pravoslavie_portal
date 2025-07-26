@@ -14,6 +14,7 @@
         initScrollBehavior();
         initRippleEffect();
         initHapticFeedback();
+        initBurgerMenu();
         
         console.log('✅ Мобильная навигация инициализирована');
     }
@@ -130,6 +131,30 @@
                 }
             });
         });
+    }
+
+    // Инициализация кнопки-бургера
+    function initBurgerMenu() {
+        const burger = document.getElementById('mobileBurger');
+        if (!burger) return;
+        
+        // Анимация при клике
+        burger.addEventListener('click', function() {
+            this.classList.toggle('active');
+            
+            // Тактильная обратная связь
+            if ('vibrate' in navigator) {
+                navigator.vibrate(15);
+            }
+        });
+        
+        // Убираем активный класс при закрытии модального окна
+        const modal = document.getElementById('mobileMenuModal');
+        if (modal) {
+            modal.addEventListener('hidden.bs.modal', function() {
+                burger.classList.remove('active');
+            });
+        }
     }
 
     // Обновление бейджей

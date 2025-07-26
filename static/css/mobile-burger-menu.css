@@ -236,3 +236,13 @@
     background: transparent;
     border-radius: 20px;
 }
+
+/* БЫСТРОЕ ИСПРАВЛЕНИЕ БЕЛОГО ТЕКСТА */
+.mobile-menu-modal .modal-title {
+    color: white !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8) !important;
+}
+
+.mobile-menu-modal .modal-header {
+    color: white !important;
+}

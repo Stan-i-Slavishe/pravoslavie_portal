@@ -212,6 +212,14 @@
                 </a>
             </li>
 
+            <!-- Аудио -->
+            <li>
+                <a href="{% url 'audio:list' %}" class="mobile-nav-item" data-section="audio">
+                    <i class="bi bi-music-note-beamed mobile-nav-icon"></i>
+                    <span class="mobile-nav-text">Аудио</span>
+                </a>
+            </li>
+
             <!-- Магазин -->
             <li>
                 <a href="{% url 'shop:catalog' %}" class="mobile-nav-item" data-section="shop">
@@ -220,14 +228,6 @@
                     {% if user.is_authenticated %}
                         <span class="mobile-nav-badge" id="mobile-cart-badge" style="display: none;">0</span>
                     {% endif %}
-                </a>
-            </li>
-
-            <!-- Аудио -->
-            <li>
-                <a href="{% url 'audio:list' %}" class="mobile-nav-item" data-section="audio">
-                    <i class="bi bi-music-note-beamed mobile-nav-icon"></i>
-                    <span class="mobile-nav-text">Аудио</span>
                 </a>
             </li>
         </ul>

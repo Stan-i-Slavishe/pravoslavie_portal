@@ -604,3 +604,45 @@ def reading_stats(request):
     }
     
     return render(request, 'books/reading_stats.html', context)
+
+
+@login_required
+def get_bookmarks(request, book_id):
+    """Получение списка закладок (AJAX)"""
+    try:
+        book = get_object_or_404(Book, id=book_id)
+        
+        # Получаем сессию чтения
+        try:
+            reading_session = ReadingSession.objects.get(
+                user=request.user,
+                book=book
+            )
+            
+            # Получаем все закладки
+            bookmarks = reading_session.bookmarks.all().order_by('page')
+            
+            bookmarks_data = []
+            for bookmark in bookmarks:
+                bookmarks_data.append({
+                    'page': bookmark.page,
+                    'note': bookmark.note,
+                    'created_at': bookmark.created_at.strftime('%d.%m.%Y %H:%M')
+                })
+            
+            return JsonResponse({
+                'status': 'success',
+                'bookmarks': bookmarks_data
+            })
+            
+        except ReadingSession.DoesNotExist:
+            return JsonResponse({
+                'status': 'success',
+                'bookmarks': []
+            })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)

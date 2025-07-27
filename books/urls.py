@@ -13,6 +13,7 @@ urlpatterns = [
     path('read/<slug:slug>/', views.read_book, name='read'),
     path('progress/<int:book_id>/', views.update_reading_progress, name='progress'),
     path('bookmark/<int:book_id>/', views.add_bookmark, name='bookmark'),
+    path('bookmarks/<int:book_id>/', views.get_bookmarks, name='get_bookmarks'),
     path('bookmark/<int:book_id>/<int:bookmark_id>/', views.remove_bookmark, name='remove_bookmark'),
     
     # Категории

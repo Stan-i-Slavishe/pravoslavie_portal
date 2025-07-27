@@ -1,0 +1,462 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Чтение: {{ book.title }} - Православный портал{% endblock %}
+
+{% block extra_css %}
+<style>
+    .reader-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .reader-header {
+        background: white;
+        border-bottom: 1px solid #dee2e6;
+        padding: 1rem 0;
+        margin-bottom: 2rem;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .reader-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .reader-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin: 0;
+        color: var(--orthodox-blue);
+    }
+    
+    .reader-buttons {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .btn-reader {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .btn-reader-primary {
+        background: var(--orthodox-blue);
+        color: white;
+    }
+    
+    .btn-reader-primary:hover {
+        background: #1e3d6f;
+        transform: translateY(-1px);
+    }
+    
+    .btn-reader-secondary {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .btn-reader-secondary:hover {
+        background: #545b62;
+        transform: translateY(-1px);
+    }
+    
+    .btn-reader-outline {
+        background: transparent;
+        color: var(--orthodox-blue);
+        border: 2px solid var(--orthodox-blue);
+    }
+    
+    .btn-reader-outline:hover {
+        background: var(--orthodox-blue);
+        color: white;
+    }
+    
+    .reading-progress {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .progress-bar {
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 10px 0;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--orthodox-blue), #4a90e2);
+        transition: width 0.3s ease;
+    }
+    
+    .book-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        line-height: 1.8;
+        font-size: 1.1rem;
+        color: #333;
+    }
+    
+    .book-content h1, .book-content h2, .book-content h3, 
+    .book-content h4, .book-content h5, .book-content h6 {
+        color: var(--orthodox-blue);
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .book-content p {
+        margin-bottom: 1.2rem;
+        text-align: justify;
+    }
+    
+    .font-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .font-size-btn {
+        background: none;
+        border: 1px solid #dee2e6;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .font-size-btn:hover {
+        background: #f8f9fa;
+        border-color: var(--orthodox-blue);
+    }
+    
+    @media (max-width: 768px) {
+        .reader-container {
+            padding: 10px;
+        }
+        
+        .reader-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .reader-buttons {
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .book-content {
+            padding: 1rem;
+            font-size: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reader-container">
+    <!-- Заголовок читателя -->
+    <div class="reader-header">
+        <div class="reader-controls">
+            <h1 class="reader-title">{{ book.title }}</h1>
+            
+            <div class="reader-buttons">
+                <!-- Кнопка закладки -->
+                <button class="btn-reader btn-reader-primary" onclick="addBookmark()">
+                    <i class="bi bi-bookmark-plus"></i> Закладка
+                </button>
+                
+                <!-- Управление шрифтом -->
+                <div class="font-controls">
+                    <button class="font-size-btn" onclick="changeFontSize(-1)" title="Уменьшить шрифт">
+                        <i class="bi bi-type"></i>-
+                    </button>
+                    <button class="font-size-btn" onclick="changeFontSize(1)" title="Увеличить шрифт">
+                        <i class="bi bi-type"></i>+
+                    </button>
+                </div>
+                
+                <!-- Назад к книге -->
+                <a href="{% url 'books:detail' book.slug %}" class="btn-reader btn-reader-secondary">
+                    <i class="bi bi-arrow-left"></i> К книге
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Прогресс чтения -->
+    <div class="reading-progress">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span>Прогресс чтения:</span>
+            <span id="progress-text">{{ reading_session.progress_percentage|floatformat:0 }}%</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" 
+                 style="width: {{ reading_session.progress_percentage|floatformat:0 }}%"></div>
+        </div>
+        <div class="d-flex justify-content-between">
+            <small class="text-muted">
+                Страница <span id="current-page">{{ reading_session.current_page }}</span>
+                {% if book.pages %} из {{ book.pages }}{% endif %}
+            </small>
+            <small class="text-muted">
+                Время чтения: <span id="reading-time">{{ reading_session.reading_time }}</span> мин
+            </small>
+        </div>
+    </div>
+
+    <!-- Закладки -->
+    {% if reading_session.bookmarks %}
+    <div class="bookmarks-panel">
+        <h6><i class="bi bi-bookmarks"></i> Мои закладки</h6>
+        <div id="bookmarks-list">
+            {% for bookmark in reading_session.bookmarks %}
+            <div class="bookmark-item">
+                <div>
+                    <strong>Страница {{ bookmark.page }}</strong>
+                    {% if bookmark.note %}
+                    <br><small class="text-muted">{{ bookmark.note }}</small>
+                    {% endif %}
+                </div>
+                <button class="btn btn-sm btn-outline-danger" onclick="removeBookmark({{ forloop.counter0 }})">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Содержание книги -->
+    <div class="book-content" id="book-content">
+        {% if chapters %}
+            <!-- Если есть главы, показываем первую -->
+            <div id="chapter-content">
+                <h2>{{ chapters.0.title }}</h2>
+                <div>{{ chapters.0.content|linebreaks }}</div>
+            </div>
+        {% else %}
+            <!-- Если нет глав, показываем основное содержание -->
+            {% if book.content %}
+                {{ book.content|linebreaks }}
+            {% else %}
+                <p class="text-muted">Содержание книги пока недоступно для онлайн чтения.</p>
+                <p>Вы можете <a href="{% url 'books:download' book.id %}">скачать книгу</a> для чтения офлайн.</p>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentPage = {{ reading_session.current_page }};
+let readingStartTime = Date.now();
+let fontSize = 1.1; // rem
+
+// Функции управления закладками
+function addBookmark() {
+    const note = prompt('Добавить заметку к закладке (необязательно):');
+    
+    fetch(`/books/bookmark/${{{ book.id }}}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            page: currentPage,
+            note: note || ''
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            showToast('Закладка добавлена', 'success');
+            location.reload(); // Перезагружаем для обновления закладок
+        } else {
+            showToast(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Ошибка при добавлении закладки', 'error');
+    });
+}
+
+function removeBookmark(bookmarkId) {
+    if (confirm('Удалить эту закладку?')) {
+        fetch(`/books/bookmark/${{{ book.id }}}/${bookmarkId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showToast('Закладка удалена', 'success');
+                location.reload();
+            } else {
+                showToast(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Ошибка при удалении закладки', 'error');
+        });
+    }
+}
+
+// Функции управления шрифтом
+function changeFontSize(delta) {
+    fontSize += delta * 0.1;
+    fontSize = Math.max(0.8, Math.min(2.0, fontSize));
+    
+    document.getElementById('book-content').style.fontSize = fontSize + 'rem';
+    
+    // Сохраняем в localStorage
+    localStorage.setItem('reader-font-size', fontSize);
+}
+
+// Функции прогресса
+function updateProgress(page) {
+    currentPage = page;
+    const totalPages = {{ book.pages|default:100 }};
+    const progress = Math.min(100, (page / totalPages) * 100);
+    
+    document.getElementById('current-page').textContent = page;
+    document.getElementById('progress-text').textContent = Math.round(progress) + '%';
+    document.getElementById('progress-fill').style.width = progress + '%';
+    
+    // Отправляем обновление на сервер
+    updateReadingProgressOnServer(page);
+}
+
+function updateReadingProgressOnServer(page) {
+    const readingTime = Math.floor((Date.now() - readingStartTime) / 60000); // минуты
+    
+    fetch(`/books/progress/${{{ book.id }}}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            current_page: page,
+            reading_time: readingTime
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Обновляем отображение времени чтения
+            const totalTime = {{ reading_session.reading_time }} + readingTime;
+            document.getElementById('reading-time').textContent = totalTime;
+        }
+    })
+    .catch(error => console.error('Error updating progress:', error));
+}
+
+// Утилиты
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showToast(message, type = 'info') {
+    // Простая реализация уведомлений
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 6px;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    `;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    // Восстанавливаем размер шрифта
+    const savedFontSize = localStorage.getItem('reader-font-size');
+    if (savedFontSize) {
+        fontSize = parseFloat(savedFontSize);
+        document.getElementById('book-content').style.fontSize = fontSize + 'rem';
+    }
+    
+    // Автосохранение прогресса каждые 30 секунд
+    setInterval(() => {
+        updateReadingProgressOnServer(currentPage);
+    }, 30000);
+    
+    // Обработка горячих клавиш
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + Plus - увеличить шрифт
+        if ((e.ctrlKey || e.metaKey) && e.key === '=') {
+            e.preventDefault();
+            changeFontSize(1);
+        }
+        
+        // Ctrl/Cmd + Minus - уменьшить шрифт
+        if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+            e.preventDefault();
+            changeFontSize(-1);
+        }
+        
+        // B - добавить закладку
+        if (e.key === 'b' && e.altKey) {
+            e.preventDefault();
+            addBookmark();
+        }
+    });
+});
+
+// Предотвращение потери данных при закрытии страницы
+window.addEventListener('beforeunload', function() {
+    updateReadingProgressOnServer(currentPage);
+});
+</script>
+{% endblock %}

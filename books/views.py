@@ -2,11 +2,12 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse, Http404
-from django.db.models import Q, Avg
+from django.db.models import Q, Avg, F
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_POST
 from django.utils import timezone
-from .models import Book, Category, Tag, BookDownload, UserFavoriteBook, BookReview
+from django.db import models
+from .models import Book, Category, Tag, BookDownload, UserFavoriteBook, BookReview, ReadingSession, ReadingBookmark, BookChapter
 from core.utils.views import track_view_session
 
 
@@ -83,11 +84,32 @@ def book_detail(request, slug):
     
     # Проверяем, добавлена ли книга в избранное текущим пользователем
     is_favorite = False
+    user_can_read = book.is_free
+    reading_session = None
+    
     if request.user.is_authenticated:
         is_favorite = UserFavoriteBook.objects.filter(
             user=request.user,
             book=book
         ).exists()
+        
+        # Проверяем права на чтение
+        if not book.is_free:
+            from shop.models import Purchase
+            user_can_read = Purchase.objects.filter(
+                user=request.user,
+                product__name__icontains=book.title
+            ).exists()
+        
+        # Получаем сессию чтения если есть
+        if user_can_read:
+            try:
+                reading_session = ReadingSession.objects.get(
+                    user=request.user,
+                    book=book
+                )
+            except ReadingSession.DoesNotExist:
+                pass
     
     # Получаем отзывы
     reviews = book.reviews.select_related('user').order_by('-created_at')
@@ -97,6 +119,8 @@ def book_detail(request, slug):
         'related_books': related_books,
         'is_favorite': is_favorite,
         'reviews': reviews,
+        'user_can_read': user_can_read,
+        'reading_session': reading_session,
         'title': book.title,
     }
     
@@ -355,3 +379,228 @@ def get_favorites_count(request):
     
     count = UserFavoriteBook.objects.filter(user=request.user).count()
     return JsonResponse({'count': count})
+
+
+@login_required
+def read_book(request, slug):
+    """Чтение книги онлайн"""
+    book = get_object_or_404(
+        Book.objects.select_related('category').prefetch_related('chapters'),
+        slug=slug,
+        is_published=True
+    )
+    
+    # Проверяем права на чтение
+    user_can_read = book.is_free
+    if not book.is_free:
+        # Проверяем, купил ли пользователь книгу (интеграция с магазином)
+        from shop.models import Purchase
+        user_can_read = Purchase.objects.filter(
+            user=request.user,
+            product__name__icontains=book.title  # Простая проверка по названию
+        ).exists()
+    
+    if not user_can_read:
+        messages.error(request, 'У вас нет доступа к чтению этой книги. Необходимо приобрести её.')
+        return redirect('books:detail', slug=book.slug)
+    
+    # Получаем или создаем сессию чтения
+    reading_session, created = ReadingSession.objects.get_or_create(
+        user=request.user,
+        book=book,
+        defaults={
+            'total_pages': book.pages or 100,  # Если не указано, ставим 100
+        }
+    )
+    
+    # Получаем главы если есть
+    chapters = book.chapters.all().order_by('order')
+    
+    # Определяем шаблон в зависимости от формата книги
+    if book.format == 'pdf' and book.file:
+        template = 'books/reader_pdf.html'
+    else:
+        template = 'books/reader_html.html'
+    
+    context = {
+        'book': book,
+        'reading_session': reading_session,
+        'chapters': chapters,
+        'title': f'Чтение: {book.title}',
+        'user_can_read': user_can_read,
+    }
+    
+    return render(request, template, context)
+
+
+@login_required
+@require_POST
+def update_reading_progress(request, book_id):
+    """Обновление прогресса чтения (AJAX)"""
+    try:
+        import json
+        
+        book = get_object_or_404(Book, id=book_id)
+        data = json.loads(request.body)
+        
+        current_page = data.get('current_page', 1)
+        reading_time = data.get('reading_time', 0)
+        
+        # Получаем сессию чтения
+        reading_session = get_object_or_404(
+            ReadingSession,
+            user=request.user,
+            book=book
+        )
+        
+        # Обновляем прогресс
+        reading_session.current_page = current_page
+        reading_session.reading_time += reading_time
+        reading_session.save()
+        
+        return JsonResponse({
+            'status': 'success',
+            'progress_percentage': reading_session.progress_percentage,
+            'reading_time': reading_session.reading_time
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+
+
+@login_required
+@require_POST
+def add_bookmark(request, book_id):
+    """Добавление закладки (AJAX)"""
+    try:
+        import json
+        
+        book = get_object_or_404(Book, id=book_id)
+        data = json.loads(request.body)
+        
+        page = data.get('page', 1)
+        note = data.get('note', '')
+        
+        # Получаем сессию чтения
+        reading_session = get_object_or_404(
+            ReadingSession,
+            user=request.user,
+            book=book
+        )
+        
+        # Проверяем, нет ли уже закладки на этой странице
+        bookmark, created = ReadingBookmark.objects.get_or_create(
+            session=reading_session,
+            page=page,
+            defaults={'note': note}
+        )
+        
+        if not created:
+            bookmark.note = note
+            bookmark.save()
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Закладка добавлена' if created else 'Закладка обновлена'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+
+
+@login_required
+@require_POST
+def remove_bookmark(request, book_id, bookmark_id):
+    """Удаление закладки (AJAX)"""
+    try:
+        book = get_object_or_404(Book, id=book_id)
+        
+        # Получаем сессию чтения
+        reading_session = get_object_or_404(
+            ReadingSession,
+            user=request.user,
+            book=book
+        )
+        
+        # Получаем закладку по индексу
+        bookmarks = reading_session.bookmarks.all()
+        if 0 <= bookmark_id < len(bookmarks):
+            bookmarks[bookmark_id].delete()
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Закладка удалена'
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Закладка не найдена'
+            }, status=404)
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+
+
+@login_required
+def reading_history(request):
+    """История чтения пользователя"""
+    reading_sessions = ReadingSession.objects.filter(
+        user=request.user
+    ).select_related('book').order_by('-last_read')
+    
+    # Пагинация
+    paginator = Paginator(reading_sessions, 12)
+    page = request.GET.get('page')
+    sessions = paginator.get_page(page)
+    
+    context = {
+        'sessions': sessions,
+        'title': 'История чтения',
+    }
+    
+    return render(request, 'books/reading_history.html', context)
+
+
+@login_required
+def reading_stats(request):
+    """Статистика чтения пользователя"""
+    sessions = ReadingSession.objects.filter(user=request.user)
+    
+    total_books = sessions.count()
+    completed_books = sessions.filter(current_page__gte=F('total_pages')).count()
+    total_reading_time = sum(session.reading_time for session in sessions)
+    
+    # Последние прочитанные книги
+    recent_books = sessions.select_related('book').order_by('-last_read')[:5]
+    
+    # Статистика по месяцам (последние 6 месяцев)
+    from django.db.models import Count
+    from datetime import datetime, timedelta
+    
+    six_months_ago = timezone.now() - timedelta(days=180)
+    monthly_stats = sessions.filter(
+        last_read__gte=six_months_ago
+    ).extra(
+        select={'month': 'EXTRACT(month FROM last_read)'},
+    ).values('month').annotate(
+        count=Count('id')
+    ).order_by('month')
+    
+    context = {
+        'total_books': total_books,
+        'completed_books': completed_books,
+        'total_reading_time': total_reading_time,
+        'recent_books': recent_books,
+        'monthly_stats': list(monthly_stats),
+        'title': 'Статистика чтения',
+    }
+    
+    return render(request, 'books/reading_stats.html', context)

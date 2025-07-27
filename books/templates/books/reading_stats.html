@@ -1,0 +1,498 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Статистика чтения - Православный портал{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 25px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    
+    .stats-card-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+    }
+    
+    .stats-card-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+        color: #333;
+    }
+    
+    .stats-card-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 0;
+    }
+    
+    .stats-card-change {
+        font-size: 0.8rem;
+        margin-top: 8px;
+    }
+    
+    .change-positive {
+        color: #28a745;
+    }
+    
+    .change-negative {
+        color: #dc3545;
+    }
+    
+    .icon-books {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+    }
+    
+    .icon-completed {
+        background: linear-gradient(135deg, #28a745, #1e7e34);
+        color: white;
+    }
+    
+    .icon-time {
+        background: linear-gradient(135deg, #ffc107, #d39e00);
+        color: white;
+    }
+    
+    .icon-pages {
+        background: linear-gradient(135deg, #17a2b8, #117a8b);
+        color: white;
+    }
+    
+    .recent-books-list {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 25px;
+    }
+    
+    .recent-book-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .recent-book-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    
+    .recent-book-cover {
+        width: 50px;
+        height: 70px;
+        object-fit: cover;
+        border-radius: 6px;
+        margin-right: 15px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    
+    .recent-book-info {
+        flex: 1;
+    }
+    
+    .recent-book-title {
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: #333;
+    }
+    
+    .recent-book-progress {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    
+    .recent-book-date {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-top: 4px;
+    }
+    
+    .reading-chart {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 25px;
+        margin-bottom: 20px;
+    }
+    
+    .chart-placeholder {
+        height: 300px;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+    
+    .achievement-badge {
+        background: linear-gradient(135deg, var(--gold-accent), #b8941f);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin: 5px;
+    }
+    
+    .reading-goal {
+        background: var(--soft-gray);
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    
+    .goal-progress {
+        height: 10px;
+        background: #e9ecef;
+        border-radius: 5px;
+        overflow: hidden;
+        margin: 10px 0;
+    }
+    
+    .goal-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--orthodox-blue), #4a90e2);
+        transition: width 0.3s ease;
+    }
+    
+    @media (max-width: 768px) {
+        .stats-card {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stats-card-number {
+            font-size: 2rem;
+        }
+        
+        .recent-books-list {
+            padding: 20px;
+        }
+        
+        .recent-book-cover {
+            width: 40px;
+            height: 60px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'books:list' %}">Библиотека</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Статистика чтения</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-bar-chart"></i> Статистика чтения</h1>
+        <a href="{% url 'books:reading_history' %}" class="btn btn-outline-primary">
+            <i class="bi bi-clock-history"></i> История
+        </a>
+    </div>
+
+    <!-- Основная статистика -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stats-card">
+                <div class="stats-card-icon icon-books">
+                    <i class="bi bi-books"></i>
+                </div>
+                <div class="stats-card-number">{{ total_books }}</div>
+                <div class="stats-card-label">Книг в процессе</div>
+                <div class="stats-card-change change-positive">
+                    <i class="bi bi-arrow-up"></i> +{{ total_books|default:0 }} за всё время
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stats-card">
+                <div class="stats-card-icon icon-completed">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="stats-card-number">{{ completed_books }}</div>
+                <div class="stats-card-label">Книг завершено</div>
+                <div class="stats-card-change change-positive">
+                    <i class="bi bi-trophy"></i> 
+                    {% if total_books > 0 %}
+                        {% widthratio completed_books total_books 100 %}% завершенных
+                    {% else %}
+                        0% завершенных
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stats-card">
+                <div class="stats-card-icon icon-time">
+                    <i class="bi bi-clock"></i>
+                </div>
+                <div class="stats-card-number">{{ total_reading_time }}</div>
+                <div class="stats-card-label">Минут чтения</div>
+                <div class="stats-card-change">
+                    <i class="bi bi-calendar-week"></i> 
+                    {% if total_reading_time > 0 %}
+                        ~{% widthratio total_reading_time 60 1 %} часов
+                    {% else %}
+                        0 часов
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stats-card">
+                <div class="stats-card-icon icon-pages">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+                <div class="stats-card-number">
+                    {% for book in recent_books %}{{ book.current_page }}{% if not forloop.last %} + {% endif %}{% endfor %}
+                </div>
+                <div class="stats-card-label">Страниц прочитано</div>
+                <div class="stats-card-change">
+                    <i class="bi bi-book"></i> 
+                    {% if recent_books %}
+                        Среднее: {% widthratio recent_books.count recent_books.count 1 %} стр/книга
+                    {% else %}
+                        0 стр/книга
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- График активности -->
+        <div class="col-lg-8 mb-4">
+            <div class="reading-chart">
+                <h5><i class="bi bi-graph-up"></i> Активность чтения</h5>
+                <div class="chart-placeholder">
+                    <div class="text-center">
+                        <i class="bi bi-bar-chart fs-1 mb-3"></i><br>
+                        График активности чтения<br>
+                        <small class="text-muted">(будет добавлен в будущих обновлениях)</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Достижения -->
+            <div class="stats-card">
+                <h5><i class="bi bi-trophy"></i> Достижения</h5>
+                <div class="mt-3">
+                    {% if total_books >= 1 %}
+                    <span class="achievement-badge">
+                        <i class="bi bi-book"></i> Первая книга
+                    </span>
+                    {% endif %}
+                    
+                    {% if completed_books >= 1 %}
+                    <span class="achievement-badge">
+                        <i class="bi bi-check-circle"></i> Первая завершенная
+                    </span>
+                    {% endif %}
+                    
+                    {% if total_reading_time >= 60 %}
+                    <span class="achievement-badge">
+                        <i class="bi bi-clock"></i> Час чтения
+                    </span>
+                    {% endif %}
+                    
+                    {% if total_books >= 5 %}
+                    <span class="achievement-badge">
+                        <i class="bi bi-books"></i> Активный читатель
+                    </span>
+                    {% endif %}
+                    
+                    {% if completed_books >= 3 %}
+                    <span class="achievement-badge">
+                        <i class="bi bi-star"></i> Завершитель
+                    </span>
+                    {% endif %}
+                    
+                    {% if total_reading_time >= 300 %}
+                    <span class="achievement-badge">
+                        <i class="bi bi-gem"></i> Книголюб
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <!-- Цель чтения -->
+                <div class="reading-goal">
+                    <h6><i class="bi bi-target"></i> Цель на месяц</h6>
+                    <p class="small text-muted mb-2">Прочитать 3 книги</p>
+                    <div class="goal-progress">
+                        <div class="goal-progress-bar" style="width: {% widthratio completed_books 3 100 %}%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between small">
+                        <span>{{ completed_books }} из 3 книг</span>
+                        <span>{% widthratio completed_books 3 100 %}%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Последние книги -->
+        <div class="col-lg-4 mb-4">
+            <div class="recent-books-list">
+                <h5><i class="bi bi-clock-history"></i> Последние книги</h5>
+                
+                {% if recent_books %}
+                    <div class="mt-3">
+                        {% for session in recent_books %}
+                        <div class="recent-book-item">
+                            {% if session.book.cover %}
+                                <img src="{{ session.book.cover.url }}" alt="{{ session.book.title }}" class="recent-book-cover">
+                            {% else %}
+                                <div class="recent-book-cover bg-light d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-book text-muted"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="recent-book-info">
+                                <div class="recent-book-title">
+                                    <a href="{% url 'books:detail' session.book.slug %}" class="text-decoration-none">
+                                        {{ session.book.title|truncatechars:30 }}
+                                    </a>
+                                </div>
+                                <div class="recent-book-progress">
+                                    {{ session.progress_percentage|floatformat:0 }}% • 
+                                    Стр. {{ session.current_page }}/{{ session.total_pages }}
+                                </div>
+                                <div class="recent-book-date">
+                                    {{ session.last_read|date:"d.m.Y" }}
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <a href="{% url 'books:read' session.book.slug %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-play"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <a href="{% url 'books:reading_history' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-arrow-right"></i> Вся история
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-book text-muted fs-1"></i>
+                        <p class="text-muted mt-2 mb-0">Пока нет прочитанных книг</p>
+                        <a href="{% url 'books:list' %}" class="btn btn-primary btn-sm mt-2">
+                            <i class="bi bi-book"></i> Начать читать
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Рекомендации для улучшения привычки чтения -->
+    <div class="stats-card">
+        <h5><i class="bi bi-lightbulb"></i> Рекомендации</h5>
+        <div class="row mt-3">
+            {% if total_reading_time < 30 %}
+            <div class="col-md-6 mb-3">
+                <div class="p-3 bg-light rounded">
+                    <h6><i class="bi bi-clock text-warning"></i> Увеличьте время чтения</h6>
+                    <p class="small mb-0">Попробуйте читать хотя бы 15 минут в день. Это поможет выработать привычку.</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if completed_books == 0 and total_books > 0 %}
+            <div class="col-md-6 mb-3">
+                <div class="p-3 bg-light rounded">
+                    <h6><i class="bi bi-target text-success"></i> Завершите первую книгу</h6>
+                    <p class="small mb-0">У вас есть начатые книги. Сосредоточьтесь на завершении одной из них.</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if total_books < 3 %}
+            <div class="col-md-6 mb-3">
+                <div class="p-3 bg-light rounded">
+                    <h6><i class="bi bi-books text-info"></i> Расширьте библиотеку</h6>
+                    <p class="small mb-0">Изучите наш каталог и найдите книги по интересующим вас темам.</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="col-md-6 mb-3">
+                <div class="p-3 bg-light rounded">
+                    <h6><i class="bi bi-calendar text-primary"></i> Читайте регулярно</h6>
+                    <p class="small mb-0">Установите напоминание для ежедневного чтения в удобное время.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Анимация счетчиков при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    const counters = document.querySelectorAll('.stats-card-number');
+    
+    counters.forEach(counter => {
+        const target = parseInt(counter.textContent);
+        const duration = 1000; // 1 секунда
+        const step = target / (duration / 16); // 60 FPS
+        let current = 0;
+        
+        const timer = setInterval(() => {
+            current += step;
+            if (current >= target) {
+                counter.textContent = target;
+                clearInterval(timer);
+            } else {
+                counter.textContent = Math.floor(current);
+            }
+        }, 16);
+    });
+    
+    // Анимация прогресс-баров
+    const progressBars = document.querySelectorAll('.goal-progress-bar');
+    progressBars.forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.width = width;
+        }, 500);
+    });
+});
+</script>
+{% endblock %}

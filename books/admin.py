@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from .models import Category, Tag, Book, BookReview, BookDownload, UserFavoriteBook
+from .models import Category, Tag, Book, BookReview, BookDownload, UserFavoriteBook, ReadingSession, ReadingBookmark, BookChapter
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -166,6 +166,79 @@ class UserFavoriteBookAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('book', 'user')
+
+
+@admin.register(ReadingSession)
+class ReadingSessionAdmin(admin.ModelAdmin):
+    list_display = ['user', 'book', 'current_page', 'total_pages', 'progress_percentage', 'reading_time', 'last_read']
+    list_filter = ['last_read', 'created_at', 'book__category', 'theme']
+    search_fields = ['user__username', 'book__title']
+    readonly_fields = ['progress_percentage', 'created_at', 'last_read']
+    date_hierarchy = 'last_read'
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('user', 'book')
+        }),
+        ('Прогресс чтения', {
+            'fields': ('current_page', 'total_pages', 'progress_percentage', 'reading_time')
+        }),
+        ('Настройки чтения', {
+            'fields': ('font_size', 'theme'),
+            'classes': ('collapse',)
+        }),
+        ('Временные метки', {
+            'fields': ('created_at', 'last_read'),
+            'classes': ('collapse',)
+        })
+    )
+    
+    def progress_percentage(self, obj):
+        return f"{obj.progress_percentage:.1f}%"
+    progress_percentage.short_description = 'Прогресс'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('book', 'user')
+
+
+@admin.register(ReadingBookmark)
+class ReadingBookmarkAdmin(admin.ModelAdmin):
+    list_display = ['session', 'page', 'note_excerpt', 'created_at']
+    list_filter = ['created_at', 'session__book__category']
+    search_fields = ['session__user__username', 'session__book__title', 'note']
+    readonly_fields = ['created_at']
+    date_hierarchy = 'created_at'
+    
+    def note_excerpt(self, obj):
+        return obj.note[:50] + '...' if len(obj.note) > 50 else obj.note
+    note_excerpt.short_description = 'Заметка'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('session__book', 'session__user')
+
+
+@admin.register(BookChapter)
+class BookChapterAdmin(admin.ModelAdmin):
+    list_display = ['book', 'title', 'order', 'page_start', 'page_end']
+    list_filter = ['book__category']
+    search_fields = ['book__title', 'title']
+    ordering = ['book', 'order']
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('book', 'title', 'order')
+        }),
+        ('Содержание', {
+            'fields': ('content',)
+        }),
+        ('Страницы', {
+            'fields': ('page_start', 'page_end'),
+            'classes': ('collapse',)
+        })
+    )
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('book')
 
 # Дополнительные настройки админки
 admin.site.site_header = 'Православный портал - Администрирование'

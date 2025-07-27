@@ -105,8 +105,10 @@ def book_detail(request, slug):
 
 @login_required
 def download_book(request, book_id):
-    """Скачивание книги - ПРОСТОЕ РЕШЕНИЕ ДЛЯ ИСПРАВЛЕНИЯ ИМЕНИ"""
+    """Скачивание книги - ФИНАЛЬНАЯ ИСПРАВЛЕННАЯ ВЕРСИЯ"""
     import os
+    import re
+    from urllib.parse import quote
     
     # Получаем книгу
     book = get_object_or_404(Book, id=book_id, is_published=True)
@@ -134,17 +136,21 @@ def download_book(request, book_id):
     # Получаем реальное расширение файла
     file_extension = os.path.splitext(book.file.name)[1]
     if not file_extension:
+        # Если расширения нет, используем формат из модели
         file_extension = f'.{book.format}'
     
-    # ПРОСТОЕ И НАДЕЖНОЕ ИМЯ ФАЙЛА (только ASCII)
-    # Для книги "Яндекс директ" используем простое имя
-    if book.id == 2:  # Яндекс директ
-        filename = f"Yandeks_direkt{file_extension}"
-    else:
-        # Для других книг создаем простое ASCII имя
-        filename = f"book_{book.id}{file_extension}"
+    # Очищаем название книги от специальных символов
+    safe_title = re.sub(r'[<>:"/\\|?*]', '', book.title)
+    safe_title = safe_title.strip()
     
-    # ПРИНУДИТЕЛЬНО ИСПОЛЬЗУЕМ application/octet-stream
+    # Формируем имя файла
+    filename = f"{safe_title}{file_extension}"
+    
+    # Кодируем имя файла для безопасности
+    filename_encoded = quote(filename.encode('utf-8'))
+    
+    # ПРИНУДИТЕЛЬНО ИСПОЛЬЗУЕМ application/octet-stream для скачивания
+    # Вместо application/pdf, чтобы браузер не открывал файл для просмотра
     mime_type = 'application/octet-stream'
     
     # Возвращаем файл
@@ -152,15 +158,14 @@ def download_book(request, book_id):
         with open(book.file.path, 'rb') as file:
             response = HttpResponse(file.read(), content_type=mime_type)
             
-            # ПРОСТОЙ заголовок Content-Disposition (только ASCII)
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            # Используем правильный заголовок Content-Disposition с поддержкой UTF-8
+            response['Content-Disposition'] = f'attachment; filename="{filename}"; filename*=UTF-8\'\'{filename_encoded}'
             response['Content-Length'] = os.path.getsize(book.file.path)
             
-            # Отключаем кеширование
+            # Принудительно отключаем кеширование
             response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
             response['Pragma'] = 'no-cache'
             response['Expires'] = '0'
-            response['X-Content-Type-Options'] = 'nosniff'
             
             return response
             

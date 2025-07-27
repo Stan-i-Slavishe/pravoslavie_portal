@@ -105,13 +105,17 @@ def book_detail(request, slug):
 
 @login_required
 def download_book(request, book_id):
-    """Скачивание книги - ФИНАЛЬНАЯ ИСПРАВЛЕННАЯ ВЕРСИЯ"""
+    """Скачивание книги - ИСПРАВЛЕННАЯ ВЕРСИЯ"""
     import os
     import re
-    from urllib.parse import quote
+    import logging
     
-    # Получаем книгу
+    # Логирование для отладки
+    logger = logging.getLogger(__name__)
+    logger.info(f"Функция download_book вызвана для book_id={book_id}")
+    
     book = get_object_or_404(Book, id=book_id, is_published=True)
+    logger.info(f"Книга найдена: {book.title}")
     
     # Проверяем права на скачивание
     if not book.is_free and not hasattr(request.user, 'has_subscription'):
@@ -121,6 +125,8 @@ def download_book(request, book_id):
     if not book.file:
         messages.error(request, 'Файл книги недоступен.')
         return redirect('books:detail', slug=book.slug)
+    
+    logger.info(f"Файл книги: {book.file.name}")
     
     # Записываем статистику скачивания
     BookDownload.objects.create(
@@ -135,47 +141,52 @@ def download_book(request, book_id):
     
     # Получаем реальное расширение файла
     file_extension = os.path.splitext(book.file.name)[1]
+    logger.info(f"Расширение из файла: '{file_extension}'")
+    
     if not file_extension:
         # Если расширения нет, используем формат из модели
         file_extension = f'.{book.format}'
+        logger.info(f"Используем формат из модели: '{file_extension}'")
     
-    # Очищаем название книги от специальных символов
+    # Очищаем название книги от специальных символов для имени файла
     safe_title = re.sub(r'[<>:"/\\|?*]', '', book.title)
     safe_title = safe_title.strip()
+    logger.info(f"Очищенное название: '{safe_title}'")
     
     # Формируем имя файла
     filename = f"{safe_title}{file_extension}"
+    logger.info(f"Итоговое имя файла: '{filename}'")
     
-    # Кодируем имя файла для безопасности
-    filename_encoded = quote(filename.encode('utf-8'))
-    
-    # Определяем MIME тип
+    # Получаем MIME тип на основе расширения
     mime_type = 'application/octet-stream'
     if file_extension.lower() == '.pdf':
         mime_type = 'application/pdf'
-    elif file_extension.lower() == '.epub':
+    elif file_extension.lower() in ['.epub']:
         mime_type = 'application/epub+zip'
-    elif file_extension.lower() == '.fb2':
+    elif file_extension.lower() in ['.fb2']:
         mime_type = 'application/xml'
     
-    # Возвращаем файл
+    logger.info(f"MIME тип: {mime_type}")
+    
+    # Возвращаем файл с правильным именем и принудительными заголовками
     try:
         with open(book.file.path, 'rb') as file:
             response = HttpResponse(file.read(), content_type=mime_type)
             
-            # Используем правильный заголовок Content-Disposition с поддержкой UTF-8
-            response['Content-Disposition'] = f'attachment; filename="{filename}"; filename*=UTF-8\'\'{filename_encoded}'
+            # Принудительные заголовки для правильного скачивания
+            response['Content-Disposition'] = f'attachment; filename="{filename}"; filename*=UTF-8\'\'{filename}'
             response['Content-Length'] = os.path.getsize(book.file.path)
-            
-            # Принудительно отключаем кеширование
             response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
             response['Pragma'] = 'no-cache'
             response['Expires'] = '0'
             
+            logger.info(f"Файл отправлен с заголовками: {filename}")
+            logger.info(f"Content-Disposition: {response['Content-Disposition']}")
             return response
             
     except Exception as e:
-        messages.error(request, f'Ошибка при скачивании файла: {str(e)}')
+        logger.error(f"Ошибка при отправке файла: {e}")
+        messages.error(request, 'Ошибка при скачивании файла.')
         return redirect('books:detail', slug=book.slug)
 
 

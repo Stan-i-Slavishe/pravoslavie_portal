@@ -23,21 +23,6 @@
             <div id="reading-progress" class="reading-progress-bar"></div>
         </div>
         
-        <!-- Верхние контролы -->
-        <div class="reader-controls">
-            <div class="top-controls">
-                <button id="close-reader" class="control-btn">
-                    <i class="bi bi-arrow-left"></i>
-                </button>
-                
-                <h1 class="reader-title">{{ book.title }}</h1>
-                
-                <button id="toggle-orientation" class="control-btn" title="Полноэкранный режим">
-                    <i class="bi bi-arrows-fullscreen"></i>
-                </button>
-            </div>
-        </div>
-        
         <!-- Контейнер для книги -->
         <div id="book-container" class="book-container" 
              data-book-id="{{ book.id }}"
@@ -50,8 +35,22 @@
             </div>
         </div>
         
-        <!-- Нижние контролы -->
+        <!-- Контролы reader -->
         <div class="reader-controls">
+            <!-- Верхние контролы -->
+            <div class="top-controls">
+                <button id="close-reader" class="control-btn">
+                    <i class="bi bi-arrow-left"></i>
+                </button>
+                
+                <h1 class="reader-title">{{ book.title }}</h1>
+                
+                <button id="toggle-orientation" class="control-btn" title="Полноэкранный режим">
+                    <i class="bi bi-arrows-fullscreen"></i>
+                </button>
+            </div>
+            
+            <!-- Нижние контролы -->
             <!-- Навигация -->
             <div class="navigation-controls">
                 <button id="prev-page" class="nav-btn">

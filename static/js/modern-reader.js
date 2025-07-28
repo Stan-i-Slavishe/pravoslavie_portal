@@ -5,7 +5,7 @@ class ModernReader {
         this.totalPages = 0;
         this.isFullscreen = false;
         this.pdfDoc = null;
-        this.scale = 1.0;
+        this.userScale = 1.0; // Пользовательский масштаб (множитель)
         this.isControlsVisible = false;
         this.touchStartX = 0;
         this.touchStartY = 0;
@@ -101,28 +101,39 @@ class ModernReader {
             const canvas = document.getElementById('pdf-canvas');
             const context = canvas.getContext('2d');
             
-            // Рассчитываем масштаб под размер экрана
+            // Рассчитываем базовый масштаб под размер экрана
             const viewport = page.getViewport({ scale: 1 });
             const containerWidth = window.innerWidth;
             const containerHeight = window.innerHeight;
             
             const scaleX = containerWidth / viewport.width;
             const scaleY = containerHeight / viewport.height;
-            this.scale = Math.min(scaleX, scaleY) * 0.9;
+            const baseScale = Math.min(scaleX, scaleY) * 0.9;
             
-            const scaledViewport = page.getViewport({ scale: this.scale });
+            // Применяем пользовательский масштаб поверх базового
+            const finalScale = baseScale * this.userScale;
+            
+            const scaledViewport = page.getViewport({ scale: finalScale });
             
             canvas.width = scaledViewport.width;
             canvas.height = scaledViewport.height;
             
-            // Центрируем canvas
-            canvas.style.marginLeft = `${(containerWidth - scaledViewport.width) / 2}px`;
-            canvas.style.marginTop = `${(containerHeight - scaledViewport.height) / 2}px`;
+            // Центрируем canvas по горизонтали и вертикали
+            const leftMargin = (containerWidth - scaledViewport.width) / 2;
+            const topMargin = (containerHeight - scaledViewport.height) / 2;
+            
+            canvas.style.position = 'absolute';
+            canvas.style.left = `${leftMargin}px`;
+            canvas.style.top = `${topMargin}px`;
+            canvas.style.marginLeft = '0';
+            canvas.style.marginTop = '0';
             
             const renderContext = {
                 canvasContext: context,
                 viewport: scaledViewport
             };
+            
+            console.log(`Рендерим страницу ${pageNum} с масштабом: базовый=${baseScale.toFixed(2)}, пользовательский=${this.userScale}, итоговый=${finalScale.toFixed(2)}`);
             
             await page.render(renderContext).promise;
             
@@ -248,6 +259,8 @@ class ModernReader {
             // Определяем функцию по иконке
             if (icon.classList.contains('bi-bookmark')) {
                 functionality = 'bookmark';
+            } else if (icon.classList.contains('bi-bookmark-star')) {
+                functionality = 'bookmarks-list';
             } else if (icon.classList.contains('bi-search')) {
                 functionality = 'search';
             } else if (icon.classList.contains('bi-gear')) {
@@ -264,6 +277,9 @@ class ModernReader {
                 switch(functionality) {
                     case 'bookmark':
                         this.addBookmark();
+                        break;
+                    case 'bookmarks-list':
+                        this.showBookmarksList();
                         break;
                     case 'search':
                         this.openSearch();
@@ -502,6 +518,159 @@ class ModernReader {
         this.showNotification(`Закладка добавлена: стр. ${this.currentPage}`);
     }
     
+    // Список закладок
+    showBookmarksList() {
+        const bookId = document.getElementById('book-container').dataset.bookId;
+        const bookmarks = JSON.parse(localStorage.getItem(`bookmarks_${bookId}`) || '[]');
+        
+        if (bookmarks.length === 0) {
+            this.showNotification('У вас пока нет сохранённых закладок');
+            return;
+        }
+        
+        // Сортируем по страницам
+        bookmarks.sort((a, b) => a.page - b.page);
+        
+        const bookmarksHTML = bookmarks.map((bookmark, index) => `
+            <div style="
+                background: rgba(51, 51, 51, 0.9);
+                padding: 12px;
+                margin: 8px 0;
+                border-radius: 8px;
+                cursor: pointer;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border: 1px solid rgba(212, 175, 55, 0.3);
+                transition: all 0.3s ease;
+                backdrop-filter: blur(5px);
+            " 
+            onmouseover="this.style.background='rgba(212, 175, 55, 0.2)'; this.style.borderColor='#D4AF37'"
+            onmouseout="this.style.background='rgba(51, 51, 51, 0.9)'; this.style.borderColor='rgba(212, 175, 55, 0.3)'"
+            onclick="window.readerInstance.goToBookmark(${bookmark.page}); window.readerInstance.closeModal();">
+                <div>
+                    <div style="color: #D4AF37; font-weight: 600; margin-bottom: 4px;">
+                        <i class="bi bi-bookmark-fill" style="margin-right: 8px;"></i>
+                        Страница ${bookmark.page}
+                    </div>
+                    <div style="color: #ccc; font-size: 12px;">
+                        <i class="bi bi-clock" style="margin-right: 5px;"></i>
+                        ${new Date(bookmark.timestamp).toLocaleString('ru-RU')}
+                    </div>
+                </div>
+                <button 
+                    onclick="event.stopPropagation(); window.readerInstance.removeBookmark(${index})"
+                    style="
+                        background: rgba(255, 255, 255, 0.9);
+                        border: none;
+                        color: #333;
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 50%;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        transition: all 0.3s ease;
+                        font-weight: bold;
+                    "
+                    onmouseover="this.style.background='rgba(220, 53, 69, 0.9)'; this.style.color='white'; this.style.transform='scale(1.1)'"
+                    onmouseout="this.style.background='rgba(255, 255, 255, 0.9)'; this.style.color='#333'; this.style.transform='scale(1)'"
+                    title="Удалить закладку">
+                    <i class="bi bi-x" style="font-size: 14px; font-weight: bold;"></i>
+                </button>
+            </div>
+        `).join('');
+        
+        this.createModal('Список закладок', `
+            <div style="padding: 20px; max-height: 400px; overflow-y: auto;">
+                <div style="margin-bottom: 15px; color: white; text-align: center;">
+                    <i class="bi bi-bookmark-star" style="color: #D4AF37; font-size: 24px; margin-right: 10px;"></i>
+                    Найдено закладок: <strong style="color: #D4AF37;">${bookmarks.length}</strong>
+                </div>
+                
+                ${bookmarksHTML}
+                
+                <div style="text-align: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(212, 175, 55, 0.3);">
+                    <button 
+                        onclick="window.readerInstance.clearAllBookmarks()"
+                        style="
+                            background: rgba(220, 53, 69, 0.8);
+                            color: white;
+                            border: none;
+                            padding: 8px 15px;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            margin-right: 10px;
+                            transition: all 0.3s ease;
+                        "
+                        onmouseover="this.style.background='rgba(220, 53, 69, 1)'"
+                        onmouseout="this.style.background='rgba(220, 53, 69, 0.8)'">
+                        <i class="bi bi-trash3" style="margin-right: 5px;"></i>
+                        Очистить все
+                    </button>
+                    
+                    <button 
+                        onclick="window.readerInstance.closeModal()"
+                        style="
+                            background: rgba(102, 102, 102, 0.8);
+                            color: white;
+                            border: none;
+                            padding: 8px 15px;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                        "
+                        onmouseover="this.style.background='rgba(102, 102, 102, 1)'"
+                        onmouseout="this.style.background='rgba(102, 102, 102, 0.8)'">
+                        <i class="bi bi-x-lg" style="margin-right: 5px;"></i>
+                        Закрыть
+                    </button>
+                </div>
+            </div>
+        `);
+    }
+    
+    // Переход к закладке
+    goToBookmark(page) {
+        this.goToPage(page);
+        this.showNotification(`Переход к закладке: стр. ${page}`);
+    }
+    
+    // Удаление одной закладки
+    removeBookmark(index) {
+        const bookId = document.getElementById('book-container').dataset.bookId;
+        const bookmarks = JSON.parse(localStorage.getItem(`bookmarks_${bookId}`) || '[]');
+        
+        if (index >= 0 && index < bookmarks.length) {
+            const removedBookmark = bookmarks.splice(index, 1)[0];
+            localStorage.setItem(`bookmarks_${bookId}`, JSON.stringify(bookmarks));
+            
+            this.showNotification(`Закладка со стр. ${removedBookmark.page} удалена`);
+            
+            // Обновляем список
+            this.closeModal();
+            setTimeout(() => this.showBookmarksList(), 300);
+        }
+    }
+    
+    // Очистка всех закладок
+    clearAllBookmarks() {
+        const bookId = document.getElementById('book-container').dataset.bookId;
+        const bookmarks = JSON.parse(localStorage.getItem(`bookmarks_${bookId}`) || '[]');
+        
+        if (bookmarks.length === 0) {
+            this.showNotification('Закладок нет');
+            return;
+        }
+        
+        if (confirm(`Удалить все ${bookmarks.length} закладок?`)) {
+            localStorage.removeItem(`bookmarks_${bookId}`);
+            this.showNotification(`Удалено ${bookmarks.length} закладок`);
+            this.closeModal();
+        }
+    }
+    
     // Поиск
     openSearch() {
         this.createModal('Поиск по документу', `
@@ -555,9 +724,9 @@ class ModernReader {
                 
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 8px; color: white; text-shadow: 1px 1px 2px black;">Масштаб:</label>
-                    <input type="range" id="scale-slider" min="0.5" max="2" step="0.1" value="${this.scale}" 
+                    <input type="range" id="scale-slider" min="0.5" max="2" step="0.1" value="${this.userScale}" 
                            style="width: 100%;">
-                    <span id="scale-value" style="color: #ccc; text-shadow: 1px 1px 2px black;">${Math.round(this.scale * 100)}%</span>
+                    <span id="scale-value" style="color: #ccc; text-shadow: 1px 1px 2px black;">${Math.round(this.userScale * 100)}%</span>
                 </div>
                 
                 <div style="margin-bottom: 20px;">
@@ -592,7 +761,9 @@ class ModernReader {
         document.getElementById('scale-slider').oninput = (e) => {
             const value = parseFloat(e.target.value);
             document.getElementById('scale-value').textContent = Math.round(value * 100) + '%';
-            this.scale = value;
+            this.userScale = value;
+            console.log('Масштаб изменён на:', value);
+            // Перерисовываем с новым масштабом
             this.renderPage(this.currentPage);
         };
         
@@ -618,7 +789,7 @@ class ModernReader {
             document.getElementById('theme-select').value = 'dark';
             
             this.applyBrightness(1);
-            this.scale = 1;
+            this.userScale = 1;
             this.applyTheme('dark');
             this.renderPage(this.currentPage);
             
@@ -726,7 +897,10 @@ class ModernReader {
             
             // Применяем масштаб
             if (savedSettings.scale) {
-                this.scale = savedSettings.scale;
+                console.log('Загружаем сохранённый масштаб:', savedSettings.scale);
+                this.userScale = savedSettings.scale;
+                // Перерисовываем с новым масштабом
+                this.renderPage(this.currentPage);
             }
             
             // Применяем тему

@@ -24,6 +24,131 @@
     <link rel="stylesheet" href="{% static 'css/mobile-navigation.css' %}">
     <link rel="stylesheet" href="{% static 'css/mobile-burger-menu.css' %}">
     
+    <!-- Стили для рейтинга звёзд -->
+    <style>
+        .rating-input {
+            display: flex;
+            flex-direction: row; /* Обычный порядок */
+            justify-content: flex-start;
+        }
+        
+        .rating-input input {
+            display: none;
+        }
+        
+        .rating-input .star-label {
+            color: #ddd !important;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            margin-right: 5px;
+        }
+        
+        /* Подсветка при наведении и выборе */
+        .rating-input .star-label:hover,
+        .rating-input .star-label.active {
+            color: #ffc107 !important;
+        }
+        
+        /* Отступы для иконок в кнопках */
+        .btn i {
+            margin-right: 6px !important;
+        }
+    </style>
+    
+    <!-- JavaScript для рейтинга -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ratingInputs = document.querySelectorAll('.rating-input');
+            
+            ratingInputs.forEach(function(ratingInput) {
+                const stars = ratingInput.querySelectorAll('.star-label');
+                const inputs = ratingInput.querySelectorAll('input[type="radio"]');
+                
+                console.log('Found', stars.length, 'stars and', inputs.length, 'inputs'); // Отладка
+                
+                // Обработка наведения и клика
+                stars.forEach(function(star, index) {
+                    star.addEventListener('mouseenter', function() {
+                        // Преобразуем индекс: 0,1,2,3,4 -> 5,4,3,2,1
+                        const rating = stars.length - index;
+                        console.log('Hover on star', index, 'rating:', rating); // Отладка
+                        highlightStars(stars, rating);
+                    });
+                    
+                    // Обработка клика
+                    star.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // Преобразуем индекс: 0,1,2,3,4 -> 5,4,3,2,1
+                        const rating = stars.length - index;
+                        console.log('Click on star', index, 'rating:', rating); // Отладка
+                        
+                        // Находим соответствующий input
+                        const targetInput = ratingInput.querySelector(`input[value="${rating}"]`);
+                        console.log('Target input:', targetInput); // Отладка
+                        
+                        if (targetInput) {
+                            // Очищаем все выборы
+                            inputs.forEach(inp => inp.checked = false);
+                            // Устанавливаем новый выбор
+                            targetInput.checked = true;
+                            console.log('Set input value:', targetInput.value, 'checked:', targetInput.checked);
+                            
+                            // Подсвечиваем звёзды
+                            highlightStars(stars, rating);
+                        } else {
+                            console.error('Input not found for rating:', rating);
+                        }
+                    });
+                });
+                
+                // Обработка ухода мыши
+                ratingInput.addEventListener('mouseleave', function() {
+                    const checkedInput = ratingInput.querySelector('input[type="radio"]:checked');
+                    if (checkedInput) {
+                        const rating = parseInt(checkedInput.value);
+                        highlightStars(stars, rating);
+                    } else {
+                        clearStars(stars);
+                    }
+                });
+                
+                // Обработка изменения inputов
+                inputs.forEach(function(input) {
+                    input.addEventListener('change', function() {
+                        const rating = parseInt(this.value);
+                        console.log('Input changed, rating:', rating);
+                        highlightStars(stars, rating);
+                    });
+                });
+                
+                // Проверяем наличие выбранного рейтинга при загрузке
+                const checkedInput = ratingInput.querySelector('input[type="radio"]:checked');
+                if (checkedInput) {
+                    const rating = parseInt(checkedInput.value);
+                    highlightStars(stars, rating);
+                }
+            });
+            
+            function highlightStars(stars, rating) {
+                clearStars(stars);
+                console.log('Highlighting', rating, 'stars'); // Отладка
+                // Подсвечиваем последние rating звёзд (справа налево)
+                for (let i = stars.length - rating; i < stars.length; i++) {
+                    stars[i].classList.add('active');
+                }
+            }
+            
+            function clearStars(stars) {
+                stars.forEach(function(star) {
+                    star.classList.remove('active');
+                });
+            }
+        });
+    </script>
+    
     <!-- Дополнительные стили -->
     {% block extra_css %}{% endblock %}
     

@@ -178,7 +178,12 @@
     .rating-input .star-label:hover,
     .rating-input .star-label:hover ~ .star-label,
     .rating-input input:checked ~ .star-label {
-        color: var(--gold-accent);
+        color: #ffc107; /* Жёлтый цвет */
+    }
+    
+    /* Отступ для иконок в кнопках */
+    .btn i {
+        margin-right: 6px;
     }
     
     @media (max-width: 768px) {
@@ -448,7 +453,7 @@
                                          placeholder="Поделитесь своими впечатлениями о книге..."></textarea>
                             </div>
                             <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-send"></i> Отправить отзыв
+                                <i class="bi bi-send" style="margin-right: 6px;"></i>Отправить отзыв
                             </button>
                         </form>
                     </div>

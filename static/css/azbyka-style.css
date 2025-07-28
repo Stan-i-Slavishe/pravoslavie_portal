@@ -1199,6 +1199,34 @@ footer a:hover {
 }
 
 /* ==========================================
+   РЕЙТИНГ ЗВЁЗД
+   ========================================== */
+
+.rating-input {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.rating-input input {
+    display: none;
+}
+
+.rating-input .star-label {
+    color: #ddd;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    margin-right: 5px;
+}
+
+.rating-input .star-label:hover,
+.rating-input .star-label:hover ~ .star-label,
+.rating-input input:checked ~ .star-label {
+    color: #ffc107; /* Жёлтый цвет */
+}
+
+/* ==========================================
    ИСПРАВЛЕНИЕ МОБИЛЬНЫХ ПЛЕЙЛИСТОВ
    ========================================== */
 

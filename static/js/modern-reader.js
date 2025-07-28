@@ -36,6 +36,11 @@ class ModernReader {
             // Псевдо-полноэкранный режим
             this.enterFullscreen();
             
+            // Показываем контролы сразу для тестирования
+            setTimeout(() => {
+                this.toggleControls();
+            }, 500);
+            
             // Загружаем PDF
             await this.loadPDF(pdfUrl);
             
@@ -175,16 +180,74 @@ class ModernReader {
             }
         });
 
-        // Кнопки контролов
-        document.getElementById('prev-page').addEventListener('click', () => this.previousPage());
-        document.getElementById('next-page').addEventListener('click', () => this.nextPage());
-        document.getElementById('close-reader').addEventListener('click', () => this.exitFullscreen());
-        document.getElementById('toggle-orientation').addEventListener('click', () => this.requestFullscreen());
+        // Кнопки контролов с отладкой
+        const prevBtn = document.getElementById('prev-page');
+        const nextBtn = document.getElementById('next-page');
+        const closeBtn = document.getElementById('close-reader');
+        const fullscreenBtn = document.getElementById('toggle-orientation');
+        
+        console.log('Setting up event listeners...');
+        console.log('Prev button:', prevBtn);
+        console.log('Next button:', nextBtn);
+        
+        if (prevBtn) {
+            prevBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Previous page clicked');
+                this.previousPage();
+            });
+        }
+        
+        if (nextBtn) {
+            nextBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Next page clicked');
+                this.nextPage();
+            });
+        }
+        
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Close clicked');
+                this.exitFullscreen();
+            });
+        }
+        
+        if (fullscreenBtn) {
+            fullscreenBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Fullscreen clicked');
+                this.requestFullscreen();
+            });
+        }
         
         // Слайдер страниц
         const pageSlider = document.getElementById('page-slider');
-        pageSlider.addEventListener('input', (e) => {
-            this.goToPage(parseInt(e.target.value));
+        if (pageSlider) {
+            pageSlider.addEventListener('input', (e) => {
+                this.goToPage(parseInt(e.target.value));
+            });
+        }
+        
+        // Дополнительные контролы
+        const additionalBtns = document.querySelectorAll('.additional-controls .control-btn');
+        console.log('Additional buttons found:', additionalBtns.length);
+        
+        additionalBtns.forEach((btn, index) => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const title = btn.getAttribute('title') || `Button ${index}`;
+                console.log(`Additional button clicked: ${title}`);
+                
+                // Пока просто показываем алерт
+                this.showNotification(`Кнопка "${title}" нажата!\nЭта функция в разработке...`);
+            });
         });
 
         // Изменение ориентации экрана
@@ -199,18 +262,26 @@ class ModernReader {
     }
 
     nextPage() {
+        console.log(`Next page: current=${this.currentPage}, total=${this.totalPages}`);
         if (this.currentPage < this.totalPages) {
             this.currentPage++;
+            console.log(`Moving to page ${this.currentPage}`);
             this.renderPage(this.currentPage);
             this.updatePageInfo();
+        } else {
+            console.log('Already on last page');
         }
     }
 
     previousPage() {
+        console.log(`Previous page: current=${this.currentPage}`);
         if (this.currentPage > 1) {
             this.currentPage--;
+            console.log(`Moving to page ${this.currentPage}`);
             this.renderPage(this.currentPage);
             this.updatePageInfo();
+        } else {
+            console.log('Already on first page');
         }
     }
 
@@ -316,6 +387,38 @@ class ModernReader {
                 screen.orientation.lock('portrait');
             }
         }
+    }
+
+    showNotification(message) {
+        // Создаем красивое уведомление вместо alert
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            text-align: center;
+            z-index: 20000;
+            backdrop-filter: blur(10px);
+            border: 1px solid #D4AF37;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            animation: fadeInOut 2s ease;
+        `;
+        
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        // Удаляем через 2 секунды
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 2000);
     }
 
     showError(message) {

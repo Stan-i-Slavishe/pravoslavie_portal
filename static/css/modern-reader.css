@@ -68,11 +68,13 @@ body.fullscreen-reading {
     transition: all 0.3s ease;
     z-index: 10002;
     backdrop-filter: blur(10px);
+    pointer-events: none;
 }
 
 .reader-controls.visible {
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
 }
 
 /* Верхняя панель контролов */
@@ -143,6 +145,8 @@ body.fullscreen-reading {
     justify-content: center;
     gap: 20px;
     margin-bottom: 20px;
+    position: relative;
+    z-index: 10004;
 }
 
 .nav-btn {
@@ -158,11 +162,19 @@ body.fullscreen-reading {
     font-size: 24px;
     cursor: pointer;
     transition: all 0.3s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    pointer-events: auto;
 }
 
 .nav-btn:hover {
     background: rgba(212, 175, 55, 0.3);
     transform: scale(1.1);
+}
+
+.nav-btn:active {
+    transform: scale(0.95);
+    background: rgba(212, 175, 55, 0.5);
 }
 
 .nav-btn:disabled {
@@ -402,6 +414,22 @@ body.fullscreen-reading {
         width: 100px;
         height: 100px;
         opacity: 0;
+    }
+}
+
+/* Анимация для уведомлений */
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    20%, 80% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
     }
 }
 

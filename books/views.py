@@ -372,6 +372,51 @@ def track_book_view(request, book_id):
         }, status=400)
 
 
+@login_required
+def modern_reader(request, slug):
+    """Современный полноэкранный reader для книг"""
+    book = get_object_or_404(
+        Book.objects.select_related('category'),
+        slug=slug,
+        is_published=True
+    )
+    
+    # Проверяем права на чтение
+    user_can_read = book.is_free
+    if not book.is_free:
+        # Проверяем, купил ли пользователь книгу
+        from shop.models import Purchase
+        user_can_read = Purchase.objects.filter(
+            user=request.user,
+            product__name__icontains=book.title
+        ).exists()
+    
+    if not user_can_read:
+        messages.error(request, 'У вас нет доступа к чтению этой книги. Необходимо приобрести её.')
+        return redirect('books:detail', slug=book.slug)
+    
+    # Получаем или создаем сессию чтения
+    reading_session, created = ReadingSession.objects.get_or_create(
+        user=request.user,
+        book=book,
+        defaults={
+            'total_pages': book.pages or 100,
+        }
+    )
+    
+    # Обновляем время последнего чтения
+    reading_session.last_read = timezone.now()
+    reading_session.save()
+    
+    context = {
+        'book': book,
+        'reading_session': reading_session,
+        'title': f'Чтение: {book.title}',
+    }
+    
+    return render(request, 'books/modern_reader.html', context)
+
+
 def get_favorites_count(request):
     """Получение количества избранных книг (AJAX)"""
     if not request.user.is_authenticated:

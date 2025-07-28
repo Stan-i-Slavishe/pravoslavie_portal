@@ -11,6 +11,7 @@ urlpatterns = [
     
     # Чтение книг
     path('read/<slug:slug>/', views.read_book, name='read'),
+    path('modern-reader/<slug:slug>/', views.modern_reader, name='modern_reader'),
     path('progress/<int:book_id>/', views.update_reading_progress, name='progress'),
     path('bookmark/<int:book_id>/', views.add_bookmark, name='bookmark'),
     path('bookmarks/<int:book_id>/', views.get_bookmarks, name='get_bookmarks'),

@@ -190,6 +190,13 @@
             width: 100%;
             justify-content: center;
         }
+        
+        /* Адаптивность для современного reader */
+        .btn[style*="#FF6B9D"] {
+            width: 100% !important;
+            justify-content: center;
+            margin-top: 10px;
+        }
     }
 </style>
 {% endblock %}
@@ -310,6 +317,7 @@
                     {% if user.is_authenticated %}
                         <!-- Проверяем, может ли пользователь читать книгу -->
                         {% if book.is_free or user_can_read %}
+                            <!-- Обычное чтение -->
                             <a href="{% url 'books:read' book.slug %}" class="btn-read">
                                 <i class="bi bi-book-open"></i>
                                 {% if reading_session %}
@@ -318,6 +326,27 @@
                                     Читать книгу
                                 {% endif %}
                             </a>
+                            
+                            <!-- Современный reader (только для PDF) -->
+                            {% if book.format == 'pdf' and book.file %}
+                            <a href="{% url 'books:modern_reader' book.slug %}" class="btn" 
+                               style="background: linear-gradient(135deg, #FF6B9D, #C73650); 
+                                      border: none; 
+                                      color: white; 
+                                      padding: 12px 24px; 
+                                      border-radius: 8px; 
+                                      font-weight: 500; 
+                                      transition: all 0.3s ease; 
+                                      text-decoration: none; 
+                                      display: inline-flex; 
+                                      align-items: center; 
+                                      gap: 8px;"
+                               onmouseover="this.style.background='linear-gradient(135deg, #C73650, #FF6B9D)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(255, 107, 157, 0.3)'"
+                               onmouseout="this.style.background='linear-gradient(135deg, #FF6B9D, #C73650)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                                <i class="bi bi-tablet-landscape"></i>
+                                Читать на весь экран
+                            </a>
+                            {% endif %}
                         {% else %}
                             <!-- Кнопка покупки -->
                             <a href="{% url 'shop:products' %}?book={{ book.id }}" class="btn-purchase">
@@ -327,12 +356,12 @@
                         {% endif %}
                     {% else %}
                         {% if book.is_free %}
-                            <a href="{% url 'accounts:login' %}?next={% url 'books:read' book.slug %}" class="btn-read">
+                            <a href="{% url 'account_login' %}?next={% url 'books:read' book.slug %}" class="btn-read">
                                 <i class="bi bi-book-open"></i>
                                 Войти для чтения
                             </a>
                         {% else %}
-                            <a href="{% url 'accounts:login' %}" class="btn-purchase">
+                            <a href="{% url 'account_login' %}" class="btn-purchase">
                                 <i class="bi bi-person-plus"></i>
                                 Войти для покупки
                             </a>

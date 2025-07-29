@@ -35,6 +35,7 @@ class ModernReader {
             // Настраиваем обработчики событий
             this.setupEventListeners();
             this.setupOrientationHandlers(); // Новые обработчики
+        this.setupTitleClick(); // Обработчик клика по заголовку
             
             // Псевдо-полноэкранный режим
             this.enterFullscreen();
@@ -401,6 +402,35 @@ class ModernReader {
                 this.renderPage(this.currentPage);
             }, 150);
         });
+    }
+    
+    // Обработчик клика по заголовку
+    setupTitleClick() {
+        const titleElement = document.querySelector('.reader-title');
+        let titleExpandTimeout;
+        
+        if (titleElement) {
+            titleElement.addEventListener('click', (e) => {
+                e.stopPropagation(); // Предотвращаем скрытие меню
+                
+                // Переключаем класс для разворачивания
+                titleElement.classList.toggle('expanded');
+                
+                if (titleElement.classList.contains('expanded')) {
+                    console.log('📜 Заголовок развёрнут на полный размер');
+                    
+                    // Автоматически скрываем через 3 секунды
+                    clearTimeout(titleExpandTimeout);
+                    titleExpandTimeout = setTimeout(() => {
+                        titleElement.classList.remove('expanded');
+                        console.log('📜 Заголовок автоматически свёрнут');
+                    }, 3000);
+                } else {
+                    console.log('📜 Заголовок свёрнут');
+                    clearTimeout(titleExpandTimeout);
+                }
+            });
+        }
     }
 
     nextPage() {

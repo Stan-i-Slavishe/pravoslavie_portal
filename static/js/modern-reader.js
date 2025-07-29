@@ -212,25 +212,40 @@ class ModernReader {
     setupEventListeners() {
         // Касание экрана для показа/скрытия контролов
         document.addEventListener('click', (e) => {
+            // Не срабатываем, если кликнули на контролы
             if (e.target.closest('.reader-controls')) return;
+            
+            // Переключаем видимость контролов
             this.toggleControls();
         });
 
-        // Свайпы для перелистывания
+        // Свайпы для перелистывания - только когда контролы скрыты
+        let touchStartTime = 0;
+        
         document.addEventListener('touchstart', (e) => {
             this.touchStartX = e.touches[0].clientX;
             this.touchStartY = e.touches[0].clientY;
+            touchStartTime = Date.now();
         });
 
         document.addEventListener('touchend', (e) => {
             const touchEndX = e.changedTouches[0].clientX;
             const touchEndY = e.changedTouches[0].clientY;
+            const touchDuration = Date.now() - touchStartTime;
             
             const deltaX = touchEndX - this.touchStartX;
             const deltaY = Math.abs(touchEndY - this.touchStartY);
             
-            // Только горизонтальные свайпы
-            if (Math.abs(deltaX) > 50 && deltaY < 100) {
+            // Короткое касание = переключить контролы
+            // Длинный свайп = перелистывание (только если контролы скрыты)
+            if (touchDuration < 300 && Math.abs(deltaX) < 30 && deltaY < 30) {
+                // Короткое касание - переключаем контролы
+                if (!e.target.closest('.reader-controls')) {
+                    e.preventDefault();
+                    this.toggleControls();
+                }
+            } else if (!this.isControlsVisible && Math.abs(deltaX) > 50 && deltaY < 100) {
+                // Длинный свайп - перелистывание (только если контролы скрыты)
                 if (deltaX > 0) {
                     this.previousPage(); // Свайп вправо - предыдущая
                 } else {
@@ -444,14 +459,11 @@ class ModernReader {
         
         if (this.isControlsVisible) {
             controls.classList.add('visible');
-            // Автоскрытие через 3 секунды
-            setTimeout(() => {
-                if (this.isControlsVisible) {
-                    this.hideControls();
-                }
-            }, 3000);
+            // УБИРАЕМ автоскрытие - теперь только по касанию
+            console.log('Controls shown - tap screen to hide');
         } else {
             this.hideControls();
+            console.log('Controls hidden - tap screen to show');
         }
     }
 

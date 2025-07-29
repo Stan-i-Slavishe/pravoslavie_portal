@@ -9,8 +9,6 @@ class ModernReader {
         this.isControlsVisible = false;
         this.touchStartX = 0;
         this.touchStartY = 0;
-        this.scaleTimeout = null; // Для оптимизации перерисовки при изменении масштаба
-        this.isRendering = false; // Флаг для предотвращения одновременного рендеринга
         
         this.init();
     }
@@ -34,7 +32,6 @@ class ModernReader {
             
             // Настраиваем обработчики событий
             this.setupEventListeners();
-            this.setupOrientationHandlers(); // Новые обработчики
             
             // Псевдо-полноэкранный режим
             this.enterFullscreen();
@@ -99,113 +96,52 @@ class ModernReader {
     async renderPage(pageNum) {
         if (!this.pdfDoc) return;
         
-        // Предотвращаем одновременный рендеринг
-        if (this.isRendering) {
-            console.log('⚠️ Рендеринг уже в процессе, пропускаем...');
-            return;
-        }
-        
-        this.isRendering = true;
-        
         try {
             const page = await this.pdfDoc.getPage(pageNum);
             const canvas = document.getElementById('pdf-canvas');
             const context = canvas.getContext('2d');
-            const container = document.querySelector('.book-container');
-            
-            // Получаем размеры контейнера
-            const containerWidth = container.clientWidth;
-            const containerHeight = container.clientHeight;
             
             // Рассчитываем базовый масштаб под размер экрана
             const viewport = page.getViewport({ scale: 1 });
+            const containerWidth = window.innerWidth;
+            const containerHeight = window.innerHeight;
+            
             const scaleX = containerWidth / viewport.width;
             const scaleY = containerHeight / viewport.height;
-            const baseScale = Math.min(scaleX, scaleY) * 0.9; // 0.9 для отступов
+            const baseScale = Math.min(scaleX, scaleY) * 0.9;
             
             // Применяем пользовательский масштаб поверх базового
             const finalScale = baseScale * this.userScale;
             
             const scaledViewport = page.getViewport({ scale: finalScale });
             
-            // Устанавливаем размеры canvas
             canvas.width = scaledViewport.width;
             canvas.height = scaledViewport.height;
             
-            // ИСПРАВЛЕНИЕ: Кардинальное решение для всех масштабов
-            const canvasWidth = scaledViewport.width;
-            const canvasHeight = scaledViewport.height;
+            // Центрируем canvas по горизонтали и вертикали
+            const leftMargin = (containerWidth - scaledViewport.width) / 2;
+            const topMargin = (containerHeight - scaledViewport.height) / 2;
             
-            // Простое решение: всегда центрируем canvas относительно контейнера
-            const leftMargin = (containerWidth - canvasWidth) / 2;
-            const topMargin = (containerHeight - canvasHeight) / 2;
-            
-            // КАРДИНАЛЬНОЕ РЕШЕНИЕ: используем flexbox для центрирования
-            if (canvasWidth > containerWidth || canvasHeight > containerHeight) {
-                // Большой масштаб: используем flexbox центрирование
-                container.style.display = 'flex';
-                container.style.alignItems = 'center';
-                container.style.justifyContent = 'center';
-                container.style.overflow = 'auto';
-                container.style.cursor = 'grab';
-                
-                canvas.style.position = 'static';
-                canvas.style.left = 'auto';
-                canvas.style.top = 'auto';
-                canvas.style.transform = 'none';
-                canvas.style.margin = '0';
-                canvas.style.flexShrink = '0'; // ВАЖНО: запрещаем сжатие canvas
-                canvas.style.minWidth = canvasWidth + 'px';  // Фиксируем минимальную ширину
-                canvas.style.minHeight = canvasHeight + 'px'; // Фиксируем минимальную высоту
-                
-                console.log(`📺 FLEXBOX центрирование: ${canvasWidth}x${canvasHeight} в ${containerWidth}x${containerHeight}`);
-            } else {
-                // Малый масштаб: обычное absolute позиционирование
-                container.style.display = 'flex';
-                container.style.alignItems = 'center';
-                container.style.justifyContent = 'center';
-                container.style.overflow = 'hidden';
-                container.style.cursor = 'default';
-                
-                canvas.style.position = 'static';
-                canvas.style.left = 'auto';
-                canvas.style.top = 'auto';
-                canvas.style.transform = 'none';
-                canvas.style.margin = '0';
-                canvas.style.flexShrink = '0'; // Также запрещаем сжатие для малых масштабов
-                canvas.style.minWidth = canvasWidth + 'px';
-                canvas.style.minHeight = canvasHeight + 'px';
-                
-                console.log(`📐 FLEXBOX малый масштаб: ${canvasWidth}x${canvasHeight} в ${containerWidth}x${containerHeight}`);
-            }
-            
-            console.log(`📄 Рендеринг страницы ${pageNum}:`);
-            console.log(`📐 Контейнер: ${containerWidth}x${containerHeight}`);
-            console.log(`🖼️ Canvas: ${canvasWidth}x${canvasHeight}`);
-            console.log(`📍 Позиция: left=${leftMargin}px, top=${topMargin}px`);
-            console.log(`🔍 Масштаб: ${Math.round(this.userScale * 100)}% (${finalScale.toFixed(2)})`);
-            console.log(`📏 Соотношение: ${canvasWidth > containerWidth ? 'БОЛЬШЕ' : 'МЕНЬШЕ'} контейнера`);
+            canvas.style.position = 'absolute';
+            canvas.style.left = `${leftMargin}px`;
+            canvas.style.top = `${topMargin}px`;
+            canvas.style.marginLeft = '0';
+            canvas.style.marginTop = '0';
             
             const renderContext = {
                 canvasContext: context,
                 viewport: scaledViewport
             };
             
-            // Очищаем canvas перед рендерингом
-            context.clearRect(0, 0, canvas.width, canvas.height);
+            console.log(`Рендерим страницу ${pageNum} с масштабом: базовый=${baseScale.toFixed(2)}, пользовательский=${this.userScale}, итоговый=${finalScale.toFixed(2)}`);
             
-            // Рендерим страницу
             await page.render(renderContext).promise;
             
             // Обновляем прогресс
             this.updateProgress();
             
         } catch (error) {
-            console.error('❌ Ошибка рендеринга страницы:', error);
-            this.showNotification('Ошибка при загрузке страницы');
-        } finally {
-            // Сбрасываем флаг рендеринга
-            this.isRendering = false;
+            console.error('Ошибка рендеринга страницы:', error);
         }
     }
 
@@ -360,31 +296,14 @@ class ModernReader {
             });
         });
 
-    }
-
-    // Новый метод для обработки изменений ориентации и размера
-    setupOrientationHandlers() {
         // Изменение ориентации экрана
         window.addEventListener('orientationchange', () => {
-            console.log('📱 Изменение ориентации экрана');
-            setTimeout(() => {
-                this.renderPage(this.currentPage);
-                
-                if (this.isControlsVisible) {
-                    this.hideControls();
-                    setTimeout(() => this.toggleControls(), 300);
-                }
-            }, 300);
+            setTimeout(() => this.renderPage(this.currentPage), 500);
         });
 
         // Изменение размера окна
-        let resizeTimeout;
         window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                console.log('🖥️ Изменение размера окна');
-                this.renderPage(this.currentPage);
-            }, 150);
+            this.renderPage(this.currentPage);
         });
     }
 

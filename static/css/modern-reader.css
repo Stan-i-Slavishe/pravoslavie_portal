@@ -396,6 +396,27 @@ body.fullscreen-reading {
         height: 40px;
         font-size: 16px;
     }
+    
+    /* Компактная верхняя панель для очень маленьких экранов */
+    .top-controls {
+        padding: 8px 15px 20px !important;
+        min-height: auto;
+    }
+    
+    .reader-title {
+        font-size: 13px !important;
+        line-height: 1.1;
+        margin: 0;
+        padding: 0 10px;
+        position: relative;
+        top: -3px;
+    }
+    
+    .control-btn {
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 16px !important;
+    }
 }
 
 /* Анимации для касаний */

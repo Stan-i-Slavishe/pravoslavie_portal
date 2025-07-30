@@ -289,16 +289,6 @@
 
                 <!-- Кнопки действий -->
                 <div class="book-actions">
-                    <!-- Отладочная информация -->
-                    <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 12px;">
-                        <strong>Отладка:</strong><br>
-                        Пользователь авторизован: {{ user.is_authenticated }}<br>
-                        Книга бесплатная: {{ book.is_free }}<br>
-                        Может читать: {{ user_can_read }}<br>
-                        Сессия чтения: {{ reading_session }}<br>
-                        Опубликована: {{ book.is_published }}<br>
-                        Цена: {{ book.price }} ₽<br>
-                    </div>
                     
                     {% if user.is_authenticated %}
                         <!-- Проверяем, может ли пользователь читать книгу -->

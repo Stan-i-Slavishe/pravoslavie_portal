@@ -36,7 +36,7 @@
     }
     
     .rating-stars {
-        color: var(--gold-accent);
+        color: #ffc107; /* Ярко-жёлтый цвет */
     }
     
     .book-actions {
@@ -178,7 +178,7 @@
     .rating-input .star-label:hover,
     .rating-input .star-label:hover ~ .star-label,
     .rating-input input:checked ~ .star-label {
-        color: var(--gold-accent);
+        color: #ffc107; /* Жёлтый цвет */
     }
     
     @media (max-width: 768px) {
@@ -291,29 +291,6 @@
 
                 <!-- Кнопки действий -->
                 <div class="book-actions">
-                    <!-- Отладочная информация -->
-                    <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 12px;">
-                        <strong>Отладка:</strong><br>
-                        Пользователь авторизован: {{ user.is_authenticated }}<br>
-                        Книга бесплатная: {{ book.is_free }}<br>
-                        Может читать: {{ user_can_read }}<br>
-                        Сессия чтения: {{ reading_session }}<br>
-                        Опубликована: {{ book.is_published }}<br>
-                        Цена: {{ book.price }} ₽<br>
-                        <strong>Условие (book.is_free or user_can_read): {{ book.is_free|yesno:"True,False" }} OR {{ user_can_read|yesno:"True,False" }}</strong><br>
-                    </div>
-                    
-                    <!-- ПРИНУДИТЕЛЬНАЯ КНОПКА ДЛЯ ТЕСТИРОВАНИЯ -->
-                    {% if user.is_authenticated %}
-                        <div style="background: #e7f3ff; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
-                            <strong>Тестовая кнопка (всегда видна):</strong><br>
-                            <a href="{% url 'books:read' book.slug %}" class="btn-read" style="margin-top: 5px;">
-                                <i class="bi bi-book-open"></i>
-                                ТЕСТ: Читать книгу
-                            </a>
-                        </div>
-                    {% endif %}
-                    
                     {% if user.is_authenticated %}
                         <!-- Проверяем, может ли пользователь читать книгу -->
                         {% if book.is_free or user_can_read %}

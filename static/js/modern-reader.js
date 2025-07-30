@@ -219,6 +219,9 @@ class ModernReader {
             // Не срабатываем, если кликнули на контролы
             if (e.target.closest('.reader-controls')) return;
             
+            // Не срабатываем, если кликнули на модальное окно
+            if (e.target.closest('#reader-modal')) return;
+            
             // Переключаем видимость контролов
             this.toggleControls();
         });
@@ -244,7 +247,7 @@ class ModernReader {
             // Длинный свайп = перелистывание (только если контролы скрыты)
             if (touchDuration < 300 && Math.abs(deltaX) < 30 && deltaY < 30) {
                 // Короткое касание - переключаем контролы
-                if (!e.target.closest('.reader-controls')) {
+                if (!e.target.closest('.reader-controls') && !e.target.closest('#reader-modal')) {
                     e.preventDefault();
                     this.toggleControls();
                 }
@@ -402,11 +405,15 @@ class ModernReader {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
                 console.log('🖥️ Изменение размера окна');
+                
+                // Обновляем PDF рендер
                 this.renderPage(this.currentPage);
                 
-                // Обновляем название книги при изменении размера
-                this.limitTitleForDesktop();
-            }, 150);
+                // Обновляем название книги (с задержкой)
+                setTimeout(() => {
+                    this.limitTitleForDesktop();
+                }, 100);
+            }, 300); // Увеличили debounce до 300ms
         });
     }
     
@@ -1192,26 +1199,39 @@ class ModernReader {
     
     // Ограничение названия книги для десктопа
     limitTitleForDesktop() {
-        const titleElement = document.querySelector('.reader-title');
-        if (!titleElement) return;
-        
-        // Сохраняем оригинальное название, если ещё не сохранено
-        if (!titleElement.title) {
-            titleElement.title = titleElement.textContent.trim();
-        }
-        
-        const originalTitle = titleElement.title;
-        
-        // Проверяем, что это десктоп (ширина больше 768px)
-        if (window.innerWidth > 768) {
-            if (originalTitle.length > 30) {
-                titleElement.textContent = originalTitle.substring(0, 30) + '...';
-                console.log(`📋 Название обрезано до 30 символов для десктопа`);
+        try {
+            const titleElement = document.querySelector('.reader-title');
+            if (!titleElement) {
+                console.log('🚫 Название книги не найдено');
+                return;
             }
-        } else {
-            // На мобильных устройствах показываем полное название
-            titleElement.textContent = originalTitle;
-            console.log('📱 Полное название для мобильного');
+            
+            // Сохраняем оригинальное название, если ещё не сохранено
+            if (!titleElement.title) {
+                titleElement.title = titleElement.textContent.trim();
+            }
+            
+            const originalTitle = titleElement.title;
+            if (!originalTitle) {
+                console.log('🚫 Оригинальное название пустое');
+                return;
+            }
+            
+            // Проверяем, что это десктоп (ширина больше 768px)
+            if (window.innerWidth > 768) {
+                if (originalTitle.length > 30) {
+                    titleElement.textContent = originalTitle.substring(0, 30) + '...';
+                    console.log(`📋 Название обрезано до 30 символов для десктопа`);
+                } else {
+                    console.log('📱 Название короткое, оставляем как есть');
+                }
+            } else {
+                // На мобильных устройствах показываем полное название
+                titleElement.textContent = originalTitle;
+                console.log('📱 Полное название для мобильного');
+            }
+        } catch (error) {
+            console.error('⚠️ Ошибка в limitTitleForDesktop:', error);
         }
     }
     

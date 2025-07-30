@@ -814,8 +814,12 @@ class ModernReader {
                 <input type="text" id="search-input" placeholder="Введите текст для поиска..." 
                        style="width: 100%; padding: 12px; font-size: 16px; border: 1px solid #D4AF37; border-radius: 5px; background: #2a2a2a; color: white;">
                 <div style="margin-top: 15px; text-align: center;">
-                    <button id="search-btn" style="background: #D4AF37; color: black; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px;">Найти</button>
-                    <button id="search-close" style="background: #666; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Закрыть</button>
+                    <button id="search-btn" style="background: #D4AF37; color: black; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px; font-weight: 600;">
+                        <i class="bi bi-search" style="margin-right: 5px;"></i>Найти
+                    </button>
+                    <button id="search-close" style="background: #666; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                        <i class="bi bi-x-lg" style="margin-right: 5px;"></i>Закрыть
+                    </button>
                 </div>
                 <div id="search-results" style="margin-top: 15px; color: #ccc; font-size: 14px;"></div>
             </div>
@@ -824,19 +828,138 @@ class ModernReader {
         // Обработчики
         document.getElementById('search-btn').onclick = () => this.performSearch();
         document.getElementById('search-close').onclick = () => this.closeModal();
-        document.getElementById('search-input').focus();
+        
+        // Обработчик Enter для ввода
+        const searchInput = document.getElementById('search-input');
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.performSearch();
+            }
+        });
+        
+        searchInput.focus();
     }
     
-    performSearch() {
+    async performSearch() {
         const query = document.getElementById('search-input').value.trim();
         if (!query) {
             document.getElementById('search-results').textContent = 'Введите текст для поиска';
             return;
         }
         
-        document.getElementById('search-results').textContent = `Поиск "${query}"... (Функция в разработке)`;
+        const resultsDiv = document.getElementById('search-results');
+        resultsDiv.innerHTML = '<div style="color: #D4AF37; display: flex; align-items: center;"><i class="bi bi-search" style="margin-right: 8px; animation: spin 1s linear infinite;"></i>Поиск "' + query + '"...</div>';
         
-        // TODO: Реальный поиск по PDF через PDF.js
+        try {
+            const searchResults = await this.searchInPDF(query);
+            
+            if (searchResults.length === 0) {
+                resultsDiv.innerHTML = '<div style="color: #ff6b6b; text-align: center; padding: 20px;"><i class="bi bi-exclamation-circle" style="margin-right: 8px;"></i>Ничего не найдено по запросу "' + query + '"</div>';
+                return;
+            }
+            
+            // Отображаем результаты
+            const resultsHTML = `
+                <div style="margin-bottom: 15px; color: #28a745; text-align: center; font-weight: 600;">
+                    <i class="bi bi-check-circle" style="margin-right: 8px;"></i>
+                    Найдено: <span style="color: #D4AF37;">${searchResults.length}</span> совпадений
+                </div>
+                <div style="max-height: 300px; overflow-y: auto;">
+                    ${searchResults.map((result, index) => `
+                        <div style="
+                            background: rgba(51, 51, 51, 0.7);
+                            margin: 8px 0;
+                            padding: 12px;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            border: 1px solid rgba(212, 175, 55, 0.3);
+                            transition: all 0.3s ease;
+                        " 
+                        onmouseover="this.style.background='rgba(212, 175, 55, 0.2)'; this.style.borderColor='#D4AF37'"
+                        onmouseout="this.style.background='rgba(51, 51, 51, 0.7)'; this.style.borderColor='rgba(212, 175, 55, 0.3)'"
+                        onclick="window.readerInstance.goToSearchResult(${result.pageNum}); window.readerInstance.closeModal();">
+                            <div style="color: #D4AF37; font-weight: 600; margin-bottom: 6px;">
+                                <i class="bi bi-file-earmark-text" style="margin-right: 6px;"></i>
+                                Страница ${result.pageNum}
+                            </div>
+                            <div style="color: #ccc; font-size: 13px; line-height: 1.4;">
+                                ${result.context}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(212, 175, 55, 0.3);">
+                    <button onclick="window.readerInstance.closeModal()" 
+                            style="background: rgba(102, 102, 102, 0.8); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                        <i class="bi bi-x-lg" style="margin-right: 5px;"></i>Закрыть
+                    </button>
+                </div>
+            `;
+            
+            resultsDiv.innerHTML = resultsHTML;
+            
+        } catch (error) {
+            console.error('Ошибка поиска:', error);
+            resultsDiv.innerHTML = '<div style="color: #ff6b6b; text-align: center; padding: 20px;"><i class="bi bi-exclamation-triangle" style="margin-right: 8px;"></i>Ошибка при поиске. Попробуйте ещё раз.</div>';
+        }
+    }
+    
+    // Новая функция поиска по PDF
+    async searchInPDF(query) {
+        if (!this.pdfDoc) {
+            throw new Error('ПДФ документ не загружен');
+        }
+        
+        const results = [];
+        const searchTerm = query.toLowerCase();
+        
+        // Проходим по всем страницам
+        for (let pageNum = 1; pageNum <= this.totalPages; pageNum++) {
+            try {
+                const page = await this.pdfDoc.getPage(pageNum);
+                const textContent = await page.getTextContent();
+                
+                // Собираем весь текст страницы
+                const pageText = textContent.items.map(item => item.str).join(' ');
+                const pageTextLower = pageText.toLowerCase();
+                
+                // Ищем совпадения
+                if (pageTextLower.includes(searchTerm)) {
+                    // Находим контекст вокруг найденного слова
+                    const index = pageTextLower.indexOf(searchTerm);
+                    const start = Math.max(0, index - 50);
+                    const end = Math.min(pageText.length, index + searchTerm.length + 50);
+                    
+                    let context = pageText.substring(start, end);
+                    
+                    // Добавляем многоточия если обрезали
+                    if (start > 0) context = '...' + context;
+                    if (end < pageText.length) context = context + '...';
+                    
+                    // Подсвечиваем найденное слово
+                    const regex = new RegExp(`(${query})`, 'gi');
+                    context = context.replace(regex, '<mark style="background: #D4AF37; color: black; padding: 2px 4px; border-radius: 3px; font-weight: 600;">$1</mark>');
+                    
+                    results.push({
+                        pageNum: pageNum,
+                        context: context,
+                        fullText: pageText
+                    });
+                }
+                
+            } catch (error) {
+                console.error(`Ошибка при обработке страницы ${pageNum}:`, error);
+            }
+        }
+        
+        return results;
+    }
+    
+    // Переход к результату поиска
+    goToSearchResult(pageNum) {
+        this.goToPage(pageNum);
+        this.showNotification(`Переход к стр. ${pageNum} по результату поиска`);
     }
     
     // Настройки

@@ -1102,10 +1102,95 @@ class ModernReader {
                 </div>
                 
                 <div style="text-align: center;">
-                    <button id="settings-apply" style="background: rgba(40, 167, 69, 0.9); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px; backdrop-filter: blur(5px);">Применить</button>
-                    <button id="settings-save" style="background: rgba(212, 175, 55, 0.9); color: black; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px; backdrop-filter: blur(5px);">Сохранить</button>
-                    <button id="settings-reset" style="background: rgba(220, 53, 69, 0.9); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px; backdrop-filter: blur(5px);">Сброс</button>
-                    <button id="settings-close" style="background: rgba(102, 102, 102, 0.9); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; backdrop-filter: blur(5px);">Закрыть</button>
+                    <div style="
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 10px;
+                        margin-bottom: 15px;
+                    ">
+                        <button id="settings-apply" style="
+                            background: linear-gradient(135deg, #28a745, #20c997);
+                            color: white;
+                            border: none;
+                            padding: 12px 16px;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            backdrop-filter: blur(5px);
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                            width: 100%;
+                            min-height: 44px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <i class="bi bi-check-circle" style="margin-right: 5px;"></i>
+                            Применить
+                        </button>
+                        <button id="settings-save" style="
+                            background: linear-gradient(135deg, #D4AF37, #B8941F);
+                            color: black;
+                            border: none;
+                            padding: 12px 16px;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            backdrop-filter: blur(5px);
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                            width: 100%;
+                            min-height: 44px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <i class="bi bi-save" style="margin-right: 5px;"></i>
+                            Сохранить
+                        </button>
+                    </div>
+                    <div style="
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 10px;
+                    ">
+                        <button id="settings-reset" style="
+                            background: linear-gradient(135deg, #dc3545, #c82333);
+                            color: white;
+                            border: none;
+                            padding: 12px 16px;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            backdrop-filter: blur(5px);
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                            width: 100%;
+                            min-height: 44px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <i class="bi bi-arrow-counterclockwise" style="margin-right: 5px;"></i>
+                            Сброс
+                        </button>
+                        <button id="settings-close" style="
+                            background: linear-gradient(135deg, #6c757d, #5a6268);
+                            color: white;
+                            border: none;
+                            padding: 12px 16px;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            backdrop-filter: blur(5px);
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                            width: 100%;
+                            min-height: 44px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <i class="bi bi-x-lg" style="margin-right: 5px;"></i>
+                            Закрыть
+                        </button>
+                    </div>
                 </div>
             </div>
         `);

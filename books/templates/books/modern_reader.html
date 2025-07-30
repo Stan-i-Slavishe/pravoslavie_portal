@@ -134,6 +134,13 @@
             text-overflow: ellipsis;
         }
 
+        /* Ограничение длины названия только для десктопа */
+        @media (min-width: 769px) {
+            .book-title {
+                max-width: 300px; /* Примерно 30 символов */
+            }
+        }
+
         .control-btn {
             background: rgba(255,255,255,0.1);
             border: 1px solid rgba(255,255,255,0.2);
@@ -400,10 +407,36 @@
             canvas = document.getElementById('pdfCanvas');
             ctx = canvas.getContext('2d');
             
+            // Ограничение названия книги только для десктопа
+            limitBookTitleForDesktop();
+            
             loadPDF();
             setupGestureHandlers();
             setupKeyboardHandlers();
         });
+
+        // Функция ограничения названия книги для десктопа
+        function limitBookTitleForDesktop() {
+            const bookTitleElement = document.querySelector('.book-title');
+            if (!bookTitleElement) return;
+            
+            // Сохраняем оригинальное название, если ещё не сохранено
+            if (!bookTitleElement.title) {
+                bookTitleElement.title = bookTitleElement.textContent.trim();
+            }
+            
+            const originalTitle = bookTitleElement.title;
+            
+            // Проверяем, что это десктоп (ширина больше 768px)
+            if (window.innerWidth > 768) {
+                if (originalTitle.length > 30) {
+                    bookTitleElement.textContent = originalTitle.substring(0, 30) + '...';
+                }
+            } else {
+                // На мобильных устройствах показываем полное название
+                bookTitleElement.textContent = originalTitle;
+            }
+        }
 
         // Загрузка PDF
         async function loadPDF() {
@@ -734,7 +767,15 @@
         }
 
         window.addEventListener('orientationchange', handleOrientationChange);
-        window.addEventListener('resize', handleOrientationChange);
+        
+        // Обработчик изменения размера окна
+        window.addEventListener('resize', function() {
+            // Обновляем PDF рендер при повороте экрана
+            handleOrientationChange();
+            
+            // Обновляем название книги для десктопа
+            limitBookTitleForDesktop();
+        });
 
         setInterval(saveReadingProgress, 30000);
         window.addEventListener('beforeunload', saveReadingProgress);

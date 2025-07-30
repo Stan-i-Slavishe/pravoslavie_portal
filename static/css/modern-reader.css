@@ -113,6 +113,17 @@ body.fullscreen-reading {
     flex: 1;
     text-align: center;
     padding: 0 20px;
+    /* Ограничение для всех экранов кроме мобильных */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Ограничение для десктопа (экраны больше 768px) */
+@media (min-width: 769px) {
+    .reader-title {
+        max-width: 300px; /* Примерно 30 символов */
+    }
 }
 
 /* Кнопки контролов */

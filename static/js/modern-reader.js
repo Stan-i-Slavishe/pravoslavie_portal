@@ -45,6 +45,9 @@ class ModernReader {
                 this.toggleControls();
             }, 500);
             
+            // Ограничиваем название книги для десктопа
+            this.limitTitleForDesktop();
+            
             // Загружаем PDF
             await this.loadPDF(pdfUrl);
             
@@ -400,6 +403,9 @@ class ModernReader {
             resizeTimeout = setTimeout(() => {
                 console.log('🖥️ Изменение размера окна');
                 this.renderPage(this.currentPage);
+                
+                // Обновляем название книги при изменении размера
+                this.limitTitleForDesktop();
             }, 150);
         });
     }
@@ -1182,6 +1188,31 @@ class ModernReader {
                 this.closeModal();
             }
         });
+    }
+    
+    // Ограничение названия книги для десктопа
+    limitTitleForDesktop() {
+        const titleElement = document.querySelector('.reader-title');
+        if (!titleElement) return;
+        
+        // Сохраняем оригинальное название, если ещё не сохранено
+        if (!titleElement.title) {
+            titleElement.title = titleElement.textContent.trim();
+        }
+        
+        const originalTitle = titleElement.title;
+        
+        // Проверяем, что это десктоп (ширина больше 768px)
+        if (window.innerWidth > 768) {
+            if (originalTitle.length > 30) {
+                titleElement.textContent = originalTitle.substring(0, 30) + '...';
+                console.log(`📋 Название обрезано до 30 символов для десктопа`);
+            }
+        } else {
+            // На мобильных устройствах показываем полное название
+            titleElement.textContent = originalTitle;
+            console.log('📱 Полное название для мобильного');
+        }
     }
     
     closeModal() {

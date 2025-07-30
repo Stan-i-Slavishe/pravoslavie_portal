@@ -811,16 +811,6 @@ class ModernReader {
     openSearch() {
         this.createModal('Поиск по документу', `
             <div style="padding: 20px;">
-                <!-- Поиск по тексту -->
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; color: white; font-weight: 600;">
-                        <i class="bi bi-search" style="margin-right: 5px; color: #D4AF37;"></i>
-                        Поиск по тексту:
-                    </label>
-                    <input type="text" id="search-input" placeholder="Введите текст для поиска..." 
-                           style="width: 100%; padding: 12px; font-size: 16px; border: 1px solid #D4AF37; border-radius: 5px; background: #2a2a2a; color: white;">
-                </div>
-                
                 <!-- Переход к странице -->
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 8px; color: white; font-weight: 600;">
@@ -847,6 +837,16 @@ class ModernReader {
                     <small style="color: #888; font-size: 12px; margin-top: 5px; display: block;">
                         Страниц в документе: <span style="color: #D4AF37; font-weight: 600;">${this.totalPages}</span>
                     </small>
+                </div>
+                
+                <!-- Поиск по тексту -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: white; font-weight: 600;">
+                        <i class="bi bi-search" style="margin-right: 5px; color: #D4AF37;"></i>
+                        Поиск по тексту:
+                    </label>
+                    <input type="text" id="search-input" placeholder="Введите текст для поиска..." 
+                           style="width: 100%; padding: 12px; font-size: 16px; border: 1px solid #D4AF37; border-radius: 5px; background: #2a2a2a; color: white;">
                 </div>
                 
                 <!-- Кнопки действий -->
@@ -895,15 +895,6 @@ class ModernReader {
         // Обработчик перехода к странице
         document.getElementById('goto-page-btn').onclick = () => this.goToPageFromSearch();
         
-        // Обработчик Enter для поля поиска
-        const searchInput = document.getElementById('search-input');
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                this.performSearch();
-            }
-        });
-        
         // Обработчик Enter для поля номера страницы
         const pageInput = document.getElementById('page-input');
         pageInput.addEventListener('keypress', (e) => {
@@ -913,8 +904,18 @@ class ModernReader {
             }
         });
         
-        // Автофокус на поле поиска
-        searchInput.focus();
+        // Обработчик Enter для поля поиска
+        const searchInput = document.getElementById('search-input');
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.performSearch();
+            }
+        });
+        
+        // Автофокус на поле номера страницы (теперь оно сверху)
+        pageInput.focus();
+        pageInput.select(); // Выделяем текущий номер для быстрой замены
     }
     
     async performSearch() {

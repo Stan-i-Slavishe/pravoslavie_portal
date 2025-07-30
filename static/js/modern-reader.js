@@ -811,17 +811,80 @@ class ModernReader {
     openSearch() {
         this.createModal('Поиск по документу', `
             <div style="padding: 20px;">
-                <input type="text" id="search-input" placeholder="Введите текст для поиска..." 
-                       style="width: 100%; padding: 12px; font-size: 16px; border: 1px solid #D4AF37; border-radius: 5px; background: #2a2a2a; color: white;">
-                <div style="margin-top: 15px; text-align: center;">
-                    <button id="search-btn" style="background: #D4AF37; color: black; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px; font-weight: 600;">
-                        <i class="bi bi-search" style="margin-right: 5px;"></i>Найти
-                    </button>
-                    <button id="search-close" style="background: #666; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-                        <i class="bi bi-x-lg" style="margin-right: 5px;"></i>Закрыть
-                    </button>
+                <!-- Поиск по тексту -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: white; font-weight: 600;">
+                        <i class="bi bi-search" style="margin-right: 5px; color: #D4AF37;"></i>
+                        Поиск по тексту:
+                    </label>
+                    <input type="text" id="search-input" placeholder="Введите текст для поиска..." 
+                           style="width: 100%; padding: 12px; font-size: 16px; border: 1px solid #D4AF37; border-radius: 5px; background: #2a2a2a; color: white;">
                 </div>
-                <div id="search-results" style="margin-top: 15px; color: #ccc; font-size: 14px;"></div>
+                
+                <!-- Переход к странице -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: white; font-weight: 600;">
+                        <i class="bi bi-file-earmark-text" style="margin-right: 5px; color: #D4AF37;"></i>
+                        Перейти к странице:
+                    </label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="number" id="page-input" min="1" max="${this.totalPages}" placeholder="Текущая: ${this.currentPage}" value="${this.currentPage}" 
+                               style="flex: 1; padding: 12px; font-size: 16px; border: 1px solid #D4AF37; border-radius: 5px; background: #2a2a2a; color: white;">
+                        <button id="goto-page-btn" style="
+                            background: linear-gradient(135deg, #28a745, #20c997);
+                            color: white;
+                            border: none;
+                            padding: 12px 20px;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            white-space: nowrap;
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <i class="bi bi-arrow-right-circle" style="margin-right: 5px;"></i>Перейти
+                        </button>
+                    </div>
+                    <small style="color: #888; font-size: 12px; margin-top: 5px; display: block;">
+                        Страниц в документе: <span style="color: #D4AF37; font-weight: 600;">${this.totalPages}</span>
+                    </small>
+                </div>
+                
+                <!-- Кнопки действий -->
+                <div style="margin-top: 20px; text-align: center; border-top: 1px solid rgba(212, 175, 55, 0.3); padding-top: 15px;">
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <button id="search-btn" style="
+                            background: linear-gradient(135deg, #D4AF37, #B8941F);
+                            color: black;
+                            border: none;
+                            padding: 12px 20px;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                            flex: 1;
+                            min-width: 120px;
+                        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <i class="bi bi-search" style="margin-right: 5px;"></i>Найти текст
+                        </button>
+                        <button id="search-close" style="
+                            background: linear-gradient(135deg, #6c757d, #5a6268);
+                            color: white;
+                            border: none;
+                            padding: 12px 20px;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                            flex: 1;
+                            min-width: 120px;
+                        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <i class="bi bi-x-lg" style="margin-right: 5px;"></i>Закрыть
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Результаты поиска -->
+                <div id="search-results" style="margin-top: 20px; color: #ccc; font-size: 14px;"></div>
             </div>
         `);
         
@@ -829,7 +892,10 @@ class ModernReader {
         document.getElementById('search-btn').onclick = () => this.performSearch();
         document.getElementById('search-close').onclick = () => this.closeModal();
         
-        // Обработчик Enter для ввода
+        // Обработчик перехода к странице
+        document.getElementById('goto-page-btn').onclick = () => this.goToPageFromSearch();
+        
+        // Обработчик Enter для поля поиска
         const searchInput = document.getElementById('search-input');
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -838,6 +904,16 @@ class ModernReader {
             }
         });
         
+        // Обработчик Enter для поля номера страницы
+        const pageInput = document.getElementById('page-input');
+        pageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.goToPageFromSearch();
+            }
+        });
+        
+        // Автофокус на поле поиска
         searchInput.focus();
     }
     
@@ -960,6 +1036,32 @@ class ModernReader {
     goToSearchResult(pageNum) {
         this.goToPage(pageNum);
         this.showNotification(`Переход к стр. ${pageNum} по результату поиска`);
+    }
+    
+    // Переход к странице из окна поиска
+    goToPageFromSearch() {
+        const pageInput = document.getElementById('page-input');
+        const pageNum = parseInt(pageInput.value);
+        
+        if (!pageNum || isNaN(pageNum)) {
+            document.getElementById('search-results').innerHTML = '<div style="color: #ff6b6b; text-align: center; padding: 10px;"><i class="bi bi-exclamation-circle" style="margin-right: 8px;"></i>Введите номер страницы</div>';
+            pageInput.focus();
+            return;
+        }
+        
+        if (pageNum < 1 || pageNum > this.totalPages) {
+            document.getElementById('search-results').innerHTML = `<div style="color: #ff6b6b; text-align: center; padding: 10px;"><i class="bi bi-exclamation-triangle" style="margin-right: 8px;"></i>Номер страницы должен быть от 1 до ${this.totalPages}</div>`;
+            pageInput.focus();
+            pageInput.select();
+            return;
+        }
+        
+        // Переходим к странице
+        this.goToPage(pageNum);
+        this.showNotification(`Переход к странице ${pageNum}`);
+        
+        // Закрываем модальное окно
+        this.closeModal();
     }
     
     // Настройки

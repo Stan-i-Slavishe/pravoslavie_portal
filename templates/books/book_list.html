@@ -469,8 +469,9 @@
                                 
                                 <button class="btn btn-outline-secondary btn-sm" 
                                         data-action="favorite" 
-                                        data-book-id="{{ book.id }}">
-                                    <i class="bi bi-bookmark"></i>
+                                        data-book-id="{{ book.id }}"
+                                        title="{% if user.is_authenticated and book.id in user_favorites %}Удалить из избранного{% else %}Добавить в избранное{% endif %}">
+                                    <i class="bi {% if user.is_authenticated and book.id in user_favorites %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}{% if user.is_authenticated and book.id in user_favorites %} text-warning{% endif %}"></i>
                                 </button>
                             </div>
                         </div>
@@ -532,18 +533,77 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('[data-action="favorite"]').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
+            
+            // Проверяем, авторизован ли пользователь
+            const isAuthenticated = document.querySelector('meta[name="csrf-token"]');
+            if (!isAuthenticated) {
+                alert('Для добавления в избранное необходимо войти в систему');
+                return;
+            }
+            
             const bookId = this.dataset.bookId;
+            const button = this;
+            const icon = button.querySelector('i');
             
-            // Здесь будет AJAX запрос для добавления в избранное
-            console.log('Adding book to favorites:', bookId);
+            // Блокируем кнопку на время запроса
+            button.disabled = true;
             
-            // Временная анимация
-            this.style.transform = 'scale(1.2)';
-            setTimeout(() => {
-                this.style.transform = 'scale(1)';
-                this.querySelector('i').className = 'bi bi-bookmark-fill';
-                this.classList.add('text-primary');
-            }, 150);
+            // CSRF токен
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                             document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            
+            // AJAX запрос
+            fetch(`/books/favorite/${bookId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Обновляем иконку
+                    if (data.is_favorite) {
+                        icon.className = 'bi bi-bookmark-fill';
+                        button.classList.add('text-warning');
+                        button.classList.remove('text-muted');
+                        button.title = 'Удалить из избранного';
+                    } else {
+                        icon.className = 'bi bi-bookmark';
+                        button.classList.remove('text-warning');
+                        button.classList.add('text-muted');
+                        button.title = 'Добавить в избранное';
+                    }
+                    
+                    // Анимация
+                    button.style.transform = 'scale(1.2)';
+                    setTimeout(() => {
+                        button.style.transform = 'scale(1)';
+                    }, 150);
+                    
+                    // Обновляем счетчик избранного в навигации
+                    if (window.updateFavoritesCount) {
+                        window.updateFavoritesCount();
+                    }
+                    
+                    // Показываем уведомление
+                    console.log(data.message);
+                    
+                } else {
+                    console.error('Ошибка:', data.message);
+                    alert('Ошибка: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка сети:', error);
+                alert('Ошибка сети. Попробуйте еще раз.');
+            })
+            .finally(() => {
+                // Разблокируем кнопку
+                button.disabled = false;
+            });
         });
     });
 });

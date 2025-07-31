@@ -56,9 +56,17 @@ def book_list(request):
     page = request.GET.get('page')
     books = paginator.get_page(page)
     
+    # Получаем список избранных книг пользователя
+    user_favorites = []
+    if request.user.is_authenticated:
+        user_favorites = Book.objects.filter(
+            userfavoritebook__user=request.user
+        ).values_list('id', flat=True)
+    
     context = {
         'books': books,
         'categories': categories,
+        'user_favorites': user_favorites,
         'title': 'Библиотека',
     }
     
@@ -370,6 +378,87 @@ def track_book_view(request, book_id):
             'status': 'error',
             'message': str(e)
         }, status=400)
+
+
+@login_required
+def toggle_favorite(request, book_id):
+    """Переключение избранного статуса книги (AJAX)"""
+    if request.method == 'POST':
+        try:
+            book = get_object_or_404(Book, id=book_id)
+            
+            # Проверяем, есть ли книга в избранном
+            favorite, created = UserFavoriteBook.objects.get_or_create(
+                user=request.user,
+                book=book
+            )
+            
+            if created:
+                # Книга была добавлена в избранное
+                is_favorite = True
+                message = 'Книга добавлена в избранное'
+            else:
+                # Книга уже была в избранном, удаляем её
+                favorite.delete()
+                is_favorite = False
+                message = 'Книга удалена из избранного'
+            
+            # Получаем общее количество избранных книг пользователя
+            favorites_count = UserFavoriteBook.objects.filter(user=request.user).count()
+            
+            return JsonResponse({
+                'status': 'success',
+                'is_favorite': is_favorite,
+                'message': message,
+                'favorites_count': favorites_count
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=400)
+    
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Метод не поддерживается'
+    }, status=405)
+
+
+@login_required
+def get_favorites_count(request):
+    """Получение количества избранных книг (AJAX)"""
+    try:
+        count = UserFavoriteBook.objects.filter(user=request.user).count()
+        return JsonResponse({
+            'status': 'success',
+            'count': count
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+
+
+@login_required
+def user_favorites(request):
+    """Список избранных книг пользователя"""
+    favorites = UserFavoriteBook.objects.filter(
+        user=request.user
+    ).select_related('book__category').prefetch_related('book__tags').order_by('-added_at')
+    
+    # Пагинация
+    paginator = Paginator(favorites, 12)
+    page = request.GET.get('page')
+    favorites = paginator.get_page(page)
+    
+    context = {
+        'favorites': favorites,
+        'title': 'Избранные книги',
+    }
+    
+    return render(request, 'books/user_favorites.html', context)
 
 
 @login_required

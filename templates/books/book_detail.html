@@ -330,7 +330,7 @@
                                        justify-content: center;"
                                 onmouseover="this.style.background='linear-gradient(135deg, #ffc107, #e0a800)'; this.style.color='white'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(255, 193, 7, 0.3)'"
                                 onmouseout="this.style.background='{% if is_favorite %}linear-gradient(135deg, #ffc107, #e0a800){% else %}transparent{% endif %}'; this.style.color='{% if is_favorite %}white{% else %}#ffc107{% endif %}'; this.style.transform='translateY(0)'; this.style.boxShadow='none'"
-                                onclick="toggleFavorite({{ book.id }})">
+                                onclick="toggleFavorite({{ book.id }}, event)">
                             <i class="bi bi-bookmark{% if is_favorite %}-fill{% endif %}"></i>
                             <span class="favorite-text">
                                 {% if is_favorite %}В избранном{% else %}В избранное{% endif %}
@@ -586,19 +586,58 @@
 {% block extra_js %}
 <script>
 // Функция переключения избранного
-function toggleFavorite(bookId) {
+function toggleFavorite(bookId, event) {
+    // Получаем CSRF токен разными способами
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
+                      document.querySelector('meta[name="csrftoken"]')?.getAttribute('content') ||
+                      getCookie('csrftoken');
+    
+    if (!csrfToken) {
+        console.error('CSRF token not found');
+        showToast('Ошибка безопасности. Перезагрузите страницу.', 'error');
+        return;
+    }
+    
+    console.log('CSRF Token found:', csrfToken.substring(0, 10) + '...');
+    
     fetch(`/books/favorite/${bookId}/`, {
         method: 'POST',
         headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
+            'X-CSRFToken': csrfToken,
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
-        }
+        },
+        credentials: 'same-origin'
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return response.json();
+    })
     .then(data => {
+        console.log('Response data:', data);
+        
         if (data.status === 'success') {
-            const button = event.target.closest('.btn-favorite');
+            // Получаем кнопку разными способами
+            let button;
+            if (event && event.target) {
+                button = event.target.closest('.btn-favorite');
+            } else {
+                // Если event недоступен, ищем кнопку по ID книги
+                button = document.querySelector('.btn-favorite');
+            }
+            
+            if (!button) {
+                console.error('Button not found');
+                showToast('Ошибка: кнопка не найдена', 'error');
+                return;
+            }
+            
             const icon = button.querySelector('i');
             const text = button.querySelector('.favorite-text');
             
@@ -620,12 +659,17 @@ function toggleFavorite(bookId) {
             
             showToast(data.message, 'success');
         } else {
-            showToast(data.message, 'error');
+            console.error('Server error response:', data);
+            showToast(data.message || 'Произошла ошибка', 'error');
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        showToast('Произошла ошибка', 'error');
+        console.error('Fetch error:', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack
+        });
+        showToast(`Ошибка: ${error.message}`, 'error');
     });
 }
 

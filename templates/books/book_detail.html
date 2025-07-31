@@ -268,7 +268,7 @@
                             {% endif %}
                         {% else %}
                             <!-- Кнопка покупки -->
-                            <a href="{% url 'shop:products' %}?book={{ book.id }}" class="btn-purchase">
+                            <a href="{% url 'shop:catalog' %}?book={{ book.id }}" class="btn-purchase">
                                 <i class="bi bi-cart-plus"></i>
                                 Купить за {{ book.price }} ₽
                             </a>

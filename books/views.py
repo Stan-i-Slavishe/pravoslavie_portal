@@ -98,7 +98,7 @@ def book_detail(request, slug):
             from shop.models import Purchase
             user_can_read = Purchase.objects.filter(
                 user=request.user,
-                product__name__icontains=book.title
+                product__title__icontains=book.title
             ).exists()
         
         # Получаем сессию чтения если есть
@@ -388,7 +388,7 @@ def modern_reader(request, slug):
         from shop.models import Purchase
         user_can_read = Purchase.objects.filter(
             user=request.user,
-            product__name__icontains=book.title
+            product__title__icontains=book.title
         ).exists()
     
     if not user_can_read:
@@ -442,7 +442,7 @@ def read_book(request, slug):
         from shop.models import Purchase
         user_can_read = Purchase.objects.filter(
             user=request.user,
-            product__name__icontains=book.title  # Простая проверка по названию
+            product__title__icontains=book.title  # Простая проверка по названию
         ).exists()
     
     if not user_can_read:

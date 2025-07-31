@@ -229,66 +229,6 @@
                     </div>
                 {% endif %}
                 
-                <!-- Метаданные книги -->
-                <div class="book-meta">
-                    <div class="book-meta-item">
-                        <i class="bi bi-calendar"></i>
-                        <span>Опубликовано: 
-                            {% if book.published_at %}
-                                {{ book.published_at|date:"d.m.Y" }}
-                            {% else %}
-                                н/д
-                            {% endif %}
-                        </span>
-                    </div>
-                    
-                    <div class="book-meta-item">
-                        <i class="bi bi-file-earmark"></i>
-                        <span>Формат: {{ book.get_format_display }}</span>
-                    </div>
-                    
-                    {% if book.pages %}
-                    <div class="book-meta-item">
-                        <i class="bi bi-file-text"></i>
-                        <span>Страниц: {{ book.pages }}</span>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="book-meta-item">
-                        <i class="bi bi-download"></i>
-                        <span>Скачиваний: {{ book.downloads_count }}</span>
-                    </div>
-                    
-                    <div class="book-meta-item">
-                        <i class="bi bi-eye"></i>
-                        <span>Просмотры: {{ book.views_count }}</span>
-                    </div>
-                    
-                    {% if book.language %}
-                    <div class="book-meta-item">
-                        <i class="bi bi-translate"></i>
-                        <span>Язык: 
-                            {% if book.language == 'ru' %}Русский{% else %}{{ book.language }}{% endif %}
-                        </span>
-                    </div>
-                    {% endif %}
-                </div>
-
-                <!-- Прогресс чтения (если пользователь читает) -->
-                {% if user.is_authenticated and reading_session %}
-                <div class="reading-progress">
-                    <h6><i class="bi bi-bookmark-star"></i> Прогресс чтения</h6>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: {{ reading_session.progress_percentage|floatformat:0 }}%"></div>
-                    </div>
-                    <small class="text-muted">
-                        Страница {{ reading_session.current_page }}
-                        {% if book.pages %} из {{ book.pages }}{% endif %} 
-                        ({{ reading_session.progress_percentage|floatformat:0 }}%)
-                    </small>
-                </div>
-                {% endif %}
-
                 <!-- Кнопки действий -->
                 <div class="book-actions">
                     {% if user.is_authenticated %}
@@ -366,6 +306,66 @@
                         </button>
                     {% endif %}
                 </div>
+                
+                <!-- Метаданные книги -->
+                <div class="book-meta">
+                    <div class="book-meta-item">
+                        <i class="bi bi-calendar"></i>
+                        <span>Опубликовано: 
+                            {% if book.published_at %}
+                                {{ book.published_at|date:"d.m.Y" }}
+                            {% else %}
+                                н/д
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="book-meta-item">
+                        <i class="bi bi-file-earmark"></i>
+                        <span>Формат: {{ book.get_format_display }}</span>
+                    </div>
+                    
+                    {% if book.pages %}
+                    <div class="book-meta-item">
+                        <i class="bi bi-file-text"></i>
+                        <span>Страниц: {{ book.pages }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="book-meta-item">
+                        <i class="bi bi-download"></i>
+                        <span>Скачиваний: {{ book.downloads_count }}</span>
+                    </div>
+                    
+                    <div class="book-meta-item">
+                        <i class="bi bi-eye"></i>
+                        <span>Просмотры: {{ book.views_count }}</span>
+                    </div>
+                    
+                    {% if book.language %}
+                    <div class="book-meta-item">
+                        <i class="bi bi-translate"></i>
+                        <span>Язык: 
+                            {% if book.language == 'ru' %}Русский{% else %}{{ book.language }}{% endif %}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Прогресс чтения (если пользователь читает) -->
+                {% if user.is_authenticated and reading_session %}
+                <div class="reading-progress">
+                    <h6><i class="bi bi-bookmark-star"></i> Прогресс чтения</h6>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: {{ reading_session.progress_percentage|floatformat:0 }}%"></div>
+                    </div>
+                    <small class="text-muted">
+                        Страница {{ reading_session.current_page }}
+                        {% if book.pages %} из {{ book.pages }}{% endif %} 
+                        ({{ reading_session.progress_percentage|floatformat:0 }}%)
+                    </small>
+                </div>
+                {% endif %}
             </div>
         </div>
 

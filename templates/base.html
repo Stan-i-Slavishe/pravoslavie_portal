@@ -24,6 +24,23 @@
     <link rel="stylesheet" href="{% static 'css/mobile-navigation.css' %}">
     <link rel="stylesheet" href="{% static 'css/mobile-burger-menu.css' %}">
     
+    <!-- Принудительное скрытие бургера на десктопе -->
+    <style>
+        /* Скрываем бургер-меню на десктопе */
+        @media (min-width: 992px) {
+            .mobile-burger-menu {
+                display: none !important;
+            }
+        }
+        
+        /* Показываем только на мобильных */
+        @media (max-width: 991.98px) {
+            .mobile-burger-menu {
+                display: flex !important;
+            }
+        }
+    </style>
+    
     <!-- Стили для рейтинга звёзд -->
     <style>
         .rating-input {

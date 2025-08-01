@@ -539,13 +539,18 @@
                             
                             <div class="book-actions">
                                 {% if book.is_free %}
-                                    <a href="{% url 'books:download' book_id=book.id %}" 
+                                    <a href="{% url 'books:detail' slug=book.slug %}" 
                                        class="btn btn-primary btn-sm flex-grow-1">
-                                        <i class="bi bi-download me-1"></i>
-                                        Скачать
+                                        <i class="bi bi-book-open me-1"></i>
+                                        Читать
+                                    </a>
+                                    <a href="{% url 'books:download' book_id=book.id %}" 
+                                       class="btn btn-outline-primary btn-sm"
+                                       title="Скачать">
+                                        <i class="bi bi-download"></i>
                                     </a>
                                 {% else %}
-                                    <!-- Кнопка купить для платных книг -->
+                                    <!-- Кнопка купить для платаных книг -->
                                     <a href="{% url 'books:detail' slug=book.slug %}" 
                                        class="btn btn-success btn-sm flex-grow-1"
                                        title="Купить за {{ book.price|floatformat:0 }} ₽">

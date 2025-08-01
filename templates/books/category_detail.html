@@ -110,11 +110,6 @@
                         <div class="col-md-6 col-lg-4">
                             <div class="card h-100 shadow-sm book-card">
                                 <!-- Стикеры на уровне карточки -->
-                                <!-- Бейдж формата -->
-                                <span class="position-absolute badge bg-dark format-badge-category">
-                                    {{ book.format|upper }}
-                                </span>
-                                
                                 <!-- Бейдж цены -->
                                 {% if book.is_free %}
                                     <span class="position-absolute badge bg-success price-badge-free">
@@ -125,6 +120,11 @@
                                         {{ book.price|floatformat:0 }}&nbsp;₽
                                     </span>
                                 {% endif %}
+                                
+                                <!-- Бейдж формата -->
+                                <span class="position-absolute badge bg-dark format-badge-category">
+                                    {{ book.format|upper }}
+                                </span>
                                 
                                 <!-- Обложка книги -->
                                 <div class="position-relative">
@@ -183,9 +183,14 @@
                                     <!-- Кнопки действий -->
                                     <div class="d-flex gap-2">
                                         {% if book.is_free %}
-                                            <a href="{% url 'books:download' book_id=book.id %}" 
+                                            <a href="{{ book.get_absolute_url }}" 
                                                class="btn btn-primary btn-sm flex-grow-1">
-                                                <i class="bi bi-download me-1"></i>Скачать
+                                                <i class="bi bi-book-open me-1"></i>Читать
+                                            </a>
+                                            <a href="{% url 'books:download' book_id=book.id %}" 
+                                               class="btn btn-outline-primary btn-sm"
+                                               title="Скачать">
+                                                <i class="bi bi-download"></i>
                                             </a>
                                         {% else %}
                                             <!-- Кнопка купить для платных книг -->
@@ -422,54 +427,54 @@ function showToast(message, type = 'info') {
 /* Стикеры цен с выходом за границы */
 .price-badge-free {
     top: -8px !important;
-    left: -8px !important;
+    right: -8px !important;
     font-size: 0.75rem;
     font-weight: 600;
     padding: 6px 10px;
     border-radius: 6px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     z-index: 10;
-    transform: rotate(-2deg);
+    transform: rotate(2deg);
     border: 2px solid #fff;
 }
 
 .price-badge-paid {
     top: -8px !important;
-    left: -8px !important;
+    right: -8px !important;
     font-size: 0.75rem;
     font-weight: 600;
     padding: 6px 10px;
     border-radius: 6px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     z-index: 10;
-    transform: rotate(-2deg);
+    transform: rotate(2deg);
     border: 2px solid #fff;
 }
 
 /* Анимация при наведении на карточку */
 .book-card:hover .price-badge-free,
 .book-card:hover .price-badge-paid {
-    transform: rotate(-2deg) scale(1.05);
+    transform: rotate(2deg) scale(1.05);
     transition: transform 0.2s ease;
 }
 
 /* Стикер формата с выходом за границы */
 .format-badge-category {
     top: -8px !important;
-    right: -8px !important;
+    left: -8px !important;
     font-size: 0.7rem;
     font-weight: 500;
     padding: 4px 8px;
     border-radius: 6px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     z-index: 9;
-    transform: rotate(2deg);
+    transform: rotate(-2deg);
     border: 1px solid #fff;
     transition: transform 0.2s ease;
 }
 
 .book-card:hover .format-badge-category {
-    transform: rotate(2deg) scale(1.05);
+    transform: rotate(-2deg) scale(1.05);
 }
 
 /* Позволяем стикерам выходить за границы карточки */

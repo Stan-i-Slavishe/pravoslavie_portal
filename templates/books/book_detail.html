@@ -41,8 +41,8 @@
     
     .book-actions {
         display: flex;
+        flex-direction: column;
         gap: 10px;
-        flex-wrap: wrap;
         margin: 1.5rem 0;
     }
     
@@ -94,13 +94,17 @@
         background: transparent;
         border: 2px solid var(--gold-accent);
         color: var(--gold-accent);
-        padding: 10px 20px;
+        padding: 12px 24px;
         border-radius: 8px;
         font-weight: 500;
         transition: all 0.3s ease;
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 8px;
+        width: 100%;
+        min-height: 48px;
+        white-space: nowrap;
     }
     
     .btn-favorite:hover {
@@ -125,9 +129,11 @@
         text-decoration: none;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        flex: 1;
         justify-content: center;
+        gap: 8px;
+        width: 100%;
+        min-height: 48px;
+        white-space: nowrap;
     }
     
     .btn-purchase:hover {
@@ -189,8 +195,9 @@
         }
         
         .btn-read, .btn-download, .btn-favorite, .btn-purchase {
-            width: 100%;
-            justify-content: center;
+            width: 100% !important;
+            justify-content: center !important;
+            min-height: 48px !important;
         }
         
         /* Адаптивность для современного reader */
@@ -320,16 +327,18 @@
                                 style="background: {% if is_favorite %}linear-gradient(135deg, #ffc107, #e0a800){% else %}transparent{% endif %};
                                        border: 2px solid #ffc107;
                                        color: {% if is_favorite %}white{% else %}#ffc107{% endif %};
-                                       padding: 10px 20px;
+                                       padding: 12px 24px;
                                        border-radius: 8px;
                                        font-weight: 500;
                                        transition: all 0.3s ease;
                                        display: inline-flex;
                                        align-items: center;
+                                       justify-content: center;
                                        gap: 8px;
                                        cursor: pointer;
-                                       flex: 1;
-                                       justify-content: center;"
+                                       width: 100%;
+                                       min-height: 48px;
+                                       white-space: nowrap;"
                                 onmouseover="this.style.background='linear-gradient(135deg, #ffc107, #e0a800)'; this.style.color='white'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(255, 193, 7, 0.3)'"
                                 onmouseout="this.style.background='{% if is_favorite %}linear-gradient(135deg, #ffc107, #e0a800){% else %}transparent{% endif %}'; this.style.color='{% if is_favorite %}white{% else %}#ffc107{% endif %}'; this.style.transform='translateY(0)'; this.style.boxShadow='none'"
                                 onclick="toggleFavorite({{ book.id }}, event)">

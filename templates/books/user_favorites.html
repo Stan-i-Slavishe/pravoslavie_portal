@@ -119,22 +119,24 @@
 
 .favorite-actions .btn {
     min-width: 80px;
-    padding: 8px 16px;
-    font-size: 0.9rem;
+    padding: 8px 12px;
+    font-size: 0.85rem;
     white-space: nowrap;
+    text-align: center;
 }
 
 .favorite-actions .btn-primary {
     flex: 1;
-    min-width: 100px;
+    min-width: 90px;
 }
 
 .favorite-actions .btn-success {
-    min-width: 50px;
+    min-width: 140px; /* Увеличено для текста "Купить 500 ₽" */
 }
 
 .favorite-actions .btn-outline-danger {
-    min-width: 50px;
+    min-width: 40px;
+    flex-shrink: 0;
 }
 
 .empty-favorites {
@@ -328,17 +330,48 @@
                         </div>
                         
                         <div class="favorite-actions">
-                            <a href="{% url 'books:detail' slug=favorite.book.slug %}" 
-                               class="btn btn-primary btn-sm">
-                                <i class="bi bi-eye me-1"></i>
-                                Читать
-                            </a>
-                            
                             {% if favorite.book.is_free or user.has_subscription %}
+                                <!-- Бесплатная книга или есть подписка -->
+                                <a href="{% url 'books:detail' slug=favorite.book.slug %}" 
+                                   class="btn btn-primary btn-sm">
+                                    <i class="bi bi-eye me-1"></i>
+                                    Читать
+                                </a>
+                                
                                 <a href="{% url 'books:download' book_id=favorite.book.id %}" 
                                    class="btn btn-success btn-sm">
                                     <i class="bi bi-download"></i>
                                 </a>
+                            {% else %}
+                                <!-- Проверяем, купил ли пользователь эту книгу -->
+                                {% with favorite.book as book %}
+                                    {% if book.id in user_purchased_books %}
+                                        <!-- Книга куплена -->
+                                        <a href="{% url 'books:detail' slug=book.slug %}" 
+                                           class="btn btn-primary btn-sm">
+                                            <i class="bi bi-eye me-1"></i>
+                                            Читать
+                                        </a>
+                                        
+                                        <a href="{% url 'books:download' book_id=book.id %}" 
+                                           class="btn btn-success btn-sm">
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                    {% else %}
+                                        <!-- Книга не куплена -->
+                                        <a href="{% url 'books:detail' slug=book.slug %}" 
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-eye me-1"></i>
+                                            Посмотреть
+                                        </a>
+                                        
+                                        <a href="{% url 'shop:catalog' %}?book={{ book.id }}" 
+                                           class="btn btn-success btn-sm">
+                                            <i class="bi bi-cart-plus me-1"></i>
+                                            Купить {{ book.price }} ₽
+                                        </a>
+                                    {% endif %}
+                                {% endwith %}
                             {% endif %}
                             
                             <button class="btn btn-outline-danger btn-sm" 

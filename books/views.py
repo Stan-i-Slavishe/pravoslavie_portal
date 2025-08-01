@@ -319,6 +319,28 @@ def user_favorites(request):
         user=request.user
     ).select_related('book__category').order_by('-added_at')
     
+    # Получаем список ID купленных книг пользователя
+    from shop.models import Purchase
+    user_purchased_books = []
+    try:
+        purchases = Purchase.objects.filter(
+            user=request.user
+        ).select_related('product')
+        
+        # Собираем ID книг из покупок
+        for purchase in purchases:
+            # Ищем книгу по названию продукта или другим критериям
+            book_title = purchase.product.name
+            from django.db.models import Q
+            books = Book.objects.filter(
+                Q(title__icontains=book_title) |
+                Q(title__iexact=book_title)
+            )
+            user_purchased_books.extend([book.id for book in books])
+    except:
+        # Если модель Purchase не найдена или ошибка
+        pass
+    
     # Пагинация
     paginator = Paginator(favorites, 12)
     page = request.GET.get('page')
@@ -326,6 +348,7 @@ def user_favorites(request):
     
     context = {
         'favorites': favorites,
+        'user_purchased_books': user_purchased_books,
         'title': 'Мои избранные книги',
     }
     

@@ -48,10 +48,11 @@
     background: #fff;
     border: 1px solid #e0e0e0;
     border-radius: 0.75rem;
-    overflow: hidden;
+    overflow: visible; /* Позволяем стикерам выходить за границы */
     transition: all 0.3s ease;
     height: 100%;
     position: relative;
+    margin: 10px; /* Отступ для стикеров */
 }
 
 .book-card:hover {
@@ -65,6 +66,7 @@
     aspect-ratio: 3/4;
     background: #f5f5f5;
     overflow: hidden;
+    border-radius: 0.5rem 0.5rem 0 0;
 }
 
 .book-cover img {
@@ -81,30 +83,50 @@
 
 .book-price-badge {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: -8px;
+    right: -8px;
     background: #2ecc71;
     color: white;
-    padding: 4px 8px;
-    border-radius: 0.25rem;
+    padding: 6px 10px;
+    border-radius: 6px;
     font-size: 0.75rem;
     font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 10;
+    transform: rotate(2deg);
+    border: 2px solid #fff;
+    transition: transform 0.2s ease;
 }
 
 .book-price-badge.free {
     background: #3498db;
 }
 
+/* Анимация при наведении */
+.book-card:hover .book-price-badge {
+    transform: rotate(2deg) scale(1.05);
+}
+
 .book-format-badge {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    background: rgba(0, 0, 0, 0.7);
+    top: -8px;
+    left: -8px;
+    background: rgba(0, 0, 0, 0.8);
     color: white;
     padding: 4px 8px;
-    border-radius: 0.25rem;
+    border-radius: 6px;
     font-size: 0.7rem;
     font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    z-index: 10;
+    transform: rotate(-2deg);
+    border: 1px solid #fff;
+    transition: transform 0.2s ease;
+}
+
+/* Анимация для стикера формата */
+.book-card:hover .book-format-badge {
+    transform: rotate(-2deg) scale(1.05);
 }
 
 .book-content {
@@ -383,10 +405,21 @@
 <!-- Список книг -->
 {% if books %}
     <div class="books-grid" id="booksContainer">
-        <div class="row g-4">
+        <div class="row g-4" style="margin: 0 -10px; /* Компенсируем отступы карточек */">
             {% for book in books %}
                 <div class="col-lg-3 col-md-6 col-sm-6">
                     <div class="book-card">
+                        <!-- Стикеры на уровне карточки -->
+                        {% if book.price %}
+                            <div class="book-price-badge">{{ book.price }} ₽</div>
+                        {% else %}
+                            <div class="book-price-badge free">Бесплатно</div>
+                        {% endif %}
+                        
+                        {% if book.format %}
+                            <div class="book-format-badge">{{ book.get_format_display }}</div>
+                        {% endif %}
+                        
                         <div class="book-cover">
                             {% if book.cover %}
                                 <img src="{{ book.cover.url }}" alt="{{ book.title }}">
@@ -395,16 +428,6 @@
                                      style="background: linear-gradient(45deg, #2ecc71, #27ae60);">
                                     <i class="bi bi-book" style="font-size: 3rem; color: white; opacity: 0.7;"></i>
                                 </div>
-                            {% endif %}
-                            
-                            {% if book.price %}
-                                <div class="book-price-badge">{{ book.price }} ₽</div>
-                            {% else %}
-                                <div class="book-price-badge free">Бесплатно</div>
-                            {% endif %}
-                            
-                            {% if book.format %}
-                                <div class="book-format-badge">{{ book.get_format_display }}</div>
                             {% endif %}
                         </div>
                         

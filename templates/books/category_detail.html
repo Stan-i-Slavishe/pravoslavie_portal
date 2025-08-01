@@ -122,7 +122,7 @@
                                     </span>
                                 {% else %}
                                     <span class="position-absolute badge bg-primary price-badge-paid">
-                                        {{ book.price }} ₽
+                                        {{ book.price|floatformat:0 }}&nbsp;₽
                                     </span>
                                 {% endif %}
                                 
@@ -182,10 +182,19 @@
                                     
                                     <!-- Кнопки действий -->
                                     <div class="d-flex gap-2">
-                                        <a href="{{ book.get_absolute_url }}" 
-                                           class="btn btn-primary btn-sm flex-grow-1">
-                                            <i class="bi bi-eye me-1"></i>Подробнее
-                                        </a>
+                                        {% if book.is_free %}
+                                            <a href="{% url 'books:download' book_id=book.id %}" 
+                                               class="btn btn-primary btn-sm flex-grow-1">
+                                                <i class="bi bi-download me-1"></i>Скачать
+                                            </a>
+                                        {% else %}
+                                            <!-- Кнопка купить для платных книг -->
+                                            <a href="{{ book.get_absolute_url }}" 
+                                               class="btn btn-success btn-sm flex-grow-1"
+                                               title="Купить за {{ book.price|floatformat:0 }} ₽">
+                                                <i class="bi bi-cart-plus me-1"></i>{{ book.price|floatformat:0 }}&nbsp;₽
+                                            </a>
+                                        {% endif %}
                                         
                                         {% if user.is_authenticated %}
                                             <button type="button" 
@@ -515,6 +524,28 @@ function showToast(message, type = 'info') {
 
 .book-card:hover .position-relative a::after {
     background: rgba(0, 0, 0, 0.05); /* Максимально легкое затемнение */
+}
+
+/* Стили для кнопки покупки */
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+    white-space: nowrap; /* Предотвращаем перенос текста */
+    font-size: 0.8rem; /* Немного уменьшаем шрифт */
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.btn-success:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
 }
 </style>
 {% endblock %}

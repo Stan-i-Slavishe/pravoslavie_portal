@@ -296,58 +296,57 @@
                         {% endif %}
                     {% endif %}
 
-                    <!-- Кнопка скачивания -->
-                    {% if book.file and user.is_authenticated %}
-                        {% if book.is_free or user_can_read %}
-                        <a href="{% url 'books:download' book.id %}" class="btn-download" 
-                           style="background: linear-gradient(135deg, #28a745, #20692b);
-                                  border: none;
-                                  color: white;
-                                  padding: 12px 24px;
-                                  border-radius: 8px;
-                                  font-weight: 500;
-                                  transition: all 0.3s ease;
-                                  text-decoration: none;
-                                  display: inline-flex;
-                                  align-items: center;
-                                  gap: 8px;
-                                  flex: 1;
-                                  justify-content: center;"
-                           onmouseover="this.style.background='linear-gradient(135deg, #20692b, #28a745)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(40, 167, 69, 0.3)'"
-                           onmouseout="this.style.background='linear-gradient(135deg, #28a745, #20692b)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                            <i class="bi bi-download"></i>
-                            Скачать
-                        </a>
+                    <!-- Кнопка скачивания и избранного в одну строку -->
+                    <div class="d-flex gap-2 mt-2">
+                        {% if book.file and user.is_authenticated %}
+                            {% if book.is_free or user_can_read %}
+                            <a href="{% url 'books:download' book.id %}" class="btn-download flex-fill" 
+                               style="background: linear-gradient(135deg, #28a745, #20692b);
+                                      border: none;
+                                      color: white;
+                                      padding: 12px 24px;
+                                      border-radius: 8px;
+                                      font-weight: 500;
+                                      transition: all 0.3s ease;
+                                      text-decoration: none;
+                                      display: inline-flex;
+                                      align-items: center;
+                                      gap: 8px;
+                                      justify-content: center;"
+                               onmouseover="this.style.background='linear-gradient(135deg, #20692b, #28a745)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(40, 167, 69, 0.3)'"
+                               onmouseout="this.style.background='linear-gradient(135deg, #28a745, #20692b)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                                <i class="bi bi-download"></i>
+                                Скачать
+                            </a>
+                            {% endif %}
                         {% endif %}
-                    {% endif %}
 
-                    <!-- Кнопка избранного -->
-                    {% if user.is_authenticated %}
-                        <button class="btn-favorite {% if is_favorite %}active{% endif %}" 
-                                style="background: {% if is_favorite %}linear-gradient(135deg, #ffc107, #e0a800){% else %}transparent{% endif %};
-                                       border: 2px solid #ffc107;
-                                       color: {% if is_favorite %}white{% else %}#ffc107{% endif %};
-                                       padding: 12px 24px;
-                                       border-radius: 8px;
-                                       font-weight: 500;
-                                       transition: all 0.3s ease;
-                                       display: inline-flex;
-                                       align-items: center;
-                                       justify-content: center;
-                                       gap: 8px;
-                                       cursor: pointer;
-                                       width: 100%;
-                                       min-height: 48px;
-                                       white-space: nowrap;"
-                                onmouseover="this.style.background='linear-gradient(135deg, #ffc107, #e0a800)'; this.style.color='white'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(255, 193, 7, 0.3)'"
-                                onmouseout="this.style.background='{% if is_favorite %}linear-gradient(135deg, #ffc107, #e0a800){% else %}transparent{% endif %}'; this.style.color='{% if is_favorite %}white{% else %}#ffc107{% endif %}'; this.style.transform='translateY(0)'; this.style.boxShadow='none'"
-                                onclick="toggleFavorite({{ book.id }}, event)">
-                            <i class="bi bi-bookmark{% if is_favorite %}-fill{% endif %}"></i>
-                            <span class="favorite-text">
-                                {% if is_favorite %}В избранном{% else %}В избранное{% endif %}
-                            </span>
-                        </button>
-                    {% endif %}
+                        <!-- Кнопка избранного -->
+                        {% if user.is_authenticated %}
+                            <button class="btn-favorite flex-fill {% if is_favorite %}active{% endif %}" 
+                                    style="background: {% if is_favorite %}linear-gradient(135deg, #ffc107, #e0a800){% else %}transparent{% endif %};
+                                           border: 2px solid #ffc107;
+                                           color: {% if is_favorite %}white{% else %}#ffc107{% endif %};
+                                           padding: 12px 24px;
+                                           border-radius: 8px;
+                                           font-weight: 500;
+                                           transition: all 0.3s ease;
+                                           display: inline-flex;
+                                           align-items: center;
+                                           justify-content: center;
+                                           gap: 8px;
+                                           cursor: pointer;
+                                           white-space: nowrap;"
+                                    onmouseover="this.style.background='linear-gradient(135deg, #ffc107, #e0a800)'; this.style.color='white'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(255, 193, 7, 0.3)'"
+                                    onmouseout="this.style.background='{% if is_favorite %}linear-gradient(135deg, #ffc107, #e0a800){% else %}transparent{% endif %}'; this.style.color='{% if is_favorite %}white{% else %}#ffc107{% endif %}'; this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+                                    onclick="toggleFavorite({{ book.id }}, event)">
+                                <i class="bi bi-bookmark{% if is_favorite %}-fill{% endif %}"></i>
+                                <span class="favorite-text">
+                                    {% if is_favorite %}В избранном{% else %}В избранное{% endif %}
+                                </span>
+                            </button>
+                        {% endif %}
+                    </div>
                 </div>
                 
                 <!-- Метаданные книги -->

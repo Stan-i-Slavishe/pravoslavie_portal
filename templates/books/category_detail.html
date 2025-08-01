@@ -1,0 +1,410 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ category.name }} - Книги{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Хлебные крошки -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Главная</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'books:list' %}">Библиотека</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'books:categories' %}">Категории</a></li>
+                    <li class="breadcrumb-item active">{{ category.name }}</li>
+                </ol>
+            </nav>
+            
+            <!-- Заголовок категории -->
+            <div class="d-flex align-items-center mb-4">
+                {% if category.icon %}
+                    <i class="{{ category.icon }} me-3 text-primary" style="font-size: 2.5rem;"></i>
+                {% else %}
+                    <i class="bi bi-book me-3 text-primary" style="font-size: 2.5rem;"></i>
+                {% endif %}
+                <div>
+                    <h1 class="mb-1">{{ category.name }}</h1>
+                    <span class="badge bg-primary">
+                        {{ books.paginator.count }} 
+                        {% if books.paginator.count == 1 %}
+                            книга
+                        {% elif books.paginator.count <= 4 %}
+                            книги
+                        {% else %}
+                            книг
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Описание категории -->
+            {% if category.description %}
+                <div class="alert alert-info mb-4">
+                    <i class="bi bi-info-circle me-2"></i>
+                    {{ category.description }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Основное содержимое -->
+        <div class="col-lg-9">
+            {% if books %}
+                <!-- Сортировка и фильтры -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <label class="form-label me-2 mb-0">Сортировка:</label>
+                            <select class="form-select form-select-sm" style="width: auto;" onchange="updateSort(this.value)">
+                                <option value="newest" {% if request.GET.sort == 'newest' or not request.GET.sort %}selected{% endif %}>Новые</option>
+                                <option value="popular" {% if request.GET.sort == 'popular' %}selected{% endif %}>Популярные</option>
+                                <option value="rating" {% if request.GET.sort == 'rating' %}selected{% endif %}>По рейтингу</option>
+                                <option value="title" {% if request.GET.sort == 'title' %}selected{% endif %}>По названию</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <form method="get" class="d-flex">
+                            <input type="text" 
+                                   name="search" 
+                                   class="form-control form-control-sm" 
+                                   placeholder="Поиск в категории..." 
+                                   value="{{ request.GET.search }}"
+                                   style="max-width: 200px;">
+                            <button type="submit" class="btn btn-outline-primary btn-sm ms-2">
+                                <i class="bi bi-search"></i>
+                            </button>
+                            {% if request.GET.search %}
+                                <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}{% endif %}" 
+                                   class="btn btn-outline-secondary btn-sm ms-1" 
+                                   title="Очистить поиск">
+                                    <i class="bi bi-x"></i>
+                                </a>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Результаты поиска -->
+                {% if request.GET.search %}
+                    <div class="alert alert-light mb-4">
+                        <i class="bi bi-search me-2"></i>
+                        Результаты поиска "{{ request.GET.search }}" в категории "{{ category.name }}": 
+                        <strong>{{ books.paginator.count }}</strong> 
+                        {% if books.paginator.count == 1 %}
+                            книга найдена
+                        {% elif books.paginator.count <= 4 %}
+                            книги найдено
+                        {% else %}
+                            книг найдено
+                        {% endif %}
+                    </div>
+                {% endif %}
+                
+                <!-- Список книг -->
+                <div class="row g-4">
+                    {% for book in books %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 shadow-sm book-card">
+                                <!-- Обложка книги -->
+                                <div class="position-relative">
+                                    {% if book.cover %}
+                                        <img src="{{ book.cover.url }}" 
+                                             class="card-img-top" 
+                                             alt="{{ book.title }}"
+                                             style="height: 200px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="card-img-top d-flex align-items-center justify-content-center bg-light" 
+                                             style="height: 200px;">
+                                            <i class="bi bi-book text-muted" style="font-size: 3rem;"></i>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Бейдж формата -->
+                                    <span class="position-absolute top-0 end-0 m-2 badge bg-dark">
+                                        {{ book.format|upper }}
+                                    </span>
+                                    
+                                    <!-- Бейдж цены -->
+                                    {% if book.is_free %}
+                                        <span class="position-absolute top-0 start-0 m-2 badge bg-success">
+                                            Бесплатно
+                                        </span>
+                                    {% else %}
+                                        <span class="position-absolute top-0 start-0 m-2 badge bg-primary">
+                                            {{ book.price }} ₽
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">
+                                        <a href="{{ book.get_absolute_url }}" class="text-decoration-none">
+                                            {{ book.title }}
+                                        </a>
+                                    </h5>
+                                    
+                                    {% if book.author %}
+                                        <p class="card-text text-muted small mb-2">
+                                            <i class="bi bi-person me-1"></i>{{ book.author }}
+                                        </p>
+                                    {% endif %}
+                                    
+                                    <p class="card-text flex-grow-1">
+                                        {{ book.description|truncatewords:15 }}
+                                    </p>
+                                    
+                                    <!-- Рейтинг и статистика -->
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        {% if book.rating > 0 %}
+                                            <div class="text-warning">
+                                                {% for i in "12345" %}
+                                                    {% if forloop.counter <= book.rating %}
+                                                        <i class="bi bi-star-fill"></i>
+                                                    {% else %}
+                                                        <i class="bi bi-star"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                <span class="text-muted small ms-1">{{ book.rating }}</span>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <small class="text-muted">
+                                            <i class="bi bi-download me-1"></i>{{ book.downloads_count }}
+                                        </small>
+                                    </div>
+                                    
+                                    <!-- Кнопки действий -->
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ book.get_absolute_url }}" 
+                                           class="btn btn-primary btn-sm flex-grow-1">
+                                            <i class="bi bi-eye me-1"></i>Подробнее
+                                        </a>
+                                        
+                                        {% if user.is_authenticated %}
+                                            <button type="button" 
+                                                    class="btn btn-outline-danger btn-sm favorite-btn"
+                                                    data-book-id="{{ book.id }}"
+                                                    data-is-favorite="{% if book.id in user_favorites %}true{% else %}false{% endif %}"
+                                                    title="{% if book.id in user_favorites %}Удалить из избранного{% else %}Добавить в избранное{% endif %}">
+                                                <i class="bi {% if book.id in user_favorites %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Пагинация -->
+                {% if books.has_other_pages %}
+                    <nav aria-label="Навигация по страницам" class="mt-5">
+                        <ul class="pagination justify-content-center">
+                            {% if books.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ books.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in books.paginator.page_range %}
+                                {% if books.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > books.number|add:'-3' and num < books.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if books.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ books.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+                
+            {% else %}
+                <!-- Пустая категория -->
+                <div class="text-center py-5">
+                    <i class="bi bi-book display-1 text-muted"></i>
+                    {% if request.GET.search %}
+                        <h3 class="mt-3">Ничего не найдено</h3>
+                        <p class="text-muted">По запросу "{{ request.GET.search }}" в категории "{{ category.name }}" ничего не найдено</p>
+                        <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}{% endif %}" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-left me-1"></i>Показать все книги категории
+                        </a>
+                    {% else %}
+                        <h3 class="mt-3">В этой категории пока нет книг</h3>
+                        <p class="text-muted">Скоро здесь появятся интересные материалы</p>
+                        <a href="{% url 'books:list' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-book me-1"></i>Посмотреть все книги
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Боковая панель -->
+        <div class="col-lg-3">
+            <!-- Информация о категории -->
+            <div class="card bg-light mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-1"></i>О категории
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm table-borderless mb-0">
+                        <tr>
+                            <td><strong>Всего книг:</strong></td>
+                            <td>{{ books.paginator.count }}</td>
+                        </tr>
+                        {% if category.created_at %}
+                            <tr>
+                                <td><strong>Создана:</strong></td>
+                                <td>{{ category.created_at|date:"d.m.Y" }}</td>
+                            </tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Все категории -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list me-1"></i>Все категории
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'books:list' %}" 
+                           class="list-group-item list-group-item-action border-0 px-0">
+                            <i class="bi bi-collection me-2"></i>Все книги
+                        </a>
+                        {% if related_categories %}
+                            {% for cat in related_categories %}
+                                <a href="{% url 'books:category' slug=cat.slug %}" 
+                                   class="list-group-item list-group-item-action border-0 px-0 {% if cat.slug == category.slug %}active{% endif %}">
+                                    {% if cat.icon %}
+                                        <i class="{{ cat.icon }} me-2"></i>
+                                    {% else %}
+                                        <i class="bi bi-folder me-2"></i>
+                                    {% endif %}
+                                    {{ cat.name }}
+                                </a>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateSort(sortValue) {
+    const url = new URL(window.location);
+    url.searchParams.set('sort', sortValue);
+    window.location.href = url.toString();
+}
+
+// AJAX для избранного
+document.addEventListener('DOMContentLoaded', function() {
+    const favoriteButtons = document.querySelectorAll('.favorite-btn');
+    
+    favoriteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const bookId = this.dataset.bookId;
+            const isCurrentlyFavorite = this.dataset.isFavorite === 'true';
+            
+            fetch(`/books/favorite/${bookId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                                   document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || '',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const icon = this.querySelector('i');
+                    if (data.is_favorite) {
+                        icon.className = 'bi bi-heart-fill';
+                        this.title = 'Удалить из избранного';
+                        this.dataset.isFavorite = 'true';
+                    } else {
+                        icon.className = 'bi bi-heart';
+                        this.title = 'Добавить в избранное';
+                        this.dataset.isFavorite = 'false';
+                    }
+                    
+                    // Показываем уведомление
+                    showToast(data.message, 'success');
+                } else {
+                    showToast('Ошибка: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Произошла ошибка', 'error');
+            });
+        });
+    });
+});
+
+// Функция для показа уведомлений
+function showToast(message, type = 'info') {
+    // Простая реализация toast уведомлений
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Автоматически убираем через 3 секунды
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+</script>
+
+<style>
+.book-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
+}
+
+.favorite-btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.favorite-btn:hover {
+    transform: scale(1.1);
+}
+
+.alert {
+    transition: opacity 0.3s ease-in-out;
+}
+</style>
+{% endblock %}

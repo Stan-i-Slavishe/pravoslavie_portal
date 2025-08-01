@@ -98,6 +98,9 @@
 
 .favorite-content {
     padding: 1.5rem;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
 }
 
 .favorite-title {
@@ -118,6 +121,18 @@
     font-style: italic;
 }
 
+.favorite-description {
+    color: #555;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-bottom: 0.75rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .favorite-date {
     color: #999;
     font-size: 0.8rem;
@@ -129,6 +144,7 @@
     gap: 0.75rem;
     align-items: center;
     flex-wrap: wrap;
+    margin-top: auto;
 }
 
 .favorite-actions .btn {
@@ -341,6 +357,12 @@
                             <div class="favorite-author">{{ favorite.book.author }}</div>
                         {% endif %}
                         
+                        {% if favorite.book.description %}
+                            <div class="favorite-description">
+                                {{ favorite.book.description|truncatewords:15|linebreaksbr }}
+                            </div>
+                        {% endif %}
+                        
                         <div class="favorite-date">
                             <i class="bi bi-calendar-plus me-1"></i>
                             Добавлено: {{ favorite.added_at|date:"d.m.Y" }}
@@ -349,9 +371,9 @@
                         <div class="favorite-actions">
                             {% if favorite.book.is_free or user.has_subscription %}
                                 <!-- Бесплатная книга или есть подписка -->
-                                <a href="{% url 'books:detail' slug=favorite.book.slug %}" 
+                                <a href="{% url 'books:modern_reader' slug=favorite.book.slug %}" 
                                    class="btn btn-primary btn-sm">
-                                    <i class="bi bi-eye me-1"></i>
+                                    <i class="bi bi-tablet-landscape me-1"></i>
                                     Читать
                                 </a>
                                 
@@ -364,9 +386,9 @@
                                 {% with favorite.book as book %}
                                     {% if book.id in user_purchased_books %}
                                         <!-- Книга куплена -->
-                                        <a href="{% url 'books:detail' slug=book.slug %}" 
+                                        <a href="{% url 'books:modern_reader' slug=book.slug %}" 
                                            class="btn btn-primary btn-sm">
-                                            <i class="bi bi-eye me-1"></i>
+                                            <i class="bi bi-tablet-landscape me-1"></i>
                                             Читать
                                         </a>
                                         

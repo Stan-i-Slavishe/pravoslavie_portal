@@ -128,17 +128,19 @@
                                 
                                 <!-- Обложка книги -->
                                 <div class="position-relative">
-                                    {% if book.cover %}
-                                        <img src="{{ book.cover.url }}" 
-                                             class="card-img-top" 
-                                             alt="{{ book.title }}"
-                                             style="height: 200px; object-fit: cover;">
-                                    {% else %}
-                                        <div class="card-img-top d-flex align-items-center justify-content-center bg-light" 
-                                             style="height: 200px;">
-                                            <i class="bi bi-book text-muted" style="font-size: 3rem;"></i>
-                                        </div>
-                                    {% endif %}
+                                    <a href="{{ book.get_absolute_url }}" class="d-block h-100">
+                                        {% if book.cover %}
+                                            <img src="{{ book.cover.url }}" 
+                                                 class="card-img-top" 
+                                                 alt="{{ book.title }}"
+                                                 style="height: 200px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="card-img-top d-flex align-items-center justify-content-center bg-light" 
+                                                 style="height: 200px;">
+                                                <i class="bi bi-book text-muted" style="font-size: 3rem;"></i>
+                                            </div>
+                                        {% endif %}
+                                    </a>
                                 </div>
                                 
                                 <div class="card-body d-flex flex-column">
@@ -469,6 +471,50 @@ function showToast(message, type = 'info') {
 
 .book-card .position-relative {
     overflow: visible;
+}
+
+/* Ссылка на изображении книги */
+.book-card .position-relative a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.book-card .position-relative a:hover {
+    text-decoration: none;
+}
+
+/* Курсор поинтер на области изображения */
+.book-card .position-relative {
+    cursor: pointer;
+}
+
+/* Эффект при наведении на изображение */
+.book-card:hover .card-img-top {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+}
+
+/* Эффект наложения при наведении */
+.book-card .position-relative a::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0);
+    transition: background 0.3s ease;
+    pointer-events: none;
+}
+
+.book-card:hover .position-relative a::after {
+    background: rgba(0, 0, 0, 0.05); /* Максимально легкое затемнение */
 }
 </style>
 {% endblock %}

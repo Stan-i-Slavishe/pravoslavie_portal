@@ -375,15 +375,9 @@
                                             <i class="bi bi-download"></i>
                                         </a>
                                     {% else %}
-                                        <!-- Книга не куплена -->
-                                        <a href="{% url 'books:detail' slug=book.slug %}" 
-                                           class="btn btn-outline-primary btn-sm">
-                                            <i class="bi bi-eye me-1"></i>
-                                            Посмотреть
-                                        </a>
-                                        
+                                        <!-- Книга не куплена - показываем только кнопку покупки -->
                                         <a href="{% url 'shop:catalog' %}?book={{ book.id }}" 
-                                           class="btn btn-success btn-sm">
+                                           class="btn btn-success btn-sm" style="width: 100%;">
                                             <i class="bi bi-cart-plus me-1"></i>
                                             Купить {{ book.price }} ₽
                                         </a>

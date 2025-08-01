@@ -1,0 +1,62 @@
+/* Исправление цвета кнопки избранного - золотистый вместо желтого */
+
+/* Принудительные стили для кнопки избранного */
+.btn-favorite,
+button.btn-favorite {
+    background: transparent !important;
+    border: 2px solid #D4AF37 !important; /* золотистый цвет */
+    color: #D4AF37 !important;
+    padding: 10px 20px !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    text-decoration: none !important;
+    min-height: 44px !important;
+}
+
+.btn-favorite:hover,
+button.btn-favorite:hover {
+    background: linear-gradient(135deg, #D4AF37, #b8941f) !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+    text-decoration: none !important;
+    border-color: #D4AF37 !important;
+}
+
+.btn-favorite.active,
+button.btn-favorite.active {
+    background: linear-gradient(135deg, #D4AF37, #b8941f) !important;
+    color: white !important;
+    border-color: #D4AF37 !important;
+}
+
+/* Принудительное переопределение встроенных стилей */
+button.btn-favorite.active[style*="background"],
+.btn-favorite.active[style*="background"] {
+    background: linear-gradient(135deg, #D4AF37, #b8941f) !important;
+    border-color: #D4AF37 !important;
+    color: white !important;
+}
+
+button.btn-favorite:not(.active)[style*="background"],
+.btn-favorite:not(.active)[style*="background"] {
+    background: transparent !important;
+    border-color: #D4AF37 !important;
+    color: #D4AF37 !important;
+}
+
+/* Максимальный приоритет для встроенных стилей */
+[style*="background: linear-gradient(135deg, #ffc107"] {
+    background: linear-gradient(135deg, #D4AF37, #b8941f) !important;
+}
+
+[style*="border: 2px solid #ffc107"] {
+    border: 2px solid #D4AF37 !important;
+}
+
+[style*="color: #ffc107"] {
+    color: #D4AF37 !important;
+}

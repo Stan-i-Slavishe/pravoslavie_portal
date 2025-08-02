@@ -471,8 +471,9 @@ def modern_reader(request, slug):
         ).exists()
     
     if not user_can_read:
-        messages.error(request, 'У вас нет доступа к чтению этой книги. Необходимо приобрести её.')
-        return redirect('books:detail', slug=book.slug)
+        messages.error(request, f'Для чтения книги "{book.title}" необходимо её приобрести.')
+        # Перенаправляем на страницу магазина с поиском по книге
+        return redirect(f'/shop/?search={book.title}')
     
     # Получаем или создаем сессию чтения
     reading_session, created = ReadingSession.objects.get_or_create(

@@ -181,21 +181,22 @@
                                     </div>
                                     
                                     <!-- Кнопки действий -->
-                                    <div class="d-flex gap-2">
+                                    <div class="d-flex gap-1" style="margin-top: auto;">
                                         {% if book.is_free %}
-                                            <a href="{{ book.get_absolute_url }}" 
-                                               class="btn btn-primary btn-sm flex-grow-1">
-                                                <i class="bi bi-book-open me-1"></i>Читать
+                                            <a href="{% url 'books:modern_reader' slug=book.slug %}" 
+                                               class="btn btn-primary btn-sm" style="flex: 1;">
+                                                Читать
                                             </a>
                                             <a href="{% url 'books:download' book_id=book.id %}" 
                                                class="btn btn-outline-primary btn-sm"
-                                               title="Скачать">
+                                               title="Скачать"
+                                               style="flex: 0 0 auto; width: 40px;">
                                                 <i class="bi bi-download"></i>
                                             </a>
                                         {% else %}
                                             <!-- Кнопка купить для платных книг -->
-                                            <a href="{{ book.get_absolute_url }}" 
-                                               class="btn btn-success btn-sm flex-grow-1"
+                                            <a href="{% url 'books:modern_reader' slug=book.slug %}" 
+                                               class="btn btn-success btn-sm" style="flex: 1;"
                                                title="Купить за {{ book.price|floatformat:0 }} ₽">
                                                 <i class="bi bi-cart-plus me-1"></i>{{ book.price|floatformat:0 }}&nbsp;₽
                                             </a>
@@ -206,7 +207,8 @@
                                                     class="btn btn-outline-secondary btn-sm favorite-btn{% if book.id in user_favorites %} favorited{% endif %}"
                                                     data-book-id="{{ book.id }}"
                                                     data-is-favorite="{% if book.id in user_favorites %}true{% else %}false{% endif %}"
-                                                    title="{% if book.id in user_favorites %}Удалить из избранного{% else %}Добавить в избранное{% endif %}">
+                                                    title="{% if book.id in user_favorites %}Удалить из избранного{% else %}Добавить в избранное{% endif %}"
+                                                    style="flex: 0 0 auto; width: 40px;">
                                                 <i class="bi {% if book.id in user_favorites %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
                                             </button>
                                         {% endif %}
@@ -517,6 +519,12 @@ function showToast(message, type = 'info') {
 .book-card {
     overflow: visible !important;
     margin: 10px;
+    position: relative;
+}
+
+.card-body {
+    padding: 1.25rem;
+    padding-bottom: 1rem; /* Меньше отступ снизу */
 }
 
 .book-card .position-relative {
@@ -565,6 +573,13 @@ function showToast(message, type = 'info') {
 
 .book-card:hover .position-relative a::after {
     background: rgba(0, 0, 0, 0.05); /* Максимально легкое затемнение */
+}
+
+/* Стили для кнопки Читать */
+.btn-primary {
+    padding: 8px 16px;
+    font-weight: 500;
+    min-width: 90px;
 }
 
 /* Стили для кнопки покупки */

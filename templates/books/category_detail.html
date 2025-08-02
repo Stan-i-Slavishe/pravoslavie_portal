@@ -203,11 +203,11 @@
                                         
                                         {% if user.is_authenticated %}
                                             <button type="button" 
-                                                    class="btn btn-outline-danger btn-sm favorite-btn"
+                                                    class="btn btn-outline-secondary btn-sm favorite-btn"
                                                     data-book-id="{{ book.id }}"
                                                     data-is-favorite="{% if book.id in user_favorites %}true{% else %}false{% endif %}"
                                                     title="{% if book.id in user_favorites %}Удалить из избранного{% else %}Добавить в избранное{% endif %}">
-                                                <i class="bi {% if book.id in user_favorites %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                                                <i class="bi {% if book.id in user_favorites %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
                                             </button>
                                         {% endif %}
                                     </div>
@@ -360,11 +360,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.status === 'success') {
                     const icon = this.querySelector('i');
                     if (data.is_favorite) {
-                        icon.className = 'bi bi-heart-fill';
+                        icon.className = 'bi bi-bookmark-fill';
                         this.title = 'Удалить из избранного';
                         this.dataset.isFavorite = 'true';
                     } else {
-                        icon.className = 'bi bi-heart';
+                        icon.className = 'bi bi-bookmark';
                         this.title = 'Добавить в избранное';
                         this.dataset.isFavorite = 'false';
                     }

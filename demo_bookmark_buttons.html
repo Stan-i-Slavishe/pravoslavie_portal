@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Демо кнопок-закладок</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Наши стили -->
+    <style>
+        /* Включаем стили кнопок-закладок напрямую для демо - КОМПАКТНАЯ ВЕРСИЯ */
+        .btn-bookmark {
+            background: transparent !important;
+            border: 1px solid #e0e6ed !important;
+            color: #6c757d !important;
+            padding: 6px 8px !important;
+            border-radius: 4px !important;
+            font-weight: 400 !important;
+            transition: all 0.3s ease !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-width: 32px !important;
+            min-height: 32px !important;
+            width: 32px !important;
+            height: 32px !important;
+            position: relative !important;
+            cursor: pointer !important;
+            text-decoration: none !important;
+            user-select: none !important;
+            flex-shrink: 0 !important;
+        }
+        
+        .btn-bookmark:hover {
+            background: rgba(255, 193, 7, 0.1) !important;
+            border-color: #ffc107 !important;
+            color: #ffc107 !important;
+            transform: translateY(-1px) scale(1.05) !important;
+        }
+        
+        .btn-bookmark.active,
+        .btn-bookmark.favorited {
+            background: #ffc107 !important;
+            border-color: #ffc107 !important;
+            color: white !important;
+            box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3) !important;
+        }
+        
+        .btn-bookmark.active:hover,
+        .btn-bookmark.favorited:hover {
+            background: #e0a800 !important;
+            transform: translateY(-1px) scale(1.05) !important;
+            box-shadow: 0 3px 8px rgba(255, 193, 7, 0.4) !important;
+        }
+        
+        .btn-bookmark i {
+            font-size: 0.875rem !important;
+            transition: transform 0.2s ease !important;
+            margin: 0 !important;
+        }
+        
+        .btn-bookmark:hover i {
+            transform: scale(1.1) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-5">
+        <h1 class="text-center mb-5">🔖 Демо новых кнопок-закладок</h1>
+        
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                
+                <!-- Карточка с примером -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Пример книги</h5>
+                        <p class="card-text">Пример книги с новыми кнопками-закладками</p>
+                        
+                        <div class="d-flex gap-2 align-items-center">
+                            <button class="btn btn-primary btn-sm flex-grow-1">
+                                <i class="bi bi-book-open me-1"></i>
+                                Читать
+                            </button>
+                            
+                            <!-- Обычная кнопка-закладка -->
+                            <button class="btn-bookmark" onclick="toggleBookmark(this)" title="Добавить в избранное">
+                                <i class="bi bi-bookmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Карточка с активной закладкой -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Пример книги (в избранном)</h5>
+                        <p class="card-text">Пример книги которая уже добавлена в избранное</p>
+                        
+                        <div class="d-flex gap-2 align-items-center">
+                            <button class="btn btn-primary btn-sm flex-grow-1">
+                                <i class="bi bi-book-open me-1"></i>
+                                Читать
+                            </button>
+                            
+                            <!-- Активная кнопка-закладка -->
+                            <button class="btn-bookmark active favorited" onclick="toggleBookmark(this)" title="Удалить из избранного">
+                                <i class="bi bi-bookmark-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Примеры состояний -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Различные состояния кнопок:</h6>
+                        <div class="d-flex gap-2 mb-3">
+                            <button class="btn-bookmark" title="Обычная кнопка">
+                                <i class="bi bi-bookmark"></i>
+                            </button>
+                            <button class="btn-bookmark active" title="В избранном">
+                                <i class="bi bi-bookmark-fill"></i>
+                            </button>
+                            <button class="btn-bookmark" disabled title="Заблокированная">
+                                <i class="bi bi-bookmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Цветовая схема:</h6>
+                        <ul class="list-unstyled">
+                            <li><span style="color: #6c757d;">●</span> Обычное состояние: #6c757d</li>
+                            <li><span style="color: #ffc107;">●</span> Наведение: #ffc107</li>
+                            <li><span style="background: linear-gradient(135deg, #ffc107, #ffb300); -webkit-background-clip: text; color: transparent;">●</span> Активное: градиент золотистого</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <h6><i class="bi bi-info-circle me-2"></i>Как использовать:</h6>
+                    <ol>
+                        <li>Подключите CSS: <code>bookmark-buttons.css</code></li>
+                        <li>Подключите JS: <code>bookmark-buttons.js</code></li>
+                        <li>Используйте класс <code>.btn-bookmark</code></li>
+                        <li>Для активного состояния добавьте класс <code>.active</code></li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleBookmark(button) {
+            const icon = button.querySelector('i');
+            const isActive = button.classList.contains('active');
+            
+            if (isActive) {
+                // Убираем из избранного
+                button.classList.remove('active', 'favorited');
+                icon.className = 'bi bi-bookmark';
+                button.title = 'Добавить в избранное';
+                
+                // Анимация
+                button.style.transform = 'scale(0.8)';
+                setTimeout(() => {
+                    button.style.transform = 'scale(1)';
+                }, 200);
+                
+            } else {
+                // Добавляем в избранное
+                button.classList.add('active', 'favorited');
+                icon.className = 'bi bi-bookmark-fill';
+                button.title = 'Удалить из избранного';
+                
+                // Анимация
+                button.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    button.style.transform = 'scale(1)';
+                }, 200);
+            }
+        }
+    </script>
+</body>
+</html>

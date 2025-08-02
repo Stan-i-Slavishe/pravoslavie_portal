@@ -203,7 +203,7 @@
                                         
                                         {% if user.is_authenticated %}
                                             <button type="button" 
-                                                    class="btn btn-outline-secondary btn-sm favorite-btn"
+                                                    class="btn btn-outline-secondary btn-sm favorite-btn{% if book.id in user_favorites %} favorited{% endif %}"
                                                     data-book-id="{{ book.id }}"
                                                     data-is-favorite="{% if book.id in user_favorites %}true{% else %}false{% endif %}"
                                                     title="{% if book.id in user_favorites %}Удалить из избранного{% else %}Добавить в избранное{% endif %}">
@@ -353,6 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
                                    document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || '',
                     'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
             })
             .then(response => response.json())
@@ -363,10 +364,22 @@ document.addEventListener('DOMContentLoaded', function() {
                         icon.className = 'bi bi-bookmark-fill';
                         this.title = 'Удалить из избранного';
                         this.dataset.isFavorite = 'true';
+                        this.classList.add('favorited');
+                        // Анимация добавления
+                        this.style.transform = 'scale(1.3)';
+                        setTimeout(() => {
+                            this.style.transform = 'scale(1)';
+                        }, 200);
                     } else {
                         icon.className = 'bi bi-bookmark';
                         this.title = 'Добавить в избранное';
                         this.dataset.isFavorite = 'false';
+                        this.classList.remove('favorited');
+                        // Анимация удаления
+                        this.style.transform = 'scale(0.8)';
+                        setTimeout(() => {
+                            this.style.transform = 'scale(1)';
+                        }, 200);
                     }
                     
                     // Показываем уведомление
@@ -414,10 +427,22 @@ function showToast(message, type = 'info') {
 
 .favorite-btn {
     transition: all 0.2s ease-in-out;
+    border: 1px solid #6c757d;
+    background: transparent;
+    color: #6c757d;
 }
 
 .favorite-btn:hover {
     transform: scale(1.1);
+    background: #ffc107;
+    border-color: #ffc107;
+    color: white;
+}
+
+.favorite-btn.favorited {
+    background: #ffc107;
+    border-color: #ffc107;
+    color: white;
 }
 
 .alert {
@@ -553,4 +578,7 @@ function showToast(message, type = 'info') {
     box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
 }
 </style>
+
+<!-- CSRF токен для AJAX запросов -->
+{% csrf_token %}
 {% endblock %}

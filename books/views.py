@@ -298,6 +298,36 @@ def category_detail(request, slug):
         is_published=True
     ).order_by('-created_at')
     
+    # Получаем связанные категории для боковой панели
+    related_categories = Category.objects.exclude(id=category.id)
+    
+    # Получаем список избранных книг пользователя
+    user_favorites = []
+    if request.user.is_authenticated:
+        user_favorites = Book.objects.filter(
+            userfavoritebook__user=request.user
+        ).values_list('id', flat=True)
+    
+    # Поиск в категории
+    search_query = request.GET.get('search')
+    if search_query:
+        books = books.filter(
+            Q(title__icontains=search_query) |
+            Q(author__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+    
+    # Сортировка
+    sort_by = request.GET.get('sort', 'newest')
+    if sort_by == 'popular':
+        books = books.order_by('-downloads_count')
+    elif sort_by == 'rating':
+        books = books.order_by('-rating')
+    elif sort_by == 'title':
+        books = books.order_by('title')
+    else:  # newest
+        books = books.order_by('-created_at')
+    
     # Пагинация
     paginator = Paginator(books, 12)
     page = request.GET.get('page')
@@ -306,6 +336,8 @@ def category_detail(request, slug):
     context = {
         'category': category,
         'books': books,
+        'related_categories': related_categories,
+        'user_favorites': user_favorites,
         'title': f'Категория: {category.name}',
     }
     
@@ -404,51 +436,6 @@ def track_book_view(request, book_id):
 
 
 @login_required
-def toggle_favorite(request, book_id):
-    """Переключение избранного статуса книги (AJAX)"""
-    if request.method == 'POST':
-        try:
-            book = get_object_or_404(Book, id=book_id)
-            
-            # Проверяем, есть ли книга в избранном
-            favorite, created = UserFavoriteBook.objects.get_or_create(
-                user=request.user,
-                book=book
-            )
-            
-            if created:
-                # Книга была добавлена в избранное
-                is_favorite = True
-                message = 'Книга добавлена в избранное'
-            else:
-                # Книга уже была в избранном, удаляем её
-                favorite.delete()
-                is_favorite = False
-                message = 'Книга удалена из избранного'
-            
-            # Получаем общее количество избранных книг пользователя
-            favorites_count = UserFavoriteBook.objects.filter(user=request.user).count()
-            
-            return JsonResponse({
-                'status': 'success',
-                'is_favorite': is_favorite,
-                'message': message,
-                'favorites_count': favorites_count
-            })
-            
-        except Exception as e:
-            return JsonResponse({
-                'status': 'error',
-                'message': str(e)
-            }, status=400)
-    
-    return JsonResponse({
-        'status': 'error',
-        'message': 'Метод не поддерживается'
-    }, status=405)
-
-
-@login_required
 def get_favorites_count(request):
     """Получение количества избранных книг (AJAX)"""
     try:
@@ -462,26 +449,6 @@ def get_favorites_count(request):
             'status': 'error',
             'message': str(e)
         }, status=400)
-
-
-@login_required
-def user_favorites(request):
-    """Список избранных книг пользователя"""
-    favorites = UserFavoriteBook.objects.filter(
-        user=request.user
-    ).select_related('book__category').prefetch_related('book__tags').order_by('-added_at')
-    
-    # Пагинация
-    paginator = Paginator(favorites, 12)
-    page = request.GET.get('page')
-    favorites = paginator.get_page(page)
-    
-    context = {
-        'favorites': favorites,
-        'title': 'Избранные книги',
-    }
-    
-    return render(request, 'books/user_favorites.html', context)
 
 
 @login_required
@@ -527,15 +494,6 @@ def modern_reader(request, slug):
     }
     
     return render(request, 'books/modern_reader.html', context)
-
-
-def get_favorites_count(request):
-    """Получение количества избранных книг (AJAX)"""
-    if not request.user.is_authenticated:
-        return JsonResponse({'count': 0})
-    
-    count = UserFavoriteBook.objects.filter(user=request.user).count()
-    return JsonResponse({'count': count})
 
 
 @login_required

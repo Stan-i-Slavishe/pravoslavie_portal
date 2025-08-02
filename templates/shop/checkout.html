@@ -222,6 +222,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const totalAmount = document.getElementById('total-amount');
     const subtotal = {{ cart.total_price }};
     
+    // URL для применения промокода
+    const applyDiscountUrl = "{% url 'shop:apply_discount' %}";
+    const csrfToken = "{{ csrf_token }}";
+    
     applyDiscountBtn.addEventListener('click', function() {
         const code = discountCodeInput.value.trim();
         
@@ -232,13 +236,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Блокируем кнопку
         applyDiscountBtn.disabled = true;
-        applyDiscountBtn.innerHTML = '<i class=\"bi bi-hourglass-split me-1\"></i>Проверяем...';
+        applyDiscountBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Проверяем...';
         
-        fetch('{% url \"shop:apply_discount\" %}', {
+        fetch(applyDiscountUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
+                'X-CSRFToken': csrfToken
             },
             body: JSON.stringify({
                 code: code
@@ -248,18 +252,15 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.status === 'success') {
                 // Показываем скидку
-                discountRow.style.display = 'flex';
                 discountAmount.textContent = `-${data.discount_amount}₽`;
+                discountRow.style.display = 'flex';
                 totalAmount.textContent = `${data.final_price}₽`;
                 
-                showDiscountMessage(
-                    `Промокод применен! Скидка: ${data.discount_amount}₽`, 
-                    'success'
-                );
+                showDiscountMessage(`Промокод применен! Скидка: ${data.discount_amount}₽`, 'success');
                 
                 // Добавляем скрытое поле для передачи на сервер
                 const form = document.querySelector('form');
-                let hiddenInput = form.querySelector('input[name=\"applied_discount_code\"]');
+                let hiddenInput = form.querySelector('input[name="applied_discount_code"]');
                 if (!hiddenInput) {
                     hiddenInput = document.createElement('input');
                     hiddenInput.type = 'hidden';
@@ -289,9 +290,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function showDiscountMessage(message, type) {
         discountResult.innerHTML = `
-            <div class=\"alert alert-${type} alert-dismissible fade show\" role=\"alert\">
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
                 ${message}
-                <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         `;
     }

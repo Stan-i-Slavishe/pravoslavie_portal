@@ -9,6 +9,7 @@ from django.db.models import Q, Count, Avg
 from decimal import Decimal
 import json
 import logging
+from django.utils import timezone
 
 from .models import Product, Cart, CartItem, Order, OrderItem, Purchase, Discount
 from .forms import PersonalizationForm, CartForm
@@ -389,6 +390,45 @@ def download_product(request, order_item_id):
         response['Content-Disposition'] = f'attachment; filename="{content_object.title}.pdf"'
         return response
     elif order_item.product.product_type == 'audio' and hasattr(content_object, 'audio_file'):
+        response = HttpResponse(content_object.audio_file, content_type='audio/mpeg')
+        response['Content-Disposition'] = f'attachment; filename="{content_object.title}.mp3"'
+        return response
+    
+    messages.error(request, "Файл недоступен для скачивания")
+    return redirect('shop:my_purchases')
+
+@login_required
+def download_purchase(request, purchase_id):
+    """Скачать товар из покупки"""
+    purchase = get_object_or_404(
+        Purchase,
+        id=purchase_id,
+        user=request.user,
+        order__status__in=['paid', 'completed']
+    )
+    
+    # Проверяем, что товар цифровой
+    if not purchase.product.is_digital:
+        messages.error(request, "Этот товар не является цифровым")
+        return redirect('shop:my_purchases')
+    
+    # Получаем связанный контент
+    content_object = purchase.product.content_object
+    if not content_object:
+        messages.error(request, "Файл не найден")
+        return redirect('shop:my_purchases')
+    
+    # Увеличиваем счетчик скачиваний
+    purchase.download_count += 1
+    purchase.last_downloaded = timezone.now()
+    purchase.save()
+    
+    # Перенаправляем на скачивание (зависит от типа контента)
+    if purchase.product.product_type == 'book' and hasattr(content_object, 'pdf_file'):
+        response = HttpResponse(content_object.pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{content_object.title}.pdf"'
+        return response
+    elif purchase.product.product_type == 'audio' and hasattr(content_object, 'audio_file'):
         response = HttpResponse(content_object.audio_file, content_type='audio/mpeg')
         response['Content-Disposition'] = f'attachment; filename="{content_object.title}.mp3"'
         return response

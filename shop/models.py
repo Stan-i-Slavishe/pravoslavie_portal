@@ -345,6 +345,8 @@ class Purchase(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, verbose_name='Заказ')
     
     purchased_at = models.DateTimeField('Дата покупки', auto_now_add=True)
+    download_count = models.PositiveIntegerField('Количество скачиваний', default=0)
+    last_downloaded = models.DateTimeField('Последнее скачивание', null=True, blank=True)
     
     class Meta:
         verbose_name = 'Покупка'

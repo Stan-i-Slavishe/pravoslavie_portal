@@ -25,6 +25,7 @@ urlpatterns = [
     path('order/<uuid:order_id>/', views.order_detail_view, name='order_detail'),
     path('my-purchases/', views.my_purchases_view, name='my_purchases'),
     path('download/<int:order_item_id>/', views.download_product, name='download_product'),
+    path('download-purchase/<int:purchase_id>/', views.download_purchase, name='download_purchase'),
     
     # Промокоды
     path('apply-discount/', views.apply_discount, name='apply_discount'),

@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Управление подпиской - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.subscription-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.subscription-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.subscription-header {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.subscription-status {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-pending {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.feature-list {
+    list-style: none;
+    padding: 0;
+}
+
+.feature-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.feature-list li:last-child {
+    border-bottom: none;
+}
+
+.feature-list li i {
+    color: #28a745;
+    margin-right: 10px;
+}
+
+.subscription-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+}
+
+.no-subscription {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #666;
+}
+
+.no-subscription i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+    .subscription-card {
+        padding: 1.5rem;
+        margin: 0 1rem 1.5rem 1rem;
+    }
+    
+    .subscription-actions {
+        flex-direction: column;
+    }
+    
+    .subscription-actions .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="subscription-container">
+        <h1 class="mb-4">
+            <i class="bi bi-card-checklist me-2"></i>
+            Управление подпиской
+        </h1>
+        
+        <!-- Страница находится в разработке -->
+        <div class="subscription-card">
+            <div class="no-subscription">
+                <i class="bi bi-tools"></i>
+                <h3>Страница находится в разработке</h3>
+                <p>Функционал управления подписками будет доступен в ближайшее время</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="{% url 'shop:catalog' %}" class="btn btn-primary">
+                        <i class="bi bi-shop me-2"></i>
+                        Перейти в магазин
+                    </a>
+                    <a href="{% url 'core:home' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-house me-2"></i>
+                        На главную
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Информация о будущих возможностях -->
+        <div class="subscription-card">
+            <h4 class="mb-3">
+                <i class="bi bi-star me-2"></i>
+                Планируемые возможности подписки
+            </h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Базовая подписка:</h6>
+                    <ul class="feature-list">
+                        <li><i class="bi bi-check-circle-fill"></i> Доступ ко всем книгам</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Скачивание в PDF</li>
+                        <li><i class="bi bi-check-circle-fill"></i> История чтения</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Закладки</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>Премиум подписка:</h6>
+                    <ul class="feature-list">
+                        <li><i class="bi bi-check-circle-fill"></i> Все возможности базовой</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Ранний доступ к новинкам</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Персональные рекомендации</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Приоритетная поддержка</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Эксклюзивный контент</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Временные альтернативы -->
+        <div class="subscription-card">
+            <h4 class="mb-3">
+                <i class="bi bi-bag-check me-2"></i>
+                Доступно сейчас
+            </h4>
+            <p>Пока система подписок находится в разработке, вы можете:</p>
+            <div class="row">
+                <div class="col-md-4 text-center mb-3">
+                    <a href="{% url 'shop:catalog' %}" class="text-decoration-none">
+                        <i class="bi bi-cart3 d-block mb-2" style="font-size: 2rem; color: #2B5AA0;"></i>
+                        <h6>Покупать книги</h6>
+                        <small class="text-muted">Индивидуальные покупки</small>
+                    </a>
+                </div>
+                <div class="col-md-4 text-center mb-3">
+                    <a href="{% url 'books:favorites' %}" class="text-decoration-none">
+                        <i class="bi bi-bookmark-heart d-block mb-2" style="font-size: 2rem; color: #e53e3e;"></i>
+                        <h6>Избранное</h6>
+                        <small class="text-muted">Сохранять понравившиеся книги</small>
+                    </a>
+                </div>
+                <div class="col-md-4 text-center mb-3">
+                    <a href="{% url 'fairy_tales:list' %}" class="text-decoration-none">
+                        <i class="bi bi-stars d-block mb-2" style="font-size: 2rem; color: #FF6B9D;"></i>
+                        <h6>Сказки</h6>
+                        <small class="text-muted">Терапевтические сказки</small>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Уведомление о запуске -->
+        <div class="subscription-card">
+            <h4 class="mb-3">
+                <i class="bi bi-bell me-2"></i>
+                Получить уведомление о запуске
+            </h4>
+            <p>Хотите узнать первыми о запуске системы подписок?</p>
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <input type="email" class="form-control" placeholder="Ваш email" id="notificationEmail">
+                        <button class="btn btn-outline-primary" type="button" onclick="subscribeToNotifications()">
+                            <i class="bi bi-bell me-1"></i>
+                            Уведомить
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted">
+                        Мы пришлем уведомление, когда система будет готова
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Контактная информация -->
+        <div class="subscription-card">
+            <h4 class="mb-3">
+                <i class="bi bi-question-circle me-2"></i>
+                Есть вопросы?
+            </h4>
+            <p>Если у вас есть вопросы о будущих подписках или предложения по функционалу, свяжитесь с нами:</p>
+            <div class="d-flex gap-3 flex-wrap">
+                <a href="{% url 'core:contact' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-envelope me-2"></i>
+                    Написать нам
+                </a>
+                <a href="mailto:support@dobryeistorii.ru" class="btn btn-outline-secondary">
+                    <i class="bi bi-envelope-at me-2"></i>
+                    support@dobryeistorii.ru
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function subscribeToNotifications() {
+    const email = document.getElementById('notificationEmail').value;
+    if (!email) {
+        alert('Пожалуйста, введите ваш email');
+        return;
+    }
+    
+    if (!validateEmail(email)) {
+        alert('Пожалуйста, введите корректный email');
+        return;
+    }
+    
+    // TODO: Здесь будет AJAX запрос для подписки на уведомления
+    console.log('Subscribe to notifications:', email);
+    alert('Спасибо! Мы уведомим вас о запуске системы подписок');
+    document.getElementById('notificationEmail').value = '';
+}
+
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
+// Обработка Enter в поле email
+document.getElementById('notificationEmail').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        subscribeToNotifications();
+    }
+});
+</script>
+{% endblock %}

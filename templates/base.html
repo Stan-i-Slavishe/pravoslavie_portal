@@ -24,6 +24,7 @@
     <link rel="stylesheet" href="{% static 'css/mobile-navigation.css' %}">
     <link rel="stylesheet" href="{% static 'css/mobile-burger-menu.css' %}">
     <link rel="stylesheet" href="{% static 'css/purchase-button-fix.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dropdown-fix.css' %}">
     
     <!-- Принудительное скрытие бургера на десктопе -->
     <style>
@@ -38,6 +39,31 @@
         @media (max-width: 991.98px) {
             .mobile-burger-menu {
                 display: flex !important;
+            }
+        }
+        
+        /* Исправление ширины пользовательского dropdown меню */
+        .navbar-nav .dropdown-menu {
+            min-width: 250px !important;
+        }
+        
+        .navbar-nav .dropdown-item {
+            white-space: nowrap !important;
+            padding: 8px 16px !important;
+            font-size: 14px !important;
+        }
+        
+        .navbar-nav .dropdown-item i {
+            width: 16px !important;
+            text-align: center !important;
+            margin-right: 8px !important;
+        }
+        
+        /* Для мобильных устройств */
+        @media (max-width: 768px) {
+            .navbar-nav .dropdown-menu {
+                min-width: 280px !important;
+                max-width: 90vw !important;
             }
         }
     </style>
@@ -239,7 +265,7 @@
                         <a class="nav-link" href="{% if shop_url %}{{ shop_url }}{% else %}#shop{% endif %}">Магазин</a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="sectionsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Разделы
                         </a>
                         <ul class="dropdown-menu">
@@ -282,7 +308,7 @@
                         </li>
                         
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-person-circle me-1"></i> {{ user.first_name|default:user.username }}
                             </a>
                             <ul class="dropdown-menu">
@@ -571,6 +597,21 @@
     <!-- Обновление счетчика корзины -->
     {% if user.is_authenticated %}
     <script>
+    // Принудительная инициализация Bootstrap dropdown
+    document.addEventListener('DOMContentLoaded', function() {
+        // Проверяем, что Bootstrap загружен
+        if (typeof bootstrap !== 'undefined') {
+            // Инициализируем все dropdown
+            const dropdownTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));
+            const dropdownList = dropdownTriggerList.map(function (dropdownTriggerEl) {
+                return new bootstrap.Dropdown(dropdownTriggerEl);
+            });
+            console.log('Bootstrap dropdowns initialized:', dropdownList.length);
+        } else {
+            console.error('Bootstrap JavaScript not loaded!');
+        }
+    });
+    
     function updateCartBadge() {
         fetch('{% url "shop:cart_count" %}', {
             method: 'GET',

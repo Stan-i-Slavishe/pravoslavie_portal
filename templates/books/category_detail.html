@@ -376,10 +376,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         this.dataset.isFavorite = 'false';
                         this.classList.remove('favorited');
                         // Анимация удаления
-                        this.style.transform = 'scale(0.8)';
+                        this.style.transform = 'scale(0.9)';
                         setTimeout(() => {
                             this.style.transform = 'scale(1)';
-                        }, 200);
+                        }, 150);
                     }
                     
                     // Показываем уведомление
@@ -427,22 +427,33 @@ function showToast(message, type = 'info') {
 
 .favorite-btn {
     transition: all 0.2s ease-in-out;
-    border: 1px solid #6c757d;
+    border: 1px solid #dee2e6;
     background: transparent;
     color: #6c757d;
 }
 
 .favorite-btn:hover {
     transform: scale(1.1);
-    background: #ffc107;
-    border-color: #ffc107;
-    color: white;
+    background: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+.favorite-btn:hover i {
+    color: #ffc107;
 }
 
 .favorite-btn.favorited {
-    background: #ffc107;
-    border-color: #ffc107;
-    color: white;
+    background: transparent;
+    border-color: #dee2e6;
+}
+
+.favorite-btn.favorited i {
+    color: #ffc107 !important;
+}
+
+.favorite-btn i {
+    transition: color 0.2s ease;
+    color: #6c757d;
 }
 
 .alert {

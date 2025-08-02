@@ -563,7 +563,8 @@
                                         data-action="favorite" 
                                         data-book-id="{{ book.id }}"
                                         title="{% if user.is_authenticated and book.id in user_favorites %}Удалить из избранного{% else %}Добавить в избранное{% endif %}">
-                                    <i class="bi {% if user.is_authenticated and book.id in user_favorites %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}{% if user.is_authenticated and book.id in user_favorites %} text-warning{% endif %}"></i>
+                                    <i class="bi {% if user.is_authenticated and book.id in user_favorites %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}" 
+                                       style="color: {% if user.is_authenticated and book.id in user_favorites %}#ffc107{% else %}#6c757d{% endif %}"></i>
                                 </button>
                             </div>
                         </div>
@@ -659,13 +660,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Обновляем иконку
                     if (data.is_favorite) {
                         icon.className = 'bi bi-bookmark-fill';
-                        button.classList.add('text-warning');
-                        button.classList.remove('text-muted');
+                        icon.style.color = '#ffc107';
                         button.title = 'Удалить из избранного';
                     } else {
                         icon.className = 'bi bi-bookmark';
-                        button.classList.remove('text-warning');
-                        button.classList.add('text-muted');
+                        icon.style.color = '#6c757d';
                         button.title = 'Добавить в избранное';
                     }
                     

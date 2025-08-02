@@ -329,6 +329,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const productType = this.dataset.productType;
             const price = this.dataset.price;
             
+            // Проверяем авторизацию
+            {% if not user.is_authenticated %}
+                alert('Для покупок необходимо войти в систему');
+                window.location.href = '/accounts/login/?next=' + encodeURIComponent(window.location.pathname);
+                return;
+            {% endif %}
+            
             // Отслеживаем добавление в корзину через новую аналитику
             if (window.analytics) {
                 window.analytics.trackAddToCart(productId, productType, price);
@@ -340,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
             this.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Добавляем...';
             
             // Отправляем в корзину
-            fetch('/shop/cart/add/', {
+            fetch('/shop/add-to-cart/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -351,21 +358,32 @@ document.addEventListener('DOMContentLoaded', function() {
                     quantity: 1
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Ошибка сервера: ' + response.status);
+                }
+                return response.json();
+            })
             .then(data => {
-                if (data.success) {
+                if (data.status === 'success') {
                     // Показываем успех
                     this.innerHTML = '<i class="bi bi-check-circle me-1"></i>Добавлено!';
                     this.classList.remove('btn-primary');
                     this.classList.add('btn-success');
                     
                     // Обновляем счетчик корзины
-                    if (data.cart_count !== undefined) {
-                        const cartBadge = document.querySelector('.cart-badge');
+                    if (data.cart_total_items !== undefined) {
+                        const cartBadge = document.querySelector('#cart-badge');
                         if (cartBadge) {
-                            cartBadge.textContent = data.cart_count;
-                            cartBadge.style.display = data.cart_count > 0 ? 'block' : 'none';
+                            cartBadge.textContent = data.cart_total_items;
+                            cartBadge.style.display = data.cart_total_items > 0 ? 'inline' : 'none';
                         }
+                    }
+                    
+                    // Показываем уведомление
+                    if (data.message) {
+                        // Можно добавить toast уведомление
+                        console.log(data.message);
                     }
                     
                     // Возвращаем кнопку через 2 секунды
@@ -382,7 +400,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Ошибка при добавлении в корзину. Попробуйте позже.');
+                alert('Ошибка при добавлении в корзину: ' + error.message);
                 
                 // Возвращаем кнопку
                 this.innerHTML = originalText;

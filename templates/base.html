@@ -720,13 +720,20 @@
     });
     </script>
     
-    <!-- Аналитика покупательских намерений (временно отключена) -->
-    {% comment %}<script src="{% static 'js/analytics.js' %}"></script>{% endcomment %}
+    <!-- ========== PRODUCTION ANALYTICS ========== -->
+    <!-- Продакшен система аналитики (без заглушек) -->
+    <meta name="user-id" content="{% if user.is_authenticated %}{{ user.id }}{% endif %}">
+    <script src="{% static 'js/production_analytics.js' %}"></script>
     
     <!-- Дополнительные скрипты -->
     {% block extra_js %}{% endblock %}
     
+    <!-- ========== LEGACY (отключено) ========== -->
+    {% comment %}
+    <!-- Старая аналитика покупательских намерений (отключена) -->
+    <script src="{% static 'js/analytics.js' %}"></script>
     <!-- Тестовый виджет аналитики (отключен для продакшена) -->
-    {% comment %}{% include 'analytics/test_widget.html' %}{% endcomment %}
+    {% include 'analytics/test_widget.html' %}
+    {% endcomment %}
 </body>
 </html>

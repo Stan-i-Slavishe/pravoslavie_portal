@@ -4,6 +4,79 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.utils import timezone
+
+# ========== PRODUCTION MODELS ==========
+
+class AnalyticsEvent(models.Model):
+    """Универсальная модель для отслеживания событий"""
+    
+    EVENT_TYPES = [
+        ('page_view', 'Просмотр страницы'),
+        ('purchase', 'Покупка'),
+        ('purchase_complete', 'Завершенная покупка'),
+        ('add_to_cart', 'Добавление в корзину'),
+        ('download', 'Скачивание'),
+        ('interaction', 'Взаимодействие'),
+        ('search', 'Поиск'),
+        ('session_end', 'Конец сессии'),
+        ('time_on_page', 'Время на странице'),
+        ('form_submission', 'Отправка формы'),
+        ('error', 'Ошибка'),
+    ]
+    
+    # Основные поля
+    event_type = models.CharField(max_length=20, choices=EVENT_TYPES)
+    session_id = models.CharField(max_length=50, db_index=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    # Данные события
+    data = models.JSONField(default=dict)
+    
+    # Метаданные
+    ip_address = models.GenericIPAddressField()
+    user_agent = models.TextField()
+    page_url = models.URLField()
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+    
+    class Meta:
+        db_table = 'analytics_event'
+        verbose_name = 'Событие аналитики'
+        verbose_name_plural = 'События аналитики'
+        indexes = [
+            models.Index(fields=['event_type', 'timestamp']),
+            models.Index(fields=['session_id', 'timestamp']),
+            models.Index(fields=['user', 'timestamp']),
+        ]
+    
+    def __str__(self):
+        return f"{self.get_event_type_display()} - {self.timestamp.strftime('%Y-%m-%d %H:%M')}"
+
+class ConversionFunnel(models.Model):
+    """Воронка конверсии"""
+    
+    FUNNEL_STEPS = [
+        ('visit', 'Посещение'),
+        ('view_product', 'Просмотр товара'),
+        ('add_to_cart', 'Добавление в корзину'),
+        ('checkout_start', 'Начало оформления'),
+        ('purchase', 'Покупка'),
+    ]
+    
+    date = models.DateField(auto_now_add=True, db_index=True)
+    step = models.CharField(max_length=20, choices=FUNNEL_STEPS)
+    count = models.PositiveIntegerField(default=0)
+    
+    # Детализация
+    product_type = models.CharField(max_length=20, blank=True)
+    traffic_source = models.CharField(max_length=50, blank=True)
+    
+    class Meta:
+        unique_together = ['date', 'step', 'product_type']
+        verbose_name = 'Воронка конверсии'
+        verbose_name_plural = 'Воронка конверсии'
+
+# ========== LEGACY MODELS ==========
 
 class PurchaseIntent(models.Model):
     """Отслеживание намерений покупки - клики на заглушки"""

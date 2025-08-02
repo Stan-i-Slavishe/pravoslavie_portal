@@ -1,0 +1,41 @@
+// purchase_intent_tracker.js - ОТКЛЮЧЕН
+// Трекер аналитики покупательских намерений отключен
+console.log('📊 Purchase Intent Tracker отключен');
+
+// Заглушки для обратной совместимости
+class PurchaseIntentTracker {
+    constructor() {
+        console.log('PurchaseIntentTracker: отключен');
+    }
+    
+    setupEventListeners() {
+        // Отключено
+    }
+    
+    async trackPurchaseIntent() {
+        // Отключено
+        return Promise.resolve();
+    }
+    
+    showComingSoonModal() {
+        // Отключено
+    }
+}
+
+// Заглушки для функций
+window.shareToTelegram = function() {
+    console.log('Социальные функции отключены');
+};
+
+window.shareToVK = function() {
+    console.log('Социальные функции отключены');
+};
+
+window.shareToWhatsApp = function() {
+    console.log('Социальные функции отключены');
+};
+
+// Не инициализируем трекер
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Purchase Intent Tracker: отключен для продакшена');
+});

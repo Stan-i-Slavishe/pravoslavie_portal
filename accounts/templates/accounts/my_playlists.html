@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Православный портал{% endblock %}
+
+{% block extra_css %}
+<style>
+.playlists-header {
+    background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%);
+    color: white;
+    padding: 1.5rem 0;
+    margin-bottom: 2rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #6c757d;
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    color: #dee2e6;
+    margin-bottom: 1rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Заголовок -->
+<div class="playlists-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="mb-0">
+                    <i class="bi bi-collection-play me-2"></i>
+                    {{ title }}
+                </h1>
+                <p class="mb-0 opacity-75">
+                    Ваши коллекции рассказов • {{ total_playlists }} 
+                    {% if total_playlists == 1 %}плейлист{% elif total_playlists < 5 %}плейлиста{% else %}плейлистов{% endif %}
+                </p>
+            </div>
+            <div class="col-auto">
+                <a href="{% url 'accounts:profile' %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Назад к профилю
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Пустое состояние (временно, пока плейлисты отключены) -->
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i class="bi bi-collection"></i>
+        </div>
+        <h3 class="mb-3">Плейлисты временно недоступны</h3>
+        <p class="mb-4">
+            Функция плейлистов находится в разработке и будет доступна в ближайшее время.<br>
+            Пока что вы можете наслаждаться отдельными рассказами.
+        </p>
+        <div class="d-flex gap-3 justify-content-center">
+            <a href="{% url 'stories:list' %}" class="btn btn-primary">
+                <i class="bi bi-play-circle me-2"></i>
+                Смотреть рассказы
+            </a>
+            <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-person me-2"></i>
+                Мой профиль
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

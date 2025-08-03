@@ -12,6 +12,8 @@ urlpatterns = [
     
     # Аутентификация
     path('accounts/', include('allauth.urls')),
+    
+    # Профиль пользователя
     path('profile/', include('accounts.urls')),
     
     # Контент

@@ -8,6 +8,9 @@ from django.db.models import Q, Count, Sum, F
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 from django.core.paginator import Paginator
+from django.utils import timezone
+from datetime import datetime, timedelta
+import calendar
 
 from .models import UserProfile
 from .forms import UserProfileForm, PasswordChangeForm
@@ -60,6 +63,9 @@ class ProfileView(LoginRequiredMixin, TemplateView):
         # ).order_by('-created_at')[:5]
         user_playlists = []  # Пустой список пока
         
+        # Вычисляем время с регистрации
+        membership_duration = self.get_membership_duration(user.date_joined)
+        
         context.update({
             'title': 'Мой профиль',
             'profile': profile,
@@ -69,9 +75,68 @@ class ProfileView(LoginRequiredMixin, TemplateView):
             'recent_reading': recent_reading,
             'recent_favorites': recent_favorites,
             'user_playlists': user_playlists,
+            'membership_duration': membership_duration,
         })
         
         return context
+    
+    def get_membership_duration(self, join_date):
+        """Вычисляет красивое отображение времени регистрации"""
+        now = timezone.now()
+        diff = now - join_date
+        
+        # Если меньше месяца
+        if diff.days < 30:
+            if diff.days < 1:
+                return "Добро пожаловать! ✨"
+            elif diff.days == 1:
+                return "Вы с нами уже день! 🌟"
+            elif diff.days == 2:
+                return "Вы с нами уже 2 дня! 🌟"
+            elif diff.days < 5:
+                return f"Вы с нами уже {diff.days} дня! 🌟"
+            elif diff.days < 7:
+                return f"Вы с нами уже {diff.days} дней! 🌟"
+            else:
+                weeks = diff.days // 7
+                if weeks == 1:
+                    return "Вы с нами уже неделю! 🌟"
+                elif weeks == 2:
+                    return "Вы с нами уже 2 недели! 🌟"
+                elif weeks == 3:
+                    return "Вы с нами уже 3 недели! 🌟"
+                else:
+                    return f"Вы с нами уже {weeks} недели! 🌟"
+        
+        # Если меньше года
+        elif diff.days < 365:
+            months = diff.days // 30
+            if months == 1:
+                return "Вы с нами уже месяц! 🌟"
+            elif months == 2:
+                return "Вы с нами уже 2 месяца! 🌟"
+            elif months == 3:
+                return "Вы с нами уже 3 месяца! 🌟"
+            elif months == 4:
+                return "Вы с нами уже 4 месяца! 🌟"
+            elif months < 12:
+                return f"Вы с нами уже {months} месяцев! 🌟"
+        
+        # Если больше года
+        else:
+            years = diff.days // 365
+            if years == 1:
+                return "Вы с нами уже целый год! 🎉"
+            elif years == 2:
+                return "Вы с нами уже 2 года! 🎉"
+            elif years == 3:
+                return "Вы с нами уже 3 года! 🎉"
+            elif years == 4:
+                return "Вы с нами уже 4 года! 🎉"
+            elif years < 10:
+                return f"Вы с нами уже {years} лет! 🎉"
+            else:
+                return f"Вы с нами уже {years} лет! 🎊 Спасибо за верность!"
 
 
 @method_decorator(login_required, name='dispatch')

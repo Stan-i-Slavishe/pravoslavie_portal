@@ -492,7 +492,7 @@
                 <div class="col-lg-3 col-md-6 col-sm-6">
                     <div class="book-card">
                         <!-- Стикеры на уровне карточки -->
-                        {% if book.price %}
+                        {% if book.price and book.price > 0 %}
                             <div class="book-price-badge">{{ book.price|floatformat:0 }}&nbsp;₽</div>
                         {% else %}
                             <div class="book-price-badge free">Бесплатно</div>
@@ -560,7 +560,7 @@
                             {% endif %}
                             
                             <div class="book-actions">
-                                {% if book.is_free %}
+                                {% if book.is_free and not book.price %}
                                     <a href="{% url 'books:modern_reader' slug=book.slug %}" 
                                     class="btn btn-primary btn-sm btn-main">
                                     Читать
@@ -571,12 +571,12 @@
                                         <i class="bi bi-download"></i>
                                     </a>
                                 {% else %}
-                                    <!-- Кнопка купить для платаных книг -->
-                                    <a href="{% url 'books:modern_reader' slug=book.slug %}" 
+                                    <!-- Кнопка купить для платных книг -->
+                                    <a href="{% url 'books:detail' slug=book.slug %}" 
                                        class="btn btn-success btn-sm btn-main"
                                        title="Купить за {{ book.price|floatformat:0 }} ₽">
                                         <i class="bi bi-cart-plus me-1"></i>
-                                        {{ book.price|floatformat:0 }}&nbsp;₽
+                                        Купить {{ book.price|floatformat:0 }}&nbsp;₽
                                     </a>
                                 {% endif %}
                                 

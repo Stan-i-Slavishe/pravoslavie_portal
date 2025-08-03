@@ -92,22 +92,28 @@ def book_detail(request, slug):
     
     # Проверяем, добавлена ли книга в избранное текущим пользователем
     is_favorite = False
-    user_can_read = book.is_free
     reading_session = None
+    
+    # Определяем, может ли пользователь читать книгу
+    if book.is_free and (not book.price or book.price == 0):
+        # Книга действительно бесплатная
+        user_can_read = True
+    else:
+        # Книга платная
+        user_can_read = False
+        if request.user.is_authenticated:
+            # Проверяем, купил ли пользователь книгу
+            from shop.models import Purchase
+            user_can_read = Purchase.objects.filter(
+                user=request.user,
+                product__title__icontains=book.title
+            ).exists()
     
     if request.user.is_authenticated:
         is_favorite = UserFavoriteBook.objects.filter(
             user=request.user,
             book=book
         ).exists()
-        
-        # Проверяем права на чтение
-        if not book.is_free:
-            from shop.models import Purchase
-            user_can_read = Purchase.objects.filter(
-                user=request.user,
-                product__title__icontains=book.title
-            ).exists()
         
         # Получаем сессию чтения если есть
         if user_can_read:

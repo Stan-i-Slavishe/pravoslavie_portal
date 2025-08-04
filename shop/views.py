@@ -665,3 +665,178 @@ def order_fairy_tale(request, product_id):
     
     # Если возникли ошибки, возвращаем на страницу товара
     return redirect('shop:product_detail', product_id=product.id)
+
+# ===== НЕДОСТАЮЩИЕ ПРЕДСТАВЛЕНИЯ ДЛЯ ЗАКАЗОВ И ПОКУПОК =====
+
+@login_required
+def my_orders_view(request):
+    """Мои заказы"""
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    
+    # Пагинация
+    paginator = Paginator(orders, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'orders': page_obj,
+        'page_obj': page_obj,
+    }
+    
+    return render(request, 'shop/my_orders.html', context)
+
+@login_required
+def my_purchases_view(request):
+    """Мои покупки"""
+    purchases = Purchase.objects.filter(user=request.user).order_by('-purchased_at')
+    
+    # Группируем покупки по заказам для лучшего отображения
+    orders_with_purchases = Order.objects.filter(
+        user=request.user,
+        status__in=['paid', 'completed']
+    ).prefetch_related('items__product').order_by('-created_at')
+    
+    context = {
+        'purchases': purchases,
+        'orders_with_purchases': orders_with_purchases,
+    }
+    
+    return render(request, 'shop/my_purchases.html', context)
+
+@login_required
+def order_detail_view(request, order_id):
+    """Детальная страница заказа"""
+    order = get_object_or_404(Order, order_id=order_id, user=request.user)
+    
+    context = {
+        'order': order,
+        'items': order.items.all(),
+    }
+    
+    return render(request, 'shop/order_detail.html', context)
+
+@login_required
+def download_product(request, order_item_id):
+    """Скачать товар из заказа"""
+    order_item = get_object_or_404(
+        OrderItem, 
+        id=order_item_id, 
+        order__user=request.user,
+        order__status__in=['paid', 'completed']
+    )
+    
+    # Проверяем тип товара и возвращаем соответствующий файл
+    product = order_item.product
+    content_object = product.content_object
+    
+    if not content_object:
+        messages.error(request, 'Файл не найден')
+        return redirect('shop:my_purchases')
+    
+    try:
+        if product.product_type == 'book':
+            # Скачивание книги
+            from books.models import Book
+            book = content_object
+            if book.pdf_file:
+                # Увеличиваем счетчик скачиваний
+                order_item.mark_downloaded()
+                
+                # Возвращаем файл
+                response = HttpResponse(book.pdf_file.read(), content_type='application/pdf')
+                response['Content-Disposition'] = f'attachment; filename="{book.title}.pdf"'
+                return response
+        
+        elif product.product_type == 'audio':
+            # Скачивание аудио
+            from audio.models import AudioTrack
+            audio = content_object
+            if audio.audio_file:
+                order_item.mark_downloaded()
+                
+                response = HttpResponse(audio.audio_file.read(), content_type='audio/mpeg')
+                response['Content-Disposition'] = f'attachment; filename="{audio.title}.mp3"'
+                return response
+                
+        elif product.product_type == 'fairy_tale':
+            # Для персонализированных сказок
+            if order_item.generated_content:
+                order_item.mark_downloaded()
+                
+                # Создаем текстовый файл со сказкой
+                response = HttpResponse(order_item.generated_content, content_type='text/plain; charset=utf-8')
+                response['Content-Disposition'] = f'attachment; filename="Сказка_{order_item.personalization_data.get("child_name", "ребенка")}.txt"'
+                return response
+        
+        messages.error(request, 'Файл недоступен для скачивания')
+        return redirect('shop:my_purchases')
+        
+    except Exception as e:
+        logger.error(f'Ошибка скачивания товара {order_item_id}: {e}')
+        messages.error(request, 'Ошибка при скачивании файла')
+        return redirect('shop:my_purchases')
+
+@login_required
+def download_purchase(request, purchase_id):
+    """Скачать товар из покупки (альтернативная ссылка)"""
+    purchase = get_object_or_404(Purchase, id=purchase_id, user=request.user)
+    
+    # Находим соответствующий OrderItem
+    try:
+        order_item = OrderItem.objects.get(
+            order=purchase.order,
+            product=purchase.product
+        )
+        return download_product(request, order_item.id)
+    except OrderItem.DoesNotExist:
+        messages.error(request, 'Элемент заказа не найден')
+        return redirect('shop:my_purchases')
+
+def complete_order(order):
+    """
+    Завершить заказ и создать записи покупок
+    Вызывается после успешной оплаты
+    """
+    if order.status == 'paid' and not Purchase.objects.filter(order=order).exists():
+        # Создаем записи покупок для всех товаров в заказе
+        for order_item in order.items.all():
+            Purchase.objects.get_or_create(
+                user=order.user,
+                product=order_item.product,
+                order=order,
+                defaults={
+                    'purchased_at': timezone.now()
+                }
+            )
+        
+        # Обновляем статус заказа
+        order.status = 'completed'
+        order.completed_at = timezone.now()
+        order.save()
+        
+        logger.info(f'Заказ {order.order_id} завершен, создано {order.items.count()} покупок')
+
+@login_required
+def test_payment_success(request, order_id):
+    """
+    ТЕСТОВАЯ функция для имитации успешной оплаты
+    Удалить в продакшене!
+    """
+    order = get_object_or_404(Order, order_id=order_id, user=request.user)
+    
+    if order.status == 'pending':
+        # Имитируем успешную оплату
+        order.status = 'paid'
+        order.paid_at = timezone.now()
+        order.payment_method = 'test'
+        order.payment_id = f'test_{order_id}'
+        order.save()
+        
+        # Создаем покупки
+        complete_order(order)
+        
+        messages.success(request, f'Тестовая оплата заказа #{order.short_id} прошла успешно!')
+        return redirect('shop:my_purchases')
+    
+    messages.warning(request, 'Заказ уже был оплачен или имеет неподходящий статус')
+    return redirect('shop:my_orders')

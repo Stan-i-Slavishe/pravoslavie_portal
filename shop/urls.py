@@ -32,4 +32,7 @@ urlpatterns = [
     
     # Персонализированные сказки
     path('order-fairy-tale/<int:product_id>/', views.order_fairy_tale, name='order_fairy_tale'),
+    
+    # ТЕСТОВЫЕ URL (удалить в продакшене)
+    path('test-payment-success/<uuid:order_id>/', views.test_payment_success, name='test_payment_success'),
 ]

@@ -45,6 +45,43 @@
     opacity: 0.6;
 }
 
+/* Кнопка чтения */
+.btn-primary {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    border: none;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #0056b3, #004085);
+    transform: translateY(-1px);
+}
+
+/* Одинаковая высота для всех кнопок */
+.purchase-card .btn {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 0.875rem; /* Немного меньше для горизонтального расположения */
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 576px) {
+    .purchase-card .btn {
+        min-height: 42px;
+        font-size: 0.8rem;
+        padding: 0.4rem 0.5rem;
+    }
+    
+    .purchase-card .btn i {
+        margin-right: 0.25rem !important;
+    }
+}
+
 .purchase-meta {
     font-size: 0.875rem;
     color: #6c757d;
@@ -156,11 +193,25 @@
                             
                             <div class="mt-auto">
                                 {% if purchase.product.content_object and purchase.product.content_object.file %}
-                                    <a href="{% url 'shop:download_purchase' purchase.id %}" 
-                                       class="btn download-btn w-100">
-                                        <i class="bi bi-download me-2"></i>
-                                        Скачать файл
-                                    </a>
+                                    <div class="row g-2">
+                                        <!-- Кнопка "Читать" -->
+                                        <div class="col-6">
+                                            <a href="{% url 'books:modern_reader' purchase.product.content_object.slug %}" 
+                                               class="btn btn-primary w-100">
+                                                <i class="bi bi-book-open me-1"></i>
+                                                Читать
+                                            </a>
+                                        </div>
+                                        
+                                        <!-- Кнопка "Скачать" -->
+                                        <div class="col-6">
+                                            <button class="btn download-btn w-100" 
+                                                    onclick="forceDownload('{% url 'shop:download_purchase' purchase.id %}', '{{ purchase.product.title }}.pdf')">
+                                                <i class="bi bi-download me-1"></i>
+                                                Скачать
+                                            </button>
+                                        </div>
+                                    </div>
                                 {% else %}
                                     <div class="unavailable-file">
                                         <i class="bi bi-exclamation-triangle me-2"></i>
@@ -300,6 +351,19 @@
 
 {% block extra_js %}
 <script>
+// Принудительное скачивание файла
+function forceDownload(url, filename) {
+    // Метод 1: Создаем невидимую ссылку с download атрибутом
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename; // Принудительное скачивание
+    link.style.display = 'none';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Добавляем анимацию при загрузке
     const cards = document.querySelectorAll('.purchase-card');

@@ -399,7 +399,7 @@ def download_product(request, order_item_id):
 
 @login_required
 def download_purchase(request, purchase_id):
-    """Скачать товар из покупки"""
+    """Скачать товар из покупки (принудительное скачивание)"""
     purchase = get_object_or_404(
         Purchase,
         id=purchase_id,
@@ -423,15 +423,46 @@ def download_purchase(request, purchase_id):
     purchase.last_downloaded = timezone.now()
     purchase.save()
     
-    # Перенаправляем на скачивание (зависит от типа контента)
+    # Принудительное скачивание файла
     if purchase.product.product_type == 'book' and hasattr(content_object, 'file') and content_object.file:
-        response = HttpResponse(content_object.file, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{content_object.title}.pdf"'
-        return response
+        try:
+            # Читаем файл
+            file_content = content_object.file.read()
+            
+            # Создаем response для скачивания с усиленными заголовками
+            response = HttpResponse(file_content, content_type='application/octet-stream')  # Изменил тип
+            
+            # Ключевые заголовки для принудительного скачивания
+            filename = f"{content_object.title}.pdf".replace('"', '').replace("'", "")
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            response['Content-Length'] = len(file_content)
+            response['Content-Type'] = 'application/force-download'  # Принудительный тип
+            
+            # Дополнительные заголовки для скачивания
+            response['Cache-Control'] = 'no-cache, no-store, must-revalidate, private'
+            response['Pragma'] = 'no-cache'
+            response['Expires'] = '0'
+            response['Content-Transfer-Encoding'] = 'binary'
+            
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error downloading file for purchase {purchase.id}: {e}")
+            messages.error(request, "Ошибка при скачивании файла")
+            return redirect('shop:my_purchases')
+            
     elif purchase.product.product_type == 'audio' and hasattr(content_object, 'audio_file') and content_object.audio_file:
-        response = HttpResponse(content_object.audio_file, content_type='audio/mpeg')
-        response['Content-Disposition'] = f'attachment; filename="{content_object.title}.mp3"'
-        return response
+        try:
+            file_content = content_object.audio_file.read()
+            response = HttpResponse(file_content, content_type='audio/mpeg')
+            filename = f"{content_object.title}.mp3".replace('"', '').replace("'", "")
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            response['Content-Length'] = len(file_content)
+            return response
+        except Exception as e:
+            logger.error(f"Error downloading audio file for purchase {purchase.id}: {e}")
+            messages.error(request, "Ошибка при скачивании файла")
+            return redirect('shop:my_purchases')
     
     messages.error(request, "Файл недоступен для скачивания")
     return redirect('shop:my_purchases')

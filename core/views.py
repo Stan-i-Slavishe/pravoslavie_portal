@@ -43,6 +43,26 @@ class AboutView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'О проекте'
         context['site_settings'] = SiteSettings.get_settings()
+        
+        # Добавляем статистику для страницы "О проекте"
+        context['founding_year'] = 2023  # Год основания проекта
+        
+        try:
+            # Импортируем модели только когда они нужны
+            from stories.models import Story
+            from books.models import Book
+            from audio.models import AudioTrack
+            
+            context['total_stories'] = Story.objects.filter(is_published=True).count()
+            context['total_books'] = Book.objects.filter(is_published=True).count()
+            context['total_audio'] = AudioTrack.objects.filter(is_published=True).count()
+            
+        except ImportError:
+            # Если модели не найдены, ставим нули
+            context['total_stories'] = 0
+            context['total_books'] = 0
+            context['total_audio'] = 0
+            
         return context
 
 class ContactView(TemplateView):

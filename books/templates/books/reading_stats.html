@@ -61,6 +61,11 @@
         color: white;
     }
     
+    .icon-books i {
+        font-size: 1.8rem !important;
+        color: white !important;
+    }
+    
     .icon-completed {
         background: linear-gradient(135deg, #28a745, #1e7e34);
         color: white;
@@ -178,6 +183,32 @@
         transition: width 0.3s ease;
     }
     
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.1);
+            opacity: 0.7;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes bars {
+        0%, 100% {
+            opacity: 0.3;
+            transform: scaleY(0.7);
+        }
+        50% {
+            opacity: 1;
+            transform: scaleY(1);
+        }
+    }
+    
     @media (max-width: 768px) {
         .stats-card {
             padding: 20px;
@@ -223,7 +254,7 @@
         <div class="col-lg-3 col-md-6 mb-4">
             <div class="stats-card">
                 <div class="stats-card-icon icon-books">
-                    <i class="bi bi-books"></i>
+                    <i class="bi bi-journal-bookmark"></i>
                 </div>
                 <div class="stats-card-number">{{ total_books }}</div>
                 <div class="stats-card-label">Книг в процессе</div>
@@ -297,8 +328,14 @@
                 <h5><i class="bi bi-graph-up"></i> Активность чтения</h5>
                 <div class="chart-placeholder">
                     <div class="text-center">
-                        <i class="bi bi-bar-chart fs-1 mb-3"></i><br>
-                        График активности чтения<br>
+                        <div class="bars-animation mb-3" style="height: 60px; display: inline-flex; align-items: end; gap: 4px;">
+                            <div style="width: 8px; height: 20px; background: #007bff; border-radius: 2px; animation: bars 1.5s infinite ease-in-out; animation-delay: 0s;"></div>
+                            <div style="width: 8px; height: 35px; background: #007bff; border-radius: 2px; animation: bars 1.5s infinite ease-in-out; animation-delay: 0.2s;"></div>
+                            <div style="width: 8px; height: 50px; background: #007bff; border-radius: 2px; animation: bars 1.5s infinite ease-in-out; animation-delay: 0.4s;"></div>
+                            <div style="width: 8px; height: 30px; background: #007bff; border-radius: 2px; animation: bars 1.5s infinite ease-in-out; animation-delay: 0.6s;"></div>
+                            <div style="width: 8px; height: 45px; background: #007bff; border-radius: 2px; animation: bars 1.5s infinite ease-in-out; animation-delay: 0.8s;"></div>
+                        </div><br>
+                        <h5 class="text-primary">График активности чтения</h5>
                         <small class="text-muted">(будет добавлен в будущих обновлениях)</small>
                     </div>
                 </div>

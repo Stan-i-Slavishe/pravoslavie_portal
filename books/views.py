@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse, Http404
 from django.db.models import Q, Avg, F
+from django.db.models.functions import Extract  # Добавлено для reading_stats
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_POST
 from django.utils import timezone
@@ -703,15 +704,17 @@ def reading_stats(request):
     # Последние прочитанные книги
     recent_books = sessions.select_related('book').order_by('-last_read')[:5]
     
-    # Статистика по месяцам (последние 6 месяцев)
+    # Статистика по месяцам (последние 6 месяцев) - исправленная версия
     from django.db.models import Count
     from datetime import datetime, timedelta
     
     six_months_ago = timezone.now() - timedelta(days=180)
+    
+    # Используем Django ORM функцию Extract вместо raw SQL
     monthly_stats = sessions.filter(
         last_read__gte=six_months_ago
-    ).extra(
-        select={'month': 'EXTRACT(month FROM last_read)'},
+    ).annotate(
+        month=Extract('last_read', 'month')
     ).values('month').annotate(
         count=Count('id')
     ).order_by('month')

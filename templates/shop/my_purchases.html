@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Мои покупки - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.purchase-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    height: 100%;
+}
+
+.purchase-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.purchase-image {
+    height: 150px;
+    object-fit: contain;
+    width: 100%;
+    background: #f8f9fa;
+}
+
+.purchase-status {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.download-btn {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    border: none;
+    color: white;
+    font-weight: 600;
+}
+
+.download-btn:hover {
+    background: linear-gradient(45deg, #218838, #1fa080);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.download-btn:disabled {
+    background: #6c757d;
+    opacity: 0.6;
+}
+
+.purchase-meta {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.fairy-tale-card {
+    border-left: 4px solid #ffc107;
+}
+
+.book-card {
+    border-left: 4px solid #28a745;
+}
+
+.unavailable-file {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Заголовок -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h2 mb-3">
+                <i class="bi bi-bag-check text-success me-2"></i>
+                Мои покупки
+            </h1>
+            <p class="text-muted">
+                Все ваши оплаченные товары доступны для скачивания
+            </p>
+        </div>
+    </div>
+
+    <!-- Навигация между разделами -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex gap-3">
+                <a href="{% url 'shop:my_orders' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-list-ul me-1"></i>
+                    Мои заказы
+                </a>
+                <span class="btn btn-primary">
+                    <i class="bi bi-bag-check me-1"></i>
+                    Мои покупки
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Покупки из магазина -->
+    {% if purchases %}
+        <div class="row">
+            {% for purchase in purchases %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card purchase-card book-card h-100">
+                        <div class="position-relative">
+                            {% if purchase.product.image %}
+                                <img src="{{ purchase.product.image.url }}" class="card-img-top purchase-image" alt="{{ purchase.product.title }}">
+                            {% elif purchase.product.content_object and purchase.product.content_object.cover %}
+                                <img src="{{ purchase.product.content_object.cover.url }}" class="card-img-top purchase-image" alt="{{ purchase.product.title }}">
+                            {% else %}
+                                <div class="purchase-image bg-light d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-{% if purchase.product.product_type == 'book' %}book{% elif purchase.product.product_type == 'audio' %}music-note{% else %}box{% endif %} text-muted" style="font-size: 2.5rem;"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Бейдж типа товара -->
+                            <span class="badge position-absolute top-0 end-0 m-2
+                                {% if purchase.product.product_type == 'book' %}bg-success
+                                {% elif purchase.product.product_type == 'audio' %}bg-info
+                                {% else %}bg-primary{% endif %}">
+                                {{ purchase.product.get_product_type_display }}
+                            </span>
+                        </div>
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ purchase.product.title }}</h5>
+                            
+                            <div class="purchase-meta mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <i class="bi bi-calendar3 me-1"></i>
+                                        Куплено: {{ purchase.purchased_at|date:"d.m.Y H:i" }}
+                                    </span>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <span>
+                                        <i class="bi bi-receipt me-1"></i>
+                                        Заказ: #{{ purchase.order.short_id }}
+                                    </span>
+                                </div>
+                                
+                                {% if purchase.download_count > 0 %}
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <span>
+                                        <i class="bi bi-download me-1"></i>
+                                        Скачано: {{ purchase.download_count }} раз
+                                    </span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mt-auto">
+                                {% if purchase.product.content_object and purchase.product.content_object.file %}
+                                    <a href="{% url 'shop:download_purchase' purchase.id %}" 
+                                       class="btn download-btn w-100">
+                                        <i class="bi bi-download me-2"></i>
+                                        Скачать файл
+                                    </a>
+                                {% else %}
+                                    <div class="unavailable-file">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                        Файл недоступен
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Пагинация -->
+        {% if purchases.has_other_pages %}
+            <nav aria-label="Навигация по покупкам">
+                <ul class="pagination justify-content-center">
+                    {% if purchases.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ purchases.previous_page_number }}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in purchases.paginator.page_range %}
+                        {% if purchases.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > purchases.number|add:'-3' and num < purchases.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if purchases.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ purchases.next_page_number }}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% endif %}
+
+    <!-- Терапевтические сказки -->
+    {% if fairy_tale_orders %}
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3 class="h4 mb-3">
+                    <i class="bi bi-magic text-warning me-2"></i>
+                    Персонализированные сказки
+                </h3>
+            </div>
+        </div>
+        
+        <div class="row">
+            {% for order in fairy_tale_orders %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card purchase-card fairy-tale-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-magic me-2 text-warning"></i>
+                                {{ order.fairy_tale.title }}
+                            </h5>
+                            
+                            <div class="purchase-meta mb-3">
+                                <div>
+                                    <strong>Для:</strong> {{ order.child_name }}
+                                    ({{ order.child_age }} {{ order.child_age|pluralize:"год,года,лет" }})
+                                </div>
+                                <div class="mt-1">
+                                    <strong>Проблема:</strong> {{ order.get_main_problem_display }}
+                                </div>
+                                <div class="mt-1">
+                                    <strong>Статус:</strong> 
+                                    <span class="badge
+                                        {% if order.status == 'completed' %}bg-success
+                                        {% elif order.status == 'in_progress' %}bg-info
+                                        {% elif order.status == 'paid' %}bg-warning
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </div>
+                                <div class="mt-1">
+                                    <small class="text-muted">
+                                        {{ order.created_at|date:"d.m.Y H:i" }}
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-auto">
+                                {% if order.status == 'completed' and order.generated_content %}
+                                    <a href="{% url 'fairy_tales:order_detail' order.id %}" 
+                                       class="btn download-btn w-100">
+                                        <i class="bi bi-book me-2"></i>
+                                        Читать сказку
+                                    </a>
+                                {% else %}
+                                    <div class="text-center text-muted">
+                                        <i class="bi bi-hourglass-split me-2"></i>
+                                        {% if order.status == 'paid' %}
+                                            Сказка в очереди на создание
+                                        {% elif order.status == 'in_progress' %}
+                                            Сказка создается...
+                                        {% else %}
+                                            {{ order.get_status_display }}
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Пустое состояние -->
+    {% if not purchases and not fairy_tale_orders %}
+        <div class="text-center py-5">
+            <i class="bi bi-bag-x text-muted" style="font-size: 4rem;"></i>
+            <h3 class="text-muted mt-3">У вас пока нет покупок</h3>
+            <p class="text-muted">
+                Перейдите в <a href="{% url 'shop:catalog' %}">магазин</a> 
+                или <a href="{% url 'books:list' %}">библиотеку</a>, 
+                чтобы найти интересующие вас материалы
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Добавляем анимацию при загрузке
+    const cards = document.querySelectorAll('.purchase-card');
+    cards.forEach((card, index) => {
+        setTimeout(() => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 50);
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

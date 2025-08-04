@@ -385,11 +385,11 @@ def download_product(request, order_item_id):
     order_item.mark_downloaded()
     
     # Перенаправляем на скачивание (зависит от типа контента)
-    if order_item.product.product_type == 'book' and hasattr(content_object, 'pdf_file'):
-        response = HttpResponse(content_object.pdf_file, content_type='application/pdf')
+    if order_item.product.product_type == 'book' and hasattr(content_object, 'file') and content_object.file:
+        response = HttpResponse(content_object.file, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{content_object.title}.pdf"'
         return response
-    elif order_item.product.product_type == 'audio' and hasattr(content_object, 'audio_file'):
+    elif order_item.product.product_type == 'audio' and hasattr(content_object, 'audio_file') and content_object.audio_file:
         response = HttpResponse(content_object.audio_file, content_type='audio/mpeg')
         response['Content-Disposition'] = f'attachment; filename="{content_object.title}.mp3"'
         return response
@@ -424,11 +424,11 @@ def download_purchase(request, purchase_id):
     purchase.save()
     
     # Перенаправляем на скачивание (зависит от типа контента)
-    if purchase.product.product_type == 'book' and hasattr(content_object, 'pdf_file'):
-        response = HttpResponse(content_object.pdf_file, content_type='application/pdf')
+    if purchase.product.product_type == 'book' and hasattr(content_object, 'file') and content_object.file:
+        response = HttpResponse(content_object.file, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{content_object.title}.pdf"'
         return response
-    elif purchase.product.product_type == 'audio' and hasattr(content_object, 'audio_file'):
+    elif purchase.product.product_type == 'audio' and hasattr(content_object, 'audio_file') and content_object.audio_file:
         response = HttpResponse(content_object.audio_file, content_type='audio/mpeg')
         response['Content-Disposition'] = f'attachment; filename="{content_object.title}.mp3"'
         return response

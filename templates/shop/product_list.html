@@ -16,9 +16,11 @@
 }
 
 .product-image {
-    height: 200px;
-    object-fit: cover;
+    height: 280px;
+    object-fit: contain;
     width: 100%;
+    background: #f8f9fa;
+    border-radius: 8px 8px 0 0;
 }
 
 .product-price {
@@ -206,11 +208,23 @@
                 <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                     <div class="card product-card h-100">
                         <div class="position-relative">
+                            {% comment %}
+                            Исправленная логика отображения обложек:
+                            1. Сначала пробуем product.image (прямое изображение товара)
+                            2. Если нет, пробуем получить через content_object (связанную книгу)
+                            3. Если и этого нет, показываем placeholder
+                            {% endcomment %}
+                            
                             {% if product.image %}
                                 <img src="{{ product.image.url }}" class="card-img-top product-image" alt="{{ product.title }}">
+                            {% elif product.content_object and product.content_object.cover %}
+                                <img src="{{ product.content_object.cover.url }}" class="card-img-top product-image" alt="{{ product.title }}">
                             {% else %}
                                 <div class="product-image bg-light d-flex align-items-center justify-content-center">
-                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                    <div class="text-center">
+                                        <i class="bi bi-{% if product.product_type == 'book' %}book{% elif product.product_type == 'audio' %}music-note{% elif product.product_type == 'fairy_tale' %}magic{% else %}box{% endif %} text-muted" style="font-size: 3rem;"></i>
+                                        <p class="text-muted mt-2 mb-0 small">{{ product.get_product_type_display }}</p>
+                                    </div>
                                 </div>
                             {% endif %}
                             

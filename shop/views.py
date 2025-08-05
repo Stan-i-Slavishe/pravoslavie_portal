@@ -513,7 +513,9 @@ def product_list_view(request):
     page_obj = paginator.get_page(page_number)
     
     context = {
+        'products': page_obj,
         'page_obj': page_obj,
+        'selected_type': request.GET.get('type', ''),
         'current_filters': {
             'type': request.GET.get('type', ''),
             'min_price': request.GET.get('min_price', ''),
@@ -524,7 +526,7 @@ def product_list_view(request):
         'product_types': Product.PRODUCT_TYPES,
     }
     
-    return render(request, 'shop/product_list.html', context)
+    return render(request, 'shop/catalog.html', context)
 
 def product_detail_view(request, product_id):
     """Страница товара"""

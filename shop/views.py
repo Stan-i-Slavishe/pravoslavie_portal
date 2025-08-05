@@ -18,6 +18,80 @@ from fairy_tales.models import PersonalizationOrder  # Импортируем з
 
 logger = logging.getLogger(__name__)
 
+def product_list_view(request):
+    """Каталог товаров"""
+    products = Product.objects.filter(is_active=True).order_by('-created_at')
+    
+    # Фильтрация по типу товара
+    product_type = request.GET.get('type')
+    if product_type:
+        products = products.filter(product_type=product_type)
+    
+    # Поиск
+    search_query = request.GET.get('search')
+    if search_query:
+        products = products.filter(
+            Q(title__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+    
+    # Сортировка
+    sort_by = request.GET.get('sort', 'newest')
+    if sort_by == 'price_low':
+        products = products.order_by('price')
+    elif sort_by == 'price_high':
+        products = products.order_by('-price')
+    elif sort_by == 'title':
+        products = products.order_by('title')
+    else:  # newest
+        products = products.order_by('-created_at')
+    
+    # Пагинация
+    paginator = Paginator(products, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Статистика для фильтров
+    product_types_stats = Product.objects.filter(is_active=True).values('product_type').annotate(
+        count=Count('id')
+    ).order_by('product_type')
+    
+    context = {
+        'products': page_obj,
+        'page_obj': page_obj,
+        'product_types_stats': product_types_stats,
+        'current_type': product_type,
+        'search_query': search_query,
+        'sort_by': sort_by,
+    }
+    
+    return render(request, 'shop/product_list.html', context)
+
+
+def product_detail_view(request, product_id):
+    """Детальная страница товара"""
+    product = get_object_or_404(Product, id=product_id, is_active=True)
+    
+    # Получаем связанный объект контента
+    content_object = product.content_object
+    
+    # Проверяем, приобрел ли пользователь этот товар
+    is_purchased = False
+    if request.user.is_authenticated:
+        is_purchased = Purchase.objects.filter(
+            user=request.user,
+            product=product
+        ).exists()
+    
+    context = {
+        'product': product,
+        'content_object': content_object,
+        'is_purchased': is_purchased,
+    }
+    
+    return render(request, 'shop/product_detail.html', context)
+
+
 def cart_view(request):
     """Просмотр корзины"""
     if not request.user.is_authenticated:

@@ -91,8 +91,8 @@
             <div class="product-image text-center">
                 {% if product.image %}
                     <img src="{{ product.image.url }}" alt="{{ product.title }}" class="img-fluid rounded">
-                {% elif content_object.cover_image %}
-                    <img src="{{ content_object.cover_image.url }}" alt="{{ product.title }}" class="img-fluid rounded">
+                {% elif content_object.cover %}
+                    <img src="{{ content_object.cover.url }}" alt="{{ product.title }}" class="img-fluid rounded">
                 {% else %}
                     <div class="placeholder-image bg-light d-flex align-items-center justify-content-center rounded" style="height: 400px;">
                         <i class="bi bi-image fs-1 text-muted"></i>

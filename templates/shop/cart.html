@@ -79,15 +79,15 @@
                                         <div class="text-end">
                                             {% if item.quantity > 1 %}
                                                 <div class="small text-muted mb-1 price-breakdown" data-unit-price="{{ item.product.price }}">
-                                                    {{ item.product.price }}₽ × {{ item.quantity }}
+                                                    <span class="price-value">{{ item.product.price }}</span> ₽ × {{ item.quantity }}
                                                 </div>
                                             {% endif %}
-                                            <div class="h5 text-success mb-1 item-total-price">{{ item.total_price }}₽</div>
+                                            <div class="h5 text-success mb-1 item-total-price"><span class="price-value">{{ item.total_price }}</span> ₽</div>
                                             {% if item.product.product_type == 'fairy_tale' and item.include_audio or item.include_illustrations %}
                                                 <small class="text-muted">
-                                                    Базовая: {{ item.product.price }}₽
-                                                    {% if item.include_audio %}+ {{ item.product.audio_option_price }}₽{% endif %}
-                                                    {% if item.include_illustrations %}+ {{ item.product.illustration_option_price }}₽{% endif %}
+                                                    Базовая: <span class="price-value">{{ item.product.price }}</span> ₽
+                                                    {% if item.include_audio %}+ <span class="price-value">{{ item.product.audio_option_price }}</span> ₽{% endif %}
+                                                    {% if item.include_illustrations %}+ <span class="price-value">{{ item.product.illustration_option_price }}</span> ₽{% endif %}
                                                 </small>
                                             {% endif %}
                                         </div>
@@ -142,14 +142,14 @@
                         
                         <div class="d-flex justify-content-between mb-3">
                             <span>Сумма:</span>
-                            <span class="total-price">{{ cart.total_price }}₽</span>
+                            <span class="total-price"><span class="price-value">{{ cart.total_price }}</span> ₽</span>
                         </div>
                         
                         <hr>
                         
                         <div class="d-flex justify-content-between h5">
                             <span>Итого:</span>
-                            <span class="text-success total-price">{{ cart.total_price }}₽</span>
+                            <span class="text-success total-price"><span class="price-value">{{ cart.total_price }}</span> ₽</span>
                         </div>
                         
                         <a href="{% url 'shop:checkout' %}" class="btn btn-success w-100 mt-3">
@@ -179,22 +179,45 @@
 </div>
 
 <style>
-/* Простое исправление для горизонтального расположения кнопок */
+/* ПРИНУДИТЕЛЬНОЕ горизонтальное расположение кнопок */
 .quantity-control .input-group {
     display: flex !important;
     flex-direction: row !important;
+    flex-wrap: nowrap !important;
     max-width: 120px;
+    align-items: center;
+}
+
+.quantity-control .input-group > * {
+    float: none !important;
+    display: inline-block !important;
 }
 
 .quantity-control .btn {
-    min-width: 30px;
-    padding: 0.25rem 0.4rem;
+    min-width: 30px !important;
+    max-width: 30px !important;
+    padding: 0.25rem 0.4rem !important;
+    height: 32px !important;
+    flex: 0 0 auto !important;
 }
 
 .quantity-control .form-control {
-    text-align: center;
-    min-width: 40px;
-    font-weight: 600;
+    text-align: center !important;
+    min-width: 50px !important;
+    max-width: 50px !important;
+    font-weight: 600 !important;
+    height: 32px !important;
+    flex: 0 0 auto !important;
+    border-left: 1px solid #ced4da !important;
+    border-right: 1px solid #ced4da !important;
+}
+
+/* Убираем все отступы которые могут мешать */
+.quantity-control .input-group .btn,
+.quantity-control .input-group .form-control {
+    margin: 0 !important;
+    position: relative !important;
+    z-index: 1 !important;
 }
 
 .toast-container {
@@ -204,6 +227,39 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Функция для форматирования цены (убираем .00)
+    function formatPrice(price) {
+        const num = parseFloat(price);
+        if (num === Math.floor(num)) {
+            return Math.floor(num) + ' ₽';
+        }
+        return num + ' ₽';
+    }
+    
+    // Убираем .00 из всех цен на странице и добавляем пробел
+    function cleanAllPrices() {
+        document.querySelectorAll('.price-value').forEach(element => {
+            let text = element.textContent;
+            // Убираем .00
+            if (text.endsWith('.00') || text.endsWith(',00')) {
+                text = text.replace(/[\.,]00$/, '');
+            }
+            element.textContent = text;
+        });
+        
+        // Добавляем пробел перед знаком рубля
+        document.querySelectorAll('*').forEach(element => {
+            if (element.childNodes.length === 1 && element.childNodes[0].nodeType === 3) {
+                let text = element.textContent;
+                if (text.includes('₽') && !text.includes(' ₽')) {
+                    element.textContent = text.replace(/([0-9])₽/g, '$1 ₽');
+                }
+            }
+        });
+    }
+    
+    // Запускаем очистку при загрузке
+    cleanAllPrices();
     // Функция для отображения уведомлений
     function showToast(message, type = 'success') {
         // Создаем toast уведомление
@@ -241,7 +297,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateCartTotals(data) {
         if (data.cart_total !== undefined) {
             document.querySelectorAll('.total-price').forEach(el => {
-                el.textContent = data.cart_total + '₽';
+                el.textContent = formatPrice(data.cart_total);
                 el.classList.add('price-highlight');
                 setTimeout(() => el.classList.remove('price-highlight'), 300);
             });
@@ -284,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.item_total) {
                     const priceElement = cartItem.querySelector('.item-total-price');
                     if (priceElement) {
-                        priceElement.textContent = data.item_total + '₽';
+                        priceElement.textContent = formatPrice(data.item_total);
                         priceElement.classList.add('price-highlight');
                         setTimeout(() => priceElement.classList.remove('price-highlight'), 300);
                     }
@@ -311,7 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         priceBreakdown.setAttribute('data-unit-price', unitPrice);
                         cartItem.querySelector('.item-total-price').parentNode.insertBefore(priceBreakdown, cartItem.querySelector('.item-total-price'));
                     }
-                    priceBreakdown.textContent = `${unitPrice}₽ × ${newQuantity}`;
+                    priceBreakdown.textContent = `${formatPrice(unitPrice)} × ${newQuantity}`;
                 } else if (newQuantity === 1 && priceBreakdown) {
                     priceBreakdown.remove();
                 }

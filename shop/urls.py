@@ -35,4 +35,5 @@ urlpatterns = [
     
     # ТЕСТОВЫЕ URL (удалить в продакшене)
     path('test-payment-success/<uuid:order_id>/', views.test_payment_success, name='test_payment_success'),
+    path('debug-cart/', views.debug_cart_view, name='debug_cart'),
 ]

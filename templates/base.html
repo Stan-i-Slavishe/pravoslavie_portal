@@ -26,6 +26,9 @@
     <link rel="stylesheet" href="{% static 'css/purchase-button-fix.css' %}">
     <link rel="stylesheet" href="{% static 'css/dropdown-fix.css' %}">
     
+    <!-- Дополнительные стили страниц -->
+    {% block extra_css %}{% endblock %}
+    
     <!-- Принудительное скрытие бургера на десктопе -->
     <style>
         /* Скрываем бургер-меню на десктопе */
@@ -221,7 +224,6 @@
         text-decoration: none;
     }
     </style>
-    {% block extra_css %}{% endblock %}
     
     <!-- Дополнительные мета-теги -->
     {% block extra_head %}{% endblock %}

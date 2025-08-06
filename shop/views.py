@@ -190,6 +190,7 @@ def update_cart_item(request):
         return JsonResponse({
             'status': 'success',
             'item_total': float(cart_item.total_price),
+            'unit_price': float(cart_item.product.price),
             'cart_total': float(cart_item.cart.total_price),
             'cart_total_items': cart_item.cart.total_items
         })
@@ -916,3 +917,7 @@ def test_payment_success(request, order_id):
     
     messages.warning(request, 'Заказ уже был оплачен или имеет неподходящий статус')
     return redirect('shop:my_orders')
+
+def debug_cart_view(request):
+    """Отладочная страница для счетчика количества"""
+    return render(request, 'shop/debug_cart.html')

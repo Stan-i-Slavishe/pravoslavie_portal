@@ -1,0 +1,176 @@
+/* Стили для счетчика количества в корзине */
+
+.quantity-control {
+    max-width: 150px;
+}
+
+/* Основные стили для input-group */
+.quantity-control .input-group {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    max-width: 120px;
+    min-width: 100px;
+    align-items: stretch;
+}
+
+/* Стили для элементов внутри input-group */
+.quantity-control .input-group > * {
+    flex-shrink: 0;
+    margin: 0;
+    border-radius: 0;
+}
+
+/* Поле ввода */
+.quantity-control .form-control {
+    flex: 1 1 auto;
+    font-weight: 600;
+    min-width: 45px;
+    max-width: 50px;
+    text-align: center;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    background-color: #fff;
+    padding: 0.25rem 0.3rem;
+    font-size: 0.875rem;
+    height: 31px;
+    line-height: 1.2;
+}
+
+/* Кнопки */
+.quantity-control .btn {
+    flex: 0 0 auto;
+    padding: 0.25rem 0.4rem;
+    min-width: 32px;
+    max-width: 32px;
+    height: 31px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ced4da;
+    font-size: 0.875rem;
+    line-height: 1;
+}
+
+/* Левая кнопка */
+.quantity-control .decrease-btn {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-right: 1px solid #ced4da !important;
+}
+
+/* Правая кнопка */
+.quantity-control .increase-btn {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-left: 1px solid #ced4da !important;
+}
+
+/* Для маленького размера */
+.quantity-control .input-group-sm .btn {
+    padding: 0.25rem 0.4rem;
+    font-size: 0.875rem;
+    height: 31px;
+    min-width: 30px;
+    max-width: 30px;
+}
+
+.quantity-control .input-group-sm .form-control {
+    padding: 0.25rem 0.3rem;
+    font-size: 0.875rem;
+    height: 31px;
+    min-width: 40px;
+    max-width: 45px;
+}
+
+/* Принудительное выравнивание */
+.quantity-control .input-group {
+    box-sizing: border-box;
+}
+
+.quantity-control .input-group * {
+    box-sizing: border-box;
+}
+
+/* Убираем любые margin и padding которые могут мешать */
+.quantity-control .btn,
+.quantity-control .form-control {
+    margin: 0 !important;
+    float: none !important;
+    position: relative;
+}
+
+/* Дополнительные стили для корзины */
+.cart-item {
+    transition: background-color 0.2s ease;
+}
+
+.cart-item:hover {
+    background-color: #f8f9fa;
+}
+
+.quantity-updating {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.price-highlight {
+    animation: priceUpdate 0.3s ease;
+}
+
+@keyframes priceUpdate {
+    0% { background-color: #fff3cd; }
+    100% { background-color: transparent; }
+}
+
+/* Специфичные стили для Bootstrap input-group */
+.input-group:not(.has-validation) > :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.input-group > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
+    margin-left: -1px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .quantity-control {
+        max-width: 110px;
+    }
+    
+    .quantity-control .input-group {
+        max-width: 100px;
+        min-width: 90px;
+    }
+    
+    .quantity-control .btn {
+        padding: 0.2rem 0.3rem;
+        min-width: 28px;
+        max-width: 28px;
+        font-size: 0.8rem;
+        height: 28px;
+    }
+    
+    .quantity-control .form-control {
+        padding: 0.2rem 0.2rem;
+        font-size: 0.8rem;
+        min-width: 35px;
+        max-width: 38px;
+        height: 28px;
+    }
+
+    .quantity-control .input-group-sm .btn {
+        height: 28px;
+        min-width: 26px;
+        max-width: 26px;
+    }
+
+    .quantity-control .input-group-sm .form-control {
+        height: 28px;
+        min-width: 32px;
+        max-width: 35px;
+    }
+}

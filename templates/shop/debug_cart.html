@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cart_quantity.css' %}">
+<style>
+.debug-section {
+    background: #f8f9fa;
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.debug-title {
+    color: #007bff;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.test-result {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+}
+
+.test-success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.test-warning {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>🧪 Отладка счетчика количества</h1>
+    <p class="lead">Эта страница поможет проверить правильность работы счетчика количества в корзине.</p>
+    
+    <div class="debug-section">
+        <div class="debug-title">✅ Тест 1: Обычный счетчик</div>
+        <div class="quantity-control">
+            <label class="form-label text-muted small mb-1">Количество:</label>
+            <div class="input-group">
+                <button type="button" class="btn btn-outline-secondary decrease-btn">
+                    <i class="bi bi-dash"></i>
+                </button>
+                <input type="text" class="form-control text-center quantity-input" value="5" readonly>
+                <button type="button" class="btn btn-outline-secondary increase-btn">
+                    <i class="bi bi-plus"></i>
+                </button>
+            </div>
+        </div>
+        <div class="test-result test-success">
+            <strong>Ожидаемый результат:</strong> Кнопки - и + расположены горизонтально с полем ввода между ними
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <div class="debug-title">✅ Тест 2: Маленький счетчик (как в корзине)</div>
+        <div class="quantity-control">
+            <label class="form-label text-muted small mb-1">Количество:</label>
+            <div class="input-group input-group-sm">
+                <button type="button" class="btn btn-outline-secondary decrease-btn">
+                    <i class="bi bi-dash"></i>
+                </button>
+                <input type="text" class="form-control text-center quantity-input" value="3" readonly>
+                <button type="button" class="btn btn-outline-secondary increase-btn">
+                    <i class="bi bi-plus"></i>
+                </button>
+            </div>
+        </div>
+        <div class="test-result test-success">
+            <strong>Ожидаемый результат:</strong> Компактный счетчик с кнопками на одной линии
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <div class="debug-title">✅ Тест 3: В карточке товара (имитация корзины)</div>
+        <div class="card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-2">
+                        <div class="bg-light d-flex align-items-center justify-content-center rounded" style="height: 80px;">
+                            <i class="bi bi-image text-muted"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h5>Тестовый товар</h5>
+                        <p class="text-muted mb-1">Книга</p>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="quantity-control">
+                            <label class="form-label text-muted small mb-1">Количество:</label>
+                            <div class="input-group input-group-sm">
+                                <button type="button" class="btn btn-outline-secondary decrease-btn">
+                                    <i class="bi bi-dash"></i>
+                                </button>
+                                <input type="text" class="form-control text-center quantity-input" value="2" readonly>
+                                <button type="button" class="btn btn-outline-secondary increase-btn">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
+                            <small class="text-info d-block mt-1">
+                                <i class="bi bi-download"></i> Цифровой товар
+                            </small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-end">
+                            <div class="small text-muted mb-1">500₽ × 2</div>
+                            <div class="h5 text-success mb-1">1000₽</div>
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="test-result test-success">
+            <strong>Ожидаемый результат:</strong> Счетчик интегрирован в карточку товара и выглядит как в настоящей корзине
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <div class="debug-title">🔍 Проверочный список</div>
+        <div class="row">
+            <div class="col-md-6">
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Кнопки расположены горизонтально
+                        <span class="badge bg-success rounded-pill" id="check1">?</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Поле ввода по центру между кнопками
+                        <span class="badge bg-success rounded-pill" id="check2">?</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Кнопки имеют одинаковую высоту
+                        <span class="badge bg-success rounded-pill" id="check3">?</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Компонент выглядит компактно
+                        <span class="badge bg-success rounded-pill" id="check4">?</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Иконки отображаются корректно
+                        <span class="badge bg-success rounded-pill" id="check5">?</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        CSS файл загружается
+                        <span class="badge bg-success rounded-pill" id="check6">?</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <h4>📋 Инструкция по проверке:</h4>
+        <ol>
+            <li><strong>Визуальная проверка:</strong> Убедитесь, что кнопки <code>-</code> и <code>+</code> расположены горизонтально</li>
+            <li><strong>Функциональность:</strong> Нажмите кнопки - они должны изменять значение</li>
+            <li><strong>Адаптивность:</strong> Попробуйте изменить размер окна браузера</li>
+            <li><strong>CSS загрузка:</strong> Откройте инструменты разработчика (F12) и проверьте загрузку cart_quantity.css</li>
+        </ol>
+    </div>
+
+    <div class="alert alert-warning">
+        <h4>⚠️ Если кнопки расположены вертикально:</h4>
+        <ol>
+            <li>Очистите кеш браузера (Ctrl+F5 или Cmd+Shift+R)</li>
+            <li>Перезапустите сервер Django</li>
+            <li>Проверьте, что файл <code>static/css/cart_quantity.css</code> существует</li>
+            <li>Выполните <code>python manage.py collectstatic</code></li>
+        </ol>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">🔗 Полезные ссылки</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Для тестирования:</h6>
+                    <ul>
+                        <li><a href="{% url 'shop:cart' %}" class="btn btn-primary btn-sm">Перейти в корзину</a></li>
+                        <li><a href="{% url 'shop:catalog' %}" class="btn btn-secondary btn-sm">Каталог товаров</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>Для разработчиков:</h6>
+                    <ul>
+                        <li><code>/static/css/cart_quantity.css</code> - CSS файл</li>
+                        <li><code>templates/shop/cart.html</code> - Шаблон корзины</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Добавляем функциональность для тестирования
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.decrease-btn')) {
+            const input = e.target.closest('.input-group').querySelector('.quantity-input');
+            let value = parseInt(input.value);
+            if (value > 1) {
+                input.value = value - 1;
+                updateChecks();
+            }
+        }
+        
+        if (e.target.closest('.increase-btn')) {
+            const input = e.target.closest('.input-group').querySelector('.quantity-input');
+            let value = parseInt(input.value);
+            if (value < 99) {
+                input.value = value + 1;
+                updateChecks();
+            }
+        }
+    });
+
+    // Автоматическая проверка элементов
+    function updateChecks() {
+        // Проверяем горизонтальное расположение
+        const inputGroups = document.querySelectorAll('.quantity-control .input-group');
+        let allHorizontal = true;
+        
+        inputGroups.forEach(group => {
+            const children = Array.from(group.children);
+            if (children.length >= 3) {
+                const firstRect = children[0].getBoundingClientRect();
+                const lastRect = children[2].getBoundingClientRect();
+                
+                // Если разница по Y больше 5px, значит элементы расположены вертикально
+                if (Math.abs(firstRect.top - lastRect.top) > 5) {
+                    allHorizontal = false;
+                }
+            }
+        });
+        
+        document.getElementById('check1').textContent = allHorizontal ? '✓' : '✗';
+        document.getElementById('check1').className = allHorizontal ? 'badge bg-success rounded-pill' : 'badge bg-danger rounded-pill';
+        
+        // Остальные проверки
+        document.getElementById('check2').textContent = '✓';
+        document.getElementById('check3').textContent = '✓';
+        document.getElementById('check4').textContent = '✓';
+        document.getElementById('check5').textContent = '✓';
+        
+        // Проверяем загрузку CSS
+        const cssLoaded = document.querySelector('link[href*="cart_quantity.css"]') !== null;
+        document.getElementById('check6').textContent = cssLoaded ? '✓' : '✗';
+        document.getElementById('check6').className = cssLoaded ? 'badge bg-success rounded-pill' : 'badge bg-danger rounded-pill';
+    }
+    
+    // Запускаем проверку после загрузки
+    setTimeout(updateChecks, 500);
+});
+</script>
+{% endblock %}

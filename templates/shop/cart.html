@@ -23,7 +23,7 @@
                                         {% endif %}
                                     </div>
                                     
-                                    <div class="col-md-5">
+                                    <div class="col-md-4">
                                         <h5>{{ item.product.title }}</h5>
                                         <p class="text-muted mb-1">{{ item.product.get_product_type_display }}</p>
                                         
@@ -47,24 +47,42 @@
                                         {% endif %}
                                     </div>
                                     
+                                    <!-- Счетчик количества для всех товаров -->
                                     <div class="col-md-2">
-                                        {% if item.product.is_digital or item.product.product_type == 'fairy_tale' %}
-                                            <span class="badge bg-info">Цифровой</span>
-                                        {% else %}
-                                            <form method="post" class="d-inline update-cart-form" data-item-id="{{ item.id }}">
-                                                {% csrf_token %}
-                                                <div class="input-group input-group-sm">
-                                                    <button type="button" class="btn btn-outline-secondary decrease-btn">-</button>
-                                                    <input type="text" class="form-control text-center quantity-input" value="{{ item.quantity }}" readonly>
-                                                    <button type="button" class="btn btn-outline-secondary increase-btn">+</button>
-                                                </div>
-                                            </form>
-                                        {% endif %}
+                                        <div class="quantity-control">
+                                            <label class="form-label text-muted small mb-1">Количество:</label>
+                                            <div class="input-group input-group-sm">
+                                                <button type="button" class="btn btn-outline-secondary decrease-btn" 
+                                                        data-item-id="{{ item.id }}"
+                                                        {% if item.quantity <= 1 %}disabled{% endif %}>
+                                                    <i class="bi bi-dash"></i>
+                                                </button>
+                                                <input type="text" class="form-control text-center quantity-input" 
+                                                       value="{{ item.quantity }}" 
+                                                       data-item-id="{{ item.id }}"
+                                                       min="1" max="99" readonly>
+                                                <button type="button" class="btn btn-outline-secondary increase-btn"
+                                                        data-item-id="{{ item.id }}"
+                                                        {% if item.quantity >= 99 %}disabled{% endif %}>
+                                                    <i class="bi bi-plus"></i>
+                                                </button>
+                                            </div>
+                                            {% if item.product.is_digital %}
+                                                <small class="text-info d-block mt-1">
+                                                    <i class="bi bi-download"></i> Цифровой товар
+                                                </small>
+                                            {% endif %}
+                                        </div>
                                     </div>
                                     
-                                    <div class="col-md-2">
+                                    <div class="col-md-3">
                                         <div class="text-end">
-                                            <div class="h5 text-success mb-1">{{ item.total_price }}₽</div>
+                                            {% if item.quantity > 1 %}
+                                                <div class="small text-muted mb-1 price-breakdown" data-unit-price="{{ item.product.price }}">
+                                                    {{ item.product.price }}₽ × {{ item.quantity }}
+                                                </div>
+                                            {% endif %}
+                                            <div class="h5 text-success mb-1 item-total-price">{{ item.total_price }}₽</div>
                                             {% if item.product.product_type == 'fairy_tale' and item.include_audio or item.include_illustrations %}
                                                 <small class="text-muted">
                                                     Базовая: {{ item.product.price }}₽
@@ -77,7 +95,8 @@
                                     
                                     <div class="col-md-1">
                                         <button type="button" class="btn btn-outline-danger btn-sm remove-item-btn" 
-                                                data-item-id="{{ item.id }}">
+                                                data-item-id="{{ item.id }}"
+                                                title="Удалить из корзины">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
@@ -118,19 +137,19 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-2">
                             <span>Товаров в корзине:</span>
-                            <span>{{ cart.total_items }}</span>
+                            <span class="total-items-count">{{ cart.total_items }}</span>
                         </div>
                         
                         <div class="d-flex justify-content-between mb-3">
                             <span>Сумма:</span>
-                            <span>{{ cart.total_price }}₽</span>
+                            <span class="total-price">{{ cart.total_price }}₽</span>
                         </div>
                         
                         <hr>
                         
                         <div class="d-flex justify-content-between h5">
                             <span>Итого:</span>
-                            <span class="text-success">{{ cart.total_price }}₽</span>
+                            <span class="text-success total-price">{{ cart.total_price }}₽</span>
                         </div>
                         
                         <a href="{% url 'shop:checkout' %}" class="btn btn-success w-100 mt-3">
@@ -159,8 +178,181 @@
     </div>
 </div>
 
+<style>
+/* Простое исправление для горизонтального расположения кнопок */
+.quantity-control .input-group {
+    display: flex !important;
+    flex-direction: row !important;
+    max-width: 120px;
+}
+
+.quantity-control .btn {
+    min-width: 30px;
+    padding: 0.25rem 0.4rem;
+}
+
+.quantity-control .form-control {
+    text-align: center;
+    min-width: 40px;
+    font-weight: 600;
+}
+
+.toast-container {
+    z-index: 1055;
+}
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Функция для отображения уведомлений
+    function showToast(message, type = 'success') {
+        // Создаем toast уведомление
+        const toastHtml = `
+            <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+        
+        // Добавляем в контейнер для toast'ов
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
+        }
+        
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+        const toast = toastContainer.lastElementChild;
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        // Удаляем toast после скрытия
+        toast.addEventListener('hidden.bs.toast', () => {
+            toast.remove();
+        });
+    }
+    
+    // Функция для обновления итогов
+    function updateCartTotals(data) {
+        if (data.cart_total !== undefined) {
+            document.querySelectorAll('.total-price').forEach(el => {
+                el.textContent = data.cart_total + '₽';
+                el.classList.add('price-highlight');
+                setTimeout(() => el.classList.remove('price-highlight'), 300);
+            });
+        }
+        
+        if (data.cart_total_items !== undefined) {
+            document.querySelectorAll('.total-items-count').forEach(el => {
+                el.textContent = data.cart_total_items;
+            });
+        }
+    }
+    
+    // Функция для обновления количества
+    function updateQuantity(itemId, newQuantity, button) {
+        // Визуальная обратная связь
+        const cartItem = button.closest('.cart-item');
+        cartItem.classList.add('quantity-updating');
+        
+        fetch('{% url "shop:update_cart_item" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                item_id: itemId,
+                quantity: newQuantity
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            cartItem.classList.remove('quantity-updating');
+            
+            if (data.status === 'success') {
+                // Обновляем количество в поле ввода
+                const quantityInput = cartItem.querySelector('.quantity-input');
+                quantityInput.value = newQuantity;
+                
+                // Обновляем цену за этот товар
+                if (data.item_total) {
+                    const priceElement = cartItem.querySelector('.item-total-price');
+                    if (priceElement) {
+                        priceElement.textContent = data.item_total + '₽';
+                        priceElement.classList.add('price-highlight');
+                        setTimeout(() => priceElement.classList.remove('price-highlight'), 300);
+                    }
+                }
+                
+                // Обновляем итоги корзины
+                updateCartTotals(data);
+                
+                // Обновляем состояние кнопок
+                const decreaseBtn = cartItem.querySelector('.decrease-btn');
+                const increaseBtn = cartItem.querySelector('.increase-btn');
+                
+                decreaseBtn.disabled = newQuantity <= 1;
+                increaseBtn.disabled = newQuantity >= 99;
+                
+                // Обновляем/показываем расчет если количество > 1
+                let priceBreakdown = cartItem.querySelector('.price-breakdown');
+                const unitPrice = data.unit_price || parseFloat(data.item_total) / newQuantity;
+                
+                if (newQuantity > 1) {
+                    if (!priceBreakdown) {
+                        priceBreakdown = document.createElement('div');
+                        priceBreakdown.className = 'small text-muted mb-1 price-breakdown';
+                        priceBreakdown.setAttribute('data-unit-price', unitPrice);
+                        cartItem.querySelector('.item-total-price').parentNode.insertBefore(priceBreakdown, cartItem.querySelector('.item-total-price'));
+                    }
+                    priceBreakdown.textContent = `${unitPrice}₽ × ${newQuantity}`;
+                } else if (newQuantity === 1 && priceBreakdown) {
+                    priceBreakdown.remove();
+                }
+                
+                showToast('Количество обновлено');
+            } else {
+                showToast('Ошибка: ' + (data.error || 'Не удалось обновить количество'), 'error');
+            }
+        })
+        .catch(error => {
+            cartItem.classList.remove('quantity-updating');
+            console.error('Error:', error);
+            showToast('Ошибка сервера', 'error');
+        });
+    }
+    
+    // Обработчики для кнопок увеличения/уменьшения количества
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.decrease-btn')) {
+            const button = e.target.closest('.decrease-btn');
+            const itemId = button.dataset.itemId;
+            const quantityInput = button.parentNode.querySelector('.quantity-input');
+            const currentQuantity = parseInt(quantityInput.value);
+            
+            if (currentQuantity > 1) {
+                updateQuantity(itemId, currentQuantity - 1, button);
+            }
+        }
+        
+        if (e.target.closest('.increase-btn')) {
+            const button = e.target.closest('.increase-btn');
+            const itemId = button.dataset.itemId;
+            const quantityInput = button.parentNode.querySelector('.quantity-input');
+            const currentQuantity = parseInt(quantityInput.value);
+            
+            if (currentQuantity < 99) {
+                updateQuantity(itemId, currentQuantity + 1, button);
+            }
+        }
+    });
+    
     // Промокод
     const discountForm = document.getElementById('discount-form');
     const messageDiv = document.getElementById('discount-message');
@@ -182,14 +374,16 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success) {
                     messageDiv.innerHTML = '<div class="alert alert-success alert-sm">' + data.message + '</div>';
-                    // Можно обновить итоговую сумму
-                    location.reload();
+                    updateCartTotals(data);
+                    showToast('Промокод применен!');
                 } else {
                     messageDiv.innerHTML = '<div class="alert alert-danger alert-sm">' + data.message + '</div>';
+                    showToast(data.message, 'error');
                 }
             })
             .catch(error => {
                 messageDiv.innerHTML = '<div class="alert alert-danger alert-sm">Ошибка применения промокода</div>';
+                showToast('Ошибка применения промокода', 'error');
             });
         });
     }
@@ -200,8 +394,12 @@ document.addEventListener('DOMContentLoaded', function() {
     removeButtons.forEach(button => {
         button.addEventListener('click', function() {
             const itemId = this.dataset.itemId;
+            const cartItem = this.closest('.cart-item');
+            const productTitle = cartItem.querySelector('h5').textContent;
             
-            if (confirm('Удалить товар из корзины?')) {
+            if (confirm(`Удалить "${productTitle}" из корзины?`)) {
+                cartItem.style.opacity = '0.5';
+                
                 fetch('{% url "shop:remove_from_cart" %}', {
                     method: 'POST',
                     headers: {
@@ -215,73 +413,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        // Перезагружаем страницу
-                        location.reload();
+                        // Плавно удаляем элемент
+                        cartItem.style.transition = 'all 0.3s ease';
+                        cartItem.style.transform = 'translateX(-100%)';
+                        
+                        setTimeout(() => {
+                            location.reload(); // Перезагружаем страницу для полного обновления
+                        }, 300);
+                        
+                        showToast('Товар удален из корзины');
                     } else {
-                        alert('Ошибка: ' + (data.error || 'Не удалось удалить товар'));
+                        cartItem.style.opacity = '1';
+                        showToast('Ошибка: ' + (data.error || 'Не удалось удалить товар'), 'error');
                     }
                 })
                 .catch(error => {
+                    cartItem.style.opacity = '1';
                     console.error('Error:', error);
-                    alert('Ошибка сервера');
+                    showToast('Ошибка сервера', 'error');
                 });
             }
         });
-    });
-    
-    // Обновление количества (для нецифровых товаров)
-    const updateCartForms = document.querySelectorAll('.update-cart-form');
-    
-    updateCartForms.forEach(form => {
-        const itemId = form.dataset.itemId;
-        const decreaseBtn = form.querySelector('.decrease-btn');
-        const increaseBtn = form.querySelector('.increase-btn');
-        const quantityInput = form.querySelector('.quantity-input');
-        
-        function updateQuantity(newQuantity) {
-            fetch('{% url "shop:update_cart_item" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({
-                    item_id: itemId,
-                    quantity: newQuantity
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // Перезагружаем страницу для обновления цен
-                    location.reload();
-                } else {
-                    alert('Ошибка: ' + (data.error || 'Не удалось обновить количество'));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Ошибка сервера');
-            });
-        }
-        
-        if (decreaseBtn) {
-            decreaseBtn.addEventListener('click', function() {
-                const currentQuantity = parseInt(quantityInput.value);
-                if (currentQuantity > 1) {
-                    updateQuantity(currentQuantity - 1);
-                }
-            });
-        }
-        
-        if (increaseBtn) {
-            increaseBtn.addEventListener('click', function() {
-                const currentQuantity = parseInt(quantityInput.value);
-                if (currentQuantity < 99) {
-                    updateQuantity(currentQuantity + 1);
-                }
-            });
-        }
     });
 });
 </script>

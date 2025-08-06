@@ -76,20 +76,22 @@
                                     </div>
                                     
                                     <div class="col-md-3">
-                                        <div class="text-end">
-                                            {% if item.quantity > 1 %}
-                                                <div class="small text-muted mb-1 price-breakdown" data-unit-price="{{ item.product.price }}">
-                                                    <span class="price-value">{{ item.product.price }}</span> ₽ × {{ item.quantity }}
-                                                </div>
-                                            {% endif %}
-                                            <div class="h5 text-success mb-1 item-total-price"><span class="price-value">{{ item.total_price }}</span> ₽</div>
-                                            {% if item.product.product_type == 'fairy_tale' and item.include_audio or item.include_illustrations %}
-                                                <small class="text-muted">
-                                                    Базовая: <span class="price-value">{{ item.product.price }}</span> ₽
-                                                    {% if item.include_audio %}+ <span class="price-value">{{ item.product.audio_option_price }}</span> ₽{% endif %}
-                                                    {% if item.include_illustrations %}+ <span class="price-value">{{ item.product.illustration_option_price }}</span> ₽{% endif %}
-                                                </small>
-                                            {% endif %}
+                                        <div class="d-flex align-items-center justify-content-between mobile-price-quantity">
+                                            <div class="text-end price-section">
+                                                {% if item.quantity > 1 %}
+                                                    <div class="small text-muted mb-1 price-breakdown" data-unit-price="{{ item.product.price }}">
+                                                        <span class="price-value">{{ item.product.price }}</span> ₽ × {{ item.quantity }}
+                                                    </div>
+                                                {% endif %}
+                                                <div class="h5 text-success mb-1 item-total-price"><span class="price-value">{{ item.total_price }}</span> ₽</div>
+                                                {% if item.product.product_type == 'fairy_tale' and item.include_audio or item.include_illustrations %}
+                                                    <small class="text-muted">
+                                                        Базовая: <span class="price-value">{{ item.product.price }}</span> ₽
+                                                        {% if item.include_audio %}+ <span class="price-value">{{ item.product.audio_option_price }}</span> ₽{% endif %}
+                                                        {% if item.include_illustrations %}+ <span class="price-value">{{ item.product.illustration_option_price }}</span> ₽{% endif %}
+                                                    </small>
+                                                {% endif %}
+                                            </div>
                                         </div>
                                     </div>
                                     
@@ -222,6 +224,73 @@
 
 .toast-container {
     z-index: 1055;
+}
+
+/* Мобильная версия - цена на одной линии со счетчиком */
+@media (max-width: 768px) {
+    .cart-item {
+        padding: 15px 10px;
+    }
+    
+    .cart-item .row {
+        flex-wrap: wrap;
+    }
+    
+    /* Переносим счетчик и цену на одну строку */
+    .cart-item .col-md-2:nth-child(3),
+    .cart-item .col-md-3:nth-child(4) {
+        width: 50%;
+        padding: 5px;
+    }
+    
+    .cart-item .col-md-1:last-child {
+        width: 100%;
+        text-align: center;
+        margin-top: 10px;
+    }
+    
+    /* Компактный счетчик */
+    .quantity-control {
+        max-width: 110px;
+    }
+    
+    .quantity-control .input-group {
+        max-width: 100px;
+    }
+    
+    /* Компактная цена */
+    .mobile-price-quantity {
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+    }
+    
+    .price-section {
+        text-align: right !important;
+    }
+    
+    /* Прячем расчет на мобильном */
+    .cart-item .price-breakdown {
+        display: none;
+    }
+    
+    /* Компактная цена */
+    .cart-item .item-total-price {
+        font-size: 1rem !important;
+        margin-bottom: 0 !important;
+        font-weight: 600;
+    }
+    
+    /* Маленькие подписи */
+    .cart-item small {
+        font-size: 0.7rem;
+        display: none; /* скрываем на мобильном */
+    }
+    
+    /* Кнопка удаления */
+    .cart-item .remove-item-btn {
+        padding: 8px 12px;
+    }
 }
 </style>
 

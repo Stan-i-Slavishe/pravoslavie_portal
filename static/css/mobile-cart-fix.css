@@ -1,0 +1,51 @@
+/* Исправление конфликта корзины и бургера в мобильной версии */
+
+@media (max-width: 991.98px) {
+    /* Скрываем обычную корзину в мобильной версии */
+    .navbar-nav .nav-item:nth-last-child(2) {
+        display: none !important;
+    }
+    
+    /* Или более конкретно */
+    .navbar-nav .nav-item a[href*="cart"] {
+        display: none !important;
+    }
+    
+    /* Добавляем корзину слева */
+    .navbar .container {
+        position: relative;
+    }
+    
+    .navbar .container::before {
+        content: '🛒';
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 20px;
+        z-index: 1020;
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,0.1);
+        border-radius: 8px;
+    }
+    
+    /* Центрируем логотип */
+    .navbar-brand {
+        position: absolute !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        margin: 0 !important;
+        font-size: 0.9rem !important;
+    }
+    
+    /* Бургер-меню остается справа */
+    .navbar-toggler {
+        position: relative;
+        z-index: 1021;
+    }
+}

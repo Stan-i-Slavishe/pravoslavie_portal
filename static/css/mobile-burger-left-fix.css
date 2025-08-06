@@ -1,0 +1,272 @@
+/* ========== КАРДИНАЛЬНОЕ ИСПРАВЛЕНИЕ МОБИЛЬНОЙ НАВИГАЦИИ ========== */
+
+/* КРИТИЧЕСКОЕ ПРАВИЛО: ПОЛНОЕ РАЗДЕЛЕНИЕ МОБИЛЬНОЙ И ДЕСКТОПНОЙ НАВИГАЦИИ */
+@media (max-width: 991.98px) {
+    /* 1. АБСОЛЮТНО ВСЕ ЭЛЕМЕНТЫ ДЕСКТОПНОЙ НАВИГАЦИИ УБИРАЕМ */
+    .navbar,
+    .navbar *,
+    .navbar-expand-lg,
+    .navbar-expand-lg *,
+    nav.navbar,
+    nav.navbar *,
+    .desktop-nav,
+    .desktop-nav *,
+    .navbar-nav,
+    .navbar-nav *,
+    .nav-item,
+    .nav-item *,
+    .nav-link,
+    .nav-link *,
+    .navbar-toggler,
+    .navbar-toggler *,
+    .navbar-collapse,
+    .navbar-collapse *,
+    .dropdown-menu,
+    .dropdown-menu *,
+    .navbar-brand + * {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        position: absolute !important;
+        left: -999999px !important;
+        top: -999999px !important;
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+        pointer-events: none !important;
+        z-index: -999999 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* 2. ПЕРЕМЕЩАЕМ БУРГЕР-МЕНЮ В ЛЕВЫЙ ВЕРХНИЙ УГОЛ */
+    .mobile-burger-menu {
+        display: flex !important;
+        position: fixed !important;
+        top: 15px !important;
+        left: 15px !important;  /* ВЛЕВО! */
+        right: auto !important;
+        z-index: 999999 !important;
+        width: 50px !important;
+        height: 50px !important;
+        background: rgba(43, 90, 160, 0.95) !important; /* Синий фон */
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        border: 2px solid rgba(255, 255, 255, 0.3) !important;
+        border-radius: 15px !important;
+        box-shadow: 0 6px 25px rgba(43, 90, 160, 0.4) !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    
+    /* 3. СТИЛИ ИКОНКИ БУРГЕРА */
+    .mobile-burger-icon {
+        font-size: 24px !important;
+        color: white !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    /* 4. ХОВЕР ЭФФЕКТЫ */
+    .mobile-burger-menu:hover {
+        background: rgba(43, 90, 160, 1) !important;
+        transform: scale(1.08) !important;
+        box-shadow: 0 8px 30px rgba(43, 90, 160, 0.5) !important;
+    }
+    
+    .mobile-burger-menu:active {
+        transform: scale(0.92) !important;
+    }
+    
+    /* 5. АНИМАЦИЯ ИКОНКИ ПРИ КЛИКЕ */
+    .mobile-burger-menu.active .mobile-burger-icon {
+        transform: rotate(90deg) !important;
+    }
+    
+    /* 6. КОРРЕКТИРУЕМ ОТСТУПЫ КОНТЕНТА */
+    body {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+    
+    main.container {
+        margin-top: 20px !important;
+        padding-top: 20px !important;
+        padding-left: 85px !important; /* Отступ слева для бургера */
+        padding-right: 20px !important;
+    }
+    
+    /* 7. МОБИЛЬНАЯ НАВИГАЦИЯ СНИЗУ */
+    .mobile-bottom-nav {
+        display: block !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 1040 !important;
+        background: white !important;
+        border-top: 1px solid #e9ecef !important;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    /* 8. ОТСТУП СНИЗУ ДЛЯ МОБИЛЬНОЙ НАВИГАЦИИ */
+    body.has-mobile-nav {
+        padding-bottom: 80px !important;
+    }
+}
+
+/* СКРЫВАЕМ БУРГЕР НА ДЕСКТОПЕ */
+@media (min-width: 992px) {
+    .mobile-burger-menu {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }
+    
+    /* Возвращаем нормальные отступы на десктопе */
+    main.container {
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+}
+
+/* МАЛЫЕ ЭКРАНЫ */
+@media (max-width: 575.98px) {
+    .mobile-burger-menu {
+        top: 12px !important;
+        left: 12px !important;
+        width: 46px !important;
+        height: 46px !important;
+    }
+    
+    .mobile-burger-icon {
+        font-size: 22px !important;
+    }
+    
+    main.container {
+        padding-left: 75px !important;
+    }
+}
+
+/* ОЧЕНЬ МАЛЫЕ ЭКРАНЫ */
+@media (max-width: 360px) {
+    .mobile-burger-menu {
+        top: 10px !important;
+        left: 10px !important;
+        width: 42px !important;
+        height: 42px !important;
+    }
+    
+    .mobile-burger-icon {
+        font-size: 20px !important;
+    }
+    
+    main.container {
+        padding-left: 65px !important;
+    }
+}
+
+/* МОДАЛЬНОЕ ОКНО МЕНЮ */
+.mobile-menu-modal {
+    z-index: 9999999 !important;
+}
+
+.mobile-menu-modal .modal-dialog {
+    margin-left: 60px !important; /* Сдвигаем модалку правее бургера */
+}
+
+@media (max-width: 575.98px) {
+    .mobile-menu-modal .modal-dialog {
+        margin-left: 50px !important;
+    }
+}
+
+/* АНИМАЦИИ */
+.mobile-burger-menu {
+    animation: slideInLeft 0.4s ease-out !important;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ДОСТУПНОСТЬ */
+.mobile-burger-menu:focus {
+    outline: 3px solid rgba(255, 255, 255, 0.8) !important;
+    outline-offset: 3px !important;
+}
+
+/* УВЕЛИЧЕННАЯ ОБЛАСТЬ КЛИКА */
+.mobile-burger-menu::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: transparent;
+    border-radius: 25px;
+    pointer-events: auto;
+}
+
+/* СПЕЦИАЛЬНЫЕ ПРАВИЛА ДЛЯ МАГАЗИНА */
+.container.mt-4 {
+    margin-top: 1rem !important;
+}
+
+@media (max-width: 991.98px) {
+    /* Убираем лишние отступы в магазине */
+    .container.mt-4 {
+        margin-top: 0.5rem !important;
+        padding-top: 1rem !important;
+    }
+    
+    /* Корректируем заголовки */
+    .row.mb-4 {
+        margin-bottom: 1.5rem !important;
+    }
+    
+    h1.h2 {
+        font-size: 1.5rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+}
+
+/* ФИНАЛЬНОЕ КРИТИЧЕСКОЕ ПРАВИЛО */
+@media screen and (max-width: 991px) {
+    /* АБСОЛЮТНО ВСЕ NAVBAR ЭЛЕМЕНТЫ УБИРАЕМ */
+    nav,
+    nav *,
+    .navbar,
+    .navbar * {
+        display: none !important;
+    }
+    
+    /* КРОМЕ НАШЕГО БУРГЕРА */
+    .mobile-burger-menu {
+        display: flex !important;
+    }
+    
+    /* И МОБИЛЬНОЙ НАВИГАЦИИ СНИЗУ */
+    .mobile-bottom-nav {
+        display: block !important;
+    }
+}
+
+/* ОТЛАДОЧНЫЕ СТИЛИ (раскомментировать при необходимости) */
+/*
+@media (max-width: 991.98px) {
+    .mobile-burger-menu {
+        background: rgba(255, 0, 0, 0.8) !important;
+        border: 3px solid yellow !important;
+    }
+}
+*/

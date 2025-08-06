@@ -1,0 +1,145 @@
+/* ИСПРАВЛЕНИЕ МОБИЛЬНОЙ НАВИГАЦИИ - Разделение корзины и бургера */
+
+/* ================== КНОПКА КОРЗИНЫ СЛЕВА ================== */
+.mobile-cart-button {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1001;
+    display: none; /* Скрыта на десктопе */
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(226, 232, 240, 0.5);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 48px;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    color: #d69e2e;
+}
+
+.mobile-cart-button:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.05);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+    color: #d69e2e;
+    text-decoration: none;
+}
+
+.mobile-cart-button:active {
+    transform: scale(0.95);
+}
+
+.mobile-cart-icon {
+    font-size: 20px;
+    transition: all 0.3s ease;
+}
+
+/* Бейдж корзины на левой кнопке */
+.mobile-cart-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: #e53e3e;
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 16px;
+    text-align: center;
+    line-height: 1.2;
+    box-shadow: 0 2px 8px rgba(229, 62, 62, 0.3);
+    animation: pulseIn 0.3s ease-out;
+}
+
+/* ================== УБИРАЕМ КОРЗИНУ ИЗ НИЖНЕЙ НАВИГАЦИИ ================== */
+.mobile-nav-item[data-section="shop"] {
+    display: none !important; /* Скрываем магазин из нижней навигации */
+}
+
+/* Перенастраиваем нижнюю навигацию для 5 элементов вместо 6 */
+.mobile-nav-items {
+    justify-content: space-around !important; /* Равномерное распределение 5 элементов */
+}
+
+/* ================== АДАПТИВНОСТЬ ================== */
+@media (min-width: 992px) {
+    /* На десктопе скрываем мобильные кнопки */
+    .mobile-cart-button {
+        display: none !important;
+    }
+}
+
+@media (max-width: 991.98px) {
+    /* На мобильных показываем кнопку корзины */
+    .mobile-cart-button {
+        display: flex !important;
+    }
+    
+    /* Добавляем отступы для контента */
+    body.has-mobile-nav main.container {
+        padding-top: 80px !important; /* Увеличиваем отступ из-за двух кнопок */
+    }
+}
+
+@media (max-width: 575.98px) {
+    /* На очень малых экранах уменьшаем кнопки */
+    .mobile-cart-button {
+        top: 12px;
+        left: 12px;
+        width: 44px;
+        height: 44px;
+    }
+    
+    .mobile-cart-icon {
+        font-size: 18px;
+    }
+    
+    body.has-mobile-nav main.container {
+        padding-top: 70px !important;
+    }
+}
+
+/* ================== АНИМАЦИИ ================== */
+@keyframes pulseIn {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Плавное появление кнопок */
+.mobile-cart-button {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ================== ДОСТУПНОСТЬ ================== */
+.mobile-cart-button:focus {
+    outline: 2px solid #1a365d;
+    outline-offset: 2px;
+}

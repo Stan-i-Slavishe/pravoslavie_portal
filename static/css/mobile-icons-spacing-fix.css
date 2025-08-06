@@ -1,0 +1,232 @@
+/* ================== ИСПРАВЛЕНИЕ НАЛОЖЕНИЯ ИКОНОК БУРГЕРА И КОРЗИНЫ ================== */
+/* Файл для исправления проблемы с наложением иконок в мобильной навигации */
+
+/* Мобильная навигация - основные исправления позиционирования */
+@media (max-width: 991.98px) {
+    
+    /* ========== КНОПКА БУРГЕР-МЕНЮ ========== */
+    .mobile-burger-menu {
+        position: fixed !important;
+        top: 15px !important;
+        right: 15px !important;
+        z-index: 1050 !important; /* Высокий z-index чтобы быть поверх всего */
+        display: flex !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(226, 232, 240, 0.8) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+        width: 48px !important;
+        height: 48px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    /* ========== ИКОНКА КОРЗИНЫ В МОБИЛЬНОЙ НАВИГАЦИИ ========== */
+    /* Если корзина находится в верхней части страницы - сдвигаем её влево */
+    .navbar .nav-link[href*="cart"],
+    .navbar .nav-link[href*="корзин"],
+    .mobile-cart-icon,
+    .cart-icon-mobile {
+        position: fixed !important;
+        top: 15px !important;
+        right: 75px !important; /* Сдвигаем влево от бургера на 75px */
+        z-index: 1040 !important; /* Чуть ниже бургера */
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 48px !important;
+        height: 48px !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        border: 1px solid rgba(226, 232, 240, 0.8) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        color: var(--primary-color, #1a365d) !important;
+        text-decoration: none !important;
+        transition: all 0.3s ease !important;
+    }
+
+    /* Если корзина в правом верхнем углу десктопной навигации */
+    .navbar-nav .nav-link[title*="корзин"],
+    .navbar-nav .nav-link[title*="Корзин"],
+    .navbar-nav .nav-link[href*="cart"] {
+        position: fixed !important;
+        top: 15px !important;
+        right: 75px !important; /* 75px от правого края (15px + 48px бургера + 12px отступ) */
+        z-index: 1040 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 48px !important;
+        height: 48px !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        border: 1px solid rgba(226, 232, 240, 0.8) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+        backdrop-filter: blur(10px) !important;
+        color: var(--shop-color, #d69e2e) !important;
+        text-decoration: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* ========== БЕЙДЖ КОРЗИНЫ ========== */
+    #cart-badge,
+    #mobile-cart-badge,
+    .cart-badge {
+        position: absolute !important;
+        top: -8px !important;
+        right: -8px !important;
+        background: var(--accent-color, #e53e3e) !important;
+        color: white !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        padding: 2px 6px !important;
+        border-radius: 10px !important;
+        min-width: 18px !important;
+        text-align: center !important;
+        line-height: 1.3 !important;
+        box-shadow: 0 2px 8px rgba(229, 62, 62, 0.4) !important;
+        border: 2px solid white !important;
+    }
+
+    /* ========== ХОВЕР ЭФФЕКТЫ ========== */
+    .mobile-burger-menu:hover {
+        background: rgba(255, 255, 255, 1) !important;
+        transform: scale(1.05) !important;
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .navbar-nav .nav-link[href*="cart"]:hover,
+    .cart-icon-mobile:hover {
+        background: rgba(255, 255, 255, 1) !important;
+        transform: scale(1.05) !important;
+        box-shadow: 0 6px 25px rgba(214, 158, 46, 0.3) !important;
+        color: var(--shop-color, #d69e2e) !important;
+    }
+
+    /* ========== АКТИВНЫЕ СОСТОЯНИЯ ========== */
+    .mobile-burger-menu:active {
+        transform: scale(0.95) !important;
+    }
+
+    .navbar-nav .nav-link[href*="cart"]:active {
+        transform: scale(0.95) !important;
+    }
+
+    /* ========== АЛЬТЕРНАТИВНАЯ СТРУКТУРА ========== */
+    /* Если иконки находятся в других контейнерах */
+    .top-mobile-icons {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        z-index: 1050;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .top-mobile-icons .cart-icon {
+        order: 1; /* Корзина первой (слева) */
+    }
+
+    .top-mobile-icons .burger-menu {
+        order: 2; /* Бургер вторым (справа) */
+    }
+
+    /* ========== ЭКСТРА МАЛЕНЬКИЕ ЭКРАНЫ ========== */
+    @media (max-width: 575.98px) {
+        .mobile-burger-menu {
+            top: 12px !important;
+            right: 12px !important;
+            width: 44px !important;
+            height: 44px !important;
+        }
+
+        .navbar-nav .nav-link[href*="cart"] {
+            top: 12px !important;
+            right: 68px !important; /* Уменьшаем отступ для маленьких экранов */
+            width: 44px !important;
+            height: 44px !important;
+        }
+    }
+
+    /* ========== ОЧЕНЬ МАЛЕНЬКИЕ ЭКРАНЫ ========== */
+    @media (max-width: 350px) {
+        .navbar-nav .nav-link[href*="cart"] {
+            right: 60px !important; /* Еще меньше отступ */
+        }
+        
+        .mobile-burger-menu {
+            width: 40px !important;
+            height: 40px !important;
+        }
+        
+        .navbar-nav .nav-link[href*="cart"] {
+            width: 40px !important;
+            height: 40px !important;
+        }
+    }
+}
+
+/* ========== ДЕСКТОПНАЯ ВЕРСИЯ (НЕ ТРОГАЕМ) ========== */
+@media (min-width: 992px) {
+    .mobile-burger-menu {
+        display: none !important;
+    }
+    
+    /* Возвращаем обычное позиционирование корзины на десктопе */
+    .navbar-nav .nav-link[href*="cart"] {
+        position: static !important;
+        width: auto !important;
+        height: auto !important;
+        background: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+    }
+}
+
+/* ========== ДОПОЛНИТЕЛЬНЫЕ ИСПРАВЛЕНИЯ ========== */
+
+/* Убираем возможные конфликты с другими элементами */
+.mobile-burger-menu,
+.navbar-nav .nav-link[href*="cart"] {
+    -webkit-tap-highlight-color: transparent !important;
+    user-select: none !important;
+}
+
+/* Анимация появления для плавности */
+@keyframes mobileIconSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.mobile-burger-menu,
+.navbar-nav .nav-link[href*="cart"] {
+    animation: mobileIconSlideIn 0.3s ease-out !important;
+}
+
+/* ========== ОТЛАДОЧНЫЕ СТИЛИ (ВРЕМЕННО) ========== */
+/* Раскомментируйте для отладки позиционирования */
+/*
+.mobile-burger-menu {
+    border: 2px solid red !important;
+}
+
+.navbar-nav .nav-link[href*="cart"] {
+    border: 2px solid blue !important;
+}
+*/

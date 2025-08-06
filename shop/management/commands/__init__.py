@@ -1,1 +1,1 @@
-# Пустой файл для Python пакета
+# shop/management/commands/__init__.py

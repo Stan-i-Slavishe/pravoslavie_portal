@@ -20,7 +20,15 @@ logger = logging.getLogger(__name__)
 
 def product_list_view(request):
     """Каталог товаров"""
-    products = Product.objects.filter(is_active=True).order_by('-created_at')
+    # Исключаем бесплатные товары из магазина
+    products = Product.objects.filter(is_active=True, price__gt=0).order_by('-created_at')
+    
+    # Отладочная информация
+    all_products = Product.objects.filter(is_active=True)
+    logger.info(f"\u0412сего активных товаров: {all_products.count()}")
+    logger.info(f"Платных товаров: {products.count()}")
+    for product in all_products:
+        logger.info(f"Товар: {product.title} - {product.price}₽ (ID: {product.id})")
     
     # Фильтрация по типу товара
     product_type = request.GET.get('type')
@@ -51,8 +59,8 @@ def product_list_view(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    # Статистика для фильтров
-    product_types_stats = Product.objects.filter(is_active=True).values('product_type').annotate(
+    # Статистика для фильтров (только платные товары)
+    product_types_stats = Product.objects.filter(is_active=True, price__gt=0).values('product_type').annotate(
         count=Count('id')
     ).order_by('product_type')
     

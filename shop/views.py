@@ -160,6 +160,25 @@ def add_to_cart(request):
     except Exception as e:
         return JsonResponse({'error': 'Ошибка сервера'}, status=500)
 
+@login_required
+def get_cart_count(request):
+    """
+    Получение количества товаров в корзине (AJAX)
+    """
+    try:
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        return JsonResponse({
+            'status': 'success',
+            'count': cart.total_items,
+            'total_price': float(cart.total_price)
+        })
+    except Exception as e:
+        logger.error(f'Ошибка получения счетчика корзины: {e}')
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Ошибка получения данных корзины'
+        }, status=500)
+
 def get_cart_count(request):
     """Получить количество товаров в корзине (для AJAX) - поддерживает GET запросы"""
     if not request.user.is_authenticated:
@@ -1005,3 +1024,23 @@ def add_book_to_cart(request):
     except Exception as e:
         logger.error(f'Ошибка добавления книги в корзину: {e}')
         return JsonResponse({'error': 'Ошибка сервера'}, status=500)
+
+
+@login_required
+def get_cart_count(request):
+    """
+    Получение количества товаров в корзине (AJAX)
+    """
+    try:
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        return JsonResponse({
+            'status': 'success',
+            'count': cart.total_items,
+            'total_price': float(cart.total_price)
+        })
+    except Exception as e:
+        logger.error(f'Ошибка получения счетчика корзины: {e}')
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Ошибка получения данных корзины'
+        }, status=500)

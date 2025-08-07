@@ -725,6 +725,35 @@
     <!-- Скрипт для обновления счетчиков в навигации -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Обновляем счетчик корзины
+        function updateCartCount() {
+            {% if user.is_authenticated %}
+                fetch('/shop/cart/count/')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            const cartBadge = document.getElementById('cart-badge');
+                            const mobileCartBadge = document.getElementById('mobile-cart-badge');
+                            
+                            if (cartBadge) {
+                                cartBadge.textContent = data.count;
+                                cartBadge.style.display = data.count > 0 ? 'inline' : 'none';
+                            }
+                            
+                            if (mobileCartBadge) {
+                                mobileCartBadge.textContent = data.count;
+                                mobileCartBadge.style.display = data.count > 0 ? 'inline' : 'none';
+                            }
+                            
+                            console.log(`✅ Счетчик корзины обновлен: ${data.count} товаров`);
+                        }
+                    })
+                    .catch(error => {
+                        console.log('Ошибка при получении количества товаров в корзине:', error);
+                    });
+            {% endif %}
+        }
+        
         // Обновляем счетчик избранного
         function updateFavoritesCount() {
             {% if user.is_authenticated %}
@@ -751,12 +780,18 @@
         }
         
         // Обновляем при загрузке страницы
+        updateCartCount();
         updateFavoritesCount();
         
-        // Обновляем при изменении избранного
+        // Делаем функции глобальными для использования в других скриптах
+        window.updateCartCount = updateCartCount;
         window.updateFavoritesCount = updateFavoritesCount;
         
-        // Обработчик событий для обновления счетчика
+        // Обработчики событий для обновления счетчиков
+        document.addEventListener('cartUpdated', function() {
+            updateCartCount();
+        });
+        
         document.addEventListener('favoriteToggled', function() {
             updateFavoritesCount();
         });

@@ -929,3 +929,78 @@ def test_payment_success(request, order_id):
 def debug_cart_view(request):
     """Отладочная страница для счетчика количества"""
     return render(request, 'shop/debug_cart.html')
+
+@login_required
+@require_POST
+@csrf_exempt
+def add_book_to_cart(request):
+    """Добавить книгу в корзину (создает товар если нужно)"""
+    try:
+        data = json.loads(request.body)
+        book_id = data.get('book_id')
+        quantity = int(data.get('quantity', 1))
+        
+        if quantity < 1 or quantity > 99:
+            return JsonResponse({'error': 'Некорректное количество'}, status=400)
+        
+        # Получаем книгу
+        from books.models import Book
+        book = get_object_or_404(Book, id=book_id, is_published=True)
+        
+        # Проверяем, что книга платная
+        if not book.price or book.price <= 0:
+            return JsonResponse({
+                'error': 'Эта книга бесплатная и не может быть добавлена в корзину'
+            }, status=400)
+        
+        # Находим или создаем товар в магазине
+        product, created = Product.objects.get_or_create(
+            product_type='book',
+            book_id=book.id,
+            defaults={
+                'title': book.title,
+                'description': book.description or f"Духовная книга '{book.title}' - погрузитесь в мир веры и мудрости.",
+                'price': book.price,
+                'is_active': True,
+                'is_digital': True,
+            }
+        )
+        
+        # Обновляем товар, если он уже существовал
+        if not created:
+            product.title = book.title
+            product.description = book.description or f"Духовная книга '{book.title}'"
+            product.price = book.price
+            product.is_active = True
+            product.save()
+        
+        # Добавляем в корзину
+        cart, cart_created = Cart.objects.get_or_create(user=request.user)
+        
+        cart_item, item_created = CartItem.objects.get_or_create(
+            cart=cart,
+            product=product,
+            defaults={'quantity': quantity}
+        )
+        
+        if not item_created:
+            cart_item.quantity += quantity
+            if cart_item.quantity > 99:
+                cart_item.quantity = 99
+            cart_item.save()
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': f'Книга "{book.title}" добавлена в корзину',
+            'cart_total_items': cart.total_items,
+            'cart_total_price': float(cart.total_price),
+            'product_created': created
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Некорректные данные'}, status=400)
+    except ValueError:
+        return JsonResponse({'error': 'Некорректное количество'}, status=400)
+    except Exception as e:
+        logger.error(f'Ошибка добавления книги в корзину: {e}')
+        return JsonResponse({'error': 'Ошибка сервера'}, status=500)

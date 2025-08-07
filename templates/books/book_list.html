@@ -81,44 +81,6 @@
     transform: scale(1.05);
 }
 
-/* Ссылка на изображении */
-.book-cover a {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    height: 100%;
-    width: 100%;
-    position: relative;
-    overflow: hidden;
-    border-radius: 0.5rem 0.5rem 0 0;
-}
-
-.book-cover a:hover {
-    text-decoration: none;
-}
-
-/* Курсор поинтер на всей области */
-.book-cover {
-    cursor: pointer;
-}
-
-/* Эффект наложения при наведении */
-.book-cover a::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0);
-    transition: background 0.3s ease;
-    pointer-events: none;
-}
-
-.book-card:hover .book-cover a::after {
-    background: rgba(0, 0, 0, 0.05); /* Максимально легкое затемнение */
-}
-
 .book-price-badge {
     position: absolute;
     top: -8px;
@@ -140,7 +102,6 @@
     background: #3498db;
 }
 
-/* Анимация при наведении */
 .book-card:hover .book-price-badge {
     transform: rotate(2deg) scale(1.05);
 }
@@ -162,7 +123,6 @@
     transition: transform 0.2s ease;
 }
 
-/* Анимация для стикера формата */
 .book-card:hover .book-format-badge {
     transform: rotate(-2deg) scale(1.05);
 }
@@ -261,13 +221,12 @@
     align-items: center;
     margin-top: auto;
     padding: 0 0.25rem;
-    width: 100%; /* Полная ширина */
+    width: 100%;
 }
 
-/* Классы для кнопок */
 .btn-main {
     flex: 1;
-    min-width: 0; /* Позволяет сжиматься */
+    min-width: 0;
 }
 
 .btn-icon {
@@ -276,15 +235,14 @@
     padding: 0.375rem 0.5rem;
 }
 
-/* Стили для кнопки покупки */
 .btn-success {
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     border: none;
     font-weight: 600;
     transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
-    white-space: nowrap; /* Предотвращаем перенос текста */
-    font-size: 0.8rem; /* Немного уменьшаем шрифт */
+    white-space: nowrap;
+    font-size: 0.8rem;
 }
 
 .btn-success:hover {
@@ -350,7 +308,6 @@
     50% { opacity: 1; }
 }
 
-/* Адаптивность для мобильных */
 @media (max-width: 768px) {
     .books-hero {
         padding: 2rem 1rem;
@@ -365,7 +322,6 @@
         align-items: stretch;
     }
     
-    /* Кнопки на мобильных */
     .btn-primary, .btn-success {
         padding: 10px 16px;
         font-size: 0.9rem;
@@ -487,7 +443,7 @@
 <!-- Список книг -->
 {% if books %}
     <div class="books-grid" id="booksContainer">
-        <div class="row g-4" style="margin: 0 -10px; /* Компенсируем отступы карточек */">
+        <div class="row g-4" style="margin: 0 -10px;">
             {% for book in books %}
                 <div class="col-lg-3 col-md-6 col-sm-6">
                     <div class="book-card">
@@ -572,12 +528,23 @@
                                     </a>
                                 {% else %}
                                     <!-- Кнопка купить для платных книг -->
-                                    <a href="{% url 'books:detail' slug=book.slug %}" 
-                                       class="btn btn-success btn-sm btn-main"
-                                       title="Купить за {{ book.price|floatformat:0 }} ₽">
-                                        <i class="bi bi-cart-plus me-1"></i>
-                                        Купить {{ book.price|floatformat:0 }}&nbsp;₽
-                                    </a>
+                                    {% if user.is_authenticated %}
+                                        <button type="button"
+                                                class="btn btn-success btn-sm btn-main btn-add-to-cart"
+                                                data-book-id="{{ book.id }}"
+                                                data-book-price="{{ book.price|floatformat:0 }}"
+                                                title="Купить за {{ book.price|floatformat:0 }} ₽">
+                                            <i class="bi bi-cart-plus me-1"></i>
+                                            Купить {{ book.price|floatformat:0 }}&nbsp;₽
+                                        </button>
+                                    {% else %}
+                                        <a href="{% url 'account_login' %}" 
+                                           class="btn btn-success btn-sm btn-main"
+                                           title="Войти для покупки">
+                                            <i class="bi bi-person me-1"></i>
+                                            Войти для покупки
+                                        </a>
+                                    {% endif %}
                                 {% endif %}
                                 
                                 <button class="btn btn-outline-secondary btn-sm btn-icon" 
@@ -616,6 +583,120 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
+    // Обработка добавления в корзину
+    document.querySelectorAll('.btn-add-to-cart').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const bookId = this.dataset.bookId;
+            const bookPrice = this.dataset.bookPrice;
+            const button = this;
+            const originalText = button.innerHTML;
+            
+            // Блокируем кнопку
+            button.disabled = true;
+            button.innerHTML = '<i class="bi bi-hourglass me-1"></i>Добавляем...';
+            
+            // CSRF токен
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+                             document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+            
+            // Отправляем запрос на добавление в корзину
+            fetch('/shop/add-book-to-cart/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    'book_id': bookId,
+                    'quantity': 1
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Успешно добавлено
+                    button.innerHTML = '<i class="bi bi-check me-1"></i>Добавлено!';
+                    button.classList.remove('btn-success');
+                    button.classList.add('btn-outline-success');
+                    
+                    // Показываем уведомление
+                    showNotification('Книга добавлена в корзину!', 'success');
+                    
+                    // Обновляем счетчик корзины
+                    if (window.updateCartCount) {
+                        window.updateCartCount();
+                    }
+                    
+                    // Возвращаем кнопку через 2 секунды
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.classList.remove('btn-outline-success');
+                        button.classList.add('btn-success');
+                        button.disabled = false;
+                    }, 2000);
+                    
+                } else {
+                    // Ошибка
+                    button.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i>Ошибка';
+                    button.classList.add('btn-danger');
+                    
+                    showNotification(data.message || 'Ошибка добавления в корзину', 'error');
+                    
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.classList.remove('btn-danger');
+                        button.disabled = false;
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                button.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i>Ошибка сети';
+                button.classList.add('btn-danger');
+                
+                showNotification('Ошибка сети. Попробуйте еще раз.', 'error');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('btn-danger');
+                    button.disabled = false;
+                }, 3000);
+            });
+        });
+    });
+    
+    // Функция для показа уведомлений
+    function showNotification(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+        toast.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        `;
+        
+        toast.innerHTML = `
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Автоматически удаляем через 3 секунды
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, 3000);
+    }
 
     // Анимация появления карточек
     const observerOptions = {
@@ -699,9 +780,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (window.updateFavoritesCount) {
                         window.updateFavoritesCount();
                     }
-                    
-                    // Показываем уведомление
-                    console.log(data.message);
                     
                 } else {
                     console.error('Ошибка:', data.message);

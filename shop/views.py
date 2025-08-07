@@ -948,9 +948,10 @@ def add_book_to_cart(request):
         book = get_object_or_404(Book, id=book_id, is_published=True)
         
         # Проверяем, что книга платная
-        if not book.price or book.price <= 0:
+        if book.is_free or not book.price or book.price <= 0:
             return JsonResponse({
-                'error': 'Эта книга бесплатная и не может быть добавлена в корзину'
+                'status': 'error',
+                'message': 'Эта книга бесплатная и не может быть добавлена в корзину'
             }, status=400)
         
         # Находим или создаем товар в магазине

@@ -397,12 +397,17 @@
                                             <i class="bi bi-download"></i>
                                         </a>
                                     {% else %}
-                                        <!-- Книга не куплена - показываем только кнопку покупки -->
-                                        <a href="{% url 'shop:catalog' %}?book={{ book.id }}" 
-                                           class="btn btn-success btn-sm" style="width: 100%;">
+                                        <!-- Книга не куплена - показываем кнопку добавления в корзину -->
+                                        <button type="button"
+                                                class="btn btn-success btn-sm btn-add-to-cart-favorites"
+                                                data-book-id="{{ book.id }}"
+                                                data-book-price="{{ book.price|floatformat:0 }}"
+                                                data-book-title="{{ book.title }}"
+                                                style="width: 100%;"
+                                                title="Добавить в корзину">
                                             <i class="bi bi-cart-plus me-1"></i>
-                                            Купить {{ book.price }} ₽
-                                        </a>
+                                            Купить {{ book.price|floatformat:0 }} ₽
+                                        </button>
                                     {% endif %}
                                 {% endwith %}
                             {% endif %}
@@ -441,6 +446,116 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Добавление в корзину с страницы избранного
+    document.querySelectorAll('.btn-add-to-cart-favorites').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const bookId = this.dataset.bookId;
+            const bookPrice = this.dataset.bookPrice;
+            const bookTitle = this.dataset.bookTitle;
+            const originalText = this.innerHTML;
+            
+            // Блокируем кнопку
+            this.disabled = true;
+            this.innerHTML = '<i class="bi bi-hourglass me-1"></i>Добавляем...';
+            
+            // CSRF токен
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+                             document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                             getCookie('csrftoken');
+            
+            if (!csrfToken) {
+                console.error('CSRF token not found');
+                this.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i>Ошибка';
+                this.className = 'btn btn-danger btn-sm';
+                showNotification('Ошибка безопасности. Перезагрузите страницу.', 'error');
+                
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.className = 'btn btn-success btn-sm btn-add-to-cart-favorites';
+                    this.disabled = false;
+                }, 3000);
+                return;
+            }
+            
+            // Отправляем запрос на добавление в корзину
+            fetch('/shop/add-book-to-cart/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    'book_id': bookId,
+                    'quantity': 1
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Успешно добавлено
+                    this.innerHTML = '<i class="bi bi-check me-1"></i>Добавлено!';
+                    this.className = 'btn btn-success btn-sm';
+                    
+                    // Показываем уведомление
+                    showNotification(`Книга "${bookTitle}" добавлена в корзину!`, 'success');
+                    
+                    // Обновляем счетчик корзины
+                    if (window.updateCartCount) {
+                        window.updateCartCount();
+                    }
+                    
+                    // Генерируем событие
+                    document.dispatchEvent(new CustomEvent('cartUpdated', {
+                        detail: {
+                            count: data.cart_total_items,
+                            total_price: data.cart_total_price
+                        }
+                    }));
+                    
+                    // Предлагаем перейти в корзину через 2 секунды
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="bi bi-cart me-1"></i>Перейти в корзину';
+                        this.disabled = false;
+                        
+                        // Переход в корзину по клику
+                        this.onclick = function() {
+                            window.location.href = '/shop/cart/';
+                        };
+                    }, 2000);
+                    
+                } else {
+                    // Ошибка
+                    this.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i>Ошибка';
+                    this.className = 'btn btn-danger btn-sm';
+                    
+                    showNotification(data.message || 'Ошибка добавления в корзину', 'error');
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.className = 'btn btn-success btn-sm btn-add-to-cart-favorites';
+                        this.disabled = false;
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                this.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i>Ошибка сети';
+                this.className = 'btn btn-danger btn-sm';
+                
+                showNotification('Ошибка сети. Попробуйте еще раз.', 'error');
+                
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.className = 'btn btn-success btn-sm btn-add-to-cart-favorites';
+                    this.disabled = false;
+                }, 3000);
+            });
+        });
+    });
+    
     // Удаление из избранного (оба способа)
     document.querySelectorAll('.remove-favorite-btn, [data-action="remove-favorite"]').forEach(btn => {
         btn.addEventListener('click', function(e) {
@@ -502,10 +617,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function showNotification(message, type = 'info') {
         const toast = document.createElement('div');
         toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
-        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; max-width: 400px;';
         toast.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+            <div class="d-flex align-items-center">
+                <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                <span>${message}</span>
+                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
         `;
         
         document.body.appendChild(toast);
@@ -514,7 +632,23 @@ document.addEventListener('DOMContentLoaded', function() {
             if (toast.parentElement) {
                 toast.remove();
             }
-        }, 3000);
+        }, 4000);
+    }
+    
+    // Функция получения CSRF токена
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     }
 });
 </script>

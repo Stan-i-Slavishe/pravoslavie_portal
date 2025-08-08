@@ -16,7 +16,7 @@
         {% if tags %}
             <div class="tag-cloud mb-4">
                 {% for tag in tags %}
-                    <a href="{% url 'core:tag' slug=tag.slug %}" 
+                    <a href="{% url 'core:tag_detail' slug=tag.slug %}" 
                        class="badge rounded-pill me-2 mb-3 tag-link text-decoration-none"
                        style="background-color: {{ tag.color }}; padding: 10px 15px; font-size: 14px;">
                         {{ tag.name }}

@@ -1,43 +1,55 @@
-#!/usr/bin/env python
-"""
-Проверяем, есть ли еще ошибки после удаления заглушек
-"""
-
 import os
-import django
-from pathlib import Path
-
-# Настройка Django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
-
-# Добавляем корневую директорию в путь
 import sys
-sys.path.append('E:\\pravoslavie_portal')
+import django
+
+# Настраиваем Django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+sys.path.append('E:/pravoslavie_portal')
+
+django.setup()
+
+from django.urls import reverse
+from django.test import Client
+
+print("🔍 Проверка URL-ов тегов...")
 
 try:
-    django.setup()
-    print("✅ Django успешно настроен!")
+    # Проверяем список тегов
+    tags_url = reverse('core:tags')
+    print(f"✅ URL списка тегов: {tags_url}")
     
-    # Проверяем URL-ы
-    from django.urls import reverse
+    # Проверяем детальную страницу тега
+    try:
+        tag_detail_url = reverse('core:tag_detail', kwargs={'slug': 'test'})
+        print(f"✅ URL детали тега: {tag_detail_url}")
+    except Exception as e:
+        print(f"❌ Ошибка URL детали тега: {e}")
     
-    urls_to_check = [
-        'shop:catalog',
-        'shop:cart', 
-        'fairy_tales:list',
-        'books:list',
-        'core:home'
-    ]
+    # Проверяем старый URL (должен не работать)
+    try:
+        old_tag_url = reverse('core:tag', kwargs={'slug': 'test'})
+        print(f"⚠️ Старый URL все еще существует: {old_tag_url}")
+    except Exception as e:
+        print(f"✅ Старый URL 'core:tag' удален: {e}")
     
-    print("\n🔗 Проверяем основные URL-ы:")
-    for url_name in urls_to_check:
-        try:
-            url = reverse(url_name)
-            print(f"   ✅ {url_name} → {url}")
-        except Exception as e:
-            print(f"   ❌ {url_name} → ОШИБКА: {e}")
+    # Проверяем доступность страниц
+    client = Client()
     
-    print("\n🎉 Проверка завершена! Все URL-ы корректны.")
+    print("\n🌐 Проверка доступности страниц...")
+    
+    # Проверяем страницу списка тегов
+    response = client.get('/tags/')
+    print(f"📄 /tags/ - статус: {response.status_code}")
+    if response.status_code != 200:
+        print(f"   Ошибка: {response.content.decode()[:200]}...")
+    
+    # Проверяем несуществующий тег
+    response = client.get('/tags/test-tag/')
+    print(f"📄 /tags/test-tag/ - статус: {response.status_code}")
+    
+    print("\n✅ Проверка завершена!")
     
 except Exception as e:
-    print(f"❌ Ошибка настройки Django: {e}")
+    print(f"❌ Общая ошибка: {e}")
+    import traceback
+    traceback.print_exc()

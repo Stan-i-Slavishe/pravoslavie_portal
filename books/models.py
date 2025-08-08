@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.utils.text import slugify
 from django.utils import timezone
+from core.models import Tag  # Используем единую модель Tag из core
 import re
 import json
 
@@ -61,30 +62,6 @@ class Category(models.Model):
             self.slug = slug
         super().save(*args, **kwargs)
 
-
-class Tag(models.Model):
-    """Теги для книг"""
-    name = models.CharField('Название', max_length=50)
-    slug = models.SlugField('URL-имя', unique=True, blank=True)
-    
-    class Meta:
-        verbose_name = 'Тег'
-        verbose_name_plural = 'Теги'
-        ordering = ['name']
-    
-    def __str__(self):
-        return self.name
-    
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            base_slug = create_slug(self.name)
-            slug = base_slug
-            counter = 1
-            while Tag.objects.filter(slug=slug).exists():
-                slug = f"{base_slug}-{counter}"
-                counter += 1
-            self.slug = slug
-        super().save(*args, **kwargs)
 
 
 class Book(models.Model):

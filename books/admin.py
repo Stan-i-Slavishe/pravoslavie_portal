@@ -2,23 +2,14 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from .models import Category, Tag, Book, BookReview, BookDownload, UserFavoriteBook, ReadingSession, ReadingBookmark, BookChapter
+from .models import Category, Book, BookReview, BookDownload, UserFavoriteBook, ReadingSession, ReadingBookmark, BookChapter
+from core.models import Tag  # Используем Tag из core, но не регистрируем его здесь
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['name', 'slug', 'icon', 'books_count', 'created_at']
     list_filter = ['created_at']
     search_fields = ['name', 'description']
-    prepopulated_fields = {'slug': ('name',)}
-    
-    def books_count(self, obj):
-        return obj.book_set.count()
-    books_count.short_description = 'Количество книг'
-
-@admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
-    list_display = ['name', 'slug', 'books_count']
-    search_fields = ['name']
     prepopulated_fields = {'slug': ('name',)}
     
     def books_count(self, obj):

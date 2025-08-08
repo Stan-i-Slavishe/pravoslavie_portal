@@ -41,17 +41,87 @@
         <div class="row">
             <div class="col-lg-8">
                 {% if content_items %}
+                    <div class="mb-3">
+                        <h3>Материалы с тегом "{{ tag.name }}" ({{ content_items|length }})</h3>
+                    </div>
+                    
                     <div class="row g-4">
                         {% for item in content_items %}
-                            <div class="col-md-6">
+                            <div class="col-md-6 col-lg-4">
                                 <div class="card h-100 shadow-sm">
-                                    <div class="card-body">
-                                        <h5 class="card-title">{{ item.title }}</h5>
-                                        <p class="card-text">{{ item.description|truncatewords:20 }}</p>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="badge bg-secondary">{{ item.content_type }}</span>
-                                            <a href="{{ item.get_absolute_url }}" class="btn btn-primary btn-sm">
-                                                Подробнее
+                                    {% if item.image %}
+                                        <img src="{{ item.image }}" class="card-img-top" alt="{{ item.title }}" style="height: 180px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
+                                            {% if item.content_type == 'Видео-рассказ' %}
+                                                <i class="bi bi-play-circle display-4 text-muted"></i>
+                                            {% elif item.content_type == 'Книга' %}
+                                                <i class="bi bi-book display-4 text-muted"></i>
+                                            {% elif item.content_type == 'Аудио' %}
+                                                <i class="bi bi-music-note display-4 text-muted"></i>
+                                            {% elif item.content_type == 'Сказка' %}
+                                                <i class="bi bi-stars display-4 text-muted"></i>
+                                            {% else %}
+                                                <i class="bi bi-file-text display-4 text-muted"></i>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <div class="card-body d-flex flex-column">
+                                        <h6 class="card-title">{{ item.title|truncatechars:50 }}</h6>
+                                        <p class="card-text text-muted small flex-grow-1">
+                                            {{ item.description|truncatewords:15 }}
+                                        </p>
+                                        
+                                        <div class="mt-auto">
+                                            <!-- Метаинформация -->
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <span class="badge {% if item.content_type == 'Видео-рассказ' %}bg-danger{% elif item.content_type == 'Книга' %}bg-success{% elif item.content_type == 'Аудио' %}bg-info{% elif item.content_type == 'Сказка' %}bg-warning{% else %}bg-secondary{% endif %} mb-1">
+                                                        {{ item.content_type }}
+                                                    </span>
+                                                    {% if item.category %}
+                                                        <br><small class="text-muted">{{ item.category }}</small>
+                                                    {% endif %}
+                                                </div>
+                                                
+                                                <div class="text-end">
+                                                    {% if item.views_count %}
+                                                        <small class="text-muted d-block">
+                                                            <i class="bi bi-eye"></i> {{ item.views_count }}
+                                                        </small>
+                                                    {% endif %}
+                                                    {% if item.price %}
+                                                        <small class="text-success fw-bold d-block">
+                                                            {{ item.price }} ₽
+                                                        </small>
+                                                    {% endif %}
+                                                    {% if item.age_group %}
+                                                        <small class="text-primary d-block">
+                                                            <i class="bi bi-people"></i> {{ item.age_group }}
+                                                        </small>
+                                                    {% endif %}
+                                                    {% if item.duration %}
+                                                        <small class="text-info d-block">
+                                                            <i class="bi bi-clock"></i> {{ item.duration }}
+                                                        </small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Кнопка перехода -->
+                                            <a href="{{ item.get_absolute_url }}" class="btn btn-primary btn-sm w-100">
+                                                {% if item.content_type == 'Видео-рассказ' %}
+                                                    <i class="bi bi-play-circle me-1"></i> Смотреть
+                                                {% elif item.content_type == 'Книга' %}
+                                                    <i class="bi bi-book me-1"></i> Читать
+                                                {% elif item.content_type == 'Аудио' %}
+                                                    <i class="bi bi-play me-1"></i> Слушать
+                                                {% elif item.content_type == 'Сказка' %}
+                                                    <i class="bi bi-stars me-1"></i> Читать сказку
+                                                {% else %}
+                                                    Подробнее
+                                                {% endif %}
                                             </a>
                                         </div>
                                     </div>
@@ -59,6 +129,7 @@
                             </div>
                         {% endfor %}
                     </div>
+                    
                 {% else %}
                     <div class="text-center py-5">
                         <i class="bi bi-search display-1 text-muted"></i>
@@ -76,6 +147,9 @@
                                 </a>
                                 <a href="{% url 'audio:list' %}" class="btn btn-outline-info btn-sm">
                                     <i class="bi bi-music-note"></i> Аудио
+                                </a>
+                                <a href="{% url 'fairy-tales:list' %}" class="btn btn-outline-warning btn-sm">
+                                    <i class="bi bi-stars"></i> Сказки
                                 </a>
                             </div>
                         </div>
@@ -111,15 +185,34 @@
                     </div>
                 </div>
                 
-                <!-- Похожие теги -->
+                <!-- Статистика по типам контента -->
+                {% if content_items %}
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Статистика</h5>
+                        </div>
+                        <div class="card-body">
+                            {% regroup content_items by content_type as content_groups %}
+                            <div class="row g-2">
+                                {% for group in content_groups %}
+                                    <div class="col-6">
+                                        <div class="text-center p-2 border rounded">
+                                            <div class="fw-bold">{{ group.list|length }}</div>
+                                            <small class="text-muted">{{ group.grouper }}</small>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <!-- Популярные теги -->
                 <div class="card mt-4">
                     <div class="card-header">
                         <h5 class="mb-0">Популярные теги</h5>
                     </div>
                     <div class="card-body">
-                        {% comment %}
-                        Здесь будем показывать другие популярные теги
-                        {% endcomment %}
                         <div class="tag-cloud">
                             <a href="{% url 'core:tags' %}" class="btn btn-outline-secondary btn-sm">
                                 <i class="bi bi-tags"></i> Все теги

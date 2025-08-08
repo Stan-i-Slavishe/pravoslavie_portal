@@ -14,11 +14,31 @@
                             <div class="cart-item border-bottom py-3">
                                 <div class="row align-items-center">
                                     <div class="col-md-2">
-                                        {% if item.product.image %}
+                                        {% if item.product.product_type == 'book' %}
+                                            <!-- Для книг показываем обложку самой книги -->
+                                            {% with item.product.content_object as book %}
+                                                {% if book and book.cover %}
+                                                    <img src="{{ book.cover.url }}" alt="{{ item.product.title }}" class="img-fluid rounded">
+                                                {% else %}
+                                                    <div class="placeholder-image bg-light d-flex align-items-center justify-content-center rounded" style="height: 80px;">
+                                                        <i class="bi bi-book text-muted" style="font-size: 2rem;"></i>
+                                                    </div>
+                                                {% endif %}
+                                            {% endwith %}
+                                        {% elif item.product.image %}
+                                            <!-- Для остальных товаров -->
                                             <img src="{{ item.product.image.url }}" alt="{{ item.product.title }}" class="img-fluid rounded">
                                         {% else %}
                                             <div class="placeholder-image bg-light d-flex align-items-center justify-content-center rounded" style="height: 80px;">
-                                                <i class="bi bi-image text-muted"></i>
+                                                {% if item.product.product_type == 'book' %}
+                                                    <i class="bi bi-book text-muted" style="font-size: 2rem;"></i>
+                                                {% elif item.product.product_type == 'audio' %}
+                                                    <i class="bi bi-music-note text-muted" style="font-size: 2rem;"></i>
+                                                {% elif item.product.product_type == 'fairy_tale' %}
+                                                    <i class="bi bi-stars text-muted" style="font-size: 2rem;"></i>
+                                                {% else %}
+                                                    <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
+                                                {% endif %}
                                             </div>
                                         {% endif %}
                                     </div>
@@ -181,7 +201,29 @@
 </div>
 
 <style>
-/* ПРИНУДИТЕЛЬНОЕ горизонтальное расположение кнопок */
+/* Улучшение отображения обложек в корзине */
+.cart-item .col-md-2 img {
+    max-height: 100px;
+    object-fit: cover;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.placeholder-image {
+    border: 1px solid #dee2e6;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.cart-item {
+    transition: background-color 0.2s ease;
+}
+
+.cart-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Принудительное горизонтальное расположение кнопок */
 .quantity-control .input-group {
     display: flex !important;
     flex-direction: row !important;
@@ -525,11 +567,24 @@ document.addEventListener('DOMContentLoaded', function() {
             if (confirm(`Удалить "${productTitle}" из корзины?`)) {
                 cartItem.style.opacity = '0.5';
                 
+                // Получаем CSRF токен
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+                                document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                                getCookie('csrftoken');
+                
+                if (!csrfToken) {
+                    console.error('CSRF token not found');
+                    cartItem.style.opacity = '1';
+                    showToast('Ошибка безопасности. Перезагрузите страницу.', 'error');
+                    return;
+                }
+                
                 fetch('{% url "shop:remove_from_cart" %}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
+                        'X-CSRFToken': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
                     body: JSON.stringify({
                         item_id: itemId
@@ -547,6 +602,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         }, 300);
                         
                         showToast('Товар удален из корзины');
+                        
+                        // Обновляем счетчик корзины
+                        if (window.updateCartCount) {
+                            window.updateCartCount();
+                        }
                     } else {
                         cartItem.style.opacity = '1';
                         showToast('Ошибка: ' + (data.error || 'Не удалось удалить товар'), 'error');
@@ -560,6 +620,47 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-});
+    
+    // Функция показа уведомлений
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; max-width: 400px;';
+        toast.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                <span>${message}</span>
+                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 4000);
+    }
+    
+    // Функция получения CSRF токена
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});    
 </script>
+
+<!-- CSRF токен для AJAX запросов -->
+{% csrf_token %}
 {% endblock %}

@@ -285,6 +285,13 @@ class Story(models.Model):
         verbose_name="YouTube ID",
         help_text="Автоматически извлекается из URL"
     )
+    thumbnail = models.ImageField(
+        upload_to='stories/thumbnails/',
+        blank=True,
+        null=True,
+        verbose_name="Превью изображение",
+        help_text="Изображение-превью для видео"
+    )
     duration = models.CharField(
         max_length=20,
         blank=True,
@@ -395,6 +402,18 @@ class Story(models.Model):
         if self.youtube_embed_id:
             return f"https://www.youtube.com/embed/{self.youtube_embed_id}"
         return None
+    
+    def get_youtube_thumbnail_url(self):
+        """Возвращает URL превью из YouTube"""
+        if self.youtube_embed_id:
+            return f"https://img.youtube.com/vi/{self.youtube_embed_id}/maxresdefault.jpg"
+        return None
+    
+    def get_thumbnail_url(self):
+        """Возвращает URL превью: загруженное или с YouTube"""
+        if self.thumbnail:
+            return self.thumbnail.url
+        return self.get_youtube_thumbnail_url()
     
     @property
     def youtube_id(self):

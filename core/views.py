@@ -224,7 +224,7 @@ class TagDetailView(TemplateView):
                     'description': story.description,
                     'content_type': 'Видео-рассказ',
                     'get_absolute_url': story.get_absolute_url(),
-                    'image': None,  # У Story нет поля thumbnail
+                    'image': story.get_thumbnail_url(),
                     'created_at': story.created_at,
                     'category': story.category.name if story.category else None,
                     'views_count': story.views_count,

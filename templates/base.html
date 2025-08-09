@@ -801,6 +801,9 @@
     <!-- ========== PRODUCTION ANALYTICS ========== -->
     <!-- Продакшен система аналитики (без заглушек) -->
     <meta name="user-id" content="{% if user.is_authenticated %}{{ user.id }}{% endif %}">
+    <!-- Синхронизация корзины -->
+    <script src="{% static 'js/cart-sync.js' %}"></script>
+    
     <script src="{% static 'js/production_analytics.js' %}"></script>
     
     <!-- Дополнительные скрипты -->

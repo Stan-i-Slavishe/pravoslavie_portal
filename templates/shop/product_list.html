@@ -385,19 +385,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     this.classList.remove('btn-primary');
                     this.classList.add('btn-success');
                     
-                    // Обновляем счетчик корзины
+                    // 🚀 ГЛАВНОЕ ИСПРАВЛЕНИЕ: Используем новую систему синхронизации корзины
                     if (data.cart_total_items !== undefined) {
-                        const cartBadge = document.querySelector('#cart-badge');
-                        if (cartBadge) {
-                            cartBadge.textContent = data.cart_total_items;
-                            cartBadge.style.display = data.cart_total_items > 0 ? 'inline' : 'none';
+                        if (window.CartSync && window.CartSync.updateAllCartBadges) {
+                            // Используем нашу новую систему для обновления ВСЕХ счетчиков
+                            window.CartSync.updateAllCartBadges(data.cart_total_items);
+                        } else {
+                            // Fallback: обновляем только основной счетчик
+                            const cartBadge = document.querySelector('#cart-badge');
+                            if (cartBadge) {
+                                cartBadge.textContent = data.cart_total_items;
+                                cartBadge.style.display = data.cart_total_items > 0 ? 'inline' : 'none';
+                            }
                         }
                     }
                     
                     // Показываем уведомление
                     if (data.message) {
-                        // Можно добавить toast уведомление
-                        console.log(data.message);
+                        showToast(data.message, 'success');
+                    } else {
+                        showToast('Товар добавлен в корзину!', 'success');
                     }
                     
                     // Возвращаем кнопку через 2 секунды
@@ -414,7 +421,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Ошибка при добавлении в корзину: ' + error.message);
+                showToast('Ошибка при добавлении в корзину: ' + error.message, 'error');
                 
                 // Возвращаем кнопку
                 this.innerHTML = originalText;
@@ -422,6 +429,53 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
+    
+    // Функция для показа Toast уведомлений
+    function showToast(message, type = 'info') {
+        const toastContainer = getOrCreateToastContainer();
+        
+        const toastId = 'toast-' + Date.now();
+        const toastHtml = `
+            <div id="${toastId}" class="toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Закрыть"></button>
+                </div>
+            </div>
+        `;
+        
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+        
+        const toastElement = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastElement, {
+            autohide: true,
+            delay: 4000
+        });
+        
+        toast.show();
+        
+        // Удаляем элемент после скрытия
+        toastElement.addEventListener('hidden.bs.toast', () => {
+            toastElement.remove();
+        });
+    }
+    
+    // Функция получения или создания контейнера для toast уведомлений
+    function getOrCreateToastContainer() {
+        let container = document.querySelector('.toast-container');
+        
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container position-fixed top-0 end-0 p-3';
+            container.style.zIndex = '1055';
+            document.body.appendChild(container);
+        }
+        
+        return container;
+    }
 });
 </script>
 {% endblock %}

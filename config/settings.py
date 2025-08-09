@@ -458,3 +458,33 @@ else:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+
+# =====================================
+# НАСТРОЙКИ ПРЯМОГО ПЕРЕНАПРАВЛЕНИЯ GOOGLE OAUTH
+# =====================================
+
+# Убираем промежуточную страницу при входе через Google
+SOCIALACCOUNT_LOGIN_ON_GET = True  # Автоматический вход при GET запросе
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = False  # Не запрашивать email дополнительно  
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True  # Автоматическое подключение email
+
+# =====================================
+# ОТКЛЮЧЕНИЕ ДУБЛИРОВАННЫХ СООБЩЕНИЙ ALLAUTH
+# =====================================
+
+# Настройки сообщений
+MESSAGE_TAGS = {
+    10: 'debug',
+    20: 'info', 
+    25: 'success',
+    30: 'warning',
+    40: 'error',
+}
+
+# Отключаем дополнительные сообщения от allauth
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False
+ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = '/'
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = None
+
+# Отключаем дублированные сообщения при социальном входе
+SOCIALACCOUNT_STORE_TOKENS = False  # Не сохраняем токены (уменьшает сообщения)

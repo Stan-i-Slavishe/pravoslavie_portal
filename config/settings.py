@@ -90,12 +90,15 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 DATABASES = {
     'default': {
-        'ENGINE': config('DB_ENGINE', default='django.db.backends.sqlite3'),
+        'ENGINE': config('DB_ENGINE', default='core.db.sqlite'),  # Используем кастомный SQLite backend
         'NAME': config('DB_NAME', default=BASE_DIR / 'db.sqlite3'),
         'USER': config('DB_USER', default=''),
         'PASSWORD': config('DB_PASSWORD', default=''),
         'HOST': config('DB_HOST', default=''),
         'PORT': config('DB_PORT', default=''),
+        'OPTIONS': {
+            'timeout': 30,  # Увеличиваем timeout до 30 секунд
+        } if 'sqlite' in config('DB_ENGINE', default='core.db.sqlite') else {}
     }
 }
 

@@ -810,8 +810,14 @@
     <!-- Дополнительные скрипты -->
     {% block extra_js %}{% endblock %}
     
+    <!-- Глобальные утилиты -->
+    <script src="{% static 'js/global-utils.js' %}"></script>
+    
     <!-- Рейтинг звёзд -->
     <script src="{% static 'js/rating-icons.js' %}"></script>
+    
+    <!-- Избранное -->
+    <script src="{% static 'js/favorites-improved.js' %}"></script>
     
     <!-- ========== LEGACY (отключено) ========== -->
     {% comment %}

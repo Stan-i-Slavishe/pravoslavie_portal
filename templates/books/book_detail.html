@@ -208,6 +208,37 @@
             margin-top: 10px;
         }
     }
+    
+    /* Стили для содержания книги */
+    .book-content {
+        background: var(--soft-gray);
+        border-radius: 8px;
+        padding: 1.5rem;
+        border-left: 4px solid var(--orthodox-blue);
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+    
+    .book-content h1, .book-content h2, .book-content h3, 
+    .book-content h4, .book-content h5, .book-content h6 {
+        color: var(--orthodox-blue);
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .book-content p {
+        margin-bottom: 1rem;
+        text-align: justify;
+    }
+    
+    .book-content ul, .book-content ol {
+        margin-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .book-content li {
+        margin-bottom: 0.5rem;
+    }
 </style>
 {% endblock %}
 
@@ -476,6 +507,16 @@
                 <div class="mb-4">
                     <h5>Описание</h5>
                     <p>{{ book.description|linebreaks }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Содержание книги -->
+                {% if book.content %}
+                <div class="mb-4">
+                    <h5>Содержание</h5>
+                    <div class="book-content">
+                        {{ book.content|linebreaks }}
+                    </div>
                 </div>
                 {% endif %}
 

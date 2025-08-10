@@ -25,6 +25,7 @@
     <link rel="stylesheet" href="{% static 'css/mobile-burger-menu.css' %}">
     <link rel="stylesheet" href="{% static 'css/purchase-button-fix.css' %}">
     <link rel="stylesheet" href="{% static 'css/dropdown-fix.css' %}">
+    <link rel="stylesheet" href="{% static 'css/rating-fix.css' %}">
     
     <!-- Дополнительные стили страниц -->
     {% block extra_css %}{% endblock %}
@@ -808,6 +809,9 @@
     
     <!-- Дополнительные скрипты -->
     {% block extra_js %}{% endblock %}
+    
+    <!-- Рейтинг звёзд -->
+    <script src="{% static 'js/rating-icons.js' %}"></script>
     
     <!-- ========== LEGACY (отключено) ========== -->
     {% comment %}

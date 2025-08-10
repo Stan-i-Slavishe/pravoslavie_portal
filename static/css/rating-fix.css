@@ -1,0 +1,42 @@
+/* Исправление рейтинга звёзд - слева направо */
+
+.rating-input {
+    display: flex !important;
+    flex-direction: row !important; /* Обычный порядок слева направо */
+    justify-content: flex-start !important;
+}
+
+.rating-input input {
+    display: none !important;
+}
+
+.rating-input .star-label {
+    color: #ddd !important;
+    font-size: 1.5rem !important;
+    cursor: pointer !important;
+    transition: color 0.2s !important;
+    margin-right: 5px !important;
+}
+
+/* Убираем все старые правила подсветки */
+.rating-input .star-label:hover,
+.rating-input .star-label:hover ~ .star-label,
+.rating-input input:checked ~ .star-label {
+    color: #ddd !important; /* Убираем все CSS подсветки, JavaScript будет управлять */
+}
+
+/* Класс для активных звёзд (управляется JavaScript) */
+.rating-input .star-label.active {
+    color: #ffc107 !important;
+}
+
+/* Принудительно переопределяем любые inline стили */
+.rating-input .star-label[style*="color: rgb(255, 193, 7)"],
+.rating-input .star-label[style*="color: #ffc107"] {
+    color: #ffc107 !important;
+}
+
+.rating-input .star-label[style*="color: rgb(221, 221, 221)"],
+.rating-input .star-label[style*="color: #ddd"] {
+    color: #ddd !important;
+}

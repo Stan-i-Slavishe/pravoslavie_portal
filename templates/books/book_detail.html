@@ -167,8 +167,8 @@
     
     .rating-input {
         display: flex;
-        flex-direction: row-reverse;
-        justify-content: flex-end;
+        flex-direction: row !important;
+        justify-content: flex-start !important;
     }
     
     .rating-input input {
@@ -176,17 +176,18 @@
     }
     
     .rating-input .star-label {
-        color: #ddd;
+        color: #ddd !important;
         font-size: 1.5rem;
         cursor: pointer;
         transition: color 0.2s;
         margin-right: 5px;
     }
     
+    /* Отключаем все CSS подсветки, JavaScript будет управлять */
     .rating-input .star-label:hover,
     .rating-input .star-label:hover ~ .star-label,
     .rating-input input:checked ~ .star-label {
-        color: #ffc107; /* Жёлтый цвет */
+        color: inherit !important;
     }
     
     @media (max-width: 768px) {

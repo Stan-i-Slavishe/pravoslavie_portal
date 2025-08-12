@@ -171,6 +171,34 @@ class CategoryListView(ListView):
 class CategoryDetailView(TemplateView):
     template_name = 'core/category_detail.html'
     
+    def get(self, request, *args, **kwargs):
+        """Переопределяем GET для возможности перенаправления"""
+        category = get_object_or_404(
+            Category, 
+            slug=kwargs['slug'], 
+            is_active=True
+        )
+        
+        # АВТОМАТИЧЕСКОЕ ПЕРЕНАПРАВЛЕНИЕ для категорий stories
+        if category.content_type == 'story' and request.GET.get('redirect', '1') == '1':
+            # Проверяем, есть ли рассказы в этой категории
+            try:
+                from stories.models import Story
+                stories_count = Story.objects.filter(
+                    category=category,
+                    is_published=True
+                ).count()
+                
+                # Если есть рассказы, перенаправляем сразу
+                if stories_count > 0:
+                    return redirect(f"/stories/?category={category.slug}")
+                    
+            except ImportError:
+                pass
+        
+        # Если не перенаправляем, показываем обычную страницу
+        return super().get(request, *args, **kwargs)
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
@@ -183,8 +211,114 @@ class CategoryDetailView(TemplateView):
         context['category'] = category
         context['title'] = category.name
         
-        # В будущем здесь будем загружать контент категории
-        context['content_items'] = []
+        # ИСПРАВЛЕНИЕ: Загружаем контент в зависимости от типа категории
+        content_items = []
+        
+        # Для категорий типа 'story' загружаем видео-рассказы
+        if category.content_type == 'story':
+            try:
+                from stories.models import Story
+                stories = Story.objects.filter(
+                    category=category,
+                    is_published=True
+                ).select_related('category').prefetch_related('tags').order_by('-created_at')[:12]
+                
+                for story in stories:
+                    content_items.append({
+                        'title': story.title,
+                        'description': story.description,
+                        'content_type': 'Видео-рассказ',
+                        'url': story.get_absolute_url(),
+                        'image': story.get_thumbnail_url(),
+                        'created_at': story.created_at,
+                        'views_count': story.views_count,
+                        'duration': story.duration,
+                        'youtube_id': story.youtube_embed_id,
+                    })
+                    
+            except ImportError:
+                pass
+        
+        # Для категорий типа 'book' загружаем книги
+        elif category.content_type == 'book':
+            try:
+                from books.models import Book
+                books = Book.objects.filter(
+                    category=category,
+                    is_published=True
+                ).select_related('category').prefetch_related('tags').order_by('-created_at')[:12]
+                
+                for book in books:
+                    content_items.append({
+                        'title': book.title,
+                        'description': book.description,
+                        'content_type': 'Книга',
+                        'url': book.get_absolute_url(),
+                        'image': book.cover.url if book.cover else None,
+                        'created_at': book.created_at,
+                        'price': book.price,
+                    })
+                    
+            except ImportError:
+                pass
+        
+        # Для категорий типа 'audio' загружаем аудио
+        elif category.content_type == 'audio':
+            try:
+                from audio.models import AudioTrack
+                audio_tracks = AudioTrack.objects.filter(
+                    category=category,
+                    is_published=True
+                ).select_related('category').prefetch_related('tags').order_by('-created_at')[:12]
+                
+                for audio in audio_tracks:
+                    content_items.append({
+                        'title': audio.title,
+                        'description': getattr(audio, 'description', ''),
+                        'content_type': 'Аудио',
+                        'url': audio.get_absolute_url(),
+                        'image': getattr(audio, 'cover_image', None).url if getattr(audio, 'cover_image', None) else None,
+                        'created_at': audio.created_at,
+                        'duration': getattr(audio, 'duration', None),
+                    })
+                    
+            except (ImportError, AttributeError):
+                pass
+        
+        # Также загружаем связанные сказки
+        try:
+            from fairy_tales.models import FairyTale
+            fairy_tales = FairyTale.objects.filter(
+                category__slug=category.slug,  # Ищем по slug для совместимости
+                is_published=True
+            ).select_related('category', 'age_group').prefetch_related('tags').order_by('-created_at')[:6]
+            
+            for fairy_tale in fairy_tales:
+                content_items.append({
+                    'title': fairy_tale.title,
+                    'description': getattr(fairy_tale, 'description', ''),
+                    'content_type': 'Сказка',
+                    'url': fairy_tale.get_absolute_url(),
+                    'image': getattr(fairy_tale, 'cover_image', None).url if getattr(fairy_tale, 'cover_image', None) else None,
+                    'created_at': fairy_tale.created_at,
+                    'age_group': getattr(fairy_tale, 'age_group', None).name if getattr(fairy_tale, 'age_group', None) else None,
+                })
+        except (ImportError, AttributeError):
+            pass
+        
+        context['content_items'] = content_items
+        context['has_content'] = len(content_items) > 0
+        
+        # Альтернативные ссылки для пустых категорий или когда хотим показать специализированную страницу
+        if category.content_type == 'story':
+            context['alternative_url'] = f"/stories/?category={category.slug}"
+            context['alternative_text'] = "Перейти к видео-рассказам"
+        elif category.content_type == 'book':
+            context['alternative_url'] = f"/books/?category={category.slug}"
+            context['alternative_text'] = "Перейти к книгам"
+        elif category.content_type == 'audio':
+            context['alternative_url'] = f"/audio/?category={category.slug}"
+            context['alternative_text'] = "Перейти к аудио"
         
         return context
 

@@ -1,9 +1,19 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load seo_tags %}
 
-{% block title %}Библиотека - {{ site_settings.site_name }}{% endblock %}
+<!-- Мета-теги для списка книг -->
+{% block meta_tags %}
+    {% render_meta_tags page_key %}
+{% endblock %}
 
-{% block description %}Православные книги, статьи и публикации для духовного роста{% endblock %}
+<!-- Schema.org данные -->
+{% block schema_ld %}
+    {{ block.super }}
+    {% if breadcrumbs %}
+        {% schema_ld 'breadcrumb' breadcrumbs=breadcrumbs %}
+    {% endif %}
+{% endblock %}
 
 {% block extra_css %}
 <style>

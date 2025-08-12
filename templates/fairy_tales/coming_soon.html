@@ -1,0 +1,361 @@
+<!-- templates/fairy_tales/coming_soon.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Терапевтические сказки - Скоро{% endblock %}
+
+{% block description %}Готовим персонализированные терапевтические сказки для решения детских проблем. Подпишитесь на уведомления о запуске!{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .navbar, .footer {
+        display: none !important;
+    }
+    
+    .coming-soon-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    
+    .coming-soon-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        padding: 3rem;
+        max-width: 600px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .coming-soon-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        transform: rotate(45deg);
+        animation: shine 3s infinite;
+    }
+    
+    @keyframes shine {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+    
+    .fairy-icon {
+        font-size: 5rem;
+        color: #FF6B9D;
+        margin-bottom: 1.5rem;
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .main-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #2B5AA0;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .subtitle {
+        font-size: 1.2rem;
+        color: #666;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+    
+    .features-list {
+        text-align: left;
+        margin: 2rem 0;
+    }
+    
+    .feature-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+        background: rgba(43, 90, 160, 0.05);
+        border-radius: 10px;
+        transition: transform 0.3s ease;
+    }
+    
+    .feature-item:hover {
+        transform: translateX(5px);
+    }
+    
+    .feature-icon {
+        color: #FF6B9D;
+        margin-right: 1rem;
+        font-size: 1.2rem;
+    }
+    
+    .notify-btn {
+        background: linear-gradient(45deg, #FF6B9D, #C44569);
+        border: none;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 20px rgba(255, 107, 157, 0.3);
+    }
+    
+    .notify-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(255, 107, 157, 0.4);
+        background: linear-gradient(45deg, #C44569, #FF6B9D);
+    }
+    
+    .back-link {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        color: white;
+        text-decoration: none;
+        font-size: 1.1rem;
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        backdrop-filter: blur(5px);
+        transition: all 0.3s ease;
+    }
+    
+    .back-link:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+        transform: translateX(-5px);
+    }
+    
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e0e0e0;
+        border-radius: 10px;
+        margin: 2rem 0;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(45deg, #FF6B9D, #C44569);
+        border-radius: 10px;
+        width: 75%;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    .sparkle {
+        position: absolute;
+        color: #FFD700;
+        animation: sparkle 2s infinite;
+    }
+    
+    @keyframes sparkle {
+        0%, 100% { opacity: 0; transform: scale(0); }
+        50% { opacity: 1; transform: scale(1); }
+    }
+    
+    .sparkle-1 { top: 20%; left: 20%; animation-delay: 0s; }
+    .sparkle-2 { top: 30%; right: 15%; animation-delay: 0.5s; }
+    .sparkle-3 { bottom: 25%; left: 15%; animation-delay: 1s; }
+    .sparkle-4 { bottom: 35%; right: 20%; animation-delay: 1.5s; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<a href="{% url 'core:home' %}" class="back-link">
+    <i class="bi bi-arrow-left"></i> На главную
+</a>
+
+<div class="coming-soon-container">
+    <div class="coming-soon-card">
+        <!-- Блестящие элементы -->
+        <i class="bi bi-star-fill sparkle sparkle-1"></i>
+        <i class="bi bi-star-fill sparkle sparkle-2"></i>
+        <i class="bi bi-star-fill sparkle sparkle-3"></i>
+        <i class="bi bi-star-fill sparkle sparkle-4"></i>
+        
+        <div class="fairy-icon">
+            <i class="bi bi-book-heart"></i>
+        </div>
+        
+        <h1 class="main-title">Терапевтические сказки</h1>
+        <p class="subtitle">
+            Готовим для вас что-то особенное... 🌟<br>
+            Персонализированные сказки для решения детских проблем
+        </p>
+        
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+        <small class="text-muted">Готовность: 75%</small>
+        
+        <div class="features-list">
+            <div class="feature-item">
+                <i class="bi bi-heart-fill feature-icon"></i>
+                <span>Сказки под каждого ребенка</span>
+            </div>
+            <div class="feature-item">
+                <i class="bi bi-palette-fill feature-icon"></i>
+                <span>Решение детских страхов и проблем</span>
+            </div>
+            <div class="feature-item">
+                <i class="bi bi-headphones feature-icon"></i>
+                <span>Аудио-версии с профессиональной озвучкой</span>
+            </div>
+            <div class="feature-item">
+                <i class="bi bi-people-fill feature-icon"></i>
+                <span>Консультации детских психологов</span>
+            </div>
+            <div class="feature-item">
+                <i class="bi bi-gift-fill feature-icon"></i>
+                <span>Красивые иллюстрации на заказ</span>
+            </div>
+        </div>
+        
+        <button class="notify-btn" onclick="showNotifyForm()">
+            <i class="bi bi-bell-fill me-2"></i>
+            Уведомить о запуске
+        </button>
+        
+
+    </div>
+</div>
+
+<!-- Модальное окно для подписки -->
+<div class="modal fade" id="notifyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient" style="background: linear-gradient(45deg, #FF6B9D, #C44569);">
+                <h5 class="modal-title text-white">
+                    <i class="bi bi-bell-fill me-2"></i>
+                    Уведомить о запуске
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">Оставьте свой email, и мы сообщим вам, когда терапевтические сказки будут готовы!</p>
+                <div class="mb-3">
+                    <label for="notifyEmail" class="form-label">Email адрес</label>
+                    <input type="email" class="form-control" id="notifyEmail" placeholder="your@email.com">
+                </div>
+                <div class="mb-3">
+                    <label for="childAge" class="form-label">Возраст ребенка (необязательно)</label>
+                    <select class="form-select" id="childAge">
+                        <option value="">Выберите возраст</option>
+                        <option value="3-5">3-5 лет</option>
+                        <option value="6-8">6-8 лет</option>
+                        <option value="9-12">9-12 лет</option>
+                    </select>
+                </div>
+                <div class="alert alert-info">
+                    <i class="bi bi-heart-fill me-2"></i>
+                    <strong>Первым узнаете:</strong> О запуске терапевтических сказок и всех новых возможностях!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="submitNotification()" style="background: linear-gradient(45deg, #FF6B9D, #C44569); border: none;">
+                    <i class="bi bi-envelope-fill me-2"></i>
+                    Подписаться
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showNotifyForm() {
+    const modal = new bootstrap.Modal(document.getElementById('notifyModal'));
+    modal.show();
+}
+
+function submitNotification() {
+    const email = document.getElementById('notifyEmail').value;
+    const age = document.getElementById('childAge').value;
+    
+    if (!email) {
+        alert('Пожалуйста, введите email адрес');
+        return;
+    }
+    
+    // AJAX запрос на сервер
+    fetch('{% url "fairy_tales:subscribe_notification" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+        },
+        body: JSON.stringify({
+            email: email,
+            child_age: age
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Показываем успешное сообщение
+            document.querySelector('.modal-body').innerHTML = `
+                <div class="text-center py-4">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                    <h4 class="mt-3 text-success">Спасибо за подписку!</h4>
+                    <p class="text-muted">Мы обязательно уведомим вас о запуске терапевтических сказок.</p>
+                </div>
+            `;
+            
+            document.querySelector('.modal-footer').style.display = 'none';
+            
+            setTimeout(() => {
+                bootstrap.Modal.getInstance(document.getElementById('notifyModal')).hide();
+            }, 3000);
+        } else {
+            alert(data.error || 'Произошла ошибка');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка при отправке');
+    });
+}
+
+// Добавляем анимацию при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelector('.coming-soon-card').style.transform = 'translateY(20px)';
+    document.querySelector('.coming-soon-card').style.opacity = '0';
+    
+    setTimeout(() => {
+        document.querySelector('.coming-soon-card').style.transition = 'all 0.8s ease';
+        document.querySelector('.coming-soon-card').style.transform = 'translateY(0)';
+        document.querySelector('.coming-soon-card').style.opacity = '1';
+    }, 100);
+});
+</script>
+{% endblock %}

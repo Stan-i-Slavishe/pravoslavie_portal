@@ -1,7 +1,20 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load seo_tags %}
 
-{% block title %}{{ story.title }} - Добрые истории<!-- Дополнительные стили для адаптивной видимости текста -->
+<!-- Мета-теги для рассказа -->
+{% block meta_tags %}
+    {% render_meta_tags obj=story %}
+{% endblock %}
+
+<!-- Schema.org данные для видео -->
+{% block schema_ld %}
+    {{ block.super }}
+    {% schema_ld 'video' obj=story %}
+    {% if breadcrumbs %}
+        {% schema_ld 'breadcrumb' breadcrumbs=breadcrumbs %}
+    {% endif %}
+{% endblock %}<!-- Дополнительные стили для адаптивной видимости текста -->
 <style>
 /* Скрытие/показ текста в зависимости от размера экрана для метаданных */
 @media (max-width: 576px) {
@@ -1422,6 +1435,9 @@
 
 {% block content %}
 <div class="container">
+    <!-- Хлебные крошки -->
+    {% render_breadcrumbs breadcrumbs %}
+    
     <div class="row">
         <!-- Левая колонка с видео и контентом -->
         <div class="col-lg-8">

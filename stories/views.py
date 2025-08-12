@@ -19,6 +19,8 @@ from .models import Story, StoryLike, StoryComment, CommentReaction
 from core.models import Category, Tag
 from django.template.loader import render_to_string
 from django.utils.html import escape
+from core.seo import page_meta
+from core.seo.meta_tags import SEOManager
 
 
 
@@ -91,6 +93,14 @@ class StoryListView(StoryQuerysetMixin, ListView):
             is_published=True, 
             is_featured=True
         )[:3]
+        
+        # SEO мета-теги
+        context['page_key'] = 'stories_list'
+        context['seo'] = page_meta('stories_list', request=self.request)
+        context['breadcrumbs'] = [
+            {'name': 'Главная', 'url': '/'},
+            {'name': 'Видео-рассказы', 'url': ''},
+        ]
         
         # Передаем параметры поиска и фильтрации в контекст
         context['search_query'] = self.request.GET.get('search', '')
@@ -210,6 +220,16 @@ class StoryDetailView(DetailView):
                 context['user_playlists'] = []
         else:
             context['user_playlists'] = []
+        
+        # SEO мета-теги для рассказа
+        seo_manager = SEOManager(self.request)
+        story_seo = seo_manager.get_dynamic_meta(story)
+        context['seo'] = story_seo
+        context['breadcrumbs'] = [
+            {'name': 'Главная', 'url': '/'},
+            {'name': 'Видео-рассказы', 'url': '/stories/'},
+            {'name': story.title, 'url': ''},
+        ]
         
         return context
 

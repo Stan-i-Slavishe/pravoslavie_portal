@@ -1,7 +1,20 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load seo_tags %}
 
-{% block title %}{{ book.title }} - Православный портал{% endblock %}
+<!-- Мета-теги для книги -->
+{% block meta_tags %}
+    {% render_meta_tags obj=book %}
+{% endblock %}
+
+<!-- Schema.org данные для книги -->
+{% block schema_ld %}
+    {{ block.super }}
+    {% schema_ld 'book' obj=book %}
+    {% if breadcrumbs %}
+        {% schema_ld 'breadcrumb' breadcrumbs=breadcrumbs %}
+    {% endif %}
+{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -245,18 +258,7 @@
 {% block content %}
 <div class="container my-4">
     <!-- Хлебные крошки -->
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Главная</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'books:list' %}">Библиотека</a></li>
-            {% if book.category %}
-            <li class="breadcrumb-item">
-                <a href="{% url 'books:category' book.category.slug %}">{{ book.category.name }}</a>
-            </li>
-            {% endif %}
-            <li class="breadcrumb-item active" aria-current="page">{{ book.title }}</li>
-        </ol>
-    </nav>
+    {% render_breadcrumbs breadcrumbs %}
 
     <div class="row">
         <!-- Левая колонка: обложка и действия -->

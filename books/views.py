@@ -11,6 +11,8 @@ from django.db import models, transaction, IntegrityError
 import time
 from .models import Book, Category, Tag, BookDownload, UserFavoriteBook, BookReview, ReadingSession, ReadingBookmark, BookChapter
 from core.utils.views import track_view_session
+from core.seo import page_meta
+from core.seo.meta_tags import SEOManager
 
 
 def book_list(request):
@@ -70,6 +72,12 @@ def book_list(request):
         'categories': categories,
         'user_favorites': user_favorites,
         'title': 'Библиотека',
+        'page_key': 'books_list',
+        'seo': page_meta('books_list', request=request),
+        'breadcrumbs': [
+            {'name': 'Главная', 'url': '/'},
+            {'name': 'Библиотека', 'url': ''},
+        ],
     }
     
     return render(request, 'books/book_list.html', context)
@@ -130,6 +138,10 @@ def book_detail(request, slug):
     # Получаем отзывы
     reviews = book.reviews.select_related('user').order_by('-created_at')
     
+    # SEO мета-теги для книги
+    seo_manager = SEOManager(request)
+    book_seo = seo_manager.get_dynamic_meta(book)
+    
     context = {
         'book': book,
         'related_books': related_books,
@@ -138,6 +150,12 @@ def book_detail(request, slug):
         'user_can_read': user_can_read,
         'reading_session': reading_session,
         'title': book.title,
+        'seo': book_seo,
+        'breadcrumbs': [
+            {'name': 'Главная', 'url': '/'},
+            {'name': 'Библиотека', 'url': '/books/'},
+            {'name': book.title, 'url': ''},
+        ],
     }
     
     return render(request, 'books/book_detail.html', context)

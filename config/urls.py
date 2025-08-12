@@ -2,10 +2,16 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from core.views import custom_404_view, custom_500_view
+from django.contrib.sitemaps.views import sitemap
+from core.views.seo_views import robots_txt
+from core.seo.sitemaps import sitemaps
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # SEO маршруты
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+    path('robots.txt', robots_txt, name='robots_txt'),
     
     # Основные страницы
     path('', include('core.urls')),
@@ -29,10 +35,6 @@ urlpatterns = [
     # Аналитика
     path('analytics/', include('analytics.urls')),
 ]
-
-# Кастомные страницы ошибок
-handler404 = custom_404_view
-handler500 = custom_500_view
 
 # Для разработки - обслуживание медиа файлов
 if settings.DEBUG:

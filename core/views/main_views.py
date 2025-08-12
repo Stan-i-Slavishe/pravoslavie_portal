@@ -4,8 +4,9 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import Http404
-from .models import Category, Tag, ContactMessage, SiteSettings
-from .forms import ContactForm
+from ..models import Category, Tag, ContactMessage, SiteSettings
+from ..forms import ContactForm
+from ..seo import page_meta  # Правильный импорт из пакета seo
 
 class HomeView(TemplateView):
     template_name = 'core/home.html'
@@ -13,6 +14,10 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Главная'
+        
+        # SEO мета-теги
+        context['page_key'] = 'home'
+        context['seo'] = page_meta('home', request=self.request)
         
         # Получаем категории по типам контента
         context['story_categories'] = Category.objects.filter(
@@ -42,6 +47,11 @@ class AboutView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'О проекте'
+        
+        # SEO мета-теги
+        context['page_key'] = 'about'
+        context['seo'] = page_meta('about', request=self.request)
+        
         context['site_settings'] = SiteSettings.get_settings()
         
         # Добавляем статистику для страницы "О проекте"

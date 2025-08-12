@@ -21,6 +21,7 @@ DJANGO_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'django.contrib.sitemaps',  # Для SEO sitemap
 ]
 
 THIRD_PARTY_APPS = [
@@ -491,3 +492,16 @@ ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = None
 
 # Отключаем дублированные сообщения при социальном входе
 SOCIALACCOUNT_STORE_TOKENS = False  # Не сохраняем токены (уменьшает сообщения)
+
+# =====================================
+# SEO НАСТРОЙКИ
+# =====================================
+
+# Домен сайта для генерации абсолютных URL
+SITE_DOMAIN = config('SITE_DOMAIN', default='pravoslavie-portal.ru')
+SITE_NAME = 'Добрые истории'
+SITE_DESCRIPTION = 'Православный портал с духовными рассказами, книгами, аудио и детскими сказками'
+
+# Настройки для robots.txt
+ROBOTS_USE_HOST = True
+ROBOTS_USE_SITEMAP = True

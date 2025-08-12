@@ -1,0 +1,63 @@
+/* КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ ПОЛЕЙ ФОРМЫ ПРОФИЛЯ */
+/* Добавьте этот CSS в конец файла profile_edit.html в блок <style> */
+
+/* Убираем все возможные блокировки кликов */
+.form-control,
+.form-select,
+input,
+textarea,
+select {
+    pointer-events: auto !important;
+    position: relative !important;
+    z-index: 100 !important;
+    background: white !important;
+    cursor: text !important;
+}
+
+input[type="date"],
+select {
+    cursor: pointer !important;
+}
+
+/* Убираем блокировки с контейнеров */
+.form-group,
+.mb-3,
+.col-md-6,
+.col-md-4,
+.card-body,
+.row {
+    pointer-events: auto !important;
+}
+
+/* Убираем псевдоэлементы которые могут блокировать */
+*::before,
+*::after {
+    pointer-events: none !important;
+}
+
+/* Восстанавливаем для нужных элементов */
+button,
+.btn,
+a,
+input,
+textarea,
+select {
+    pointer-events: auto !important;
+}
+
+/* Исправляем label'ы */
+.form-label {
+    pointer-events: none !important;
+    user-select: none !important;
+}
+
+/* Убираем анимации которые могут мешать */
+.form-card::after {
+    display: none !important;
+}
+
+/* Специальное исправление для фокуса */
+.form-control:focus,
+.form-select:focus {
+    z-index: 101 !important;
+}

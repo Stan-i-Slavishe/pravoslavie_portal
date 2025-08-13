@@ -3,96 +3,489 @@
 
 {% block title %}Категории - Православный портал{% endblock %}
 
+{% block extra_css %}
+<style>
+.hover-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+}
+
+.card-body {
+    position: relative;
+    padding: 1.5rem;
+}
+
+.category-description {
+    position: relative;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.description-collapsed {
+    max-height: 4.8em; /* Примерно 3 строки (1.6em * 3) */
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+}
+
+.description-expanded {
+    max-height: none;
+}
+
+.description-fade {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2em; /* Увеличим высоту градиента */
+    background: linear-gradient(transparent 0%, rgba(255, 255, 255, 0.8) 50%, white 100%);
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.description-expanded + .description-fade {
+    opacity: 0;
+}
+
+.expand-toggle {
+    background: none;
+    border: none;
+    color: #667eea; /* Цвет ссылки */
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.25rem 0;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 4px;
+}
+
+.expand-toggle:hover {
+    color: #5a6fd8; /* Более яркий цвет при наведении */
+    text-decoration: none;
+    background: rgba(102, 126, 234, 0.1); /* Легкий фон */
+}
+
+.expand-toggle i {
+    transition: transform 0.3s ease;
+    font-size: 0.75rem;
+}
+
+.expand-toggle.expanded i {
+    transform: rotate(180deg);
+}
+
+.category-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    margin-right: 1rem;
+    background: linear-gradient(135deg, var(--category-color, #6c5ce7)15, var(--category-color, #6c5ce7)30);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.card-title {
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.category-type-badge {
+    background: linear-gradient(135deg, var(--category-color, #6c5ce7), var(--category-color, #6c5ce7)aa);
+    border: none;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+    display: inline-block;
+}
+
+.category-actions {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.btn-video-stories {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    margin-bottom: 0.75rem;
+}
+
+.btn-video-stories:hover {
+    background: linear-gradient(135deg, #ee5a24, #d63031);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(238, 90, 36, 0.4);
+}
+
+.btn-go-to-category {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.btn-go-to-category:hover {
+    background: linear-gradient(135deg, #5a6fd8, #6a4190);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    border-radius: 0 0 25px 25px;
+}
+
+.categories-grid {
+    margin-top: 2rem;
+}
+
+.empty-state {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 20px;
+    padding: 3rem;
+    text-align: center;
+}
+
+/* Обеспечиваем одинаковую высоту карточек */
+.card.h-100 {
+    display: flex;
+    flex-direction: column;
+}
+
+.card.h-100 .card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* Стили для одиночной кнопки */
+.single-button .btn-go-to-category {
+    margin-top: 0;
+}
+
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1.25rem;
+    }
+    
+    .category-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 1.1rem;
+    }
+    
+    .btn-video-stories,
+    .btn-go-to-category {
+        padding: 0.625rem;
+        font-size: 0.8rem;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1><i class="bi bi-grid-3x3-gap"></i> Категории</h1>
-            <a href="{% url 'core:tags' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-tags"></i> Посмотреть теги
-            </a>
+<!-- Заголовок страницы -->
+<div class="page-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="mb-2">
+                    <i class="bi bi-grid-3x3-gap me-3"></i>
+                    Категории
+                </h1>
+                <p class="mb-0 opacity-75">Тематические разделы контента портала</p>
+            </div>
+            <div class="col-auto">
+                <a href="{% url 'core:tags' %}" class="btn btn-light">
+                    <i class="bi bi-tags me-2"></i>
+                    Посмотреть теги
+                </a>
+            </div>
         </div>
-        
-        {% if categories %}
-            <div class="row g-4">
-                {% for category in categories %}
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card h-100 shadow-sm hover-card">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center mb-3">
-                                    {% if category.icon %}
-                                        <i class="{{ category.icon }} me-2" 
-                                           style="color: {{ category.color }}; font-size: 1.5rem;"></i>
-                                    {% endif %}
-                                    <h5 class="card-title mb-0">{{ category.name }}</h5>
+    </div>
+</div>
+
+<div class="container categories-grid">
+    {% if categories %}
+        <div class="row g-4">
+            {% for category in categories %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 hover-card" style="--category-color: {{ category.color }};">
+                        <div class="card-body">
+                            <!-- Заголовок категории -->
+                            <div class="d-flex align-items-center mb-3">
+                                {% if category.icon %}
+                                    <div class="category-icon">
+                                        <i class="{{ category.icon }}"></i>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <h5 class="card-title">{{ category.name }}</h5>
+                                </div>
+                            </div>
+                            
+                            <!-- Тип категории -->
+                            <span class="category-type-badge">
+                                {{ category.get_content_type_display }}
+                            </span>
+                            
+                            <!-- Описание с возможностью развернуть -->
+                            {% if category.description %}
+                                <div class="category-description description-collapsed" data-category-id="{{ category.id }}">
+                                    {{ category.description }}
+                                    <div class="description-fade"></div>
                                 </div>
                                 
-                                <p class="card-text">{{ category.description|default:"Описание будет добавлено позже" }}</p>
-                                
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="badge rounded-pill" 
-                                          style="background-color: {{ category.color }};">
-                                        {{ category.get_content_type_display }}
-                                    </span>
+                                <!-- Кнопка "Показать всё/Свернуть" -->
+                                <button class="expand-toggle" data-category-id="{{ category.id }}">
+                                    <span class="toggle-text">Показать всё</span>
+                                    <i class="bi bi-chevron-down"></i>
+                                </button>
+                            {% else %}
+                                <p class="text-muted mb-3">Описание будет добавлено позже</p>
+                            {% endif %}
+                            
+                            <!-- Кнопки действий - растянуты на всю ширину -->
+                            <div class="category-actions">
+                                <!-- Для всех типов категорий показываем единую кнопку "Перейти" -->
+                                <div class="single-button">
                                     <a href="{% url 'core:category' slug=category.slug %}" 
-                                       class="btn btn-sm btn-outline-primary">
-                                        Перейти <i class="bi bi-arrow-right"></i>
+                                       class="btn-go-to-category">
+                                        Перейти
+                                        <i class="bi bi-arrow-right"></i>
                                     </a>
                                 </div>
                             </div>
                         </div>
                     </div>
-                {% endfor %}
-            </div>
-            
-            <!-- Пагинация -->
-            {% if is_paginated %}
-                <nav aria-label="Навигация по страницам" class="mt-5">
-                    <ul class="pagination justify-content-center">
-                        {% if page_obj.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page=1">Первая</a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
-                            </li>
-                        {% endif %}
-                        
-                        <li class="page-item active">
-                            <span class="page-link">{{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Пагинация -->
+        {% if is_paginated %}
+            <nav aria-label="Навигация по страницам" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">
+                                <i class="bi bi-chevron-double-left"></i>
+                            </a>
                         </li>
-                        
-                        {% if page_obj.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Последняя</a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-            {% endif %}
-        {% else %}
-            <div class="text-center py-5">
-                <i class="bi bi-grid-3x3-gap display-1 text-muted"></i>
-                <h3 class="mt-3">Категории пока не созданы</h3>
-                <p class="text-muted">Категории появятся здесь после добавления администратором</p>
-            </div>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">
+                            {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">
+                                <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
         {% endif %}
-    </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="bi bi-grid-3x3-gap display-1 text-muted mb-3"></i>
+            <h3>Категории пока не созданы</h3>
+            <p class="text-muted">Категории появятся здесь после добавления администратором</p>
+            <a href="{% url 'core:home' %}" class="btn btn-primary mt-3">
+                <i class="bi bi-house me-2"></i>
+                На главную
+            </a>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
 
-{% block extra_css %}
-<style>
-.hover-card {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+{% block extra_js %}
+<script>
+console.log('🔧 Инициализация JavaScript...');
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📦 DOM загружен');
+    
+    // Небольшая задержка для полной загрузки
+    setTimeout(function() {
+        console.log('⏰ Начало инициализации после задержки');
+        
+        // Настройка описаний
+        setupDescriptions();
+        
+        // Настройка кнопок
+        setupToggleButtons();
+        
+        // Анимации
+        setupAnimations();
+        
+    }, 150); // Увеличиваем задержку
+});
+
+// Настройка описаний
+function setupDescriptions() {
+    console.log('📝 Настройка описаний...');
+    
+    const descriptions = document.querySelectorAll('.category-description');
+    console.log(`📝 Найдено ${descriptions.length} описаний`);
+    
+    descriptions.forEach(function(desc, index) {
+        // Проверяем, нужна ли кнопка
+        const categoryId = desc.getAttribute('data-category-id');
+        const toggle = document.querySelector('.expand-toggle[data-category-id="' + categoryId + '"]');
+        
+        if (!toggle) {
+            console.log(`⚠️ Кнопка не найдена для описания ${index + 1}`);
+            return;
+        }
+        
+        // Устанавливаем начальное состояние
+        desc.classList.add('description-collapsed');
+        
+        console.log(`✅ Описание ${index + 1} настроено`);
+    });
 }
 
-.hover-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+// Настройка кнопок
+function setupToggleButtons() {
+    console.log('🔘 Настройка кнопок...');
+    
+    const toggles = document.querySelectorAll('.expand-toggle');
+    console.log(`🔘 Найдено ${toggles.length} кнопок`);
+    
+    toggles.forEach(function(toggle, index) {
+        const categoryId = toggle.getAttribute('data-category-id');
+        console.log(`🔘 Настраиваем кнопку ${index + 1} для категории ${categoryId}`);
+        
+        // Удаляем старые обработчики
+        toggle.onclick = null;
+        
+        // Добавляем новый обработчик
+        toggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log(`👆 КЛИК ПО КНОПКЕ! Категория: ${categoryId}`);
+            
+            const description = document.querySelector('.category-description[data-category-id="' + categoryId + '"]');
+            const toggleText = toggle.querySelector('.toggle-text');
+            
+            if (!description) {
+                console.error('❌ Описание не найдено!');
+                return;
+            }
+            
+            if (!toggleText) {
+                console.error('❌ Текст кнопки не найден!');
+                return;
+            }
+            
+            // Переключаем состояние
+            if (description.classList.contains('description-collapsed')) {
+                console.log('🔽 Разворачиваем...');
+                description.classList.remove('description-collapsed');
+                description.classList.add('description-expanded');
+                toggleText.textContent = 'Свернуть';
+                toggle.classList.add('expanded');
+            } else {
+                console.log('🔼 Сворачиваем...');
+                description.classList.remove('description-expanded');
+                description.classList.add('description-collapsed');
+                toggleText.textContent = 'Показать всё';
+                toggle.classList.remove('expanded');
+            }
+        });
+        
+        console.log(`✅ Кнопка ${index + 1} настроена`);
+    });
 }
-</style>
+
+// Настройка анимаций
+function setupAnimations() {
+    console.log('🎨 Настройка анимаций...');
+    
+    const cards = document.querySelectorAll('.hover-card');
+    cards.forEach(function(card, index) {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.6s ease';
+        
+        setTimeout(function() {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+    
+    console.log(`✅ Анимации настроены для ${cards.length} карточек`);
+}
+
+console.log('✅ JavaScript загружен');
+</script>
 {% endblock %}

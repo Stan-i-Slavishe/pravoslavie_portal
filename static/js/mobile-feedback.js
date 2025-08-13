@@ -145,11 +145,10 @@ class MobileFeedbackSystem {
                         <textarea 
                             class="feedback-textarea" 
                             id="feedbackText" 
-                            placeholder="Например: Кнопка не работает на странице Контакты..."
+                            placeholder="Например: Кнопка 'Купить' не работает на странице книг, или Сайт медленно загружается, или Предлагаю добавить темную тему..."
                             maxlength="1000"
-                            style="border: 3px solid #667eea; background: #f8f9ff; min-height: 100px;"
-                            required>
-                        </textarea>
+                            style="border: 3px solid #667eea; background: white; min-height: 100px; color: #333;"
+                            required>Например: Кнопка "Купить" не работает на странице книг, или Сайт медленно загружается, или Предлагаю добавить темную тему...</textarea>
                         <div style="text-align: right; font-size: 12px; color: #666; margin-top: 5px;">
                             <span id="charCount">0</span>/1000 символов
                         </div>
@@ -172,6 +171,11 @@ class MobileFeedbackSystem {
         this.form = document.getElementById('feedbackForm');
         this.textarea = document.getElementById('feedbackText');
         this.submitBtn = document.getElementById('feedbackSubmit');
+        
+        // Принудительно устанавливаем placeholder
+        if (this.textarea) {
+            this.textarea.placeholder = 'Например: Кнопка "Купить" не работает на странице книг, или Сайт медленно загружается, или Предлагаю добавить темную тему...';
+        }
     }
 
     /**
@@ -300,12 +304,30 @@ class MobileFeedbackSystem {
         this.overlay.classList.add('show');
         document.body.style.overflow = 'hidden';
         
-        // Фокус на форме для лучшей доступности
+        // Принудительно устанавливаем placeholder при открытии
         setTimeout(() => {
-            if (this.textarea) {
-                this.textarea.focus();
+            const textarea = document.getElementById('feedbackText');
+            if (textarea) {
+                textarea.placeholder = 'Например: Кнопка "Купить" не работает на странице книг, или Сайт медленно загружается, или Предлагаю добавить темную тему...';
+                
+                // Обработчик для очистки предзаполненного текста
+                let isPlaceholderCleared = false;
+                textarea.addEventListener('focus', function() {
+                    if (!isPlaceholderCleared && this.value.includes('Например:')) {
+                        this.value = '';
+                        this.style.color = '#333';
+                        isPlaceholderCleared = true;
+                    }
+                });
+                
+                // Устанавливаем серый цвет для примера
+                textarea.style.color = '#999';
+                textarea.style.fontStyle = 'italic';
+                
+                textarea.focus();
+                console.log('Placeholder установлен:', textarea.placeholder);
             }
-        }, 300);
+        }, 100);
     }
 
     /**

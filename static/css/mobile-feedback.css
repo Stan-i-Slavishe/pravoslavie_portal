@@ -221,8 +221,27 @@
 }
 
 .feedback-textarea::placeholder {
-    color: #999;
+    color: #999 !important;
     font-style: italic;
+    opacity: 0.8;
+}
+
+.feedback-textarea::-webkit-input-placeholder {
+    color: #999 !important;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.feedback-textarea::-moz-placeholder {
+    color: #999 !important;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.feedback-textarea:-ms-input-placeholder {
+    color: #999 !important;
+    font-style: italic;
+    opacity: 0.8;
 }
 
 /* Кнопки */

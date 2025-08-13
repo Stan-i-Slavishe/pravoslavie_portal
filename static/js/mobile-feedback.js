@@ -138,12 +138,22 @@ class MobileFeedbackSystem {
                         </div>
                     </div>
 
-                    <textarea 
-                        class="feedback-textarea" 
-                        id="feedbackText" 
-                        placeholder="Опишите подробнее вашу проблему или предложение..."
-                        maxlength="1000">
-                    </textarea>
+                    <div class="feedback-textarea-container">
+                        <label for="feedbackText" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">
+                            📝 Опишите подробнее:
+                        </label>
+                        <textarea 
+                            class="feedback-textarea" 
+                            id="feedbackText" 
+                            placeholder="Например: Кнопка не работает на странице Контакты..."
+                            maxlength="1000"
+                            style="border: 3px solid #667eea; background: #f8f9ff; min-height: 100px;"
+                            required>
+                        </textarea>
+                        <div style="text-align: right; font-size: 12px; color: #666; margin-top: 5px;">
+                            <span id="charCount">0</span>/1000 символов
+                        </div>
+                    </div>
 
                     <div class="feedback-buttons">
                         <button type="button" class="btn-feedback-cancel" id="feedbackCancel">
@@ -189,6 +199,7 @@ class MobileFeedbackSystem {
 
         // Валидация формы
         this.textarea.addEventListener('input', this.validateForm.bind(this));
+        this.textarea.addEventListener('input', this.updateCharCount.bind(this));
 
         // Отправка формы
         this.form.addEventListener('submit', this.submitFeedback.bind(this));
@@ -342,6 +353,16 @@ class MobileFeedbackSystem {
         this.selectedOption = option.dataset.value;
         
         this.validateForm();
+    }
+
+    /**
+     * Обновление счетчика символов
+     */
+    updateCharCount() {
+        const charCount = document.getElementById('charCount');
+        if (charCount) {
+            charCount.textContent = this.textarea.value.length;
+        }
     }
 
     /**

@@ -205,20 +205,24 @@
     padding: 15px;
     resize: vertical;
     font-family: inherit;
-    margin-bottom: 20px;
+    margin: 20px 0;
     transition: border-color 0.3s ease;
     font-size: 14px;
     line-height: 1.5;
+    background: white;
+    box-sizing: border-box;
 }
 
 .feedback-textarea:focus {
     outline: none;
     border-color: var(--feedback-primary);
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: white;
 }
 
 .feedback-textarea::placeholder {
     color: #999;
+    font-style: italic;
 }
 
 /* Кнопки */

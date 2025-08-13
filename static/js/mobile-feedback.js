@@ -263,7 +263,12 @@ class MobileFeedbackSystem {
             
             // Вибрация (если поддерживается)
             if (navigator.vibrate) {
-                navigator.vibrate([50, 30, 50]);
+                try {
+                    navigator.vibrate([50, 30, 50]);
+                } catch (e) {
+                    // Вибрация заблокирована браузером до взаимодействия пользователя
+                    console.debug('Vibration blocked until user interaction');
+                }
             }
         }, this.longPressDuration);
     }

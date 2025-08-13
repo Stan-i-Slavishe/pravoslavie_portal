@@ -56,9 +56,11 @@ LOCAL_APPS = [
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
-    'core.middleware.advanced_security.BlacklistMiddleware',      # ⭐ НОВЫЙ - Черный список IP
+    # Система безопасности (добавляем в начало)
+    'core.middleware.security.BlacklistMiddleware',  # Проверка черного списка
+    'core.middleware.security.SecurityMiddleware',   # Основная защита
+    
     'django.middleware.security.SecurityMiddleware',
-    'core.middleware.advanced_security.AdvancedSecurityMiddleware',  # ⭐ НОВЫЙ - DDoS защита
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -68,7 +70,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Добавляем обязательный middleware для allauth
     'allauth.account.middleware.AccountMiddleware',
-    'core.middleware.advanced_security.MonitoringMiddleware',        # ⭐ НОВЫЙ - Мониторинг
+    
+    # Мониторинг (добавляем в конец)
+    'core.middleware.security.MonitoringMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -509,110 +513,101 @@ SITE_DESCRIPTION = 'Православный портал с духовными 
 ROBOTS_USE_HOST = True
 ROBOTS_USE_SITEMAP = True
 
-# =====================================
-# 🛡️ УСИЛЕННАЯ БЕЗОПАСНОСТЬ
-# =====================================
 
-# 🔥 Rate limiting настройки
-SECURITY_RATE_LIMITS = {
-    'requests_per_minute': 60 if DEBUG else 30,         # Строже в продакшене
-    'requests_per_hour': 1000 if DEBUG else 500,
-    'mobile_feedback_per_hour': 10 if DEBUG else 5,
-    'login_attempts_per_hour': 10 if DEBUG else 5,
-    'admin_attempts_per_hour': 5 if DEBUG else 3,
-    'api_requests_per_minute': 30 if DEBUG else 15,
+# 🛡️ НАСТРОЙКИ БЕЗОПАСНОСТИ (ДОБАВЛЕНО)
+
+# Логирование безопасности
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'security': {
+            'format': '[{asctime}] {levelname} {name}: {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'security_file': {
+            'level': 'WARNING',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'security.log',
+            'formatter': 'security',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'security',
+        },
+    },
+    'loggers': {
+        'core.middleware.security': {
+            'handlers': ['security_file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
 }
 
-# 🛡️ Настройки безопасности для продакшена
+# Создаем папку для логов
+import os
+log_dir = BASE_DIR / 'logs'
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+
+# Настройки rate limiting (можно настраивать)
+SECURITY_RATE_LIMITS = {
+    'requests_per_minute': 60,      # Запросов в минуту
+    'requests_per_hour': 1000,      # Запросов в час
+    'mobile_feedback_per_hour': 10, # Мобильная обратная связь
+    'login_attempts_per_hour': 10,  # Попытки входа
+}
+
+# Уведомления о мобильной обратной связи
+FEEDBACK_EMAIL_NOTIFICATIONS = config('FEEDBACK_EMAIL_NOTIFICATIONS', default=True, cast=bool)
+
+# URL сайта для ссылок в email
+SITE_URL = config('SITE_URL', default='http://localhost:8000')
+
+# Дополнительные настройки безопасности для продакшена
 if not DEBUG:
-    # HTTPS принуждение
+    # HTTPS настройки
     SECURE_SSL_REDIRECT = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    
-    # Cookies безопасность
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SESSION_COOKIE_HTTPONLY = True
-    CSRF_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = 'Lax'
-    CSRF_COOKIE_SAMESITE = 'Lax'
-    
-    # HSTS (HTTP Strict Transport Security)
     SECURE_HSTS_SECONDS = 31536000  # 1 год
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     
-    # Другие security заголовки
+    # Cookies безопасность
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    
+    # Дополнительные заголовки
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_BROWSER_XSS_FILTER = True
-    X_FRAME_OPTIONS = 'DENY'
-    SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
-else:
-    # В разработке более мягкие настройки
-    SECURE_SSL_REDIRECT = False
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
+    
+    # Строгие настройки безопасности
+    SECURITY_RATE_LIMITS.update({
+        'requests_per_minute': 30,      # Строже для продакшена
+        'requests_per_hour': 500,
+        'mobile_feedback_per_hour': 5,
+        'login_attempts_per_hour': 5,
+    })
 
-# 🔐 CSRF защита
-CSRF_TRUSTED_ORIGINS = [
-    'http://127.0.0.1:8000',
-    'http://localhost:8000',
-    'https://127.0.0.1:8000',
-    'https://localhost:8000',
-    # Добавьте ваш домен для продакшена:
-    # 'https://your-domain.com',
-]
-
-# 📚 Логирование безопасности
-LOGGING['loggers']['security'] = {
-    'handlers': ['file', 'console'],
-    'level': 'INFO',
-    'propagate': False,
-}
-
-# 📁 Ограничения на файлы
-FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024   # 50MB
-FILE_UPLOAD_PERMISSIONS = 0o644
-
-# 🛡️ Content Security Policy (усиленный)
-CSP_DEFAULT_SRC = "'self'"
-CSP_SCRIPT_SRC = "'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com"
-CSP_STYLE_SRC = "'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com"
-CSP_IMG_SRC = "'self' data: https:"
-CSP_FONT_SRC = "'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com"
-CSP_CONNECT_SRC = "'self'"
-CSP_FRAME_ANCESTORS = "'none'"
-
-# 📊 Дополнительные настройки безопасности
-USE_TZ = True
-SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
-
-# 🔒 Усиленная валидация паролей (обновляем существующую)
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-        'OPTIONS': {
-            'min_length': 8,  # Минимум 8 символов
+# Настройки для кеширования (Redis рекомендуется для продакшена)
+if config('REDIS_URL', default=''):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': config('REDIS_URL'),
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            }
         }
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
-
-# 🚨 Дополнительные настройки для защиты
-ALLOWED_UPLOAD_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.mp3', '.mp4']
-MAX_UPLOAD_SIZE = 100 * 1024 * 1024  # 100MB
-
-# 🎯 Настройки для мониторинга
-MONITORING_ENABLED = True
-SECURITY_LOG_LEVEL = 'INFO' if DEBUG else 'WARNING'
-
-print('🛡️ Система безопасности загружена и активна!')
+    }
+else:
+    # Fallback на локальное кеширование
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    }

@@ -124,10 +124,16 @@ class FairyTaleDetailView(DetailView):
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
         
-        # Увеличиваем счетчик просмотров
-        FairyTaleTemplate.objects.filter(id=obj.id).update(
-            views_count=F('views_count') + 1
-        )
+        # Проверяем, смотрел ли пользователь эту сказку в текущей сессии
+        session_key = f'fairy_tale_viewed_{obj.id}'
+        
+        if not self.request.session.get(session_key, False):
+            # Увеличиваем счетчик просмотров только если не смотрел в этой сессии
+            FairyTaleTemplate.objects.filter(id=obj.id).update(
+                views_count=F('views_count') + 1
+            )
+            # Отмечаем в сессии, что пользователь просмотрел эту сказку
+            self.request.session[session_key] = True
         
         return obj
     

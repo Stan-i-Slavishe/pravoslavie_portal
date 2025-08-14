@@ -60,13 +60,40 @@
     margin: 1.5rem 0;
 }
 
-.personalization-form {
+.action-buttons {
+    position: sticky;
+    top: 20px;
     background: #fff;
-    border: 1px solid #e0e0e0;
     border-radius: 1rem;
-    padding: 2rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     margin-bottom: 2rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.btn-favorite {
+    background: transparent;
+    border: 2px solid #e74c3c;
+    color: #e74c3c;
+    transition: all 0.3s ease;
+}
+
+.btn-favorite:hover,
+.btn-favorite.active {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-personalize {
+    background: linear-gradient(135deg, #4ecdc4, #44a08d);
+    border: none;
+    color: white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-personalize:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(78, 205, 196, 0.3);
 }
 
 .price-card {
@@ -120,40 +147,20 @@
     font-size: 2rem;
 }
 
-.action-buttons {
-    position: sticky;
-    top: 20px;
-    background: #fff;
-    border-radius: 1rem;
-    padding: 1.5rem;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    margin-bottom: 2rem;
+/* Обратная навигация */
+.back-navigation {
+    margin-bottom: 1rem;
 }
 
-.btn-favorite {
-    background: transparent;
-    border: 2px solid #e74c3c;
-    color: #e74c3c;
+.back-link {
+    color: #666;
+    text-decoration: none;
+    font-size: 0.9rem;
     transition: all 0.3s ease;
 }
 
-.btn-favorite:hover,
-.btn-favorite.active {
-    background: #e74c3c;
-    color: white;
-}
-
-.btn-personalize {
-    background: linear-gradient(135deg, #4ecdc4, #44a08d);
-    border: none;
-    color: white;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.btn-personalize:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(78, 205, 196, 0.3);
+.back-link:hover {
+    color: #4ecdc4;
 }
 
 @keyframes pulse {
@@ -168,7 +175,6 @@
     }
     
     .fairy-tale-content,
-    .personalization-form,
     .action-buttons {
         padding: 1.5rem;
     }
@@ -178,36 +184,69 @@
 
 {% block content %}
 <div class="container">
-    <!-- Хлебные крошки -->
-    <div class="row">
-        <div class="col-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb bg-transparent p-0 mb-2">
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'fairy_tales:list' %}" class="text-white-50">Сказки</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'fairy_tales:list' %}?category={{ fairy_tale.category.slug }}" class="text-white-50">
-                            {{ fairy_tale.category.name }}
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item active text-white" aria-current="page">
-                        {{ fairy_tale.title }}
-                    </li>
-                </ol>
-            </nav>
-        </div>
+    <!-- Обратная навигация -->
+    <div class="back-navigation">
+        <a href="{% url 'fairy_tales:list' %}" class="back-link">
+            <i class="bi bi-arrow-left me-1"></i>
+            Назад к сказкам
+        </a>
     </div>
 
     <!-- Hero секция -->
     <div class="fairy-tale-hero">
         <div class="fairy-tale-hero-content">
-            <div class="row align-items-center">
-                <div class="col-lg-8">
+            {% if fairy_tale.cover_image %}
+                <div class="row align-items-center">
+                    <div class="col-lg-8">
+                        <h1 class="mb-3">{{ fairy_tale.title }}</h1>
+                        <p class="mb-3 fs-5">{{ fairy_tale.short_description }}</p>
+                        
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <span class="badge bg-light text-dark fs-6">
+                                <i class="bi bi-people"></i> {{ fairy_tale.age_range_display }}
+                            </span>
+                            <span class="badge bg-light text-dark fs-6">
+                                <i class="bi bi-tag"></i> {{ fairy_tale.category.name }}
+                            </span>
+                            {% if fairy_tale.is_free %}
+                                <span class="badge bg-warning text-dark fs-6">
+                                    <i class="bi bi-gift"></i> Бесплатно
+                                </span>
+                            {% else %}
+                                <span class="badge bg-success fs-6">
+                                    <i class="bi bi-currency-exchange"></i> от {{ fairy_tale.base_price }} ₽
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex flex-wrap gap-3 text-white-75">
+                            <small><i class="bi bi-eye"></i> {{ fairy_tale.views_count }} просмотров</small>
+                            {% if fairy_tale.orders_count %}
+                                <small><i class="bi bi-cart"></i> {{ fairy_tale.orders_count }} заказов</small>
+                            {% endif %}
+                            {% if reviews_count %}
+                                <small>
+                                    <i class="bi bi-star-fill text-warning"></i> 
+                                    {{ avg_rating|floatformat:1 }} ({{ reviews_count }} отзывов)
+                                </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4 text-center">
+                        <img src="{{ fairy_tale.cover_image.url }}" 
+                             alt="{{ fairy_tale.title }}"
+                             class="img-fluid rounded shadow"
+                             style="max-height: 200px;">
+                    </div>
+                </div>
+            {% else %}
+                <!-- Версия без изображения - на всю ширину -->
+                <div class="text-center">
                     <h1 class="mb-3">{{ fairy_tale.title }}</h1>
                     <p class="mb-3 fs-5">{{ fairy_tale.short_description }}</p>
                     
-                    <div class="d-flex flex-wrap gap-2 mb-3">
+                    <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
                         <span class="badge bg-light text-dark fs-6">
                             <i class="bi bi-people"></i> {{ fairy_tale.age_range_display }}
                         </span>
@@ -225,7 +264,7 @@
                         {% endif %}
                     </div>
                     
-                    <div class="d-flex flex-wrap gap-3 text-white-75">
+                    <div class="d-flex flex-wrap gap-3 justify-content-center text-white-75">
                         <small><i class="bi bi-eye"></i> {{ fairy_tale.views_count }} просмотров</small>
                         {% if fairy_tale.orders_count %}
                             <small><i class="bi bi-cart"></i> {{ fairy_tale.orders_count }} заказов</small>
@@ -238,20 +277,7 @@
                         {% endif %}
                     </div>
                 </div>
-                
-                <div class="col-lg-4 text-center">
-                    {% if fairy_tale.cover_image %}
-                        <img src="{{ fairy_tale.cover_image.url }}" 
-                             alt="{{ fairy_tale.title }}"
-                             class="img-fluid rounded shadow"
-                             style="max-height: 200px;">
-                    {% else %}
-                        <div class="d-inline-block bg-white bg-opacity-20 rounded p-4">
-                            <i class="bi bi-book-heart display-1"></i>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+            {% endif %}
         </div>
     </div>
 
@@ -423,22 +449,20 @@
                 
                 <!-- Избранное -->
                 {% if user.is_authenticated %}
-                    <button class="btn btn-favorite w-100 mb-3 {% if is_favorite %}active{% endif %}" 
-                            onclick="toggleFavorite({{ fairy_tale.id }})">
-                        <i class="bi bi-heart{% if is_favorite %}-fill{% endif %}"></i>
-                        {% if is_favorite %}Убрать из избранного{% else %}Добавить в избранное{% endif %}
-                    </button>
+                    <a href="#" class="btn btn-favorite w-100 mb-3" onclick="showComingSoonMessage(event)">
+                        <i class="bi bi-heart"></i>
+                        Добавить в избранное
+                    </a>
                 {% endif %}
                 
                 <!-- Персонализация -->
                 {% if fairy_tale.is_free %}
-                    <a href="#personalization" class="btn btn-personalize w-100 mb-3">
+                    <a href="#" class="btn btn-personalize w-100 mb-3" onclick="showComingSoonMessage(event)">
                         <i class="bi bi-person-plus me-2"></i>
                         Читать бесплатно
                     </a>
                 {% else %}
-                    <a href="{% url 'fairy_tales:personalize' slug=fairy_tale.slug %}" 
-                       class="btn btn-personalize w-100 mb-3">
+                    <a href="#" class="btn btn-personalize w-100 mb-3" onclick="showComingSoonMessage(event)">
                         <i class="bi bi-person-plus me-2"></i>
                         Заказать персонализацию
                     </a>
@@ -456,21 +480,23 @@
                             <a class="dropdown-item" 
                                href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text={{ fairy_tale.title }}"
                                target="_blank">
-                                <i class="bi bi-telegram text-primary"></i> Telegram
+                                <i class="bi bi-telegram text-info me-2"></i> Telegram
                             </a>
                         </li>
                         <li>
                             <a class="dropdown-item" 
                                href="https://vk.com/share.php?url={{ request.build_absolute_uri }}&title={{ fairy_tale.title }}"
                                target="_blank">
-                                <i class="bi bi-vk text-primary"></i> ВКонтакте
+                                <span class="me-2 d-inline-flex align-items-center justify-content-center" 
+                                      style="width: 16px; height: 16px; background: #4680c2; color: white; font-size: 10px; font-weight: bold; border-radius: 2px;">VK</span> 
+                                ВКонтакте
                             </a>
                         </li>
                         <li>
                             <a class="dropdown-item" 
                                href="https://wa.me/?text={{ fairy_tale.title }} {{ request.build_absolute_uri }}"
                                target="_blank">
-                                <i class="bi bi-whatsapp text-success"></i> WhatsApp
+                                <i class="bi bi-whatsapp text-success me-2"></i> WhatsApp
                             </a>
                         </li>
                     </ul>
@@ -514,137 +540,81 @@
         </div>
     </div>
 </div>
-
-<!-- Модальное окно для добавления отзыва -->
-{% if user.is_authenticated %}
-<div class="modal fade" id="reviewModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Оставить отзыв</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="reviewForm">
-                    <div class="mb-3">
-                        <label class="form-label">Оценка</label>
-                        <div class="star-rating-input">
-                            {% for i in "54321" %}
-                                <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}">
-                                <label for="star{{ i }}" class="star">★</label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="reviewTitle" class="form-label">Заголовок</label>
-                        <input type="text" class="form-control" id="reviewTitle" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="reviewContent" class="form-label">Отзыв</label>
-                        <textarea class="form-control" id="reviewContent" rows="4" required></textarea>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="helpedProblem">
-                            <label class="form-check-label" for="helpedProblem">
-                                Сказка помогла решить проблему
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="childLiked">
-                            <label class="form-check-label" for="childLiked">
-                                Сказка понравилась ребенку
-                            </label>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                <button type="button" class="btn btn-primary" onclick="submitReview()">Отправить</button>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
 {% endblock %}
 
 {% block extra_js %}
 <script>
-{% if user.is_authenticated %}
-function toggleFavorite(templateId) {
-    fetch(`{% url 'fairy_tales:toggle_favorite' template_id=0 %}`.replace('0', templateId), {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-            'Content-Type': 'application/json',
+// Функция для отображения сообщения "В разработке"
+function showComingSoonMessage(event) {
+    event.preventDefault();
+    
+    // Создаем красивое уведомление
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-info alert-dismissible fade show position-fixed';
+    notification.style.cssText = `
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 350px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        border-left: 4px solid #4ecdc4;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="bi bi-tools text-info me-3" style="font-size: 1.5rem;"></i>
+            <div>
+                <strong>😊 Спасибо за интерес!</strong><br>
+                <small>Эта функция пока в разработке</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Автоматически убираем через 5 секунд
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            const button = document.querySelector('.btn-favorite');
-            const icon = button.querySelector('i');
-            
-            if (data.is_favorite) {
-                button.classList.add('active');
-                icon.classList.remove('bi-heart');
-                icon.classList.add('bi-heart-fill');
-                button.innerHTML = '<i class="bi bi-heart-fill"></i> Убрать из избранного';
-            } else {
-                button.classList.remove('active');
-                icon.classList.remove('bi-heart-fill');
-                icon.classList.add('bi-heart');
-                button.innerHTML = '<i class="bi bi-heart"></i> Добавить в избранное';
-            }
-            
-            // Показываем уведомление
-            showToast(data.message, 'success');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showToast('Произошла ошибка', 'error');
-    });
+    }, 5000);
+    
+    // Анимация кнопки
+    const button = event.target.closest('a');
+    if (button) {
+        const originalText = button.innerHTML;
+        button.style.transform = 'scale(1.05)';
+        button.innerHTML = '<i class="bi bi-check"></i> Учтено!';
+        
+        setTimeout(() => {
+            button.style.transform = 'scale(1)';
+            button.innerHTML = originalText;
+        }, 1500);
+    }
 }
 
-function submitReview() {
-    const form = document.getElementById('reviewForm');
-    const formData = new FormData(form);
-    
-    const reviewData = {
-        rating: formData.get('rating'),
-        title: document.getElementById('reviewTitle').value,
-        content: document.getElementById('reviewContent').value,
-        helped_with_problem: document.getElementById('helpedProblem').checked,
-        child_liked: document.getElementById('childLiked').checked
-    };
-    
-    fetch(`{% url 'fairy_tales:add_review' template_id=fairy_tale.id %}`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(reviewData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            showToast(data.message, 'success');
-            bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
-            setTimeout(() => location.reload(), 1500);
-        } else {
-            showToast(data.message, 'error');
+// Добавляем CSS анимацию
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showToast('Произошла ошибка', 'error');
-    });
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+`;
+document.head.appendChild(style);
+
+{% if user.is_authenticated %}
+function toggleFavorite(templateId) {
+    // Пока заглушка - можно удалить эту функцию
+    showComingSoonMessage({ preventDefault: () => {}, target: document.querySelector('.btn-favorite') });
 }
 {% endif %}
 
@@ -666,56 +636,5 @@ function showToast(message, type) {
         toast.remove();
     }, 3000);
 }
-
-// Анимация звезд в рейтинге
-document.addEventListener('DOMContentLoaded', function() {
-    const stars = document.querySelectorAll('.star-rating-input .star');
-    stars.forEach(star => {
-        star.addEventListener('mouseenter', function() {
-            const rating = this.previousElementSibling.value;
-            highlightStars(rating);
-        });
-        
-        star.addEventListener('click', function() {
-            const input = this.previousElementSibling;
-            input.checked = true;
-            highlightStars(input.value);
-        });
-    });
-    
-    function highlightStars(rating) {
-        stars.forEach((star, index) => {
-            if (5 - index <= rating) {
-                star.style.color = '#ffc107';
-            } else {
-                star.style.color = '#ddd';
-            }
-        });
-    }
-});
 </script>
-
-<style>
-.star-rating-input {
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: flex-end;
-}
-
-.star-rating-input input {
-    display: none;
-}
-
-.star-rating-input .star {
-    font-size: 2rem;
-    color: #ddd;
-    cursor: pointer;
-    transition: color 0.2s;
-}
-
-.star-rating-input .star:hover,
-.star-rating-input input:checked ~ .star {
-    color: #ffc107;
-}
-</style>
 {% endblock %}

@@ -136,6 +136,7 @@
     text-decoration: none;
     transition: all 0.3s ease;
     font-size: 0.9rem;
+    white-space: nowrap;
 }
 
 .category-filter-btn:hover,
@@ -143,6 +144,97 @@
     border-color: #4ecdc4;
     background: #4ecdc4;
     color: white;
+    text-decoration: none;
+}
+
+.categories-container {
+    position: relative;
+}
+
+.category-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+/* Оптимизация для более равномерного распределения */
+.category-filter-btn {
+    flex: 0 0 auto;
+    min-width: fit-content;
+}
+
+@media (max-width: 768px) {
+    .category-row {
+        justify-content: center;
+    }
+}
+
+.hidden-categories {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.4s ease-out;
+}
+
+.hidden-categories.show {
+    opacity: 1;
+    max-height: 500px;
+}
+
+.toggle-categories-btn {
+    background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+    border: none;
+    color: white;
+    padding: 0.4rem 1rem;
+    border-radius: 1.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.25rem;
+}
+
+.toggle-categories-btn:hover {
+    background: linear-gradient(135deg, #44a08d 0%, #4ecdc4 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+.toggle-categories-btn.expanded .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.categories-counter {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.1rem 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.4s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .filter-row {
@@ -190,6 +282,21 @@
     
     .search-input {
         min-width: auto;
+    }
+    
+    .category-filter-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    .toggle-categories-btn {
+        padding: 0.3rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    .categories-counter {
+        padding: 0.1rem 0.4rem;
+        font-size: 0.7rem;
     }
 }
 </style>
@@ -245,17 +352,48 @@
 
         <!-- Категории -->
         <div class="mt-3">
-            <div class="d-flex flex-wrap">
-                <a href="{% url 'fairy_tales:list' %}" 
-                   class="category-filter-btn {% if not current_filters.category %}active{% endif %}">
-                    Все категории
-                </a>
-                {% for category in categories %}
-                    <a href="?category={{ category.slug }}" 
-                       class="category-filter-btn {% if current_filters.category == category.slug %}active{% endif %}">
-                        <i class="bi bi-{{ category.icon }}"></i> {{ category.name }}
+            <div class="categories-container">
+                <!-- Всегда видимые категории -->
+                <div class="category-row">
+                    <a href="{% url 'fairy_tales:list' %}" 
+                       class="category-filter-btn {% if not current_filters.category %}active{% endif %}">
+                        <i class="bi bi-grid-3x3-gap"></i> Все категории
                     </a>
-                {% endfor %}
+                    {% for category in categories|slice:":7" %}
+                        <a href="?category={{ category.slug }}" 
+                           class="category-filter-btn {% if current_filters.category == category.slug %}active{% endif %}">
+                            <i class="bi bi-{{ category.icon }}"></i> {{ category.name }}
+                        </a>
+                    {% endfor %}
+                </div>
+
+                <!-- Скрытые категории -->
+                {% if categories|length > 7 %}
+                    <div class="hidden-categories" id="hiddenCategories">
+                        <div class="category-row">
+                            {% for category in categories|slice:"7:" %}
+                                <a href="?category={{ category.slug }}" 
+                                   class="category-filter-btn {% if current_filters.category == category.slug %}active{% endif %}">
+                                    <i class="bi bi-{{ category.icon }}"></i> {{ category.name }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Кнопка переключения -->
+                    <div class="d-flex justify-content-center mt-2">
+                        <button 
+                            class="toggle-categories-btn" 
+                            id="toggleCategoriesBtn"
+                            onclick="toggleCategories()"
+                            type="button"
+                        >
+                            <span class="toggle-text">Показать все категории</span>
+                            <span class="categories-counter" id="hiddenCounter">+{{ categories|length|add:"-7" }}</span>
+                            <i class="bi bi-chevron-down toggle-icon"></i>
+                        </button>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -425,6 +563,50 @@ function updateSort(value) {
     const url = new URL(window.location);
     url.searchParams.set('sort', value);
     window.location.href = url.toString();
+}
+
+// Функция переключения категорий
+let isExpanded = false;
+
+function toggleCategories() {
+    const hiddenCategories = document.getElementById('hiddenCategories');
+    const toggleBtn = document.getElementById('toggleCategoriesBtn');
+    const toggleText = toggleBtn.querySelector('.toggle-text');
+    const hiddenCounter = document.getElementById('hiddenCounter');
+    
+    if (!isExpanded) {
+        // Показываем скрытые категории
+        hiddenCategories.classList.add('show');
+        toggleBtn.classList.add('expanded');
+        toggleText.textContent = 'Скрыть категории';
+        hiddenCounter.style.display = 'none';
+        
+        // Анимация появления категорий
+        setTimeout(() => {
+            const categoryBtns = hiddenCategories.querySelectorAll('.category-filter-btn');
+            categoryBtns.forEach((btn, index) => {
+                setTimeout(() => {
+                    btn.classList.add('fade-in-up');
+                }, index * 50);
+            });
+        }, 100);
+        
+        isExpanded = true;
+    } else {
+        // Скрываем категории
+        hiddenCategories.classList.remove('show');
+        toggleBtn.classList.remove('expanded');
+        toggleText.textContent = 'Показать все категории';
+        hiddenCounter.style.display = 'inline-block';
+        
+        // Убираем анимацию
+        const categoryBtns = hiddenCategories.querySelectorAll('.category-filter-btn');
+        categoryBtns.forEach(btn => {
+            btn.classList.remove('fade-in-up');
+        });
+        
+        isExpanded = false;
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {

@@ -74,9 +74,7 @@
     transition: transform 0.3s ease;
 }
 
-.story-card:hover .story-thumbnail img {
-    transform: scale(1.05);
-}
+/* Эффект масштабирования теперь через .story-thumbnail-link:hover */
 
 .play-overlay {
     position: absolute;
@@ -95,9 +93,32 @@
     transition: all 0.3s ease;
 }
 
-.story-card:hover .play-overlay {
+/* Эффект плей-оверлея теперь через .story-thumbnail-link:hover */
+
+/* Стили для кликабельного превью */
+.story-thumbnail-link {
+    display: block;
+    text-decoration: none !important;
+    color: inherit;
+}
+
+.story-thumbnail-link:hover {
+    text-decoration: none !important;
+}
+
+/* Улучшенные эффекты при наведении на превью */
+.story-thumbnail-link:hover .story-thumbnail img {
+    transform: scale(1.05);
+}
+
+.story-thumbnail-link:hover .play-overlay {
     background: #e74c3c;
     transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* Добавляем курсор pointer для всего превью */
+.story-thumbnail {
+    cursor: pointer;
 }
 
 .story-duration {
@@ -481,27 +502,30 @@
         {% for story in stories %}
             <div class="col-lg-4 col-md-6">
                 <div class="story-card">
-                    <div class="story-thumbnail">
-                        {% if story.youtube_embed_id %}
-                            <!-- YouTube превью -->
-                            <img src="https://img.youtube.com/vi/{{ story.youtube_embed_id }}/maxresdefault.jpg" 
-                                 alt="{{ story.title }}" 
-                                 onerror="this.src='https://img.youtube.com/vi/{{ story.youtube_embed_id }}/hqdefault.jpg'">
-                        {% else %}
-                            <div class="d-flex align-items-center justify-content-center h-100" 
-                                 style="background: linear-gradient(45deg, #e74c3c, #c0392b);">
-                                <i class="bi bi-play-circle" style="font-size: 3rem; color: white; opacity: 0.7;"></i>
+                    <!-- Кликабельное превью -->
+                    <a href="{% url 'stories:detail' slug=story.slug %}" class="story-thumbnail-link text-decoration-none">
+                        <div class="story-thumbnail">
+                            {% if story.youtube_embed_id %}
+                                <!-- YouTube превью -->
+                                <img src="https://img.youtube.com/vi/{{ story.youtube_embed_id }}/maxresdefault.jpg" 
+                                     alt="{{ story.title }}" 
+                                     onerror="this.src='https://img.youtube.com/vi/{{ story.youtube_embed_id }}/hqdefault.jpg'">
+                            {% else %}
+                                <div class="d-flex align-items-center justify-content-center h-100" 
+                                     style="background: linear-gradient(45deg, #e74c3c, #c0392b);">
+                                    <i class="bi bi-play-circle" style="font-size: 3rem; color: white; opacity: 0.7;"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="play-overlay">
+                                <i class="bi bi-play-fill"></i>
                             </div>
-                        {% endif %}
-                        
-                        <div class="play-overlay">
-                            <i class="bi bi-play-fill"></i>
+                            
+                            {% if story.duration %}
+                                <div class="story-duration">{{ story.duration }}</div>
+                            {% endif %}
                         </div>
-                        
-                        {% if story.duration %}
-                            <div class="story-duration">{{ story.duration }}</div>
-                        {% endif %}
-                    </div>
+                    </a>
                     
                     <div class="story-content">
                         <h3 class="story-title">
@@ -538,12 +562,6 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        
-                        <a href="{% url 'stories:detail' slug=story.slug %}" 
-                           class="btn btn-outline-primary btn-sm">
-                            <i class="bi bi-play me-1"></i>
-                            Смотреть
-                        </a>
                     </div>
                 </div>
             </div>

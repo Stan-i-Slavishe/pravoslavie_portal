@@ -174,25 +174,21 @@
                             <span class="text-success total-price"><span class="price-value">{{ cart.total_price }}</span> ₽</span>
                         </div>
                         
+                        <!-- Промокод -->
+                        <div class="mt-3 mb-3">
+                            <h6 class="mb-2">Промокод</h6>
+                            <form id="discount-form">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="discount_code" placeholder="Введите промокод">
+                                    <button type="submit" class="btn btn-outline-primary">Применить</button>
+                                </div>
+                            </form>
+                            <div id="discount-message" class="mt-2"></div>
+                        </div>
+                        
                         <a href="{% url 'shop:checkout' %}" class="btn btn-success w-100 mt-3">
                             <i class="bi bi-credit-card"></i> Оформить заказ
                         </a>
-                    </div>
-                </div>
-                
-                <!-- Промокод -->
-                <div class="card mt-3">
-                    <div class="card-header">
-                        <h6 class="mb-0">Промокод</h6>
-                    </div>
-                    <div class="card-body">
-                        <form id="discount-form">
-                            <div class="input-group">
-                                <input type="text" class="form-control" name="discount_code" placeholder="Введите промокод">
-                                <button type="submit" class="btn btn-outline-primary">Применить</button>
-                            </div>
-                        </form>
-                        <div id="discount-message" class="mt-2"></div>
                     </div>
                 </div>
             {% endif %}
@@ -332,6 +328,11 @@
     /* Кнопка удаления */
     .cart-item .remove-item-btn {
         padding: 8px 12px;
+    }
+    
+    /* Скрываем только кнопку внизу под списком товаров */
+    .mt-3.text-end .btn-success[href*="checkout"] {
+        display: none !important;
     }
 }
 </style>
@@ -528,27 +529,37 @@ document.addEventListener('DOMContentLoaded', function() {
         discountForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const formData = new FormData(this);
+            const discountCode = discountForm.querySelector('input[name="discount_code"]').value.trim();
             
+            if (!discountCode) {
+                messageDiv.innerHTML = '<div class="alert alert-danger alert-sm">Введите промокод</div>';
+                return;
+            }
+            
+            // Отправляем JSON данные в правильном формате
             fetch('{% url "shop:apply_discount" %}', {
                 method: 'POST',
-                body: formData,
                 headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                }
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value || '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    code: discountCode
+                })
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    messageDiv.innerHTML = '<div class="alert alert-success alert-sm">' + data.message + '</div>';
+                if (data.status === 'success') {
+                    messageDiv.innerHTML = '<div class="alert alert-success alert-sm">Промокод применен! Скидка: ' + data.discount_amount + ' ₽</div>';
                     updateCartTotals(data);
                     showToast('Промокод применен!');
                 } else {
-                    messageDiv.innerHTML = '<div class="alert alert-danger alert-sm">' + data.message + '</div>';
-                    showToast(data.message, 'error');
+                    messageDiv.innerHTML = '<div class="alert alert-danger alert-sm">' + (data.error || data.message) + '</div>';
+                    showToast(data.error || data.message, 'error');
                 }
             })
             .catch(error => {
+                console.error('Error:', error);
                 messageDiv.innerHTML = '<div class="alert alert-danger alert-sm">Ошибка применения промокода</div>';
                 showToast('Ошибка применения промокода', 'error');
             });

@@ -318,6 +318,13 @@ class Story(models.Model):
         verbose_name = "Рассказ"
         verbose_name_plural = "Рассказы"
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['is_published', 'is_featured', '-created_at']),
+            models.Index(fields=['category', '-views_count']),
+            models.Index(fields=['-views_count']),
+            models.Index(fields=['slug']),
+            models.Index(fields=['youtube_embed_id']),
+        ]
 
     def __str__(self):
         return self.title

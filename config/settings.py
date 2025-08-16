@@ -69,6 +69,8 @@ MIDDLEWARE = [
     # Добавляем обязательный middleware для allauth
     'allauth.account.middleware.AccountMiddleware',
     'core.middleware.advanced_security.MonitoringMiddleware',        # ⭐ НОВЫЙ - Мониторинг
+    'stories.middleware.AdminPerformanceMiddleware',
+    'stories.middleware.DatabaseOptimizationMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'

@@ -17,9 +17,13 @@
             <div class="video-container">
                 {% if story.youtube_embed_id %}
                     <div class="embed-responsive embed-responsive-16by9">
-                        <iframe width="100%" height="500" 
-                                src="https://www.youtube.com/embed/{{ story.youtube_embed_id }}" 
+                        <iframe width="100%" 
+                                height="500" 
+                                src="https://www.youtube.com/embed/{{ story.youtube_embed_id }}?rel=0&modestbranding=1" 
+                                title="{{ story.title }}"
                                 frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                referrerpolicy="strict-origin-when-cross-origin"
                                 allowfullscreen>
                         </iframe>
                     </div>

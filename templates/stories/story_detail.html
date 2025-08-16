@@ -14,7 +14,10 @@
     {% if breadcrumbs %}
         {% schema_ld 'breadcrumb' breadcrumbs=breadcrumbs %}
     {% endif %}
-{% endblock %}<!-- Дополнительные стили для адаптивной видимости текста -->
+{% endblock %}
+
+{% block extra_css %}
+<!-- Дополнительные стили для адаптивной видимости текста -->
 <style>
 /* Скрытие/показ текста в зависимости от размера экрана для метаданных */
 @media (max-width: 576px) {
@@ -31,11 +34,6 @@
 /* Кнопка в метаданных остается с прежним дизайном */
 </style>
 
-{% endblock %}
-
-{% block description %}{{ story.description|default:"Духовный рассказ на портале Добрые истории" }}{% endblock %}
-
-{% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <style>
@@ -1433,6 +1431,8 @@
 </style>
 {% endblock %}
 
+{% block description %}{{ story.description|default:"Духовный рассказ на портале Добрые истории" }}{% endblock %}
+
 {% block content %}
 <div class="container">
     <!-- Хлебные крошки -->
@@ -1446,8 +1446,12 @@
                 {% if story.youtube_embed_id %}
                     <div class="embed-responsive embed-responsive-16by9">
                         <iframe width="100%" 
-                                src="https://www.youtube.com/embed/{{ story.youtube_embed_id }}" 
+                                height="400"
+                                src="https://www.youtube.com/embed/{{ story.youtube_embed_id }}?rel=0&modestbranding=1&autoplay=0" 
+                                title="{{ story.title }}"
                                 frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                referrerpolicy="strict-origin-when-cross-origin"
                                 allowfullscreen>
                         </iframe>
                     </div>

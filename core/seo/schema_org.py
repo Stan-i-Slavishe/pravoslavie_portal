@@ -166,14 +166,11 @@ class SchemaGenerator:
         }
         
         # Добавляем YouTube embed если есть
-        if story.youtube_embed:
-            # Извлекаем ID видео из embed кода
-            import re
-            youtube_id_match = re.search(r'embed/([a-zA-Z0-9_-]+)', story.youtube_embed)
-            if youtube_id_match:
-                youtube_id = youtube_id_match.group(1)
-                schema["embedUrl"] = f"https://www.youtube.com/embed/{youtube_id}"
-                schema["thumbnailUrl"] = f"https://img.youtube.com/vi/{youtube_id}/maxresdefault.jpg"
+        if story.youtube_embed_id:
+            # Используем готовый ID видео
+            youtube_id = story.youtube_embed_id
+            schema["embedUrl"] = f"https://www.youtube.com/embed/{youtube_id}"
+            schema["thumbnailUrl"] = f"https://img.youtube.com/vi/{youtube_id}/maxresdefault.jpg"
         
         return schema
     

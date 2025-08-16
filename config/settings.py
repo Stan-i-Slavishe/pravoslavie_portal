@@ -58,14 +58,14 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 MIDDLEWARE = [
     'core.middleware.advanced_security.BlacklistMiddleware',      # ⭐ НОВЫЙ - Черный список IP
     'django.middleware.security.SecurityMiddleware',
-    'core.middleware.advanced_security.AdvancedSecurityMiddleware',  # ⭐ НОВЫЙ - DDoS защита
+    # 'core.middleware.advanced_security.AdvancedSecurityMiddleware',  # ⭐ ОТКЛЮЧЕН ДЛЯ YOUTUBE IFRAME
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',  # ⭐ ОТКЛЮЧЕН ДЛЯ YOUTUBE IFRAME
     # Добавляем обязательный middleware для allauth
     'allauth.account.middleware.AccountMiddleware',
     'core.middleware.advanced_security.MonitoringMiddleware',        # ⭐ НОВЫЙ - Мониторинг
@@ -545,7 +545,7 @@ if not DEBUG:
     # Другие security заголовки
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_BROWSER_XSS_FILTER = True
-    X_FRAME_OPTIONS = 'DENY'
+    # X_FRAME_OPTIONS = 'DENY'  # Отключено для совместимости с YouTube
     SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 else:
     # В разработке более мягкие настройки
@@ -575,14 +575,23 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024   # 50MB
 FILE_UPLOAD_PERMISSIONS = 0o644
 
-# 🛡️ Content Security Policy (усиленный)
-CSP_DEFAULT_SRC = "'self'"
-CSP_SCRIPT_SRC = "'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com"
-CSP_STYLE_SRC = "'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com"
-CSP_IMG_SRC = "'self' data: https:"
-CSP_FONT_SRC = "'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com"
-CSP_CONNECT_SRC = "'self'"
-CSP_FRAME_ANCESTORS = "'none'"
+# 🛡️ Content Security Policy (ИСПРАВЛЕНО ДЛЯ YOUTUBE)
+# Отключаем CSP для исправления проблем с YouTube
+# CSP_DEFAULT_SRC = "'self'"
+# CSP_SCRIPT_SRC = "'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com"
+# CSP_STYLE_SRC = "'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com"
+# CSP_IMG_SRC = "'self' data: https:"
+# CSP_FONT_SRC = "'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com"
+# CSP_CONNECT_SRC = "'self'"
+# CSP_FRAME_SRC = "'self' https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com"  # 🎬 Разрешаем YouTube iframe
+# CSP_FRAME_ANCESTORS = "'none'"
+
+# 🎬 АЛЬТЕРНАТИВНАЯ НАСТРОЙКА ДЛЯ YOUTUBE
+# Настройки X-Frame-Options для разрешения iframe
+X_FRAME_OPTIONS = 'SAMEORIGIN'  # Разрешаем iframe с того же домена
+
+# 🔧 ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ ДЛЯ IFRAME
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None  # Отключаем для совместимости с YouTube
 
 # 📊 Дополнительные настройки безопасности
 USE_TZ = True

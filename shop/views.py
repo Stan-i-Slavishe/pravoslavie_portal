@@ -481,8 +481,8 @@ def checkout_view(request):
                 special_requests=cart_item.special_requests
             )
         
-        # Очищаем корзину
-        cart.clear()
+        # НЕ ОЧИЩАЕМ корзину здесь! Очистка будет после успешной оплаты
+        # cart.clear()  # Закомментировано - очистка после оплаты
         
         # Логируем создание заказа
         logger.info(f"Order created: {order.short_id} for user {request.user.email if request.user.is_authenticated else 'anonymous'}")
@@ -513,6 +513,14 @@ def payment_view(request, order_id):
         logger.info(f"Order paid: {order.short_id} with test payment")
         
         order.save()  # Сигналы автоматически отправят email уведомления
+        
+        # ОЧИЩАЕМ КОРЗИНУ ПОСЛЕ УСПЕШНОЙ ОПЛАТЫ
+        try:
+            cart = Cart.objects.get(user=request.user)
+            cart.clear()
+            logger.info(f"Cart cleared for user {request.user.username} after successful payment")
+        except Cart.DoesNotExist:
+            logger.warning(f"Cart not found for user {request.user.username} during payment processing")
         
         # Создаем записи о покупках для быстрого доступа
         for item in order.items.all():
@@ -1094,6 +1102,14 @@ def test_payment_success(request, order_id):
         order.payment_method = 'test'
         order.payment_id = f'test_{order_id}'
         order.save()
+        
+        # ОЧИЩАЕМ КОРЗИНУ ПОСЛЕ УСПЕШНОЙ ОПЛАТЫ
+        try:
+            cart = Cart.objects.get(user=request.user)
+            cart.clear()
+            logger.info(f"Cart cleared for user {request.user.username} after test payment")
+        except Cart.DoesNotExist:
+            logger.warning(f"Cart not found for user {request.user.username} during test payment")
         
         # Создаем покупки
         complete_order(order)

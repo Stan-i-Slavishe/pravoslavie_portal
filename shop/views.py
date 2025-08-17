@@ -270,31 +270,9 @@ def checkout_view(request):
             messages.error(request, "Пожалуйста, заполните все обязательные поля")
             return render(request, 'shop/checkout.html', {'cart': cart})
         
-        # Применение промокода
-        discount_code = request.POST.get('discount_code', '').strip()
-        discount = None
+        total_amount = cart.total_price
+        discount_code = ''
         discount_amount = Decimal('0.00')
-        
-        if discount_code:
-            try:
-                discount = Discount.objects.get(code=discount_code)
-                is_valid, error_message = discount.is_valid()
-                
-                if is_valid:
-                    discount_amount = discount.calculate_discount(cart.total_price)
-                    if cart.total_price < discount.min_amount:
-                        messages.warning(request, f"Минимальная сумма для применения промокода: {discount.min_amount}₽")
-                        discount = None
-                        discount_amount = Decimal('0.00')
-                else:
-                    messages.error(request, error_message)
-                    discount = None
-                    
-            except Discount.DoesNotExist:
-                messages.error(request, "Промокод не найден")
-                discount = None
-        
-        total_amount = cart.total_price - discount_amount
         
         # Создаем заказ
         order = Order.objects.create(
@@ -304,6 +282,8 @@ def checkout_view(request):
             email=email,
             phone=phone,
             total_amount=total_amount,
+            discount_amount=discount_amount,
+            discount_code=discount_code,
             status='pending'
         )
         
@@ -320,11 +300,6 @@ def checkout_view(request):
                 include_illustrations=cart_item.include_illustrations,
                 special_requests=cart_item.special_requests
             )
-        
-        # Применяем скидку
-        if discount:
-            discount.uses_count += 1
-            discount.save()
         
         # Очищаем корзину
         cart.clear()
@@ -361,11 +336,15 @@ def payment_view(request, order_id):
         
         # Создаем записи о покупках для быстрого доступа
         for item in order.items.all():
-            Purchase.objects.get_or_create(
+            purchase, created = Purchase.objects.get_or_create(
                 user=request.user,
                 product=item.product,
-                order=order
+                defaults={'order': order}
             )
+            if not created:
+                # Если покупка уже существует, обновляем заказ
+                purchase.order = order
+                purchase.save()
         
         messages.success(request, f"Заказ #{order.short_id} успешно оплачен!")
         return redirect('shop:payment_success', order_id=order.order_id)

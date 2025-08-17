@@ -192,6 +192,8 @@ class Order(models.Model):
     
     # Финансовая информация
     total_amount = models.DecimalField('Общая сумма', max_digits=10, decimal_places=2)
+    discount_amount = models.DecimalField('Размер скидки', max_digits=10, decimal_places=2, default=0.00)
+    discount_code = models.CharField('Промокод', max_length=50, blank=True, default='')
     
     # Контактная информация
     email = models.EmailField('Email')

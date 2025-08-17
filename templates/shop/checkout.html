@@ -156,11 +156,44 @@
                         <span>{{ cart.total_price }}₽</span>
                     </div>
                     
+                    {% if cart.has_discount %}
+                        <!-- Отображение скидки -->
+                        <div class="mt-2 mb-2">
+                            <div class="alert alert-success p-2 mb-2">
+                                <small class="text-success">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    Промокод "{{ cart.applied_discount_code }}" применен!
+                                </small>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between text-success">
+                                <span>Скидка:</span>
+                                <span>-{{ cart.discount_amount }} ₽</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
                     <hr>
                     
                     <div class="d-flex justify-content-between total-row">
                         <span>Итого:</span>
-                        <span>{{ cart.total_price }}₽</span>
+                        <div class="d-flex flex-column align-items-end">
+                            {% if cart.has_discount %}
+                                <!-- Старая цена (зачёркнутая) -->
+                                <span class="text-decoration-line-through text-danger small">
+                                    {{ cart.total_price }} ₽
+                                </span>
+                                <!-- Новая цена (зелёная) -->
+                                <span class="text-success fw-bold">
+                                    {{ cart.total_price_with_discount }} ₽
+                                </span>
+                            {% else %}
+                                <!-- Обычная цена -->
+                                <span class="text-success fw-bold">
+                                    {{ cart.total_price }} ₽
+                                </span>
+                            {% endif %}
+                        </div>
                     </div>
                     
                     <div class="mt-3">

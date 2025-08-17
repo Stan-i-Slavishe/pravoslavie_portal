@@ -99,6 +99,10 @@ class Cart(models.Model):
     created_at = models.DateTimeField('Создано', auto_now_add=True)
     updated_at = models.DateTimeField('Обновлено', auto_now=True)
     
+    # Поля для скидки
+    applied_discount_code = models.CharField('Примененный промокод', max_length=50, blank=True, default='')
+    discount_amount = models.DecimalField('Размер скидки', max_digits=10, decimal_places=2, default=0.00)
+    
     class Meta:
         verbose_name = 'Корзина'
         verbose_name_plural = 'Корзины'
@@ -112,6 +116,16 @@ class Cart(models.Model):
         return sum(item.total_price for item in self.items.all())
     
     @property
+    def total_price_with_discount(self):
+        """Общая стоимость корзины с учетом скидки"""
+        return max(self.total_price - self.discount_amount, 0)
+    
+    @property
+    def has_discount(self):
+        """Проверяет, применена ли скидка"""
+        return self.discount_amount > 0 and self.applied_discount_code
+    
+    @property
     def total_items(self):
         """Общее количество товаров"""
         return sum(item.quantity for item in self.items.all())
@@ -119,6 +133,18 @@ class Cart(models.Model):
     def clear(self):
         """Очистить корзину"""
         self.items.all().delete()
+    
+    def apply_discount(self, discount_code, discount_amount):
+        """Применить скидку к корзине"""
+        self.applied_discount_code = discount_code
+        self.discount_amount = discount_amount
+        self.save()
+    
+    def clear_discount(self):
+        """Очистить скидку"""
+        self.applied_discount_code = ''
+        self.discount_amount = 0.00
+        self.save()
 
 class CartItem(models.Model):
     """Элемент корзины"""

@@ -179,6 +179,50 @@ def get_cart_count(request):
             'message': 'Ошибка получения данных корзины'
         }, status=500)
 
+@login_required
+def apply_discount_form(request):
+    """Применить промокод через обычную форму (не AJAX)"""
+    if request.method == 'POST':
+        discount_code = request.POST.get('code', '').strip()
+        
+        if not discount_code:
+            messages.error(request, 'Введите промокод')
+            return redirect('shop:checkout')
+        
+        cart = get_object_or_404(Cart, user=request.user)
+        
+        if not cart.items.exists():
+            messages.error(request, 'Корзина пуста')
+            return redirect('shop:cart')
+        
+        try:
+            discount = Discount.objects.get(code=discount_code)
+            is_valid, error_message = discount.is_valid()
+            
+            if not is_valid:
+                messages.error(request, error_message)
+                return redirect('shop:checkout')
+            
+            # Проверяем минимальную сумму
+            if cart.total_price < discount.min_amount:
+                messages.error(request, f'Минимальная сумма для применения промокода: {discount.min_amount}₽')
+                return redirect('shop:checkout')
+            
+            discount_amount = discount.calculate_discount(cart.total_price)
+            
+            # Сохраняем скидку в корзине
+            cart.apply_discount(discount_code, discount_amount)
+            
+            messages.success(request, f'Промокод "{discount_code}" применен! Скидка: {discount_amount}₽')
+            
+        except Discount.DoesNotExist:
+            messages.error(request, 'Промокод не найден')
+        except Exception as e:
+            logger.error(f'Ошибка применения промокода: {e}')
+            messages.error(request, 'Произошла ошибка при применении промокода')
+    
+    return redirect('shop:checkout')
+
 def get_cart_count(request):
     """Получить количество товаров в корзине (для AJAX) - поддерживает GET запросы"""
     if not request.user.is_authenticated:
@@ -250,6 +294,141 @@ def remove_from_cart(request):
         return JsonResponse({'error': 'Ошибка сервера'}, status=500)
 
 @login_required
+@require_POST
+@csrf_exempt
+def apply_discount(request):
+    """Применить промокод к корзине"""
+    try:
+        data = json.loads(request.body)
+        discount_code = data.get('code', '').strip()
+        
+        if not discount_code:
+            return JsonResponse({'status': 'error', 'error': 'Введите промокод'}, status=400)
+        
+        cart = get_object_or_404(Cart, user=request.user)
+        
+        if not cart.items.exists():
+            return JsonResponse({'status': 'error', 'error': 'Корзина пуста'}, status=400)
+        
+        try:
+            discount = Discount.objects.get(code=discount_code)
+            is_valid, error_message = discount.is_valid()
+            
+            if not is_valid:
+                return JsonResponse({'status': 'error', 'error': error_message}, status=400)
+            
+            # Проверяем минимальную сумму
+            if cart.total_price < discount.min_amount:
+                return JsonResponse({
+                    'status': 'error', 
+                    'error': f'Минимальная сумма для применения промокода: {discount.min_amount}₽'
+                }, status=400)
+            
+            discount_amount = discount.calculate_discount(cart.total_price)
+            final_price = cart.total_price - discount_amount
+            
+            # Сохраняем скидку в корзине
+            cart.apply_discount(discount_code, discount_amount)
+            
+            return JsonResponse({
+                'status': 'success',
+                'discount_amount': float(discount_amount),
+                'final_price': float(final_price),
+                'discount_code': discount_code
+            })
+            
+        except Discount.DoesNotExist:
+            return JsonResponse({'status': 'error', 'error': 'Промокод не найден'}, status=400)
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'error': 'Некорректные данные'}, status=400)
+    except Exception as e:
+        logger.error(f'Ошибка применения промокода: {e}')
+        return JsonResponse({'status': 'error', 'error': 'Ошибка сервера'}, status=500)
+
+@login_required
+def apply_discount_form(request):
+    """Применить промокод через обычную форму (не AJAX)"""
+    if request.method == 'POST':
+        discount_code = request.POST.get('code', '').strip()
+        
+        if not discount_code:
+            messages.error(request, 'Введите промокод')
+            return redirect('shop:checkout')
+        
+        cart = get_object_or_404(Cart, user=request.user)
+        
+        if not cart.items.exists():
+            messages.error(request, 'Корзина пуста')
+            return redirect('shop:cart')
+        
+        try:
+            discount = Discount.objects.get(code=discount_code)
+            is_valid, error_message = discount.is_valid()
+            
+            if not is_valid:
+                messages.error(request, error_message)
+                return redirect('shop:checkout')
+            
+            # Проверяем минимальную сумму
+            if cart.total_price < discount.min_amount:
+                messages.error(request, f'Минимальная сумма для применения промокода: {discount.min_amount}₽')
+                return redirect('shop:checkout')
+            
+            discount_amount = discount.calculate_discount(cart.total_price)
+            
+            # Сохраняем скидку в корзине
+            cart.apply_discount(discount_code, discount_amount)
+            
+            messages.success(request, f'Промокод "{discount_code}" применен! Скидка: {discount_amount}₽')
+            
+        except Discount.DoesNotExist:
+            messages.error(request, 'Промокод не найден')
+    
+    return redirect('shop:checkout')
+
+@login_required
+def apply_discount_form(request):
+    """Применить промокод через обычную форму"""
+    if request.method == 'POST':
+        discount_code = request.POST.get('code', '').strip()
+        
+        if not discount_code:
+            messages.error(request, 'Введите промокод')
+            return redirect('shop:checkout')
+        
+        cart = get_object_or_404(Cart, user=request.user)
+        
+        if not cart.items.exists():
+            messages.error(request, 'Корзина пуста')
+            return redirect('shop:cart')
+        
+        try:
+            discount = Discount.objects.get(code=discount_code)
+            is_valid, error_message = discount.is_valid()
+            
+            if not is_valid:
+                messages.error(request, error_message)
+                return redirect('shop:checkout')
+            
+            # Проверяем минимальную сумму
+            if cart.total_price < discount.min_amount:
+                messages.error(request, f'Минимальная сумма для применения промокода: {discount.min_amount}₽')
+                return redirect('shop:checkout')
+            
+            discount_amount = discount.calculate_discount(cart.total_price)
+            
+            # Сохраняем скидку в корзине
+            cart.apply_discount(discount_code, discount_amount)
+            
+            messages.success(request, f'Промокод "{discount_code}" применен! Скидка: {discount_amount}₽')
+            
+        except Discount.DoesNotExist:
+            messages.error(request, 'Промокод не найден')
+    
+    return redirect('shop:checkout')
+
+@login_required
 def checkout_view(request):
     """Оформление заказа"""
     cart = get_object_or_404(Cart, user=request.user)
@@ -270,9 +449,10 @@ def checkout_view(request):
             messages.error(request, "Пожалуйста, заполните все обязательные поля")
             return render(request, 'shop/checkout.html', {'cart': cart})
         
-        total_amount = cart.total_price
-        discount_code = ''
-        discount_amount = Decimal('0.00')
+        # Используем скидку из корзины
+        discount_code = cart.applied_discount_code
+        discount_amount = cart.discount_amount
+        total_amount = cart.total_price_with_discount
         
         # Создаем заказ
         order = Order.objects.create(

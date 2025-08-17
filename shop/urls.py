@@ -29,6 +29,7 @@ urlpatterns = [
     
     # Промокоды
     path('apply-discount/', views.apply_discount, name='apply_discount'),
+    path('apply-discount-form/', views.apply_discount_form, name='apply_discount_form'),
     
     # Персонализированные сказки
     path('order-fairy-tale/<int:product_id>/', views.order_fairy_tale, name='order_fairy_tale'),

@@ -164,14 +164,7 @@
                         
                         <div class="d-flex justify-content-between mb-3">
                             <span>Сумма:</span>
-                            <span class="total-price"><span class="price-value">{{ cart.total_price }}</span> ₽</span>
-                        </div>
-                        
-                        <hr>
-                        
-                        <div class="d-flex justify-content-between h5">
-                            <span>Итого:</span>
-                            <span class="text-success total-price"><span class="price-value">{{ cart.total_price }}</span> ₽</span>
+                            <span class="original-price"><span class="price-value">{{ cart.total_price }}</span> ₽</span>
                         </div>
                         
                         <!-- Промокод -->
@@ -184,6 +177,37 @@
                                 </div>
                             </form>
                             <div id="discount-message" class="mt-2"></div>
+                        </div>
+                        
+                        <!-- Отображение скидки -->
+                        <div id="discount-applied" class="mb-3" style="display: none;">
+                            <div class="alert alert-success p-2 mb-2">
+                                <small class="text-success">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    <span id="discount-text">Промокод применен!</span>
+                                </small>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between text-success">
+                                <span>Скидка:</span>
+                                <span id="discount-amount">-0 ₽</span>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between h5 mb-0">
+                            <span>Итого:</span>
+                            <div class="d-flex flex-column align-items-end">
+                                <!-- Старая цена (показывается только при скидке) -->
+                                <span id="old-total" class="text-decoration-line-through text-danger small" style="display: none;">
+                                    <span class="price-value">{{ cart.total_price }}</span> ₽
+                                </span>
+                                <!-- Новая цена -->
+                                <span id="final-total" class="text-success fw-bold">
+                                    <span class="price-value">{{ cart.total_price }}</span> ₽
+                                </span>
+                            </div>
                         </div>
                         
                         <a href="{% url 'shop:checkout' %}" class="btn btn-success w-100 mt-3">
@@ -262,6 +286,54 @@
 
 .toast-container {
     z-index: 1055;
+}
+
+/* Стили для отображения скидок */
+#old-total {
+    font-size: 0.85rem;
+    margin-bottom: 2px;
+}
+
+#final-total {
+    font-size: 1.1rem;
+    font-weight: bold !important;
+}
+
+#discount-applied .alert {
+    border-radius: 8px;
+    border: 1px solid #d1e7dd;
+    background-color: #d1e7dd;
+}
+
+#discount-applied .alert small {
+    font-weight: 500;
+}
+
+#discount-amount {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #198754 !important; /* Зелёный цвет */
+}
+
+/* Скидка зелёным цветом */
+.text-success {
+    color: #198754 !important;
+}
+
+/* Анимация появления скидки */
+#discount-applied {
+    animation: slideInDown 0.3s ease-out;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Мобильная версия - цена на одной линии со счетчиком */
@@ -550,9 +622,38 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    messageDiv.innerHTML = '<div class="alert alert-success alert-sm">Промокод применен! Скидка: ' + data.discount_amount + ' ₽</div>';
-                    updateCartTotals(data);
-                    showToast('Промокод применен!');
+                    // Очищаем сообщения
+                    messageDiv.innerHTML = '';
+                    
+                    // Показываем блок с примененной скидкой
+                    const discountApplied = document.getElementById('discount-applied');
+                    const discountText = document.getElementById('discount-text');
+                    const discountAmount = document.getElementById('discount-amount');
+                    const oldTotal = document.getElementById('old-total');
+                    const finalTotal = document.getElementById('final-total');
+                    
+                    // Обновляем текст и суммы
+                    discountText.textContent = `Промокод "${discountCode}" применен!`;
+                    discountAmount.textContent = `-${data.discount_amount} ₽`;
+                    
+                    // Показываем старую цену (зачёркнутую красным)
+                    oldTotal.style.display = 'block';
+                    
+                    // Обновляем финальную цену (зелёным)
+                    finalTotal.querySelector('.price-value').textContent = data.final_price;
+                    
+                    // Показываем блок со скидкой
+                    discountApplied.style.display = 'block';
+                    
+                    // Очищаем поле ввода
+                    discountForm.querySelector('input[name="discount_code"]').value = '';
+                    
+                    // Отключаем форму промокода
+                    discountForm.querySelector('input[name="discount_code"]').disabled = true;
+                    discountForm.querySelector('button[type="submit"]').disabled = true;
+                    discountForm.querySelector('button[type="submit"]').textContent = 'Применён';
+                    
+                    showToast('Промокод применён!');
                 } else {
                     messageDiv.innerHTML = '<div class="alert alert-danger alert-sm">' + (data.error || data.message) + '</div>';
                     showToast(data.error || data.message, 'error');

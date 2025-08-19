@@ -45,9 +45,9 @@ def manifest_view(request):
         return JsonResponse({'error': 'Manifest not found'}, status=404)
 
 def service_worker_view(request):
-    """Служит Service Worker файл"""
+    """Служит Service Worker файл из корня проекта"""
     try:
-        with open(settings.BASE_DIR / 'static' / 'sw.js', 'r', encoding='utf-8') as f:
+        with open(settings.BASE_DIR / 'sw.js', 'r', encoding='utf-8') as f:
             sw_content = f.read()
         
         response = HttpResponse(sw_content, content_type='application/javascript')

@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
 from core.views.seo_views import robots_txt
 from core.seo.sitemaps import sitemaps
+from pwa.views import service_worker_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -35,8 +36,11 @@ urlpatterns = [
     # Аналитика
     path('analytics/', include('analytics.urls')),
     
-    # 🚀 PWA функциональность
-    path('', include('pwa.urls')),
+    # 🚀 PWA функциональность (ИСПРАВЛЕНО)
+    path('pwa/', include('pwa.urls')),
+    
+    # Service Worker из корня для правильного scope
+    path('sw.js', service_worker_view, name='service_worker'),
 ]
 
 # Для разработки - обслуживание медиа файлов

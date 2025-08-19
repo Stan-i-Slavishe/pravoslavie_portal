@@ -36,7 +36,7 @@ class PWAManager {
     async registerServiceWorker() {
         if ('serviceWorker' in navigator) {
             try {
-                this.swRegistration = await navigator.serviceWorker.register('/static/sw.js', {
+                this.swRegistration = await navigator.serviceWorker.register('/sw.js', {
                     scope: '/'
                 });
                 

@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Тестирование Push-уведомлений{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="text-center mb-4">🔔 Тестирование Push-уведомлений</h1>
+            
+            <!-- Статус подписки -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>📱 Статус push-уведомлений</h5>
+                </div>
+                <div class="card-body">
+                    <div id="notification-status" class="alert alert-info">
+                        <i class="fas fa-spinner fa-spin"></i> Проверяем статус...
+                    </div>
+                    
+                    <button id="request-permission" class="btn btn-primary" style="display: none;">
+                        <i class="fas fa-bell"></i> Разрешить уведомления
+                    </button>
+                    
+                    <button id="test-notification" class="btn btn-success" style="display: none;">
+                        <i class="fas fa-paper-plane"></i> Тестовое уведомление
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Православные уведомления -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>⛪ Православные уведомления</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button class="btn btn-warning w-100 mb-2" onclick="sendTestNotification('bedtime')">
+                                🌙 Напоминание о сказке
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-info w-100 mb-2" onclick="sendTestNotification('orthodox')">
+                                ⛪ Православный праздник
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Инструкции -->
+            <div class="card">
+                <div class="card-header">
+                    <h5>📋 Как тестировать push-уведомления</h5>
+                </div>
+                <div class="card-body">
+                    <ol>
+                        <li><strong>Разрешите уведомления</strong> - нажмите кнопку выше</li>
+                        <li><strong>Установите PWA</strong> - кнопка "Установить приложение" в адресной строке</li>
+                        <li><strong>Нажмите тестовые кнопки</strong> - увидите уведомления</li>
+                        <li><strong>В продакшене</strong> - уведомления будут приходить автоматически:
+                            <ul>
+                                <li>🌙 <strong>19:00</strong> - напоминание о сказке</li>
+                                <li>⛪ <strong>9:00</strong> - православные праздники</li>
+                                <li>📚 При добавлении нового контента</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 🔔 Проверка статуса push-уведомлений
+document.addEventListener('DOMContentLoaded', function() {
+    checkNotificationStatus();
+});
+
+function checkNotificationStatus() {
+    const statusDiv = document.getElementById('notification-status');
+    const requestBtn = document.getElementById('request-permission');
+    const testBtn = document.getElementById('test-notification');
+    
+    if (!('Notification' in window)) {
+        statusDiv.className = 'alert alert-danger';
+        statusDiv.innerHTML = '<i class="fas fa-times"></i> Ваш браузер не поддерживает push-уведомления';
+        return;
+    }
+    
+    const permission = Notification.permission;
+    
+    switch (permission) {
+        case 'granted':
+            statusDiv.className = 'alert alert-success';
+            statusDiv.innerHTML = '<i class="fas fa-check"></i> Push-уведомления разрешены и работают!';
+            testBtn.style.display = 'inline-block';
+            break;
+            
+        case 'denied':
+            statusDiv.className = 'alert alert-danger';
+            statusDiv.innerHTML = '<i class="fas fa-ban"></i> Push-уведомления заблокированы. Разрешите в настройках браузера.';
+            break;
+            
+        case 'default':
+            statusDiv.className = 'alert alert-warning';
+            statusDiv.innerHTML = '<i class="fas fa-question"></i> Нажмите кнопку для разрешения push-уведомлений';
+            requestBtn.style.display = 'inline-block';
+            break;
+    }
+}
+
+// 🔔 Запрос разрешения на уведомления
+document.getElementById('request-permission').addEventListener('click', async function() {
+    try {
+        const permission = await Notification.requestPermission();
+        
+        if (permission === 'granted') {
+            console.log('✅ Разрешение на уведомления получено');
+            checkNotificationStatus();
+        } else {
+            console.log('❌ Разрешение на уведомления отклонено');
+        }
+    } catch (error) {
+        console.error('Ошибка запроса разрешения:', error);
+    }
+});
+
+// 🧪 Тестовое уведомление
+document.getElementById('test-notification').addEventListener('click', function() {
+    sendTestNotification('test');
+});
+
+// 📤 Отправка тестовых уведомлений
+function sendTestNotification(type) {
+    if (!('serviceWorker' in navigator) || !('Notification' in window)) {
+        alert('❌ Push-уведомления не поддерживаются в вашем браузере');
+        return;
+    }
+    
+    if (Notification.permission !== 'granted') {
+        alert('❌ Разрешите уведомления в браузере');
+        return;
+    }
+    
+    navigator.serviceWorker.ready.then(function(registration) {
+        let title, body, icon, url;
+        
+        switch (type) {
+            case 'bedtime':
+                title = 'Время сказки! 🌙';
+                body = 'Выберите добрую сказку для вашего малыша перед сном';
+                url = '/fairy-tales/';
+                break;
+                
+            case 'orthodox':
+                title = '⛪ Рождество Христово';
+                body = 'Великий праздник Рождества Господа нашего Иисуса Христа';
+                url = '/stories/';
+                break;
+                
+            case 'test':
+            default:
+                title = 'Тестовое уведомление! 🎉';
+                body = 'Ваши push-уведомления работают корректно!';
+                url = '/';
+                break;
+        }
+        
+        registration.showNotification(title, {
+            body: body,
+            icon: '/static/icons/icon-192x192.png',
+            badge: '/static/icons/icon-72x72.png',
+            tag: `notification-${type}`,
+            requireInteraction: false,
+            vibrate: [200, 100, 200],
+            actions: [
+                {
+                    action: 'open',
+                    title: 'Открыть',
+                    icon: '/static/icons/icon-72x72.png'
+                },
+                {
+                    action: 'close',
+                    title: 'Закрыть',
+                    icon: '/static/icons/icon-72x72.png'
+                }
+            ],
+            data: {
+                url: url,
+                type: type,
+                timestamp: Date.now()
+            }
+        });
+        
+        console.log(`✅ Отправлено уведомление: ${title}`);
+    }).catch(error => {
+        console.error('❌ Ошибка отправки уведомления:', error);
+        alert('❌ Ошибка отправки уведомления');
+    });
+}
+</script>
+
+<!-- CSRF Token -->
+{% csrf_token %}
+{% endblock %}

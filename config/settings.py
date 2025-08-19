@@ -12,6 +12,10 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,testserver', cast=lambda v: [s.strip() for s in v.split(',')])
 
+# Добавляем testserver для тестирования
+if 'testserver' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('testserver')
+
 # Application definition
 DJANGO_APPS = [
     'django.contrib.admin',
@@ -50,6 +54,7 @@ LOCAL_APPS = [
     'audio',          # аудио-контент
     'fairy_tales',    # терапевтические сказки
     'analytics',      # аналитика покупательских намерений
+    'pwa',            # 🚀 PWA функциональность
 
 ]
 
@@ -402,6 +407,11 @@ SERVER_EMAIL = config('SERVER_EMAIL', default='server@pravoslavie-portal.ru')
 
 # Список администраторов для уведомлений
 ADMIN_EMAIL_LIST = config('ADMIN_EMAIL_LIST', default='admin@pravoslavie-portal.ru', cast=lambda v: [s.strip() for s in v.split(',')])
+
+# 🔔 VAPID настройки для push-уведомлений
+VAPID_PRIVATE_KEY = config('VAPID_PRIVATE_KEY', default='')
+VAPID_PUBLIC_KEY = config('VAPID_PUBLIC_KEY', default='')
+VAPID_EMAIL = config('VAPID_EMAIL', default='admin@pravoslavie-portal.ru')
 
 # 🔐 БЕЗОПАСНОСТЬ (базовая) - дополнительные настройки
 # HTTPS настройки для продакшена

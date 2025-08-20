@@ -8,6 +8,10 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.utils import timezone
 from django.views.generic import TemplateView
+from .models import (
+    PushSubscription, NotificationCategory, UserNotificationSettings,
+    UserNotificationSubscription
+)
 import json
 import logging
 
@@ -254,3 +258,139 @@ def push_test_page(request):
         logger.error(f"Error getting push statistics: {e}")
     
     return render(request, 'pwa/push_test.html', context)
+
+# =============================================================================
+# 🔔 НОВЫЕ API ДЛЯ НАСТРОЕК УВЕДОМЛЕНИЙ
+# =============================================================================
+
+@login_required
+@require_http_methods(["GET"])
+def notification_settings_page(request):
+    """Страница настроек уведомлений"""
+    # Получаем или создаем настройки пользователя
+    user_settings, created = UserNotificationSettings.objects.get_or_create(user=request.user)
+    
+    # Получаем все категории
+    categories = NotificationCategory.objects.filter(is_active=True)
+    
+    # Получаем подписки пользователя
+    subscriptions = UserNotificationSubscription.objects.filter(user=request.user)
+    subscriptions_dict = {sub.category.name: sub for sub in subscriptions}
+    
+    context = {
+        'user_settings': user_settings,
+        'categories': categories,
+        'subscriptions': subscriptions_dict,
+        'title': 'Настройки уведомлений'
+    }
+    
+    return render(request, 'pwa/notification_settings.html', context)
+
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def save_notification_settings(request):
+    """Сохранение настроек уведомлений"""
+    try:
+        data = json.loads(request.body)
+        
+        # Получаем или создаем настройки пользователя
+        user_settings, created = UserNotificationSettings.objects.get_or_create(user=request.user)
+        
+        # Обновляем общие настройки
+        user_settings.notifications_enabled = data.get('notifications_enabled', True)
+        user_settings.quiet_hours_enabled = data.get('quiet_hours_enabled', True)
+        user_settings.quiet_start = data.get('quiet_start', '22:00')
+        user_settings.quiet_end = data.get('quiet_end', '08:00')
+        user_settings.child_mode = data.get('child_mode', False)
+        user_settings.child_bedtime = data.get('child_bedtime', '20:00')
+        
+        # Обновляем дни недели
+        weekdays = data.get('weekdays', {})
+        user_settings.notify_monday = weekdays.get('notify_monday', True)
+        user_settings.notify_tuesday = weekdays.get('notify_tuesday', True)
+        user_settings.notify_wednesday = weekdays.get('notify_wednesday', True)
+        user_settings.notify_thursday = weekdays.get('notify_thursday', True)
+        user_settings.notify_friday = weekdays.get('notify_friday', True)
+        user_settings.notify_saturday = weekdays.get('notify_saturday', True)
+        user_settings.notify_sunday = weekdays.get('notify_sunday', True)
+        
+        user_settings.save()
+        
+        # Обновляем подписки на категории
+        categories_data = data.get('categories', {})
+        for category_name, category_settings in categories_data.items():
+            try:
+                category = NotificationCategory.objects.get(name=category_name)
+                subscription, created = UserNotificationSubscription.objects.get_or_create(
+                    user=request.user,
+                    category=category,
+                    defaults={
+                        'enabled': category_settings.get('enabled', True),
+                        'frequency': category_settings.get('frequency', 'daily'),
+                        'preferred_time': category_settings.get('time'),
+                        'max_daily_count': category_settings.get('max_daily', 3),
+                        'priority': category_settings.get('priority', 5)
+                    }
+                )
+                
+                if not created:
+                    subscription.enabled = category_settings.get('enabled', True)
+                    subscription.frequency = category_settings.get('frequency', 'daily')
+                    subscription.preferred_time = category_settings.get('time')
+                    subscription.max_daily_count = category_settings.get('max_daily', 3)
+                    subscription.priority = category_settings.get('priority', 5)
+                    subscription.save()
+                    
+            except NotificationCategory.DoesNotExist:
+                logger.warning(f"Category {category_name} not found")
+                continue
+        
+        logger.info(f"Notification settings saved for user {request.user.username}")
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Настройки успешно сохранены'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        logger.error(f"Error saving notification settings: {e}")
+        return JsonResponse({'error': 'Server error'}, status=500)
+
+@login_required
+@require_http_methods(["GET"])
+def get_notification_settings(request):
+    """Получение текущих настроек уведомлений пользователя"""
+    try:
+        # Получаем настройки пользователя
+        user_settings = UserNotificationSettings.objects.filter(user=request.user).first()
+        subscriptions = UserNotificationSubscription.objects.filter(user=request.user)
+        
+        # Формируем ответ
+        settings_data = {
+            'notifications_enabled': user_settings.notifications_enabled if user_settings else True,
+            'quiet_hours_enabled': user_settings.quiet_hours_enabled if user_settings else True,
+            'quiet_start': str(user_settings.quiet_start) if user_settings else '22:00',
+            'quiet_end': str(user_settings.quiet_end) if user_settings else '08:00',
+            'child_mode': user_settings.child_mode if user_settings else False,
+            'child_bedtime': str(user_settings.child_bedtime) if user_settings else '20:00',
+            'categories': {}
+        }
+        
+        # Добавляем настройки категорий
+        for subscription in subscriptions:
+            settings_data['categories'][subscription.category.name] = {
+                'enabled': subscription.enabled,
+                'frequency': subscription.frequency,
+                'preferred_time': str(subscription.preferred_time) if subscription.preferred_time else None,
+                'max_daily_count': subscription.max_daily_count,
+                'priority': subscription.priority
+            }
+        
+        return JsonResponse(settings_data)
+        
+    except Exception as e:
+        logger.error(f"Error getting notification settings: {e}")
+        return JsonResponse({'error': 'Server error'}, status=500)

@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 User = get_user_model()
 
@@ -116,3 +117,138 @@ class CachedContent(models.Model):
         
     def __str__(self):
         return f"{self.user.username} - {self.cache_key}"
+
+# =============================================================================
+# 🔔 НОВЫЕ МОДЕЛИ ДЛЯ НАСТРОЕК УВЕДОМЛЕНИЙ
+# =============================================================================
+
+class NotificationCategory(models.Model):
+    """Категории уведомлений"""
+    
+    CATEGORY_CHOICES = [
+        ('bedtime_stories', '🌙 Сказки на ночь'),
+        ('orthodox_calendar', '⛪ Православный календарь'),
+        ('new_content', '📚 Новый контент'),
+        ('fairy_tales', '🧚 Терапевтические сказки'),
+        ('audio_content', '🎵 Аудио-контент'),
+        ('book_releases', '📖 Новые книги'),
+        ('special_events', '🎉 Особые события'),
+        ('daily_wisdom', '💭 Мудрость дня'),
+    ]
+    
+    name = models.CharField(max_length=50, choices=CATEGORY_CHOICES, unique=True, verbose_name="Категория")
+    title = models.CharField(max_length=100, verbose_name="Название")
+    description = models.TextField(verbose_name="Описание")
+    icon = models.CharField(max_length=10, default="🔔", verbose_name="Иконка")
+    is_active = models.BooleanField(default=True, verbose_name="Активна")
+    default_enabled = models.BooleanField(default=False, verbose_name="Включена по умолчанию")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Категория уведомлений"
+        verbose_name_plural = "Категории уведомлений"
+        
+    def __str__(self):
+        return f"{self.icon} {self.title}"
+
+class UserNotificationSettings(models.Model):
+    """Настройки уведомлений пользователя"""
+    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='notification_settings')
+    
+    # Общие настройки
+    notifications_enabled = models.BooleanField(default=True, verbose_name="Уведомления включены")
+    quiet_hours_enabled = models.BooleanField(default=True, verbose_name="Тихие часы")
+    quiet_start = models.TimeField(default='22:00', verbose_name="Начало тихих часов")
+    quiet_end = models.TimeField(default='08:00', verbose_name="Конец тихих часов")
+    
+    # Настройки по дням недели
+    notify_monday = models.BooleanField(default=True)
+    notify_tuesday = models.BooleanField(default=True) 
+    notify_wednesday = models.BooleanField(default=True)
+    notify_thursday = models.BooleanField(default=True)
+    notify_friday = models.BooleanField(default=True)
+    notify_saturday = models.BooleanField(default=True)
+    notify_sunday = models.BooleanField(default=True)
+    
+    # Специальные настройки для детей
+    child_mode = models.BooleanField(default=False, verbose_name="Детский режим")
+    child_bedtime = models.TimeField(default='20:00', verbose_name="Время сказки")
+    
+    # Технические настройки
+    timezone = models.CharField(max_length=50, default='Europe/Moscow', verbose_name="Часовой пояс")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Настройки уведомлений пользователя"
+        verbose_name_plural = "Настройки уведомлений пользователей"
+        
+    def __str__(self):
+        return f"Настройки {self.user.username}"
+    
+    def get_weekday_setting(self, weekday):
+        """Получить настройку для дня недели (0=понедельник)"""
+        weekday_fields = [
+            'notify_monday', 'notify_tuesday', 'notify_wednesday',
+            'notify_thursday', 'notify_friday', 'notify_saturday', 'notify_sunday'
+        ]
+        return getattr(self, weekday_fields[weekday])
+    
+    def is_quiet_time_now(self):
+        """Проверить, сейчас ли тихие часы"""
+        if not self.quiet_hours_enabled:
+            return False
+            
+        now = timezone.now().time()
+        
+        if self.quiet_start <= self.quiet_end:
+            # Обычный случай: 22:00 - 08:00
+            return self.quiet_start <= now <= self.quiet_end
+        else:
+            # Через полночь: 22:00 - 08:00
+            return now >= self.quiet_start or now <= self.quiet_end
+
+class UserNotificationSubscription(models.Model):
+    """Подписки пользователя на категории уведомлений"""
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notification_subscriptions')
+    category = models.ForeignKey(NotificationCategory, on_delete=models.CASCADE)
+    
+    # Настройки подписки
+    enabled = models.BooleanField(default=True, verbose_name="Включена")
+    frequency = models.CharField(max_length=20, choices=[
+        ('immediately', 'Сразу'),
+        ('daily', 'Ежедневно'),
+        ('weekly', 'Еженедельно'),
+        ('custom', 'Настраиваемая'),
+    ], default='daily', verbose_name="Частота")
+    
+    # Настройки времени
+    preferred_time = models.TimeField(null=True, blank=True, verbose_name="Предпочитаемое время")
+    max_daily_count = models.PositiveIntegerField(
+        default=3, 
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        verbose_name="Максимум в день"
+    )
+    
+    # Персонализация
+    priority = models.IntegerField(
+        default=5,
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        verbose_name="Приоритет (1-10)"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['user', 'category']
+        verbose_name = "Подписка на уведомления"
+        verbose_name_plural = "Подписки на уведомления"
+        
+    def __str__(self):
+        return f"{self.user.username} → {self.category.title}"

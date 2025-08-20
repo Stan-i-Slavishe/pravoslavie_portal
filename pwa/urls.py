@@ -28,4 +28,9 @@ urlpatterns = [
     
     # 🔔 Тестирование push-уведомлений (только для разработки)
     path('push/test/', views.push_test_page, name='push_test'),
+    
+    # 🔔 Новые страницы настроек уведомлений
+    path('notifications/settings/', views.notification_settings_page, name='notification_settings'),
+    path('api/save-notification-settings/', views.save_notification_settings, name='save_notification_settings'),
+    path('api/get-notification-settings/', views.get_notification_settings, name='get_notification_settings'),
 ]

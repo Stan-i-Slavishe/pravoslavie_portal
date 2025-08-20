@@ -363,6 +363,10 @@
                                 {% url 'stories:playlists_list' as playlists_url %}
                                 <li><a class="dropdown-item" href="{% if playlists_url %}{{ playlists_url }}{% else %}#playlists{% endif %}"><i class="bi bi-music-note-list me-2"></i> Мои плейлисты</a></li>
                                 
+                                <!-- 🔔 Настройки уведомлений -->
+                                {% url 'pwa:notification_settings' as notification_settings_url %}
+                                <li><a class="dropdown-item" href="{% if notification_settings_url %}{{ notification_settings_url }}{% else %}#notifications{% endif %}"><i class="bi bi-bell me-2"></i> Настройки уведомлений</a></li>
+                                
                                 {% url 'subscriptions:manage' as subscription_url %}
                                 <li><a class="dropdown-item" href="{% if subscription_url %}{{ subscription_url }}{% else %}#subscription{% endif %}"><i class="bi bi-card-checklist me-2"></i> Подписка</a></li>
                                 <li><hr class="dropdown-divider"></li>
@@ -496,6 +500,13 @@
                                 <a href="{% if playlists_url %}{{ playlists_url }}{% else %}#playlists{% endif %}" class="list-group-item list-group-item-action">
                                     <i class="bi bi-music-note-list me-3" style="color: var(--audio-color);"></i>
                                     Мои плейлисты
+                                </a>
+                                
+                                <!-- 🔔 Настройки уведомлений -->
+                                {% url 'pwa:notification_settings' as notification_settings_url %}
+                                <a href="{% if notification_settings_url %}{{ notification_settings_url }}{% else %}#notifications{% endif %}" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-bell me-3" style="color: #FF6B9D;"></i>
+                                    Настройки уведомлений
                                 </a>
                             </div>
                             

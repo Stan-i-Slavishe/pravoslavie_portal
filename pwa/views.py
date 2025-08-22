@@ -10,10 +10,11 @@ from django.utils import timezone
 from django.views.generic import TemplateView
 from .models import (
     PushSubscription, NotificationCategory, UserNotificationSettings,
-    UserNotificationSubscription
+    UserNotificationSubscription, OrthodoxEvent, DailyOrthodoxInfo
 )
 import json
 import logging
+from datetime import date
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +88,148 @@ def push_subscribe(request):
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
     except Exception as e:
         logger.error(f"Push subscription error: {e}")
+        return JsonResponse({'error': 'Server error'}, status=500)
+
+@require_http_methods(["GET"])
+def orthodox_calendar_page(request):
+    """Страница православного календаря"""
+    context = {
+        'title': 'Православный календарь'
+    }
+    return render(request, 'pwa/orthodox_calendar.html', context)
+
+@require_http_methods(["GET"])
+def daily_orthodox_page(request):
+    """Страница ежедневного православного календаря"""
+    context = {
+        'title': 'Православный календарь на каждый день'
+    }
+    return render(request, 'pwa/daily_orthodox_calendar.html', context)
+
+@require_http_methods(["GET"])
+def daily_orthodox_info(request, year, month, day):
+    """Получить ежедневную православную информацию"""
+    
+    try:
+        target_date = date(year, month, day)
+    except ValueError:
+        return JsonResponse({'error': 'Invalid date'}, status=400)
+    
+    try:
+        # Получаем ежедневную информацию
+        daily_info = DailyOrthodoxInfo.get_info_for_date(target_date)
+        
+        # Получаем православные события
+        events = OrthodoxEvent.get_events_for_date(target_date)
+        
+        response_data = {
+            'date': target_date.strftime('%Y-%m-%d'),
+            'date_display': target_date.strftime('%d.%m.%Y'),
+            'daily_info': {
+                'fasting_type': daily_info.fasting_type,
+                'fasting_type_display': daily_info.get_fasting_type_display(),
+                'fasting_description': daily_info.fasting_description,
+                'allowed_food': daily_info.allowed_food,
+                'spiritual_note': daily_info.spiritual_note,
+                'gospel_reading': daily_info.gospel_reading,
+                'epistle_reading': daily_info.epistle_reading,
+            },
+            'events': [
+                {
+                    'id': event.id,
+                    'title': event.title,
+                    'description': event.description,
+                    'event_type': event.event_type,
+                    'event_type_display': event.get_event_type_display(),
+                    'is_movable': event.is_movable
+                }
+                for event in events
+            ],
+            'weekday': target_date.strftime('%A'),
+            'weekday_ru': [
+                'Понедельник', 'Вторник', 'Среда', 'Четверг',
+                'Пятница', 'Суббота', 'Воскресенье'
+            ][target_date.weekday()]
+        }
+        
+        return JsonResponse(response_data)
+        
+    except Exception as e:
+        logger.error(f"Daily orthodox info error: {e}")
+        return JsonResponse({'error': 'Server error'}, status=500)
+
+# =============================================================================
+# 📅 API ДЛЯ ПРАВОСЛАВНОГО КАЛЕНДАРЯ
+# =============================================================================
+
+@require_http_methods(["GET"])
+def orthodox_calendar_today(request):
+    """Получение православных событий на сегодня"""
+    try:
+        from datetime import date
+        from .models import OrthodoxEvent
+        
+        today = date.today()
+        events = OrthodoxEvent.get_events_for_date(today)
+        
+        events_data = []
+        for event in events:
+            events_data.append({
+                'id': event.id,
+                'title': event.title,
+                'description': event.description,
+                'event_type': event.event_type,
+                'event_type_display': event.get_event_type_display(),
+                'is_movable': event.is_movable,
+                'icon_url': event.icon_url,
+                'reading_url': event.reading_url,
+            })
+        
+        return JsonResponse({
+            'date': today.strftime('%Y-%m-%d'),
+            'date_display': today.strftime('%d.%m.%Y'),
+            'events': events_data,
+            'count': len(events_data)
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting today's orthodox events: {e}")
+        return JsonResponse({'error': 'Server error'}, status=500)
+
+@require_http_methods(["GET"])
+def orthodox_calendar_date(request, year, month, day):
+    """Получение православных событий на конкретную дату"""
+    try:
+        from datetime import date
+        from .models import OrthodoxEvent
+        
+        target_date = date(year, month, day)
+        events = OrthodoxEvent.get_events_for_date(target_date)
+        
+        events_data = []
+        for event in events:
+            events_data.append({
+                'id': event.id,
+                'title': event.title,
+                'description': event.description,
+                'event_type': event.event_type,
+                'event_type_display': event.get_event_type_display(),
+                'is_movable': event.is_movable,
+                'icon_url': event.icon_url,
+                'reading_url': event.reading_url,
+            })
+        
+        return JsonResponse({
+            'date': target_date.strftime('%Y-%m-%d'),
+            'date_display': target_date.strftime('%d.%m.%Y'),
+            'events': events_data,
+            'count': len(events_data)
+        })
+        
+    except ValueError:
+        return JsonResponse({'error': 'Invalid date'}, status=400)
+    except Exception as e:
+        logger.error(f"Error getting orthodox events for {year}-{month}-{day}: {e}")
         return JsonResponse({'error': 'Server error'}, status=500)
 
 @require_http_methods(["GET"])
@@ -180,6 +323,99 @@ def sync_cart(request):
     except Exception as e:
         logger.error(f"Cart sync error: {e}")
         return JsonResponse({'error': 'Server error'}, status=500)
+
+@require_http_methods(["GET"])
+def orthodox_calendar_month(request, year, month):
+    """API для получения информации о месяце для календарного виджета"""
+    try:
+        from datetime import date, timedelta
+        import calendar
+        
+        # Проверяем валидность даты
+        if not (1 <= month <= 12):
+            return JsonResponse({'error': 'Invalid month'}, status=400)
+            
+        # Получаем все дни месяца
+        month_days = calendar.monthrange(year, month)[1]
+        days_data = {}
+        
+        for day in range(1, month_days + 1):
+            try:
+                target_date = date(year, month, day)
+                
+                # Получаем ежедневную информацию
+                daily_info = DailyOrthodoxInfo.get_info_for_date(target_date)
+                
+                # Получаем православные события
+                events = OrthodoxEvent.get_events_for_date(target_date)
+                
+                # Определяем тип дня для цветовой индикации (вечный алгоритм)
+                day_type = get_day_type_for_calendar(target_date, daily_info, events)
+                
+                days_data[str(day)] = {
+                    'day_type': day_type,
+                    'fasting_type': daily_info.fasting_type,
+                    'fasting_display': daily_info.get_fasting_type_display(),
+                    'has_events': len(events) > 0,
+                    'events_count': len(events),
+                    'main_event': events[0].title if events else None
+                }
+                
+            except Exception as e:
+                logger.error(f"Error processing day {day}: {e}")
+                days_data[str(day)] = {
+                    'day_type': 'feast',
+                    'fasting_type': 'no_fast',
+                    'fasting_display': 'Обычный день',
+                    'has_events': False,
+                    'events_count': 0,
+                    'main_event': None
+                }
+        
+        return JsonResponse({
+            'year': year,
+            'month': month,
+            'month_name': [
+                'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+                'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+            ][month - 1],
+            'days': days_data,
+            'total_days': month_days
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting month calendar: {e}")
+        return JsonResponse({'error': 'Server error'}, status=500)
+
+def get_day_type_for_calendar(target_date, daily_info, events):
+    """Определить тип дня для календарного виджета"""
+    
+    # 1. ПРИОРИТЕТ: Проверяем строгие постные дни (они превалируют над праздниками)
+    # 29 августа - Усекновение главы Иоанна Предтечи (строгий пост)
+    if target_date.month == 8 and target_date.day == 29:
+        return 'fast-day'  # Строгий постный день
+    
+    # 11 сентября - Усекновение главы Иоанна Предтечи (по новому стилю)
+    if target_date.month == 9 and target_date.day == 11:
+        return 'fast-day'  # Строгий постный день
+        
+    # Крестовоздвижение (14/27 сентября) - строгий пост
+    if target_date.month == 9 and target_date.day == 27:
+        return 'fast-day'  # Строгий постный день
+    
+    # 2. Проверяем тип поста из алгоритма
+    if daily_info.fasting_type in ['strict_fast', 'dry_eating', 'complete_fast']:
+        return 'fast-day'
+    elif daily_info.fasting_type in ['light_fast', 'with_oil', 'wine_oil']:
+        return 'fast-day'  # Объединяем все посты под одним цветом
+    
+    # 3. Проверяем великие праздники (только если не пост)
+    for event in events:
+        if event.event_type in ['great_feast', 'major_feast']:
+            return 'holiday'
+    
+    # 4. Обычный день
+    return 'feast'
 
 @require_http_methods(["GET"])
 def orthodoxy_calendar_today(request):

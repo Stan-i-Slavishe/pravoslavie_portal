@@ -304,6 +304,15 @@
                             
                             {% url 'core:tags' as tags_url %}
                             <li><a class="dropdown-item" href="{% if tags_url %}{{ tags_url }}{% else %}#tags{% endif %}"><i class="bi bi-tags me-2"></i> Теги</a></li>
+                            
+                            <!-- 📅 Православный календарь -->
+                            {% url 'pwa:orthodox_calendar' as orthodox_calendar_url %}
+                            <li><a class="dropdown-item" href="{% if orthodox_calendar_url %}{{ orthodox_calendar_url }}{% else %}#calendar{% endif %}"><i class="bi bi-calendar-event me-2"></i> Православный календарь</a></li>
+                            
+                            <!-- 🍽️ Календарь на каждый день -->
+                            {% url 'pwa:daily_orthodox_calendar' as daily_calendar_url %}
+                            <li><a class="dropdown-item" href="{% if daily_calendar_url %}{{ daily_calendar_url }}{% else %}#daily{% endif %}"><i class="bi bi-calendar-day me-2"></i> Календарь на каждый день</a></li>
+                            
                             <li><hr class="dropdown-divider"></li>
                             
                             {% url 'core:about' as about_url %}
@@ -553,6 +562,20 @@
                         <!-- Общие разделы -->
                         <h6 class="menu-group-title">Информация</h6>
                         <div class="menu-group">
+                            <!-- 📅 Православный календарь -->
+                            {% url 'pwa:orthodox_calendar' as orthodox_calendar_url %}
+                            <a href="{% if orthodox_calendar_url %}{{ orthodox_calendar_url }}{% else %}#calendar{% endif %}" class="list-group-item list-group-item-action">
+                                <i class="bi bi-calendar-event me-3" style="color: var(--primary-color);"></i>
+                                Православный календарь
+                            </a>
+                            
+                            <!-- 🍽️ Календарь на каждый день -->
+                            {% url 'pwa:daily_orthodox_calendar' as daily_calendar_url %}
+                            <a href="{% if daily_calendar_url %}{{ daily_calendar_url }}{% else %}#daily{% endif %}" class="list-group-item list-group-item-action">
+                                <i class="bi bi-calendar-day me-3" style="color: #fd7e14;"></i>
+                                Календарь на каждый день
+                            </a>
+                            
                             {% url 'core:about' as about_url %}
                             <a href="{% if about_url %}{{ about_url }}{% else %}#about{% endif %}" class="list-group-item list-group-item-action">
                                 <i class="bi bi-info-circle me-3" style="color: var(--text-secondary);"></i>

@@ -33,4 +33,18 @@ urlpatterns = [
     path('notifications/settings/', views.notification_settings_page, name='notification_settings'),
     path('api/save-notification-settings/', views.save_notification_settings, name='save_notification_settings'),
     path('api/get-notification-settings/', views.get_notification_settings, name='get_notification_settings'),
+    
+    # 📅 API для православного календаря
+    path('api/orthodox-calendar/today/', views.orthodox_calendar_today, name='orthodox_calendar_today'),
+    path('api/orthodox-calendar/<int:year>/<int:month>/<int:day>/', views.orthodox_calendar_date, name='orthodox_calendar_date'),
+    
+    # 📅 Страницы православного календаря
+    path('orthodox-calendar/', views.orthodox_calendar_page, name='orthodox_calendar'),
+    path('daily-calendar/', views.daily_orthodox_page, name='daily_orthodox_calendar'),
+    
+    # 📅 API для ежедневной православной информации
+    path('api/daily-orthodox/<int:year>/<int:month>/<int:day>/', views.daily_orthodox_info, name='daily_orthodox_info'),
+    
+    # 📅 API для календарного виджета
+    path('api/calendar-month/<int:year>/<int:month>/', views.orthodox_calendar_month, name='orthodox_calendar_month'),
 ]

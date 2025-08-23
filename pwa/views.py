@@ -92,7 +92,15 @@ def push_subscribe(request):
 
 @require_http_methods(["GET"])
 def orthodox_calendar_page(request):
-    """Страница православного календаря"""
+    """Страница православного календаря - ЗАГЛУШКА"""
+    context = {
+        'title': 'Православный календарь - В разработке'
+    }
+    return render(request, 'pwa/orthodox_calendar_under_construction.html', context)
+
+@require_http_methods(["GET"])
+def orthodox_calendar_working(request):
+    """Рабочая страница православного календаря (временно отключена)"""
     context = {
         'title': 'Православный календарь'
     }
@@ -100,7 +108,15 @@ def orthodox_calendar_page(request):
 
 @require_http_methods(["GET"])
 def daily_orthodox_page(request):
-    """Страница ежедневного православного календаря"""
+    """Страница ежедневного православного календаря - ЗАГЛУШКА"""
+    context = {
+        'title': 'Календарь на каждый день - В разработке'
+    }
+    return render(request, 'pwa/daily_orthodox_calendar_under_construction.html', context)
+
+@require_http_methods(["GET"])
+def daily_orthodox_page_working(request):
+    """Рабочая страница ежедневного календаря (временно отключена)"""
     context = {
         'title': 'Православный календарь на каждый день'
     }
@@ -388,34 +404,108 @@ def orthodox_calendar_month(request, year, month):
         return JsonResponse({'error': 'Server error'}, status=500)
 
 def get_day_type_for_calendar(target_date, daily_info, events):
-    """Определить тип дня для календарного виджета"""
+    """Определить тип дня для календарного виджета с комбинированным отображением"""
     
-    # 1. ПРИОРИТЕТ: Проверяем строгие постные дни (они превалируют над праздниками)
-    # 29 августа - Усекновение главы Иоанна Предтечи (строгий пост)
-    if target_date.month == 8 and target_date.day == 29:
-        return 'fast-day'  # Строгий постный день
+    # Определяем все события дня
+    is_holiday = False
+    is_fast = False
+    is_continuous_week = False
     
-    # 11 сентября - Усекновение главы Иоанна Предтечи (по новому стилю)
-    if target_date.month == 9 and target_date.day == 11:
-        return 'fast-day'  # Строгий постный день
+    # 1. ПРИОРИТЕТ: Проверяем сплошные недели с ПРАВИЛЬНЫМИ датами
+    
+    # Для переходящих седмиц вычисляем Пасху динамически
+    easter_date = OrthodoxEvent.calculate_easter(target_date.year)
+    
+    # Светлая Пасхальная седмица: понедельник после Пасхи - воскресенье
+    from datetime import timedelta
+    easter_monday = easter_date + timedelta(days=1)
+    easter_sunday = easter_date + timedelta(days=7)
+    
+    # Троицкая седмица: понедельник после Троицы
+    trinity_date = easter_date + timedelta(days=49)  # Троица через 49 дней после Пасхи
+    trinity_monday = trinity_date + timedelta(days=1)
+    trinity_sunday = trinity_date + timedelta(days=7)
+    
+    # Фиксированные и переходящие сплошные недели
+    from datetime import date as datetime_date
+    continuous_weeks = [
+        # Святки: 8-17 января
+        (datetime_date(target_date.year, 1, 8), datetime_date(target_date.year, 1, 17)),
+        # Мытаря и фарисея: 10-16 февраля  
+        (datetime_date(target_date.year, 2, 10), datetime_date(target_date.year, 2, 16)),
+        # Масленица: 24 февраля - 2 марта
+        (datetime_date(target_date.year, 2, 24), datetime_date(target_date.year, 3, 2)),
+        # Светлая Пасхальная седмица: динамически вычисляется
+        (easter_monday, easter_sunday),
+        # Троицкая седмица: динамически вычисляется  
+        (trinity_monday, trinity_sunday),
+    ]
+    
+    # Проверяем, попадает ли дата в одну из сплошных недель
+    for start_date, end_date in continuous_weeks:
+        if start_date <= target_date <= end_date:
+            is_continuous_week = True
+            break
+    
+    # ЕСЛИ СПЛОШНАЯ НЕДЕЛЯ - ПОСТ ОТМЕНЯЕТСЯ!
+    if is_continuous_week:
+        # Проверяем праздники
+        for event in events:
+            if event.event_type in ['great_feast', 'major_feast']:
+                is_holiday = True
+                break
         
-    # Крестовоздвижение (14/27 сентября) - строгий пост
-    if target_date.month == 9 and target_date.day == 27:
-        return 'fast-day'  # Строгий постный день
+        # В сплошную неделю может быть только праздник + сплошная неделя
+        if is_holiday:
+            return 'holiday-continuous'  # Праздник + сплошная неделя
+        else:
+            return 'continuous-week'  # Обычная сплошная неделя
     
-    # 2. Проверяем тип поста из алгоритма
-    if daily_info.fasting_type in ['strict_fast', 'dry_eating', 'complete_fast']:
-        return 'fast-day'
-    elif daily_info.fasting_type in ['light_fast', 'with_oil', 'wine_oil']:
-        return 'fast-day'  # Объединяем все посты под одним цветом
+    # 2. Проверяем строгие постные дни (только если НЕ сплошная неделя)
+    strict_fast_days = [
+        (8, 29),   # 29 августа - Усекновение главы Иоанна Предтечи
+        (9, 11),   # 11 сентября - Усекновение главы Иоанна Предтечи (новый стиль)
+        (9, 27),   # 27 сентября - Крестовоздвижение
+    ]
     
-    # 3. Проверяем великие праздники (только если не пост)
+    if (target_date.month, target_date.day) in strict_fast_days:
+        is_fast = True
+        # Проверяем, есть ли еще праздник в этот день
+        for event in events:
+            if event.event_type in ['great_feast', 'major_feast']:
+                is_holiday = True
+                break
+        
+        # Для строгих постных дней возвращаем комбинацию или просто пост
+        if is_holiday:
+            return 'holiday-fast'  # 80% праздник / 20% пост
+        else:
+            return 'fast-day'  # Обычный пост
+    
+    # 3. Проверяем обычные посты (только если НЕ сплошная неделя)
+    if daily_info.fasting_type in ['strict_fast', 'dry_eating', 'complete_fast', 'light_fast', 'with_oil', 'wine_oil', 'with_fish']:
+        is_fast = True
+    
+    # 4. Проверяем праздники
     for event in events:
         if event.event_type in ['great_feast', 'major_feast']:
-            return 'holiday'
+            is_holiday = True
+            break
     
-    # 4. Обычный день
-    return 'feast'
+    # 5. Определяем итоговый тип дня
+    
+    # Комбинации (без конфликтов!)
+    if is_holiday and is_fast:
+        return 'holiday-fast'  # Праздник + Пост
+    
+    # Одиночные события
+    elif is_holiday:
+        return 'holiday'
+    elif is_fast:
+        return 'fast-day'
+    
+    # Обычный день
+    return 'feast' 
 
 @require_http_methods(["GET"])
 def orthodoxy_calendar_today(request):

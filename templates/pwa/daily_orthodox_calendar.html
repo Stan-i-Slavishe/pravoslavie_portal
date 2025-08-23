@@ -222,6 +222,7 @@
     padding: 0.5rem 0;
 }
 
+/* Календарные дни с новой системой 80/20 для комбинированных событий */
 .calendar-day {
     aspect-ratio: 1;
     display: flex;
@@ -233,20 +234,25 @@
     font-weight: 500;
     position: relative;
     border: 2px solid transparent;
+    overflow: hidden; /* Важно для градиентов */
 }
 
 .calendar-day:hover {
-    background: #f8f9fa;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 10;
 }
 
 .calendar-day.other-month {
     color: #ccc;
+    background: #f8f9fa;
 }
 
 .calendar-day.today {
-    background: var(--primary-color);
-    color: white;
+    border: 3px solid #ffd43b !important;
+    box-shadow: 0 0 0 2px white, 0 0 0 5px #ffd43b !important;
     font-weight: 700;
+    z-index: 20;
 }
 
 .calendar-day.selected {
@@ -254,6 +260,72 @@
     background: rgba(var(--bs-primary-rgb), 0.1);
 }
 
+/* Обычные дни */
+.calendar-day.feast {
+    background: #f8f9fa;
+    color: #495057;
+}
+
+/* Праздники (красный) */
+.calendar-day.holiday {
+    background: #ff6b6b;
+    color: white;
+    font-weight: 600;
+}
+
+/* Посты (фиолетовый) */
+.calendar-day.fast-day,
+.calendar-day.light-fast {
+    background: #6f42c1;
+    color: white;
+    font-weight: 600;
+}
+
+/* Сплошные недели (зеленый) */
+.calendar-day.continuous-week {
+    background: #51cf66;
+    color: white;
+    font-weight: 600;
+}
+
+/* КОМБИНИРОВАННЫЕ ДНИ - СИСТЕМА 80/20 */
+
+/* Праздник + Пост (80% красный / 20% фиолетовый) */
+.calendar-day.holiday-fast {
+    background: linear-gradient(to bottom, 
+        #ff6b6b 0%, 
+        #ff6b6b 80%, 
+        #6f42c1 80%, 
+        #6f42c1 100%);
+    color: white;
+    font-weight: 600;
+}
+
+/* Праздник + Сплошная неделя (80% красный / 20% зеленый) */
+.calendar-day.holiday-continuous {
+    background: linear-gradient(to bottom, 
+        #ff6b6b 0%, 
+        #ff6b6b 80%, 
+        #51cf66 80%, 
+        #51cf66 100%);
+    color: white;
+    font-weight: 600;
+}
+
+/* Комбинация пост + сплошная неделя логически невозможна */
+
+/* Строгий пост + что-то еще (80% темно-фиолетовый / 20% другое) */
+.calendar-day.strict-fast-holiday {
+    background: linear-gradient(to bottom, 
+        #5a2d82 0%, 
+        #5a2d82 80%, 
+        #ff6b6b 80%, 
+        #ff6b6b 100%);
+    color: white;
+    font-weight: 600;
+}
+
+/* Индикаторы событий - маленькие точки для подсказки */
 .calendar-day.has-event::after {
     content: '';
     position: absolute;
@@ -263,51 +335,7 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-}
-
-/* Реальные типы дней */
-.calendar-day.holiday::after {
-    background: #dc3545;
-}
-
-/* Объединяем все типы постов */
-.calendar-day.fast-day::after,
-.calendar-day.light-fast::after {
-    background: #6f42c1;
-}
-
-.calendar-day.feast::after {
-    background: #28a745;
-}
-
-/* Дополнительные стили для типов дней */
-.calendar-day.holiday {
-    background: rgba(220, 53, 69, 0.1);
-    color: #dc3545;
-    font-weight: 600;
-}
-
-/* Объединяем все типы постов под одним стилем */
-.calendar-day.fast-day,
-.calendar-day.light-fast {
-    background: rgba(111, 66, 193, 0.1);
-    color: #6f42c1;
-    font-weight: 600;
-}
-
-/* Обычные дни остаются без выделения */
-.calendar-day.feast {
-    /* Убираем цветовое выделение для обычных дней */
-    background: transparent;
-    color: inherit;
-    font-weight: 500;
-}
-
-/* Сегодня приоритетнее типа дня */
-.calendar-day.today {
-    background: var(--primary-color) !important;
-    color: white !important;
-    font-weight: 700 !important;
+    background: rgba(255, 255, 255, 0.8);
 }
 
 .calendar-legend {
@@ -324,17 +352,28 @@
     gap: 0.5rem;
     font-size: 0.8rem;
     color: #666;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .legend-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    flex-shrink: 0;
 }
 
-.legend-dot.holiday { background: #dc3545; }
+.legend-dot.holiday { background: #ff6b6b; }
 .legend-dot.fast-day { background: #6f42c1; }
-.legend-dot.feast { background: #28a745; }
+.legend-dot.continuous-week { background: #51cf66; }
+.legend-dot.holiday-fast { 
+    background: linear-gradient(to bottom, #ff6b6b 80%, #6f42c1 80%); 
+}
+.legend-dot.holiday-continuous { 
+    background: linear-gradient(to bottom, #ff6b6b 80%, #51cf66 80%); 
+}
 
 @media (max-width: 768px) {
     .calendar-hero {
@@ -471,6 +510,18 @@
             <div class="legend-item">
                 <div class="legend-dot fast-day"></div>
                 <span>Пост</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot continuous-week"></div>
+                <span>Сплошная неделя</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot holiday-fast"></div>
+                <span>Праздник + Пост</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot holiday-continuous"></div>
+                <span>Праздник + Сплошная</span>
             </div>
         </div>
     </div>

@@ -321,28 +321,46 @@ class FastingPeriod(models.Model):
         
         year = target_date.year
         
-        if self.easter_start_offset is not None:
-            # Переходящий пост (относительно Пасхи)
+        # Обработка смешанных постов (например, Петров пост)
+        if self.easter_start_offset is not None and self.easter_end_offset is None:
+            # Переходящее начало + фиксированный конец (Петров пост)
+            easter_date = OrthodoxEvent.calculate_easter(year)
+            start_date = easter_date + timezone.timedelta(days=self.easter_start_offset)
+            
+            try:
+                from datetime import date
+                end_date = date(year, self.end_month, self.end_day)
+            except (ValueError, TypeError):
+                return False
+                
+            return start_date <= target_date <= end_date
+            
+        elif self.easter_start_offset is not None and self.easter_end_offset is not None:
+            # Полностью переходящий пост (Великий пост)
             easter_date = OrthodoxEvent.calculate_easter(year)
             start_date = easter_date + timezone.timedelta(days=self.easter_start_offset)
             end_date = easter_date + timezone.timedelta(days=self.easter_end_offset)
+            
+            return start_date <= target_date <= end_date
+            
         else:
             # Фиксированный пост
             try:
-                start_date = timezone.date(year, self.start_month, self.start_day)
-                end_date = timezone.date(year, self.end_month, self.end_day)
+                from datetime import date
+                start_date = date(year, self.start_month, self.start_day)
+                end_date = date(year, self.end_month, self.end_day)
                 
                 # Обработка постов через новый год (например, Рождественский)
                 if end_date < start_date:
                     if target_date >= start_date:
-                        end_date = timezone.date(year + 1, self.end_month, self.end_day)
+                        end_date = date(year + 1, self.end_month, self.end_day)
                     else:
-                        start_date = timezone.date(year - 1, self.start_month, self.start_day)
-            except ValueError:
+                        start_date = date(year - 1, self.start_month, self.start_day)
+            except (ValueError, TypeError):
                 # Невалидная дата (например, 29 февраля в не високосном году)
                 return False
-        
-        return start_date <= target_date <= end_date
+            
+            return start_date <= target_date <= end_date
     
     def get_fasting_type_for_weekday(self, weekday):
         """Получить тип поста для дня недели (0=понедельник)"""

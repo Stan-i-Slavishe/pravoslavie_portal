@@ -39,8 +39,10 @@ urlpatterns = [
     path('api/orthodox-calendar/<int:year>/<int:month>/<int:day>/', views.orthodox_calendar_date, name='orthodox_calendar_date'),
     
     # 📅 Страницы православного календаря
-    path('orthodox-calendar/', views.orthodox_calendar_page, name='orthodox_calendar'),
-    path('daily-calendar/', views.daily_orthodox_page, name='daily_orthodox_calendar'),
+    path('orthodox-calendar/', views.orthodox_calendar_page, name='orthodox_calendar'),  # ЗАГЛУШКА
+    path('orthodox-calendar-dev/', views.orthodox_calendar_working, name='orthodox_calendar_dev'),  # Рабочая версия для разработки
+    path('daily-calendar/', views.daily_orthodox_page, name='daily_orthodox_calendar'),  # ЗАГЛУШКА
+    path('daily-calendar-dev/', views.daily_orthodox_page_working, name='daily_orthodox_calendar_dev'),  # Рабочая версия
     
     # 📅 API для ежедневной православной информации
     path('api/daily-orthodox/<int:year>/<int:month>/<int:day>/', views.daily_orthodox_info, name='daily_orthodox_info'),

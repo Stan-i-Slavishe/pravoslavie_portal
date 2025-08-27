@@ -89,6 +89,28 @@ YOOKASSA_TEST_MODE = config('YOOKASSA_TEST_MODE', default=False, cast=bool)
 # YouTube API
 YOUTUBE_API_KEY = config('YOUTUBE_API_KEY')
 
+# Переопределение URLs для продакшена (используем полную версию)
+ROOT_URLCONF = 'config.urls'
+
+# Переопределение шаблонов с правильными контекстными процессорами
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [BASE_DIR / 'templates'],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+                'core.context_processors.cart_context',
+                'core.context_processors.site_context',
+            ],
+        },
+    },
+]
+
 # Logging для продакшена
 LOGGING = {
     'version': 1,
@@ -149,4 +171,4 @@ MANAGERS = ADMINS
 # Настройки для сжатия
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
-print("🚀 Запущен ПРОДАКШЕН (settings_production.py)")
+print("ПРОДАКШЕН (settings_production.py) - исправленная версия")

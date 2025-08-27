@@ -35,11 +35,14 @@ media/
 staticfiles/
 static_root/
 
-# Environment variables
+# 🔐 Environment variables (КРИТИЧЕСКИ ВАЖНО!)
 .env
-.env.local
-.env.production
-.venv
+.env.production     # НИКОГДА не коммитить продакшен переменные!
+.env.staging        # Тестовые переменные тоже не коммитить
+.env.local          # Можно коммитить как пример (без реальных ключей)
+
+# Virtual environments
+.venv/
 env/
 venv/
 ENV/
@@ -154,8 +157,45 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
-# Logs
+# 📁 Project specific
 logs/
-
-# Media files (user uploads)
 media_root/
+temp_files/
+requirements_installed.flag
+
+# 🚫 Файлы с чувствительными данными
+*.pem
+*.key
+*.crt
+*.p12
+ssl/
+secrets/
+
+# 🗄️ Database backups
+*.dump
+*.sql.gz
+database_backups/
+
+# 📊 Analytics и статистика
+analytics_cache/
+reports/
+
+# 🧪 Тестовые файлы
+test_media/
+test_uploads/
+coverage_reports/
+
+# 🔧 Временные файлы разработки
+debug_*
+temp_*
+test_*
+*.tmp
+
+# 📱 PWA testing files (если есть)
+pwa_test_*
+
+# 🎨 Design files (необязательно)
+*.psd
+*.ai
+*.sketch
+design_assets/

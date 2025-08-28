@@ -1,0 +1,484 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Православный календарь{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --feast-great: #dc3545;
+    --feast-major: #fd7e14;
+    --feast-minor: #ffc107;
+    --fast: #6f42c1;
+    --saint: #198754;
+    --icon: #0dcaf0;
+}
+
+.calendar-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    color: white;
+}
+
+.calendar-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.today-events {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.event-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    border-left: 4px solid #ddd;
+    transition: all 0.3s ease;
+}
+
+.event-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.event-card.great_feast { border-left-color: var(--feast-great); }
+.event-card.major_feast { border-left-color: var(--feast-major); }
+.event-card.minor_feast { border-left-color: var(--feast-minor); }
+.event-card.fast { border-left-color: var(--fast); }
+.event-card.saint { border-left-color: var(--saint); }
+.event-card.icon { border-left-color: var(--icon); }
+
+.event-type-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.event-type-badge.great_feast { background: var(--feast-great); color: white; }
+.event-type-badge.major_feast { background: var(--feast-major); color: white; }
+.event-type-badge.minor_feast { background: var(--feast-minor); color: #000; }
+.event-type-badge.fast { background: var(--fast); color: white; }
+.event-type-badge.saint { background: var(--saint); color: white; }
+.event-type-badge.icon { background: var(--icon); color: #000; }
+
+.date-picker {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.month-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.month-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.day-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    background: #f8f9fa;
+}
+
+.day-cell:hover {
+    background: #e9ecef;
+}
+
+.day-cell.has-events {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    font-weight: bold;
+}
+
+.day-cell.has-events::after {
+    content: '•';
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    color: #ffc107;
+    font-size: 0.8rem;
+}
+
+.day-cell.today {
+    background: var(--feast-great);
+    color: white;
+    font-weight: bold;
+}
+
+.easter-info {
+    background: linear-gradient(135deg, #ffeaa7, #fab1a0);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    text-align: center;
+}
+
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+}
+
+@media (max-width: 768px) {
+    .calendar-container {
+        padding: 1rem;
+        margin: 0.5rem;
+        border-radius: 15px;
+    }
+    
+    .event-card {
+        padding: 1rem;
+    }
+    
+    .month-grid {
+        gap: 0.25rem;
+    }
+    
+    .day-cell {
+        font-size: 0.8rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="calendar-container">
+    <div class="calendar-header">
+        <h1 class="mb-3">📅 Православный календарь</h1>
+        <p class="lead">Праздники, посты и дни святых</p>
+    </div>
+
+    <!-- События сегодня -->
+    <div class="today-events">
+        <h3>🕊️ События сегодня</h3>
+        <div id="todayEvents" class="loading">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Загрузка...</span>
+            </div>
+            <p>Загружаем события дня...</p>
+        </div>
+    </div>
+
+    <!-- Информация о Пасхе -->
+    <div class="easter-info">
+        <h4>🥚 Пасха в этом году</h4>
+        <p id="easterDate" class="mb-0">Рассчитываем дату...</p>
+    </div>
+</div>
+
+<!-- Календарь на месяц -->
+<div class="container">
+    <div class="date-picker">
+        <div class="month-navigation">
+            <button class="btn btn-outline-primary" id="prevMonth">‹ Предыдущий</button>
+            <h4 id="currentMonth">Декабрь 2024</h4>
+            <button class="btn btn-outline-primary" id="nextMonth">Следующий ›</button>
+        </div>
+        
+        <div class="month-grid">
+            <div class="text-center fw-bold">Пн</div>
+            <div class="text-center fw-bold">Вт</div>
+            <div class="text-center fw-bold">Ср</div>
+            <div class="text-center fw-bold">Чт</div>
+            <div class="text-center fw-bold">Пт</div>
+            <div class="text-center fw-bold">Сб</div>
+            <div class="text-center fw-bold">Вс</div>
+        </div>
+        
+        <div class="month-grid" id="calendarDays">
+            <!-- Дни будут добавлены JavaScript -->
+        </div>
+    </div>
+
+    <!-- Выбранная дата -->
+    <div id="selectedDateEvents" style="display: none;">
+        <h3 id="selectedDateTitle"></h3>
+        <div id="selectedDateContent"></div>
+    </div>
+</div>
+
+<script>
+class OrthodoxCalendar {
+    constructor() {
+        this.currentDate = new Date();
+        this.selectedDate = null;
+        this.eventsCache = {};
+        
+        this.init();
+    }
+    
+    init() {
+        this.loadTodayEvents();
+        this.calculateEaster();
+        this.renderCalendar();
+        this.setupEventHandlers();
+    }
+    
+    async loadTodayEvents() {
+        try {
+            const response = await fetch('/pwa/api/orthodox-calendar/today/');
+            const data = await response.json();
+            
+            this.renderTodayEvents(data.events);
+        } catch (error) {
+            console.error('Error loading today events:', error);
+            document.getElementById('todayEvents').innerHTML = 
+                '<p class="text-muted">Ошибка загрузки событий</p>';
+        }
+    }
+    
+    renderTodayEvents(events) {
+        const container = document.getElementById('todayEvents');
+        
+        if (!events || events.length === 0) {
+            container.innerHTML = '<p class="text-muted">📖 Сегодня обычный день</p>';
+            return;
+        }
+        
+        let html = '';
+        events.forEach(event => {
+            html += `
+                <div class="event-card ${event.event_type}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h5 class="mb-2">${event.title}</h5>
+                            ${event.description ? `<p class="text-muted mb-2">${event.description}</p>` : ''}
+                        </div>
+                        <span class="event-type-badge ${event.event_type}">
+                            ${event.event_type_display}
+                        </span>
+                    </div>
+                    ${event.reading_url ? `<a href="${event.reading_url}" class="btn btn-sm btn-outline-primary mt-2" target="_blank">📖 Читать</a>` : ''}
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+    }
+    
+    calculateEaster() {
+        const year = new Date().getFullYear();
+        const easter = this.getEasterDate(year);
+        
+        document.getElementById('easterDate').textContent = 
+            `${easter.toLocaleDateString('ru-RU', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            })}`;
+    }
+    
+    getEasterDate(year) {
+        // Алгоритм расчета православной Пасхи
+        const a = year % 19;
+        const b = year % 4;
+        const c = year % 7;
+        const d = (19 * a + 15) % 30;
+        const e = (2 * b + 4 * c + 6 * d + 6) % 7;
+        
+        let day, month;
+        if (d + e < 10) {
+            day = d + e + 22;
+            month = 2; // Март (0-based)
+        } else {
+            day = d + e - 9;
+            month = 3; // Апрель (0-based)
+        }
+        
+        const easter = new Date(year, month, day);
+        // Добавляем 13 дней для перевода в новый стиль
+        easter.setDate(easter.getDate() + 13);
+        
+        return easter;
+    }
+    
+    renderCalendar() {
+        const year = this.currentDate.getFullYear();
+        const month = this.currentDate.getMonth();
+        
+        // Обновляем заголовок
+        document.getElementById('currentMonth').textContent = 
+            this.currentDate.toLocaleDateString('ru-RU', { year: 'numeric', month: 'long' });
+        
+        // Первый день месяца
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        
+        // Начинаем с понедельника
+        const startDate = new Date(firstDay);
+        const dayOfWeek = (firstDay.getDay() + 6) % 7; // Преобразуем в понедельник = 0
+        startDate.setDate(startDate.getDate() - dayOfWeek);
+        
+        const container = document.getElementById('calendarDays');
+        container.innerHTML = '';
+        
+        // Добавляем заголовки дней недели
+        const headers = container.previousElementSibling;
+        
+        // Генерируем 42 дня (6 недель)
+        for (let i = 0; i < 42; i++) {
+            const currentDate = new Date(startDate);
+            currentDate.setDate(startDate.getDate() + i);
+            
+            const dayCell = document.createElement('div');
+            dayCell.className = 'day-cell';
+            dayCell.textContent = currentDate.getDate();
+            
+            // Добавляем классы
+            if (currentDate.getMonth() !== month) {
+                dayCell.style.opacity = '0.3';
+            }
+            
+            if (this.isToday(currentDate)) {
+                dayCell.classList.add('today');
+            }
+            
+            // Проверяем наличие событий (здесь можно добавить AJAX запрос)
+            this.checkEventsForDate(currentDate, dayCell);
+            
+            dayCell.addEventListener('click', () => this.selectDate(currentDate));
+            
+            container.appendChild(dayCell);
+        }
+    }
+    
+    async checkEventsForDate(date, dayCell) {
+        const dateKey = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+        
+        if (this.eventsCache[dateKey]) {
+            if (this.eventsCache[dateKey].length > 0) {
+                dayCell.classList.add('has-events');
+            }
+            return;
+        }
+        
+        try {
+            const response = await fetch(
+                `/pwa/api/orthodox-calendar/${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}/`
+            );
+            const data = await response.json();
+            
+            this.eventsCache[dateKey] = data.events;
+            
+            if (data.events && data.events.length > 0) {
+                dayCell.classList.add('has-events');
+            }
+        } catch (error) {
+            console.error('Error checking events for date:', error);
+        }
+    }
+    
+    async selectDate(date) {
+        this.selectedDate = date;
+        
+        const dateKey = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+        let events = this.eventsCache[dateKey];
+        
+        if (!events) {
+            try {
+                const response = await fetch(
+                    `/pwa/api/orthodox-calendar/${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}/`
+                );
+                const data = await response.json();
+                events = data.events;
+                this.eventsCache[dateKey] = events;
+            } catch (error) {
+                console.error('Error loading events for selected date:', error);
+                events = [];
+            }
+        }
+        
+        this.renderSelectedDateEvents(date, events);
+    }
+    
+    renderSelectedDateEvents(date, events) {
+        const container = document.getElementById('selectedDateEvents');
+        const title = document.getElementById('selectedDateTitle');
+        const content = document.getElementById('selectedDateContent');
+        
+        title.textContent = `События на ${date.toLocaleDateString('ru-RU', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        })}`;
+        
+        if (!events || events.length === 0) {
+            content.innerHTML = '<p class="text-muted">📖 На этот день событий нет</p>';
+        } else {
+            let html = '';
+            events.forEach(event => {
+                html += `
+                    <div class="event-card ${event.event_type}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h5 class="mb-2">${event.title}</h5>
+                                ${event.description ? `<p class="text-muted mb-2">${event.description}</p>` : ''}
+                            </div>
+                            <span class="event-type-badge ${event.event_type}">
+                                ${event.event_type_display}
+                            </span>
+                        </div>
+                        ${event.reading_url ? `<a href="${event.reading_url}" class="btn btn-sm btn-outline-primary mt-2" target="_blank">📖 Читать</a>` : ''}
+                    </div>
+                `;
+            });
+            content.innerHTML = html;
+        }
+        
+        container.style.display = 'block';
+        container.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    setupEventHandlers() {
+        document.getElementById('prevMonth').addEventListener('click', () => {
+            this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+            this.renderCalendar();
+        });
+        
+        document.getElementById('nextMonth').addEventListener('click', () => {
+            this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+            this.renderCalendar();
+        });
+    }
+    
+    isToday(date) {
+        const today = new Date();
+        return date.toDateString() === today.toDateString();
+    }
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    new OrthodoxCalendar();
+});
+</script>
+{% endblock %}

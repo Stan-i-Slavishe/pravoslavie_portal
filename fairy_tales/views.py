@@ -1,15 +1,19 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse, Http404
 from django.views.generic import ListView, DetailView, CreateView, TemplateView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib import messages
-from django.http import JsonResponse, Http404
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
-from django.urls import reverse_lazy
-from django.db.models import Q, Avg, Count
+from django.contrib import messages
+from django.core.mail import send_mail
+from django.conf import settings
+from django.urls import reverse_lazy, reverse
+from django.db.models import Q, Avg, Count, F
+from django.utils import timezone
 from decimal import Decimal
 import json
+import logging
 
 from .models import (
     FairyTaleCategory, 
@@ -21,53 +25,56 @@ from .models import (
     AgeGroup
 )
 
+logger = logging.getLogger(__name__)
+
+
 class FairyTaleListView(ListView):
-    """Каталог терапевтических сказок"""
+    """Список всех терапевтических сказок"""
     model = FairyTaleTemplate
     template_name = 'fairy_tales/fairy_tale_list.html'
     context_object_name = 'fairy_tales'
     paginate_by = 12
     
     def get_queryset(self):
-        queryset = FairyTaleTemplate.objects.filter(is_published=True)
+        queryset = FairyTaleTemplate.objects.filter(
+            is_published=True,
+            category__is_active=True
+        ).select_related('category').prefetch_related('reviews')
         
-        # Фильтры
+        # Фильтрация по категории
         category_slug = self.request.GET.get('category')
         if category_slug:
             queryset = queryset.filter(category__slug=category_slug)
         
+        # Фильтрация по возрасту
         age_group = self.request.GET.get('age_group')
         if age_group:
             queryset = queryset.filter(category__age_group=age_group)
         
+        # Фильтрация по терапевтическим целям
         goal = self.request.GET.get('goal')
         if goal:
             queryset = queryset.filter(therapeutic_goals__contains=[goal])
         
-        is_free = self.request.GET.get('is_free')
-        if is_free == 'true':
-            queryset = queryset.filter(is_free=True)
-        elif is_free == 'false':
-            queryset = queryset.filter(is_free=False)
-        
+        # Поиск по названию и описанию
         search = self.request.GET.get('search')
         if search:
             queryset = queryset.filter(
                 Q(title__icontains=search) |
                 Q(short_description__icontains=search) |
-                Q(content_template__icontains=search)
+                Q(category__name__icontains=search)
             )
         
         # Сортировка
         sort = self.request.GET.get('sort', 'featured')
-        if sort == 'price_low':
-            queryset = queryset.order_by('base_price')
-        elif sort == 'price_high':
-            queryset = queryset.order_by('-base_price')
+        if sort == 'newest':
+            queryset = queryset.order_by('-created_at')
         elif sort == 'popular':
             queryset = queryset.order_by('-orders_count', '-views_count')
-        elif sort == 'newest':
-            queryset = queryset.order_by('-created_at')
+        elif sort == 'age_asc':
+            queryset = queryset.order_by('target_age_min')
+        elif sort == 'age_desc':
+            queryset = queryset.order_by('-target_age_max')
         else:  # featured
             queryset = queryset.order_by('-featured', '-created_at')
         
@@ -75,180 +82,97 @@ class FairyTaleListView(ListView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['categories'] = FairyTaleCategory.objects.filter(is_active=True)
-        context['age_groups'] = AgeGroup.choices
+        
+        # Добавляем категории для фильтров
+        context['categories'] = FairyTaleCategory.objects.filter(
+            is_active=True
+        ).order_by('age_group', 'order', 'name')
+        
+        # Добавляем терапевтические цели
         context['therapeutic_goals'] = TherapeuticGoal.choices
+        
+        # Добавляем возрастные группы
+        context['age_groups'] = AgeGroup.choices
+        
+        # Текущие фильтры
         context['current_filters'] = {
             'category': self.request.GET.get('category', ''),
             'age_group': self.request.GET.get('age_group', ''),
             'goal': self.request.GET.get('goal', ''),
-            'is_free': self.request.GET.get('is_free', ''),
             'search': self.request.GET.get('search', ''),
             'sort': self.request.GET.get('sort', 'featured'),
         }
         
-        # Добавляем информацию о связанных товарах в магазине
-        for fairy_tale in context['fairy_tales']:
-            fairy_tale.shop_product = fairy_tale.get_shop_product()
+        # Статистика
+        context['total_tales'] = FairyTaleTemplate.objects.filter(is_published=True).count()
+        context['featured_tales'] = self.get_queryset().filter(featured=True)[:3]
         
         return context
 
+
 class FairyTaleDetailView(DetailView):
-    """Страница отдельной сказки"""
+    """Детальная страница сказки"""
     model = FairyTaleTemplate
     template_name = 'fairy_tales/fairy_tale_detail.html'
     context_object_name = 'fairy_tale'
     
     def get_queryset(self):
-        return FairyTaleTemplate.objects.filter(is_published=True)
+        return FairyTaleTemplate.objects.filter(
+            is_published=True
+        ).select_related('category').prefetch_related('reviews__author')
     
-    def get_object(self):
-        obj = super().get_object()
-        # Увеличиваем счетчик просмотров
-        FairyTaleTemplate.objects.filter(pk=obj.pk).update(views_count=obj.views_count + 1)
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        
+        # Проверяем, смотрел ли пользователь эту сказку в текущей сессии
+        session_key = f'fairy_tale_viewed_{obj.id}'
+        
+        if not self.request.session.get(session_key, False):
+            # Увеличиваем счетчик просмотров только если не смотрел в этой сессии
+            FairyTaleTemplate.objects.filter(id=obj.id).update(
+                views_count=F('views_count') + 1
+            )
+            # Отмечаем в сессии, что пользователь просмотрел эту сказку
+            self.request.session[session_key] = True
+        
         return obj
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        fairy_tale = self.get_object()
-        
-        # Похожие сказки
-        context['related_fairy_tales'] = FairyTaleTemplate.objects.filter(
-            is_published=True,
-            category=fairy_tale.category
-        ).exclude(id=fairy_tale.id)[:4]
+        fairy_tale = self.object
         
         # Отзывы
-        context['reviews'] = fairy_tale.reviews.filter(is_published=True)[:5]
-        context['avg_rating'] = fairy_tale.reviews.filter(is_published=True).aggregate(
-            avg=Avg('rating')
-        )['avg']
+        context['reviews'] = fairy_tale.reviews.filter(
+            is_published=True
+        ).order_by('-created_at')[:10]
         
-        # Проверяем, есть ли в избранном у пользователя
+        # Средний рейтинг
+        avg_rating = fairy_tale.reviews.filter(is_published=True).aggregate(
+            avg_rating=Avg('rating')
+        )['avg_rating']
+        context['avg_rating'] = round(avg_rating, 1) if avg_rating else 0
+        context['reviews_count'] = fairy_tale.reviews.filter(is_published=True).count()
+        
+        # Проверяем, в избранном ли у пользователя
         if self.request.user.is_authenticated:
-            context['is_favorited'] = FairyTaleFavorite.objects.filter(
+            context['is_favorite'] = FairyTaleFavorite.objects.filter(
                 user=self.request.user,
                 template=fairy_tale
             ).exists()
+        else:
+            context['is_favorite'] = False
         
-        # Получаем связанный товар в магазине
-        context['shop_product'] = fairy_tale.get_shop_product()
+        # Рекомендуемые сказки
+        context['related_tales'] = FairyTaleTemplate.objects.filter(
+            category=fairy_tale.category,
+            is_published=True
+        ).exclude(id=fairy_tale.id)[:4]
+        
+        # Ценообразование
+        context['total_price'] = fairy_tale.total_price_with_options
         
         return context
 
-class PersonalizationOrderView(TemplateView):
-    """Форма заказа персонализации"""
-    template_name = 'fairy_tales/personalization_order.html'
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        template_slug = kwargs.get('slug')
-        
-        try:
-            fairy_tale = FairyTaleTemplate.objects.get(
-                slug=template_slug,
-                is_published=True
-            )
-            context['fairy_tale'] = fairy_tale
-        except FairyTaleTemplate.DoesNotExist:
-            raise Http404("Сказка не найдена")
-        
-        return context
-    
-    def post(self, request, *args, **kwargs):
-        template_slug = kwargs.get('slug')
-        
-        try:
-            fairy_tale = FairyTaleTemplate.objects.get(
-                slug=template_slug,
-                is_published=True
-            )
-        except FairyTaleTemplate.DoesNotExist:
-            messages.error(request, "Сказка не найдена")
-            return redirect('fairy_tales:list')
-        
-        # Собираем данные формы
-        personalization_data = {}
-        
-        # Основные данные
-        customer_name = request.POST.get('customer_name', '').strip()
-        customer_email = request.POST.get('customer_email', '').strip()
-        customer_phone = request.POST.get('customer_phone', '').strip()
-        
-        # Данные для персонализации
-        child_name = request.POST.get('child_name', '').strip()
-        child_age = request.POST.get('child_age', '')
-        child_gender = request.POST.get('child_gender', '')
-        main_problem = request.POST.get('main_problem', '').strip()
-        child_interests = request.POST.get('child_interests', '').strip()
-        family_situation = request.POST.get('family_situation', '').strip()
-        special_requests = request.POST.get('special_requests', '').strip()
-        
-        # Опции
-        include_audio = request.POST.get('include_audio') == 'on'
-        include_illustrations = request.POST.get('include_illustrations') == 'on'
-        
-        # Валидация
-        if not all([customer_name, customer_email, child_name, main_problem]):
-            messages.error(request, "Пожалуйста, заполните все обязательные поля")
-            return render(request, self.template_name, {
-                'fairy_tale': fairy_tale,
-                'form_data': request.POST
-            })
-        
-        # Сохраняем данные персонализации
-        personalization_data = {
-            'child_name': child_name,
-            'child_age': child_age,
-            'child_gender': child_gender,
-            'main_problem': main_problem,
-            'child_interests': child_interests,
-            'family_situation': family_situation,
-        }
-        
-        # Расчет цены
-        base_price = fairy_tale.base_price
-        audio_price = fairy_tale.audio_price if include_audio else Decimal('0.00')
-        illustration_price = fairy_tale.illustration_price if include_illustrations else Decimal('0.00')
-        total_price = base_price + audio_price + illustration_price
-        
-        # Создаем заказ
-        order = PersonalizationOrder.objects.create(
-            template=fairy_tale,
-            customer_name=customer_name,
-            customer_email=customer_email,
-            customer_phone=customer_phone,
-            user=request.user if request.user.is_authenticated else None,
-            personalization_data=personalization_data,
-            include_audio=include_audio,
-            include_illustrations=include_illustrations,
-            special_requests=special_requests,
-            base_price=base_price,
-            audio_price=audio_price,
-            illustration_price=illustration_price,
-            total_price=total_price,
-        )
-        
-        # Увеличиваем счетчик заказов для шаблона
-        FairyTaleTemplate.objects.filter(pk=fairy_tale.pk).update(
-            orders_count=fairy_tale.orders_count + 1
-        )
-        
-        messages.success(
-            request, 
-            f'Заказ #{order.short_order_id} успешно создан! '
-            f'Мы свяжемся с вами в ближайшее время.'
-        )
-        
-        return redirect('fairy_tales:order_success', order_id=order.order_id)
-
-class OrderSuccessView(DetailView):
-    """Страница успешного заказа"""
-    model = PersonalizationOrder
-    template_name = 'fairy_tales/order_success.html'
-    context_object_name = 'order'
-    slug_field = 'order_id'
-    slug_url_kwarg = 'order_id'
 
 class CategoryListView(ListView):
     """Список категорий сказок"""
@@ -257,12 +181,31 @@ class CategoryListView(ListView):
     context_object_name = 'categories'
     
     def get_queryset(self):
-        return FairyTaleCategory.objects.filter(is_active=True).annotate(
-            templates_count=Count('templates', filter=Q(templates__is_published=True))
-        )
+        return FairyTaleCategory.objects.filter(
+            is_active=True
+        ).annotate(
+            tales_count=Count('templates', filter=Q(templates__is_published=True))
+        ).order_by('age_group', 'order', 'name')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Группируем по возрастным группам
+        categories_by_age = {}
+        for category in context['categories']:
+            age_group = category.age_group
+            if age_group not in categories_by_age:
+                categories_by_age[age_group] = []
+            categories_by_age[age_group].append(category)
+        
+        context['categories_by_age'] = categories_by_age
+        context['age_groups'] = AgeGroup.choices
+        
+        return context
+
 
 class CategoryDetailView(DetailView):
-    """Страница категории сказок"""
+    """Детальная страница категории"""
     model = FairyTaleCategory
     template_name = 'fairy_tales/category_detail.html'
     context_object_name = 'category'
@@ -272,17 +215,108 @@ class CategoryDetailView(DetailView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        category = self.get_object()
+        category = self.object
         
-        context['fairy_tales'] = FairyTaleTemplate.objects.filter(
-            category=category,
-            is_published=True
-        ).order_by('-featured', '-created_at')[:12]
+        # Сказки в этой категории
+        tales_queryset = category.templates.filter(is_published=True)
+        
+        # Фильтрация по терапевтическим целям
+        goal = self.request.GET.get('goal')
+        if goal:
+            tales_queryset = tales_queryset.filter(therapeutic_goals__contains=[goal])
+        
+        # Сортировка
+        sort = self.request.GET.get('sort', 'featured')
+        if sort == 'newest':
+            tales_queryset = tales_queryset.order_by('-created_at')
+        elif sort == 'popular':
+            tales_queryset = tales_queryset.order_by('-orders_count', '-views_count')
+        elif sort == 'age_asc':
+            tales_queryset = tales_queryset.order_by('target_age_min')
+        elif sort == 'age_desc':
+            tales_queryset = tales_queryset.order_by('-target_age_max')
+        else:  # featured
+            tales_queryset = tales_queryset.order_by('-featured', '-created_at')
+        
+        context['fairy_tales'] = tales_queryset
+        context['therapeutic_goals'] = TherapeuticGoal.choices
+        context['current_goal'] = goal
+        context['current_sort'] = sort
         
         return context
 
+
+class PersonalizationOrderView(LoginRequiredMixin, CreateView):
+    """Заказ персонализации сказки"""
+    model = PersonalizationOrder
+    template_name = 'fairy_tales/personalization_order.html'
+    fields = [
+        'customer_name', 'customer_email', 'customer_phone',
+        'personalization_data', 'include_audio', 'include_illustrations',
+        'special_requests'
+    ]
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        template_slug = self.kwargs['slug']
+        fairy_tale = get_object_or_404(
+            FairyTaleTemplate,
+            slug=template_slug,
+            is_published=True
+        )
+        context['fairy_tale'] = fairy_tale
+        
+        return context
+    
+    def form_valid(self, form):
+        template_slug = self.kwargs['slug']
+        fairy_tale = get_object_or_404(
+            FairyTaleTemplate,
+            slug=template_slug,
+            is_published=True
+        )
+        
+        order = form.save(commit=False)
+        order.template = fairy_tale
+        order.user = self.request.user
+        order.base_price = fairy_tale.base_price
+        
+        # Рассчитываем дополнительные цены
+        if order.include_audio and fairy_tale.has_audio_option:
+            order.audio_price = fairy_tale.audio_price
+        if order.include_illustrations and fairy_tale.has_illustration_option:
+            order.illustration_price = fairy_tale.illustration_price
+        
+        order.save()
+        
+        # Увеличиваем счетчик заказов
+        FairyTaleTemplate.objects.filter(id=fairy_tale.id).update(
+            orders_count=F('orders_count') + 1
+        )
+        
+        messages.success(
+            self.request,
+            f'Заказ #{order.short_order_id} успешно создан! Мы свяжемся с вами для подтверждения деталей.'
+        )
+        
+        return redirect('fairy_tales:order_success', order_id=order.order_id)
+
+
+class OrderSuccessView(LoginRequiredMixin, DetailView):
+    """Страница успешного заказа"""
+    model = PersonalizationOrder
+    template_name = 'fairy_tales/order_success.html'
+    context_object_name = 'order'
+    slug_field = 'order_id'
+    slug_url_kwarg = 'order_id'
+    
+    def get_queryset(self):
+        return PersonalizationOrder.objects.filter(user=self.request.user)
+
+
 class MyOrdersView(LoginRequiredMixin, ListView):
-    """Мои заказы сказок"""
+    """Мои заказы персонализации"""
     model = PersonalizationOrder
     template_name = 'fairy_tales/my_orders.html'
     context_object_name = 'orders'
@@ -291,7 +325,8 @@ class MyOrdersView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return PersonalizationOrder.objects.filter(
             user=self.request.user
-        ).order_by('-created_at')
+        ).select_related('template').order_by('-created_at')
+
 
 class MyFavoritesView(LoginRequiredMixin, ListView):
     """Мои избранные сказки"""
@@ -303,172 +338,178 @@ class MyFavoritesView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return FairyTaleFavorite.objects.filter(
             user=self.request.user
-        ).select_related('template').order_by('-created_at')
+        ).select_related('template__category').order_by('-created_at')
 
+
+# ==========================================
 # AJAX Views
+# ==========================================
+
+@login_required
 @require_POST
-@csrf_exempt
 def toggle_favorite(request, template_id):
     """Добавить/убрать из избранного"""
-    if not request.user.is_authenticated:
-        return JsonResponse({'error': 'Требуется авторизация'}, status=401)
-    
     try:
-        fairy_tale = FairyTaleTemplate.objects.get(
-            id=template_id,
-            is_published=True
+        template = get_object_or_404(FairyTaleTemplate, id=template_id, is_published=True)
+        
+        favorite, created = FairyTaleFavorite.objects.get_or_create(
+            user=request.user,
+            template=template
         )
-    except FairyTaleTemplate.DoesNotExist:
-        return JsonResponse({'error': 'Сказка не найдена'}, status=404)
-    
-    favorite, created = FairyTaleFavorite.objects.get_or_create(
-        user=request.user,
-        template=fairy_tale
-    )
-    
-    if not created:
-        favorite.delete()
-        is_favorited = False
-    else:
-        is_favorited = True
-    
-    return JsonResponse({
-        'status': 'success',
-        'is_favorited': is_favorited,
-        'favorites_count': fairy_tale.favorited_by.count()
-    })
+        
+        if created:
+            is_favorite = True
+            message = f'Сказка "{template.title}" добавлена в избранное'
+        else:
+            favorite.delete()
+            is_favorite = False
+            message = f'Сказка "{template.title}" убрана из избранного'
+        
+        return JsonResponse({
+            'status': 'success',
+            'is_favorite': is_favorite,
+            'message': message
+        })
+        
+    except Exception as e:
+        logger.error(f"Ошибка переключения избранного: {e}")
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Произошла ошибка'
+        }, status=500)
 
+
+@login_required
 @require_POST
 def add_review(request, template_id):
     """Добавить отзыв о сказке"""
-    if not request.user.is_authenticated:
-        messages.error(request, 'Для оставления отзыва необходимо войти в систему')
-        return redirect('account_login')
-    
     try:
-        fairy_tale = FairyTaleTemplate.objects.get(
-            id=template_id,
-            is_published=True
+        template = get_object_or_404(FairyTaleTemplate, id=template_id, is_published=True)
+        
+        # Проверяем, не оставлял ли пользователь уже отзыв
+        if FairyTaleReview.objects.filter(template=template, author=request.user).exists():
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Вы уже оставляли отзыв об этой сказке'
+            }, status=400)
+        
+        data = json.loads(request.body)
+        
+        review = FairyTaleReview.objects.create(
+            template=template,
+            author=request.user,
+            rating=int(data.get('rating', 5)),
+            title=data.get('title', ''),
+            content=data.get('content', ''),
+            helped_with_problem=data.get('helped_with_problem'),
+            child_liked=data.get('child_liked'),
+            would_recommend=data.get('would_recommend', True)
         )
-    except FairyTaleTemplate.DoesNotExist:
-        messages.error(request, 'Сказка не найдена')
-        return redirect('fairy_tales:list')
-    
-    # Проверяем, что пользователь еще не оставлял отзыв
-    if FairyTaleReview.objects.filter(template=fairy_tale, author=request.user).exists():
-        messages.error(request, 'Вы уже оставляли отзыв об этой сказке')
-        return redirect('fairy_tales:detail', slug=fairy_tale.slug)
-    
-    rating = request.POST.get('rating')
-    title = request.POST.get('title', '').strip()
-    content = request.POST.get('content', '').strip()
-    helped_with_problem = request.POST.get('helped_with_problem')
-    child_liked = request.POST.get('child_liked')
-    
-    # Валидация
-    if not all([rating, title, content]):
-        messages.error(request, 'Пожалуйста, заполните все поля')
-        return redirect('fairy_tales:detail', slug=fairy_tale.slug)
-    
-    try:
-        rating = int(rating)
-        if rating < 1 or rating > 5:
-            raise ValueError()
-    except (ValueError, TypeError):
-        messages.error(request, 'Некорректная оценка')
-        return redirect('fairy_tales:detail', slug=fairy_tale.slug)
-    
-    # Создаем отзыв
-    FairyTaleReview.objects.create(
-        template=fairy_tale,
-        author=request.user,
-        rating=rating,
-        title=title,
-        content=content,
-        helped_with_problem=helped_with_problem == 'yes' if helped_with_problem else None,
-        child_liked=child_liked == 'yes' if child_liked else None,
-    )
-    
-    messages.success(request, 'Спасибо за ваш отзыв!')
-    return redirect('fairy_tales:detail', slug=fairy_tale.slug)
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Спасибо за отзыв! Он поможет другим родителям.',
+            'review_id': review.id
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Некорректные данные'
+        }, status=400)
+    except Exception as e:
+        logger.error(f"Ошибка добавления отзыва: {e}")
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Произошла ошибка при сохранении отзыва'
+        }, status=500)
 
+
+@require_POST
 def preview_personalization(request):
-    """Предпросмотр персонализированной сказки (AJAX)"""
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Метод не поддерживается'}, status=405)
-    
+    """Предварительный просмотр персонализированной сказки"""
     try:
         data = json.loads(request.body)
         template_id = data.get('template_id')
         personalization_data = data.get('personalization_data', {})
         
-        fairy_tale = FairyTaleTemplate.objects.get(
-            id=template_id,
-            is_published=True
-        )
+        template = get_object_or_404(FairyTaleTemplate, id=template_id, is_published=True)
         
-        # Простая замена переменных в шаблоне
-        preview_text = fairy_tale.content_template
-        
-        # Заменяем основные переменные
-        replacements = {
-            '{name}': personalization_data.get('child_name', '[Имя ребенка]'),
-            '{age}': personalization_data.get('child_age', '[возраст]'),
-            '{problem}': personalization_data.get('main_problem', '[проблема]'),
-            '{interests}': personalization_data.get('child_interests', '[увлечения]'),
-            '{hobby}': personalization_data.get('child_interests', '[хобби]'),
-        }
-        
-        for placeholder, value in replacements.items():
-            preview_text = preview_text.replace(placeholder, value)
-        
-        # Ограничиваем предпросмотр первыми 500 символами
-        preview_text = preview_text[:500] + '...' if len(preview_text) > 500 else preview_text
+        # Заменяем переменные в шаблоне
+        content = template.content_template
+        for key, value in personalization_data.items():
+            content = content.replace(f'{{{key}}}', str(value))
         
         return JsonResponse({
             'status': 'success',
-            'preview': preview_text
+            'preview_content': content[:500] + '...' if len(content) > 500 else content
         })
         
-    except FairyTaleTemplate.DoesNotExist:
-        return JsonResponse({'error': 'Сказка не найдена'}, status=404)
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Некорректные данные'}, status=400)
     except Exception as e:
-        return JsonResponse({'error': 'Ошибка сервера'}, status=500)
+        logger.error(f"Ошибка предпросмотра: {e}")
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Произошла ошибка'
+        }, status=500)
 
+
+@require_POST
 def calculate_price(request):
-    """Расчет стоимости заказа (AJAX)"""
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Метод не поддерживается'}, status=405)
-    
+    """Расчет стоимости персонализации"""
     try:
         data = json.loads(request.body)
         template_id = data.get('template_id')
         include_audio = data.get('include_audio', False)
         include_illustrations = data.get('include_illustrations', False)
         
-        fairy_tale = FairyTaleTemplate.objects.get(
-            id=template_id,
-            is_published=True
-        )
+        template = get_object_or_404(FairyTaleTemplate, id=template_id, is_published=True)
         
-        base_price = fairy_tale.base_price
-        audio_price = fairy_tale.audio_price if include_audio else Decimal('0.00')
-        illustration_price = fairy_tale.illustration_price if include_illustrations else Decimal('0.00')
-        total_price = base_price + audio_price + illustration_price
+        total_price = template.base_price
+        
+        if include_audio and template.has_audio_option:
+            total_price += template.audio_price
+        
+        if include_illustrations and template.has_illustration_option:
+            total_price += template.illustration_price
         
         return JsonResponse({
             'status': 'success',
-            'base_price': float(base_price),
-            'audio_price': float(audio_price),
-            'illustration_price': float(illustration_price),
+            'base_price': float(template.base_price),
+            'audio_price': float(template.audio_price) if include_audio else 0,
+            'illustration_price': float(template.illustration_price) if include_illustrations else 0,
             'total_price': float(total_price)
         })
         
-    except FairyTaleTemplate.DoesNotExist:
-        return JsonResponse({'error': 'Сказка не найдена'}, status=404)
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Некорректные данные'}, status=400)
     except Exception as e:
-        return JsonResponse({'error': 'Ошибка сервера'}, status=500)
+        logger.error(f"Ошибка расчета цены: {e}")
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Произошла ошибка'
+        }, status=500)
+
+
+# ==========================================
+# LEGACY: Подписка на уведомления (для совместимости)
+# ==========================================
+
+@require_POST
+def subscribe_notification(request):
+    """Подписка на уведомления о запуске (legacy)"""
+    try:
+        data = json.loads(request.body)
+        email = data.get('email', '').strip()
+        child_age = data.get('child_age', '').strip()
+        
+        if not email:
+            return JsonResponse({'error': 'Email обязателен'}, status=400)
+        
+        logger.info(f"Legacy: Подписка на сказки: {email}, возраст ребенка: {child_age}")
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Спасибо! Сказки уже доступны в каталоге.'
+        })
+        
+    except Exception as e:
+        logger.error(f"Ошибка legacy подписки: {e}")
+        return JsonResponse({'error': 'Произошла ошибка'}, status=500)

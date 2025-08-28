@@ -1,0 +1,671 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ book.title }} - Православный портал{% endblock %}
+
+{% block extra_css %}
+<style>
+    .book-cover {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .book-meta {
+        background: var(--soft-gray);
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .book-meta-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .book-meta-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .book-meta-item i {
+        width: 20px;
+        margin-right: 8px;
+        color: var(--orthodox-blue);
+    }
+    
+    .rating-stars {
+        color: var(--gold-accent);
+    }
+    
+    .book-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 1.5rem 0;
+    }
+    
+    .btn-read {
+        background: linear-gradient(135deg, var(--orthodox-blue), #1e3d6f);
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-read:hover {
+        background: linear-gradient(135deg, #1e3d6f, var(--orthodox-blue));
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(43, 90, 160, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-download {
+        background: linear-gradient(135deg, #28a745, #20692b);
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-download:hover {
+        background: linear-gradient(135deg, #20692b, #28a745);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-favorite {
+        background: transparent;
+        border: 2px solid var(--gold-accent);
+        color: var(--gold-accent);
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-favorite:hover {
+        background: var(--gold-accent);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-favorite.active {
+        background: var(--gold-accent);
+        color: white;
+    }
+    
+    .btn-purchase {
+        background: linear-gradient(135deg, var(--gold-accent), #b8941f);
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-purchase:hover {
+        background: linear-gradient(135deg, #b8941f, var(--gold-accent));
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .reading-progress {
+        background: var(--soft-gray);
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .progress-bar-container {
+        background: #e9ecef;
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 0.5rem 0;
+    }
+    
+    .progress-bar {
+        background: linear-gradient(90deg, var(--orthodox-blue), #4a90e2);
+        height: 100%;
+        transition: width 0.3s ease;
+    }
+    
+    .rating-input {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+    }
+    
+    .rating-input input {
+        display: none;
+    }
+    
+    .rating-input .star-label {
+        color: #ddd;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: color 0.2s;
+        margin-right: 5px;
+    }
+    
+    .rating-input .star-label:hover,
+    .rating-input .star-label:hover ~ .star-label,
+    .rating-input input:checked ~ .star-label {
+        color: #ffc107; /* Жёлтый цвет */
+    }
+    
+    /* Отступ для иконок в кнопках */
+    .btn i {
+        margin-right: 6px;
+    }
+    
+    /* Стили для содержания книги */
+    .book-content {
+        background: var(--soft-gray);
+        border-radius: 8px;
+        padding: 1.5rem;
+        border-left: 4px solid var(--orthodox-blue);
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+    
+    .book-content h1, .book-content h2, .book-content h3, 
+    .book-content h4, .book-content h5, .book-content h6 {
+        color: var(--orthodox-blue);
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .book-content p {
+        margin-bottom: 1rem;
+        text-align: justify;
+    }
+    
+    .book-content ul, .book-content ol {
+        margin-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .book-content li {
+        margin-bottom: 0.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .book-actions {
+            flex-direction: column;
+        }
+        
+        .btn-read, .btn-download, .btn-favorite, .btn-purchase {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'books:list' %}">Библиотека</a></li>
+            {% if book.category %}
+            <li class="breadcrumb-item">
+                <a href="{% url 'books:category' book.category.slug %}">{{ book.category.name }}</a>
+            </li>
+            {% endif %}
+            <li class="breadcrumb-item active" aria-current="page">{{ book.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Левая колонка: обложка и действия -->
+        <div class="col-lg-4 col-md-5 mb-4">
+            <div class="text-center">
+                {% if book.cover %}
+                    <img src="{{ book.cover.url }}" alt="{{ book.title }}" class="book-cover mb-3">
+                {% else %}
+                    <div class="book-cover bg-light d-flex align-items-center justify-content-center mb-3" style="height: 300px;">
+                        <i class="bi bi-book fs-1 text-muted"></i>
+                    </div>
+                {% endif %}
+                
+                <!-- Метаданные книги -->
+                <div class="book-meta">
+                    <div class="book-meta-item">
+                        <i class="bi bi-calendar"></i>
+                        <span>Опубликовано: 
+                            {% if book.published_at %}
+                                {{ book.published_at|date:"d.m.Y" }}
+                            {% else %}
+                                н/д
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="book-meta-item">
+                        <i class="bi bi-file-earmark"></i>
+                        <span>Формат: {{ book.get_format_display }}</span>
+                    </div>
+                    
+                    {% if book.pages %}
+                    <div class="book-meta-item">
+                        <i class="bi bi-file-text"></i>
+                        <span>Страниц: {{ book.pages }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="book-meta-item">
+                        <i class="bi bi-download"></i>
+                        <span>Скачиваний: {{ book.downloads_count }}</span>
+                    </div>
+                    
+                    <div class="book-meta-item">
+                        <i class="bi bi-eye"></i>
+                        <span>Просмотры: {{ book.views_count }}</span>
+                    </div>
+                    
+                    {% if book.language %}
+                    <div class="book-meta-item">
+                        <i class="bi bi-translate"></i>
+                        <span>Язык: 
+                            {% if book.language == 'ru' %}Русский{% else %}{{ book.language }}{% endif %}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Прогресс чтения (если пользователь читает) -->
+                {% if user.is_authenticated and reading_session %}
+                <div class="reading-progress">
+                    <h6><i class="bi bi-bookmark-star"></i> Прогресс чтения</h6>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: {{ reading_session.progress_percentage|floatformat:0 }}%"></div>
+                    </div>
+                    <small class="text-muted">
+                        Страница {{ reading_session.current_page }}
+                        {% if book.pages %} из {{ book.pages }}{% endif %} 
+                        ({{ reading_session.progress_percentage|floatformat:0 }}%)
+                    </small>
+                </div>
+                {% endif %}
+
+                <!-- Кнопки действий -->
+                <div class="book-actions">
+                    <!-- Отладочная информация (удалить в продакшене) -->
+                    {% if user.is_superuser %}
+                    <div class="alert alert-info mb-3">
+                        <small>
+                            <strong>Debug info:</strong><br>
+                            is_free: {{ book.is_free }}<br>
+                            price: {{ book.price }}<br>
+                            user_can_read: {{ user_can_read }}<br>
+                            is_authenticated: {{ user.is_authenticated }}
+                        </small>
+                    </div>
+                    {% endif %}
+                    
+                    {% if user.is_authenticated %}
+                        <!-- Проверяем, может ли пользователь читать книгу -->
+                        {% if user_can_read %}
+                            <a href="{% url 'books:read' book.slug %}" class="btn-read">
+                                <i class="bi bi-book-open"></i>
+                                {% if reading_session %}
+                                    Продолжить чтение
+                                {% else %}
+                                    Читать книгу
+                                {% endif %}
+                            </a>
+                        {% else %}
+                            <!-- Кнопка покупки -->
+                            <a href="{% url 'shop:products' %}?book={{ book.id }}" class="btn-purchase">
+                                <i class="bi bi-cart-plus"></i>
+                                Купить за {{ book.price }} ₽
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <!-- Неавторизованные пользователи -->
+                        {% if user_can_read %}
+                            <!-- Бесплатная книга -->
+                            <a href="{% url 'accounts:login' %}?next={% url 'books:read' book.slug %}" class="btn-read">
+                                <i class="bi bi-book-open"></i>
+                                Войти для чтения
+                            </a>
+                        {% else %}
+                            <!-- Платная книга -->
+                            <a href="{% url 'accounts:login' %}" class="btn-purchase">
+                                <i class="bi bi-person-plus"></i>
+                                Войти для покупки
+                            </a>
+                        {% endif %}
+                    {% endif %}
+
+                    <!-- Кнопка скачивания -->
+                    {% if book.file and user.is_authenticated and user_can_read %}
+                        <a href="{% url 'books:download' book.id %}" class="btn-download">
+                            <i class="bi bi-download"></i>
+                            Скачать
+                        </a>
+                    {% endif %}
+
+                    <!-- Кнопка избранного -->
+                    {% if user.is_authenticated %}
+                        <button class="btn-favorite {% if is_favorite %}active{% endif %}" 
+                                onclick="toggleFavorite({{ book.id }})">
+                            <i class="bi bi-heart{% if is_favorite %}-fill{% endif %}"></i>
+                            <span class="favorite-text">
+                                {% if is_favorite %}В избранном{% else %}В избранное{% endif %}
+                            </span>
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая колонка: информация о книге -->
+        <div class="col-lg-8 col-md-7">
+            <div class="mb-4">
+                <h1 class="mb-3">{{ book.title }}</h1>
+                
+                {% if book.author %}
+                <p class="lead text-muted mb-3">
+                    <i class="bi bi-person"></i> {{ book.author }}
+                </p>
+                {% endif %}
+
+                <!-- Рейтинг -->
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rating-stars me-2">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= book.rating %}
+                                <i class="bi bi-star-fill"></i>
+                            {% else %}
+                                <i class="bi bi-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <span class="text-muted">
+                        {{ book.rating|floatformat:1 }} ({{ book.reviews_count }} отзыв{{ book.reviews_count|pluralize:"ов" }})
+                    </span>
+                </div>
+
+                <!-- Теги -->
+                {% if book.tags.exists %}
+                <div class="mb-3">
+                    {% for tag in book.tags.all %}
+                        <span class="badge bg-secondary me-1">{{ tag.name }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Описание -->
+                {% if book.description %}
+                <div class="mb-4">
+                    <h5>Описание</h5>
+                    <p>{{ book.description|linebreaks }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Содержание книги -->
+                {% if book.content %}
+                <div class="mb-4">
+                    <h5>Содержание</h5>
+                    <div class="book-content">
+                        {{ book.content|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Дополнительная информация -->
+                {% if book.publisher or book.isbn or book.publication_year %}
+                <div class="mb-4">
+                    <h5>Дополнительная информация</h5>
+                    <div class="row">
+                        {% if book.publisher %}
+                        <div class="col-md-6 mb-2">
+                            <strong>Издательство:</strong> {{ book.publisher }}
+                        </div>
+                        {% endif %}
+                        {% if book.publication_year %}
+                        <div class="col-md-6 mb-2">
+                            <strong>Год издания:</strong> {{ book.publication_year }}
+                        </div>
+                        {% endif %}
+                        {% if book.isbn %}
+                        <div class="col-md-6 mb-2">
+                            <strong>ISBN:</strong> {{ book.isbn }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Отзывы -->
+            <div class="mt-4">
+                <h5>Отзывы читателей</h5>
+                
+                {% if user.is_authenticated %}
+                <!-- Форма добавления отзыва -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h6>Оставить отзыв</h6>
+                        <form method="post" action="{% url 'books:add_review' book.id %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">Ваша оценка:</label>
+                                <div class="rating-input">
+                                    {% for i in "12345" %}
+                                    <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" required>
+                                    <label for="star{{ i }}" class="star-label">
+                                        <i class="bi bi-star"></i>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="comment" class="form-label">Ваш отзыв:</label>
+                                <textarea class="form-control" id="comment" name="comment" rows="3" 
+                                         placeholder="Поделитесь своими впечатлениями о книге..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send" style="margin-right: 6px;"></i>Отправить отзыв
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Список отзывов -->
+                {% if reviews %}
+                    {% for review in reviews %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-1">{{ review.user.username }}</h6>
+                                    <div class="rating-stars">
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= review.rating %}
+                                                <i class="bi bi-star-fill"></i>
+                                            {% else %}
+                                                <i class="bi bi-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <small class="text-muted">{{ review.created_at|date:"d.m.Y H:i" }}</small>
+                            </div>
+                            {% if review.comment %}
+                            <p class="mb-0">{{ review.comment }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">Пока нет отзывов. Будьте первым!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Похожие книги -->
+    {% if related_books %}
+    <div class="related-books">
+        <h4 class="mb-4">Похожие книги</h4>
+        <div class="row">
+            {% for related_book in related_books %}
+            <div class="col-lg-3 col-md-4 col-6 mb-4">
+                <div class="card book-card">
+                    {% if related_book.cover %}
+                        <img src="{{ related_book.cover.url }}" class="book-card-cover" alt="{{ related_book.title }}">
+                    {% else %}
+                        <div class="book-card-cover bg-light d-flex align-items-center justify-content-center">
+                            <i class="bi bi-book fs-1 text-muted"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h6 class="card-title">{{ related_book.title|truncatechars:40 }}</h6>
+                        {% if related_book.author %}
+                        <p class="card-text text-muted small">{{ related_book.author }}</p>
+                        {% endif %}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                {% if related_book.is_free %}
+                                    Бесплатно
+                                {% else %}
+                                    {{ related_book.price }} ₽
+                                {% endif %}
+                            </small>
+                            <a href="{{ related_book.get_absolute_url }}" class="btn btn-sm btn-outline-primary">
+                                Подробнее
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Toast уведомления -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toast-container"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Функция переключения избранного
+function toggleFavorite(bookId) {
+    fetch(`/books/favorite/${bookId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const button = event.target.closest('.btn-favorite');
+            const icon = button.querySelector('i');
+            const text = button.querySelector('.favorite-text');
+            
+            if (data.is_favorite) {
+                button.classList.add('active');
+                icon.className = 'bi bi-heart-fill';
+                text.textContent = 'В избранном';
+            } else {
+                button.classList.remove('active');
+                icon.className = 'bi bi-heart';
+                text.textContent = 'В избранное';
+            }
+            
+            showToast(data.message, 'success');
+        } else {
+            showToast(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Произошла ошибка', 'error');
+    });
+}
+
+// Функция показа уведомлений
+function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toast-container');
+    const toastId = 'toast-' + Date.now();
+    
+    const toastHTML = `
+        <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2 text-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'}"></i>
+                <strong class="me-auto">Уведомление</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `;
+    
+    toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+    
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement);
+    toast.show();
+    
+    // Удаляем toast после скрытия
+    toastElement.addEventListener('hidden.bs.toast', () => {
+        toastElement.remove();
+    });
+}
+
+// Функция получения CSRF токена
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

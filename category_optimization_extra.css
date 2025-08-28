@@ -1,0 +1,46 @@
+/* Дополнительная оптимизация для идеального заполнения */
+
+/* Более гибкие размеры кнопок */
+.category-filter-btn {
+    padding: 0.5rem 0.8rem; /* Уменьшен горизонтальный padding */
+    font-size: 0.85rem; /* Чуть меньший шрифт */
+    white-space: nowrap;
+    min-width: max-content;
+}
+
+/* Адаптивные размеры в зависимости от ширины экрана */
+@media (min-width: 1400px) {
+    .category-filter-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 1200px) {
+    .category-filter-btn {
+        padding: 0.4rem 0.7rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .category-filter-btn {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.75rem;
+    }
+    
+    .category-row {
+        justify-content: center;
+        gap: 0.15rem; /* Меньший зазор на мобильных */
+    }
+}
+
+/* Плавное масштабирование */
+.category-filter-btn {
+    transition: all 0.3s ease;
+}
+
+.category-filter-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}

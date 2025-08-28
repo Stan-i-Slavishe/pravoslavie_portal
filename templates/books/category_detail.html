@@ -1,0 +1,610 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ category.name }} - Книги{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Хлебные крошки -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Главная</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'books:list' %}">Библиотека</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'books:categories' %}">Категории</a></li>
+                    <li class="breadcrumb-item active">{{ category.name }}</li>
+                </ol>
+            </nav>
+            
+            <!-- Заголовок категории -->
+            <div class="d-flex align-items-center mb-4">
+                {% if category.icon %}
+                    <i class="{{ category.icon }} me-3 text-primary" style="font-size: 2.5rem;"></i>
+                {% else %}
+                    <i class="bi bi-book me-3 text-primary" style="font-size: 2.5rem;"></i>
+                {% endif %}
+                <div>
+                    <h1 class="mb-1">{{ category.name }}</h1>
+                    <span class="badge bg-primary">
+                        {{ books.paginator.count }} 
+                        {% if books.paginator.count == 1 %}
+                            книга
+                        {% elif books.paginator.count <= 4 %}
+                            книги
+                        {% else %}
+                            книг
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Описание категории -->
+            {% if category.description %}
+                <div class="alert alert-info mb-4">
+                    <i class="bi bi-info-circle me-2"></i>
+                    {{ category.description }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Основное содержимое -->
+        <div class="col-lg-9">
+            {% if books %}
+                <!-- Сортировка и фильтры -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <label class="form-label me-2 mb-0">Сортировка:</label>
+                            <select class="form-select form-select-sm" style="width: auto;" onchange="updateSort(this.value)">
+                                <option value="newest" {% if request.GET.sort == 'newest' or not request.GET.sort %}selected{% endif %}>Новые</option>
+                                <option value="popular" {% if request.GET.sort == 'popular' %}selected{% endif %}>Популярные</option>
+                                <option value="rating" {% if request.GET.sort == 'rating' %}selected{% endif %}>По рейтингу</option>
+                                <option value="title" {% if request.GET.sort == 'title' %}selected{% endif %}>По названию</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <form method="get" class="d-flex">
+                            <input type="text" 
+                                   name="search" 
+                                   class="form-control form-control-sm" 
+                                   placeholder="Поиск в категории..." 
+                                   value="{{ request.GET.search }}"
+                                   style="max-width: 200px;">
+                            <button type="submit" class="btn btn-outline-primary btn-sm ms-2">
+                                <i class="bi bi-search"></i>
+                            </button>
+                            {% if request.GET.search %}
+                                <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}{% endif %}" 
+                                   class="btn btn-outline-secondary btn-sm ms-1" 
+                                   title="Очистить поиск">
+                                    <i class="bi bi-x"></i>
+                                </a>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Результаты поиска -->
+                {% if request.GET.search %}
+                    <div class="alert alert-light mb-4">
+                        <i class="bi bi-search me-2"></i>
+                        Результаты поиска "{{ request.GET.search }}" в категории "{{ category.name }}": 
+                        <strong>{{ books.paginator.count }}</strong> 
+                        {% if books.paginator.count == 1 %}
+                            книга найдена
+                        {% elif books.paginator.count <= 4 %}
+                            книги найдено
+                        {% else %}
+                            книг найдено
+                        {% endif %}
+                    </div>
+                {% endif %}
+                
+                <!-- Список книг -->
+                <div class="row g-4" style="margin: 0 -10px; /* Компенсируем отступы карточек */">
+                    {% for book in books %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 shadow-sm book-card">
+                                <!-- Стикеры на уровне карточки -->
+                                <!-- Бейдж цены -->
+                                {% if book.is_free %}
+                                    <span class="position-absolute badge bg-success price-badge-free">
+                                        Бесплатно
+                                    </span>
+                                {% else %}
+                                    <span class="position-absolute badge bg-primary price-badge-paid">
+                                        {{ book.price|floatformat:0 }}&nbsp;₽
+                                    </span>
+                                {% endif %}
+                                
+                                <!-- Бейдж формата -->
+                                <span class="position-absolute badge bg-dark format-badge-category">
+                                    {{ book.format|upper }}
+                                </span>
+                                
+                                <!-- Обложка книги -->
+                                <div class="position-relative">
+                                    <a href="{{ book.get_absolute_url }}" class="d-block h-100">
+                                        {% if book.cover %}
+                                            <img src="{{ book.cover.url }}" 
+                                                 class="card-img-top" 
+                                                 alt="{{ book.title }}"
+                                                 style="height: 200px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="card-img-top d-flex align-items-center justify-content-center bg-light" 
+                                                 style="height: 200px;">
+                                                <i class="bi bi-book text-muted" style="font-size: 3rem;"></i>
+                                            </div>
+                                        {% endif %}
+                                    </a>
+                                </div>
+                                
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">
+                                        <a href="{{ book.get_absolute_url }}" class="text-decoration-none">
+                                            {{ book.title }}
+                                        </a>
+                                    </h5>
+                                    
+                                    {% if book.author %}
+                                        <p class="card-text text-muted small mb-2">
+                                            <i class="bi bi-person me-1"></i>{{ book.author }}
+                                        </p>
+                                    {% endif %}
+                                    
+                                    <p class="card-text flex-grow-1">
+                                        {{ book.description|truncatewords:15 }}
+                                    </p>
+                                    
+                                    <!-- Рейтинг и статистика -->
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        {% if book.rating > 0 %}
+                                            <div class="text-warning">
+                                                {% for i in "12345" %}
+                                                    {% if forloop.counter <= book.rating %}
+                                                        <i class="bi bi-star-fill"></i>
+                                                    {% else %}
+                                                        <i class="bi bi-star"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                <span class="text-muted small ms-1">{{ book.rating }}</span>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <small class="text-muted">
+                                            <i class="bi bi-download me-1"></i>{{ book.downloads_count }}
+                                        </small>
+                                    </div>
+                                    
+                                    <!-- Кнопки действий -->
+                                    <div class="d-flex gap-1" style="margin-top: auto; width: 100%;">
+                                        {% if book.is_free %}
+                                            <a href="{% url 'books:modern_reader' slug=book.slug %}" 
+                                               class="btn btn-primary btn-sm" style="flex: 1; min-width: 0;">
+                                                Читать
+                                            </a>
+                                            <a href="{% url 'books:download' book_id=book.id %}" 
+                                               class="btn btn-outline-primary btn-sm"
+                                               title="Скачать"
+                                               style="flex: 0 0 auto; width: 40px;">
+                                                <i class="bi bi-download"></i>
+                                            </a>
+                                        {% else %}
+                                            <!-- Кнопка купить для платных книг -->
+                                            <a href="{% url 'books:modern_reader' slug=book.slug %}" 
+                                               class="btn btn-success btn-sm" style="flex: 1; min-width: 0;"
+                                               title="Купить за {{ book.price|floatformat:0 }} ₽">
+                                                <i class="bi bi-cart-plus me-1"></i>{{ book.price|floatformat:0 }}&nbsp;₽
+                                            </a>
+                                        {% endif %}
+                                        
+                                        {% if user.is_authenticated %}
+                                            <button type="button" 
+                                                    class="btn btn-outline-secondary btn-sm favorite-btn{% if book.id in user_favorites %} favorited{% endif %}"
+                                                    data-book-id="{{ book.id }}"
+                                                    data-is-favorite="{% if book.id in user_favorites %}true{% else %}false{% endif %}"
+                                                    title="{% if book.id in user_favorites %}Удалить из избранного{% else %}Добавить в избранное{% endif %}"
+                                                    style="flex: 0 0 auto; width: 40px;">
+                                                <i class="bi {% if book.id in user_favorites %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Пагинация -->
+                {% if books.has_other_pages %}
+                    <nav aria-label="Навигация по страницам" class="mt-5">
+                        <ul class="pagination justify-content-center">
+                            {% if books.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ books.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in books.paginator.page_range %}
+                                {% if books.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > books.number|add:'-3' and num < books.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if books.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ books.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+                
+            {% else %}
+                <!-- Пустая категория -->
+                <div class="text-center py-5">
+                    <i class="bi bi-book display-1 text-muted"></i>
+                    {% if request.GET.search %}
+                        <h3 class="mt-3">Ничего не найдено</h3>
+                        <p class="text-muted">По запросу "{{ request.GET.search }}" в категории "{{ category.name }}" ничего не найдено</p>
+                        <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}{% endif %}" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-left me-1"></i>Показать все книги категории
+                        </a>
+                    {% else %}
+                        <h3 class="mt-3">В этой категории пока нет книг</h3>
+                        <p class="text-muted">Скоро здесь появятся интересные материалы</p>
+                        <a href="{% url 'books:list' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-book me-1"></i>Посмотреть все книги
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Боковая панель -->
+        <div class="col-lg-3">
+            <!-- Информация о категории -->
+            <div class="card bg-light mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-1"></i>О категории
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm table-borderless mb-0">
+                        <tr>
+                            <td><strong>Всего книг:</strong></td>
+                            <td>{{ books.paginator.count }}</td>
+                        </tr>
+                        {% if category.created_at %}
+                            <tr>
+                                <td><strong>Создана:</strong></td>
+                                <td>{{ category.created_at|date:"d.m.Y" }}</td>
+                            </tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Все категории -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list me-1"></i>Все категории
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'books:list' %}" 
+                           class="list-group-item list-group-item-action border-0 px-0">
+                            <i class="bi bi-collection me-2"></i>Все книги
+                        </a>
+                        {% if related_categories %}
+                            {% for cat in related_categories %}
+                                <a href="{% url 'books:category' slug=cat.slug %}" 
+                                   class="list-group-item list-group-item-action border-0 px-0 {% if cat.slug == category.slug %}active{% endif %}">
+                                    {% if cat.icon %}
+                                        <i class="{{ cat.icon }} me-2"></i>
+                                    {% else %}
+                                        <i class="bi bi-folder me-2"></i>
+                                    {% endif %}
+                                    {{ cat.name }}
+                                </a>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateSort(sortValue) {
+    const url = new URL(window.location);
+    url.searchParams.set('sort', sortValue);
+    window.location.href = url.toString();
+}
+
+// AJAX для избранного
+document.addEventListener('DOMContentLoaded', function() {
+    const favoriteButtons = document.querySelectorAll('.favorite-btn');
+    
+    favoriteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const bookId = this.dataset.bookId;
+            const isCurrentlyFavorite = this.dataset.isFavorite === 'true';
+            
+            fetch(`/books/favorite/${bookId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                                   document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || '',
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const icon = this.querySelector('i');
+                    if (data.is_favorite) {
+                        icon.className = 'bi bi-bookmark-fill';
+                        this.title = 'Удалить из избранного';
+                        this.dataset.isFavorite = 'true';
+                        this.classList.add('favorited');
+                        // Анимация добавления
+                        this.style.transform = 'scale(1.3)';
+                        setTimeout(() => {
+                            this.style.transform = 'scale(1)';
+                        }, 200);
+                    } else {
+                        icon.className = 'bi bi-bookmark';
+                        this.title = 'Добавить в избранное';
+                        this.dataset.isFavorite = 'false';
+                        this.classList.remove('favorited');
+                        // Анимация удаления
+                        this.style.transform = 'scale(0.9)';
+                        setTimeout(() => {
+                            this.style.transform = 'scale(1)';
+                        }, 150);
+                    }
+                    
+                    // Показываем уведомление
+                    showToast(data.message, 'success');
+                } else {
+                    showToast('Ошибка: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Произошла ошибка', 'error');
+            });
+        });
+    });
+});
+
+// Функция для показа уведомлений
+function showToast(message, type = 'info') {
+    // Простая реализация toast уведомлений
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Автоматически убираем через 3 секунды
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+</script>
+
+<style>
+.book-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
+}
+
+.favorite-btn {
+    transition: all 0.2s ease-in-out;
+    border: 1px solid #dee2e6;
+    background: transparent;
+    color: #6c757d;
+}
+
+.favorite-btn:hover {
+    transform: scale(1.1);
+    background: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+.favorite-btn:hover i {
+    color: #ffc107;
+}
+
+.favorite-btn.favorited {
+    background: transparent;
+    border-color: #dee2e6;
+}
+
+.favorite-btn.favorited i {
+    color: #ffc107 !important;
+}
+
+.favorite-btn i {
+    transition: color 0.2s ease;
+    color: #6c757d;
+}
+
+.alert {
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Стикеры цен с выходом за границы */
+.price-badge-free {
+    top: -8px !important;
+    right: -8px !important;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 10;
+    transform: rotate(2deg);
+    border: 2px solid #fff;
+}
+
+.price-badge-paid {
+    top: -8px !important;
+    right: -8px !important;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 10;
+    transform: rotate(2deg);
+    border: 2px solid #fff;
+}
+
+/* Анимация при наведении на карточку */
+.book-card:hover .price-badge-free,
+.book-card:hover .price-badge-paid {
+    transform: rotate(2deg) scale(1.05);
+    transition: transform 0.2s ease;
+}
+
+/* Стикер формата с выходом за границы */
+.format-badge-category {
+    top: -8px !important;
+    left: -8px !important;
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    z-index: 9;
+    transform: rotate(-2deg);
+    border: 1px solid #fff;
+    transition: transform 0.2s ease;
+}
+
+.book-card:hover .format-badge-category {
+    transform: rotate(-2deg) scale(1.05);
+}
+
+/* Позволяем стикерам выходить за границы карточки */
+.book-card {
+    overflow: visible !important;
+    margin: 10px;
+    position: relative;
+}
+
+.card-body {
+    padding: 1.25rem;
+    padding-bottom: 1rem; /* Меньше отступ снизу */
+}
+
+.book-card .position-relative {
+    overflow: visible;
+}
+
+/* Ссылка на изображении книги */
+.book-card .position-relative a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.book-card .position-relative a:hover {
+    text-decoration: none;
+}
+
+/* Курсор поинтер на области изображения */
+.book-card .position-relative {
+    cursor: pointer;
+}
+
+/* Эффект при наведении на изображение */
+.book-card:hover .card-img-top {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+}
+
+/* Эффект наложения при наведении */
+.book-card .position-relative a::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0);
+    transition: background 0.3s ease;
+    pointer-events: none;
+}
+
+.book-card:hover .position-relative a::after {
+    background: rgba(0, 0, 0, 0.05); /* Максимально легкое затемнение */
+}
+
+/* Стили для кнопки Читать */
+.btn-primary {
+    padding: 8px 16px;
+    font-weight: 500;
+    min-width: 90px;
+}
+
+/* Стили для кнопки покупки */
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+    white-space: nowrap; /* Предотвращаем перенос текста */
+    font-size: 0.8rem; /* Немного уменьшаем шрифт */
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.btn-success:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+</style>
+
+<!-- CSRF токен для AJAX запросов -->
+{% csrf_token %}
+{% endblock %}

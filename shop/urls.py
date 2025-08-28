@@ -25,10 +25,19 @@ urlpatterns = [
     path('order/<uuid:order_id>/', views.order_detail_view, name='order_detail'),
     path('my-purchases/', views.my_purchases_view, name='my_purchases'),
     path('download/<int:order_item_id>/', views.download_product, name='download_product'),
+    path('download-purchase/<int:purchase_id>/', views.download_purchase, name='download_purchase'),
     
     # Промокоды
     path('apply-discount/', views.apply_discount, name='apply_discount'),
+    path('apply-discount-form/', views.apply_discount_form, name='apply_discount_form'),
     
     # Персонализированные сказки
     path('order-fairy-tale/<int:product_id>/', views.order_fairy_tale, name='order_fairy_tale'),
+    
+    # ТЕСТОВЫЕ URL (удалить в продакшене)
+    path('test-payment-success/<uuid:order_id>/', views.test_payment_success, name='test_payment_success'),
+    path('debug-cart/', views.debug_cart_view, name='debug_cart'),
+    
+    # Добавление книг в корзину
+    path('add-book-to-cart/', views.add_book_to_cart, name='add_book_to_cart'),
 ]

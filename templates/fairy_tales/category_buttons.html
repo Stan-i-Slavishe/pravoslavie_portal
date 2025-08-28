@@ -1,0 +1,44 @@
+<!-- Кнопки категорий с оптимизированным отображением -->
+<div class="categories-container">
+    <!-- Всегда видимые категории -->
+    <div class="category-row">
+        <a href="{% url 'fairy_tales:list' %}" 
+           class="category-filter-btn {% if not current_category %}active{% endif %}">
+            <i class="bi bi-grid-3x3-gap"></i> Все категории
+        </a>
+        {% for category in visible_categories %}
+            <a href="?category={{ category.slug }}" 
+               class="category-filter-btn {% if current_category == category.slug %}active{% endif %}">
+                <i class="bi bi-{{ category.icon }}"></i> {{ category.name }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <!-- Скрытые категории -->
+    {% if has_hidden_categories %}
+        <div class="hidden-categories" id="hiddenCategories">
+            <div class="category-row">
+                {% for category in hidden_categories %}
+                    <a href="?category={{ category.slug }}" 
+                       class="category-filter-btn {% if current_category == category.slug %}active{% endif %}">
+                        <i class="bi bi-{{ category.icon }}"></i> {{ category.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Кнопка переключения -->
+        <div class="d-flex justify-content-center mt-2">
+            <button 
+                class="toggle-categories-btn" 
+                id="toggleCategoriesBtn"
+                onclick="toggleCategories()"
+                type="button"
+            >
+                <span class="toggle-text">Показать все категории</span>
+                <span class="categories-counter" id="hiddenCounter">+{{ hidden_count }}</span>
+                <i class="bi bi-chevron-down toggle-icon"></i>
+            </button>
+        </div>
+    {% endif %}
+</div>

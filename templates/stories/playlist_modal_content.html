@@ -1,0 +1,303 @@
+<!-- templates/stories/playlist_modal_content.html -->
+
+{% if playlist_items %}
+<div class="playlist-modal-grid">
+    {% for item in playlist_items %}
+        <div class="playlist-story-item" 
+             data-story-url="{% url 'stories:detail' slug=item.story.slug %}"
+             data-story-id="{{ item.story.id }}">
+            
+            <!-- Thumbnail с превью -->
+            <div class="playlist-story-thumbnail" style="height: 200px;">
+                {% if item.story.youtube_embed_id %}
+                    <img src="https://img.youtube.com/vi/{{ item.story.youtube_embed_id }}/maxresdefault.jpg" 
+                         alt="{{ item.story.title }}"
+                         loading="lazy"
+                         onerror="this.src='https://img.youtube.com/vi/{{ item.story.youtube_embed_id }}/hqdefault.jpg'">
+                    
+                    <!-- Play overlay -->
+                    <div class="play-overlay">
+                        <i class="bi bi-play-fill"></i>
+                    </div>
+                    
+                    <!-- Длительность видео (если есть) -->
+                    {% if item.story.duration %}
+                        <div class="story-duration">{{ item.story.duration }}</div>
+                    {% endif %}
+                {% else %}
+                    <!-- Заглушка для видео без preview -->
+                    <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted">
+                        <i class="bi bi-play-circle" style="font-size: 3rem;"></i>
+                        <small class="mt-2">Превью недоступно</small>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Информация о рассказе -->
+            <div class="p-3">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1 me-2">
+                        <h6 class="fw-bold text-dark mb-2 lh-sm" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                            {{ item.story.title }}
+                        </h6>
+                        
+                        <div class="story-views-count mb-2">
+                            <i class="bi bi-eye"></i>
+                            <span>{{ item.story.views_count|default:"0" }} просмотров</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Кнопка удаления -->
+                    <button class="remove-from-playlist-btn" 
+                            type="button"
+                            data-story-id="{{ item.story.id }}"
+                            data-playlist-id="{{ playlist.id }}"
+                            data-story-title="{{ item.story.title }}"
+                            title="Удалить из плейлиста">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+                
+                <!-- Мета-информация -->
+                <div class="story-meta-info">
+                    {% if item.story.category %}
+                        <a href="{% url 'stories:list' %}?category={{ item.story.category.slug }}" 
+                           class="story-category">
+                            {{ item.story.category.name }}
+                        </a>
+                    {% endif %}
+                    
+                    <small class="text-muted">
+                        <i class="bi bi-calendar3"></i>
+                        {{ item.story.created_at|date:"d.m.Y" }}
+                    </small>
+                </div>
+                
+                <!-- Теги -->
+                {% if item.story.tags.all %}
+                    <div class="story-tags mt-2">
+                        {% for tag in item.story.tags.all|slice:":3" %}
+                            <a href="{% url 'stories:list' %}?tag={{ tag.slug }}" 
+                               class="story-tag">
+                                {{ tag.name }}
+                            </a>
+                        {% endfor %}
+                        {% if item.story.tags.all|length > 3 %}
+                            <span class="story-tag">+{{ item.story.tags.all|length|add:"-3" }}</span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                
+                <!-- Описание (краткое) -->
+                {% if item.story.description %}
+                    <p class="text-muted small mt-2 mb-0" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        {{ item.story.description|truncatewords:15 }}
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Информация о плейлисте внизу -->
+<div class="bg-light p-3 mt-3">
+    <div class="row align-items-center">
+        <div class="col-md-6">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-collection-play me-2 text-primary" style="font-size: 1.5rem;"></i>
+                <div>
+                    <h6 class="mb-1">{{ playlist.title }}</h6>
+                    <small class="text-muted">
+                        {{ playlist_items|length }} рассказов • 
+                        {% if playlist.playlist_type == 'public' %}
+                            <i class="bi bi-globe2 me-1"></i>Публичный
+                        {% else %}
+                            <i class="bi bi-lock me-1"></i>Приватный
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 text-md-end mt-2 mt-md-0">
+            <div class="btn-group" role="group">
+                <a href="{% url 'stories:playlist_detail' slug=playlist.slug %}" 
+                   class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-eye me-1"></i>
+                    Открыть плейлист
+                </a>
+                <a href="{% url 'stories:edit_playlist' slug=playlist.slug %}" 
+                   class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-pencil me-1"></i>
+                    Редактировать
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    {% if playlist.description %}
+        <p class="text-muted small mt-2 mb-0">{{ playlist.description }}</p>
+    {% endif %}
+</div>
+
+{% else %}
+<!-- Пустой плейлист -->
+<div class="text-center p-5 empty-playlist">
+    <div class="mb-4">
+        <i class="bi bi-collection-play text-muted" style="font-size: 4rem;"></i>
+    </div>
+    <h5 class="text-muted mb-3">Плейлист пуст</h5>
+    <p class="text-muted mb-4">
+        В этом плейлисте пока нет рассказов. Добавьте видео, чтобы начать просмотр.
+    </p>
+    <div class="d-flex justify-content-center gap-2">
+        <a href="{% url 'stories:list' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>
+            Найти рассказы
+        </a>
+        <a href="{% url 'stories:edit_playlist' slug=playlist.slug %}" class="btn btn-outline-secondary">
+            <i class="bi bi-pencil me-1"></i>
+            Настроить плейлист
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<style>
+/* Дополнительные стили для контента модального окна */
+.playlist-story-item {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+}
+
+.playlist-story-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border-color: #007bff;
+}
+
+.playlist-story-thumbnail {
+    position: relative;
+    overflow: hidden;
+}
+
+.playlist-story-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.playlist-story-item:hover .playlist-story-thumbnail img {
+    transform: scale(1.05);
+}
+
+.play-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.playlist-story-item:hover .play-overlay {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.story-duration {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.9);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.remove-from-playlist-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(220,53,69,0.9);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: scale(0.8);
+    backdrop-filter: blur(4px);
+}
+
+.playlist-story-item:hover .remove-from-playlist-btn {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.remove-from-playlist-btn:hover {
+    background: rgba(220,53,69,1);
+    transform: scale(1.1);
+    color: white;
+    box-shadow: 0 4px 8px rgba(220,53,69,0.4);
+}
+
+/* Анимация для пустого состояния */
+.empty-playlist {
+    animation: gentle-fade-in 0.6s ease-out;
+}
+
+@keyframes gentle-fade-in {
+    from { 
+        opacity: 0; 
+        transform: translateY(20px);
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0);
+    }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .playlist-modal-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .remove-from-playlist-btn {
+        opacity: 1;
+        transform: scale(1);
+        position: relative;
+        top: auto;
+        right: auto;
+        margin-left: auto;
+    }
+    
+    .story-meta-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}
+</style>

@@ -1,0 +1,115 @@
+/* Исправленные стили для бейджей в навигации */
+
+/* Базовые стили для всех бейджей навигации */
+.navbar .nav-link {
+    position: relative !important;
+}
+
+.navbar .nav-link .badge {
+    position: absolute !important;
+    top: -8px !important;
+    right: -12px !important;
+    transform: none !important; /* Убираем translate-middle */
+    font-size: 0.6rem !important;
+    min-width: 1.2rem;
+    height: 1.2rem;
+    line-height: 1.2rem;
+    padding: 0;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    border-radius: 50% !important;
+    z-index: 10;
+}
+
+/* Бейдж избранного */
+#favorites-badge {
+    background-color: #f39c12 !important;
+    color: white !important;
+}
+
+/* Бейдж корзины */
+#cart-badge {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+/* Специальная адаптивность для мобильных */
+@media (max-width: 768px) {
+    .navbar .nav-link .badge {
+        font-size: 0.55rem !important;
+        min-width: 1rem;
+        height: 1rem;
+        line-height: 1rem;
+        top: -6px !important;
+        right: -8px !important;
+    }
+    
+    /* Дополнительное ограничение для очень маленьких экранов */
+    .navbar-collapse .nav-link .badge {
+        right: -5px !important;
+    }
+}
+
+/* Еще более компактно для iPhone SE и аналогичных */
+@media (max-width: 375px) {
+    .navbar .nav-link .badge {
+        font-size: 0.5rem !important;
+        min-width: 0.9rem;
+        height: 0.9rem;
+        line-height: 0.9rem;
+        top: -5px !important;
+        right: -6px !important;
+    }
+}
+
+/* Анимация появления */
+.navbar .nav-link .badge {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Эффект при наведении на родительский элемент */
+.navbar .nav-link:hover .badge {
+    transform: scale(1.1);
+}
+
+/* Фиксация для коллапсированной навигации */
+.navbar-collapse.show .nav-link .badge,
+.navbar-collapse.collapsing .nav-link .badge {
+    position: absolute !important;
+    top: -6px !important;
+    right: -8px !important;
+}
+
+/* Убеждаемся, что родительский элемент имеет правильное позиционирование */
+.navbar-nav .nav-item {
+    position: relative;
+}
+
+.navbar-nav .nav-item .nav-link {
+    position: relative;
+    display: inline-block;
+}
+
+/* Дополнительные правила для стабильности */
+.navbar .nav-link .badge {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+}
+
+/* Фиксация для Safari на iOS */
+@supports (-webkit-touch-callout: none) {
+    .navbar .nav-link .badge {
+        -webkit-transform: none !important;
+    }
+}
+
+/* Дополнительные правила для очень маленьких экранов */
+@media (max-width: 375px) {
+    /* Особые правила для компактных экранов */
+    .navbar-nav .nav-item .nav-link {
+        padding: 0.5rem 0.75rem !important;
+    }
+}

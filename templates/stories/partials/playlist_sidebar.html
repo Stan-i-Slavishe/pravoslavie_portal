@@ -1,0 +1,340 @@
+<!-- templates/stories/partials/playlist_sidebar.html -->
+
+<!-- Красивый блок разворачивания плейлистов -->
+<div class="d-flex justify-content-center align-items-center mb-0 p-1 bg-light rounded" 
+     style="cursor: pointer; transition: all 0.2s ease;"
+     onclick="togglePlaylistsVisibility()"
+     onmouseover="this.style.backgroundColor='#e9ecef'"
+     onmouseout="this.style.backgroundColor='#f8f9fa'">
+    <span class="me-2 text-muted fw-medium" id="toggleText">Развернуть плейлисты</span>
+    <button class="btn btn-sm btn-outline-secondary border-0" 
+            id="togglePlaylistsBtn" 
+            title="Развернуть/свернуть список">
+        <i class="bi bi-chevron-down" id="toggleIcon"></i>
+    </button>
+</div>
+
+<div class="card-body" id="playlistsContainer" style="display: none;">
+    {% if user.is_authenticated %}
+        <!-- Список плейлистов пользователя -->
+        <div class="user-playlists" style="max-height: 400px; overflow-y: auto;">
+            {% if user_playlists %}
+                {% for playlist in user_playlists %}
+                    <div class="playlist-item"
+                         onclick="event.stopPropagation(); showPlaylistModal({{ playlist.id }}, '{{ playlist.title|escapejs }}')">
+                        <div class="d-flex align-items-center justify-content-between p-3">
+                            <div class="playlist-info flex-grow-1 d-flex align-items-center">
+                                <!-- Иконка видео вместо галочки -->
+                                <div class="playlist-icon me-3">
+                                    <i class="bi bi-play-circle-fill text-primary" style="font-size: 1.5rem;"></i>
+                                </div>
+                                
+                                <div class="playlist-details flex-grow-1">
+                                    <h6 class="mb-1 fw-bold text-dark">{{ playlist.title }}</h6>
+                                    <div class="playlist-meta d-flex align-items-center gap-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-collection me-1"></i>
+                                            {{ playlist.calculated_stories_count|default:playlist.stories_count|default:0 }} рассказов
+                                        </small>
+                                        {% if playlist.playlist_type == 'public' %}
+                                            <span class="badge bg-success-subtle text-success" style="font-size: 0.65rem;">
+                                                <i class="bi bi-globe2 me-1"></i>Публичный
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary-subtle text-secondary" style="font-size: 0.65rem;">
+                                                <i class="bi bi-lock me-1"></i>Приватный
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted d-block mt-1">
+                                        <i class="bi bi-calendar3 me-1"></i>
+                                        {{ playlist.created_at|date:"d.m.Y" }}
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <!-- Стрелочка справа -->
+                            <div class="playlist-action ms-2">
+                                <i class="bi bi-chevron-right text-muted" 
+                                   style="font-size: 0.9rem;"
+                                   title="Открыть плейлист"></i>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                
+                <!-- Ссылка на все плейлисты -->
+                <div class="text-center p-3">
+                    <a href="{% url 'stories:playlists_list' %}" 
+                       class="btn btn-sm btn-outline-primary text-decoration-none">
+                        <i class="bi bi-collection me-1"></i>
+                        Все плейлисты ({{ user_playlists|length }})
+                    </a>
+                </div>
+            {% else %}
+                <!-- Заглушка когда нет плейлистов -->
+                <div class="no-playlists text-center p-4">
+                    <div class="mb-3">
+                        <i class="bi bi-collection-play text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                    <h6 class="text-muted mb-2">Пока нет плейлистов</h6>
+                    <p class="text-muted small mb-3">
+                        Создайте свой первый плейлист, чтобы организовать любимые рассказы
+                    </p>
+                    <div class="d-grid">
+                        <button class="btn btn-primary btn-sm" 
+                                onclick="showCreatePlaylistModal()"
+                                title="Создать плейлист">
+                            <i class="bi bi-plus-circle me-1"></i>
+                            Создать плейлист
+                        </button>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <!-- Заглушка для неавторизованных пользователей -->
+        <div class="auth-required text-center p-4">
+            <div class="mb-3">
+                <i class="bi bi-person-circle text-muted" style="font-size: 3rem;"></i>
+            </div>
+            <h6 class="text-muted mb-2">Войдите в систему</h6>
+            <p class="text-muted small mb-3">
+                Авторизуйтесь, чтобы создавать плейлисты и управлять ими
+            </p>
+            <div class="d-grid gap-2">
+                <a href="{% url 'account_login' %}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-box-arrow-in-right me-1"></i>
+                    Войти
+                </a>
+                <a href="{% url 'account_signup' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-person-plus me-1"></i>
+                    Регистрация
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+/* Стили для сайдбара плейлистов - МИНИМАЛЬНАЯ ВЕРСИЯ */
+.user-playlists {
+    background: transparent !important;
+    padding: 0 8px !important;
+}
+
+.user-playlists * {
+    background: transparent !important;
+}
+
+.card-body {
+    background: transparent !important;
+}
+
+.playlist-item {
+    margin: 4px 4px !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+    background-color: transparent !important;
+}
+
+.playlist-item:hover {
+    background-color: rgba(13, 110, 253, 0.1) !important;
+    margin-left: -4px !important;
+    margin-right: -4px !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    border-bottom: none !important;
+}
+
+.playlist-item:hover .playlist-action i {
+    color: #0d6efd !important;
+    transform: translateX(3px) !important;
+}
+
+.playlist-item:hover .playlist-details h6 {
+    color: #0d6efd !important;
+}
+
+/* Переходы только для активных элементов */
+.playlist-action i {
+    transition: all 0.3s ease !important;
+}
+
+.playlist-details h6 {
+    transition: all 0.3s ease !important;
+}
+
+/* Анимация для пустого состояния */
+.no-playlists i,
+.auth-required i {
+    animation: gentle-pulse 2s ease-in-out infinite !important;
+}
+
+@keyframes gentle-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.05); opacity: 1; }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .playlist-item {
+        margin: 2px 4px !important;
+    }
+    
+    .playlist-item .p-3 {
+        padding: 0.75rem !important;
+    }
+    
+    .playlist-icon i {
+        font-size: 1.3rem !important;
+    }
+    
+    .playlist-details h6 {
+        font-size: 0.9rem !important;
+    }
+    
+    .playlist-meta small {
+        font-size: 0.75rem !important;
+    }
+    
+    .playlist-action i {
+        font-size: 0.8rem !important;
+    }
+}
+
+/* Стили для скроллбара */
+.user-playlists::-webkit-scrollbar {
+    width: 6px;
+}
+
+.user-playlists::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.user-playlists::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.user-playlists::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Исправляем цвет ссылки "Все плейлисты" */
+.text-center .btn-outline-primary {
+    color: #0d6efd !important;
+    border-color: #0d6efd !important;
+}
+
+.text-center .btn-outline-primary:hover {
+    color: #ffffff !important;
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+}
+
+.text-center .btn-outline-primary:focus {
+    color: #ffffff !important;
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+}
+
+.text-center .btn-outline-primary:active {
+    color: #ffffff !important;
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+}
+
+/* УЛЬТРА СЖАТИЕ - на 75% меньше расстояние */
+#playlistsContainer {
+    margin-top: -0.25rem !important;
+    padding-top: 0.25rem !important;
+    transform: translateY(0) !important;
+}
+
+.playlist-item:first-child {
+    margin-top: -0.25rem !important;
+    padding-top: 0.25rem !important;
+}
+
+/* Дополнительное сжатие кнопки */
+.d-flex.justify-content-center.align-items-center.mb-0 {
+    margin-bottom: 0.125rem !important;
+    line-height: 1.2 !important;
+}
+
+/* ГАРМОНИЧНОЕ СЖАТИЕ - баланс компактности и читаемости */
+.user-playlists {
+    margin-top: -0.25rem !important;
+    transform: translateY(-0.125rem) !important;
+}
+
+/* Первый плейлист с гармоничным отступом */
+.playlist-item:first-child .d-flex {
+    padding-top: 0.75rem !important;
+}
+</style>
+
+<script>
+/* Функция сворачивания/разворачивания плейлистов */
+function togglePlaylistsVisibility() {
+    const container = document.getElementById('playlistsContainer');
+    const toggleBtn = document.getElementById('togglePlaylistsBtn');
+    const toggleIcon = document.getElementById('toggleIcon');
+    const toggleText = document.getElementById('toggleText');
+    
+    if (container.style.display === 'none') {
+        // Разворачиваем
+        container.style.display = 'block';
+        toggleIcon.className = 'bi bi-chevron-up';
+        toggleText.textContent = 'Свернуть плейлисты';
+        toggleBtn.title = 'Свернуть список';
+    } else {
+        // Сворачиваем
+        container.style.display = 'none';
+        toggleIcon.className = 'bi bi-chevron-down';
+        toggleText.textContent = 'Развернуть плейлисты';
+        toggleBtn.title = 'Развернуть список';
+    }
+    
+    // Сохраняем состояние в localStorage (временно отключено)
+    // const isCollapsed = container.style.display === 'none';
+    // localStorage.setItem('playlistsCollapsed', isCollapsed.toString());
+}
+
+/* Устанавливаем свернутое состояние по умолчанию */
+document.addEventListener('DOMContentLoaded', function() {
+    // Очищаем сохраненное состояние
+    localStorage.removeItem('playlistsCollapsed');
+    
+    const container = document.getElementById('playlistsContainer');
+    const toggleIcon = document.getElementById('toggleIcon');
+    const toggleBtn = document.getElementById('togglePlaylistsBtn');
+    const toggleText = document.getElementById('toggleText');
+    
+    // Принудительно сворачиваем по умолчанию (игнорируем сохраненное состояние)
+    // const savedState = localStorage.getItem('playlistsCollapsed');
+    // const isCollapsed = savedState === 'false' ? false : true;
+    
+    // Всегда свернуто по умолчанию
+    const isCollapsed = true;
+    
+    if (container) {
+        if (isCollapsed) {
+            // Оставляем свернутым
+            container.style.display = 'none';
+            toggleIcon.className = 'bi bi-chevron-down';
+            toggleText.textContent = 'Развернуть плейлисты';
+            toggleBtn.title = 'Развернуть список';
+        } else {
+            // Пользователь ранее развернул
+            container.style.display = 'block';
+            toggleIcon.className = 'bi bi-chevron-up';
+            toggleText.textContent = 'Свернуть плейлисты';
+            toggleBtn.title = 'Свернуть список';
+        }
+    }
+});
+</script>

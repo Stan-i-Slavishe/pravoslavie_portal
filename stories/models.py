@@ -285,6 +285,13 @@ class Story(models.Model):
         verbose_name="YouTube ID",
         help_text="Автоматически извлекается из URL"
     )
+    thumbnail = models.ImageField(
+        upload_to='stories/thumbnails/',
+        blank=True,
+        null=True,
+        verbose_name="Превью изображение",
+        help_text="Изображение-превью для видео"
+    )
     duration = models.CharField(
         max_length=20,
         blank=True,
@@ -311,6 +318,13 @@ class Story(models.Model):
         verbose_name = "Рассказ"
         verbose_name_plural = "Рассказы"
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['is_published', 'is_featured', '-created_at']),
+            models.Index(fields=['category', '-views_count']),
+            models.Index(fields=['-views_count']),
+            models.Index(fields=['slug']),
+            models.Index(fields=['youtube_embed_id']),
+        ]
 
     def __str__(self):
         return self.title
@@ -318,13 +332,59 @@ class Story(models.Model):
     def save(self, *args, **kwargs):
         # Автоматическое создание slug из заголовка
         if not self.slug:
-            self.slug = slugify(self.title, allow_unicode=True)
+            # Транслитерация кириллицы
+            self.slug = self.create_safe_slug(self.title)
         
         # Извлечение YouTube ID из URL
         if self.youtube_url and not self.youtube_embed_id:
             self.youtube_embed_id = self.extract_youtube_id(self.youtube_url)
         
         super().save(*args, **kwargs)
+    
+    def create_safe_slug(self, title):
+        """Создает безопасный slug с транслитерацией"""
+        # Словарь для транслитерации
+        cyrillic_to_latin = {
+            'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd',
+            'е': 'e', 'ё': 'yo', 'ж': 'zh', 'з': 'z', 'и': 'i',
+            'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n',
+            'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't',
+            'у': 'u', 'ф': 'f', 'х': 'h', 'ц': 'ts', 'ч': 'ch',
+            'ш': 'sh', 'щ': 'sch', 'ъ': '', 'ы': 'y', 'ь': '',
+            'э': 'e', 'ю': 'yu', 'я': 'ya',
+            
+            'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D',
+            'Е': 'E', 'Ё': 'Yo', 'Ж': 'Zh', 'З': 'Z', 'И': 'I',
+            'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N',
+            'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T',
+            'У': 'U', 'Ф': 'F', 'Х': 'H', 'Ц': 'Ts', 'Ч': 'Ch',
+            'Ш': 'Sh', 'Щ': 'Sch', 'Ъ': '', 'Ы': 'Y', 'Ь': '',
+            'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya'
+        }
+        
+        # Транслитерируем кириллицу
+        transliterated = ""
+        for char in title:
+            if char in cyrillic_to_latin:
+                transliterated += cyrillic_to_latin[char]
+            else:
+                transliterated += char
+        
+        # Создаем slug
+        slug = slugify(transliterated)
+        
+        # Если slug пустой, создаем уникальный
+        if not slug:
+            slug = f"story-{hash(title) % 100000}"
+        
+        # Проверяем уникальность
+        original_slug = slug
+        counter = 1
+        while Story.objects.filter(slug=slug).exclude(id=self.id if self.id else None).exists():
+            slug = f"{original_slug}-{counter}"
+            counter += 1
+        
+        return slug
 
     def extract_youtube_id(self, url):
         """Извлекает YouTube ID из различных форматов URL"""
@@ -349,6 +409,18 @@ class Story(models.Model):
         if self.youtube_embed_id:
             return f"https://www.youtube.com/embed/{self.youtube_embed_id}"
         return None
+    
+    def get_youtube_thumbnail_url(self):
+        """Возвращает URL превью из YouTube"""
+        if self.youtube_embed_id:
+            return f"https://img.youtube.com/vi/{self.youtube_embed_id}/maxresdefault.jpg"
+        return None
+    
+    def get_thumbnail_url(self):
+        """Возвращает URL превью: загруженное или с YouTube"""
+        if self.thumbnail:
+            return self.thumbnail.url
+        return self.get_youtube_thumbnail_url()
     
     @property
     def youtube_id(self):
@@ -689,3 +761,82 @@ class CommentReport(models.Model):
     
     def __str__(self):
         return f'Жалоба от {self.reporter.username} на комментарий {self.comment.id}'
+
+
+class UserPlaylistPreference(models.Model):
+    """Настройки пользователя для плейлистов"""
+    user = models.OneToOneField(
+        User, 
+        on_delete=models.CASCADE,
+        related_name='playlist_preferences'
+    )
+    
+    # Системные плейлисты
+    watch_later_playlist = models.ForeignKey(
+        'Playlist',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='watch_later_users',
+        verbose_name="Плейлист 'Посмотреть позже'"
+    )
+    
+    favorites_playlist = models.ForeignKey(
+        'Playlist',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='favorites_users',
+        verbose_name="Плейлист 'Избранное'"
+    )
+    
+    # Настройки автовоспроизведения
+    autoplay_enabled = models.BooleanField(
+        default=True,
+        verbose_name="Автовоспроизведение"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Настройки плейлистов пользователя"
+        verbose_name_plural = "Настройки плейлистов пользователей"
+
+    def get_or_create_watch_later(self):
+        """Создает или возвращает плейлист 'Посмотреть позже'"""
+        if not self.watch_later_playlist:
+            playlist = Playlist.objects.create(
+                title="Посмотреть позже",
+                slug=f"watch-later-{self.user.id}",
+                creator=self.user,
+                playlist_type='private',
+                description="Автоматически созданный плейлист для сохранения видео на потом"
+            )
+            self.watch_later_playlist = playlist
+            self.save()
+        return self.watch_later_playlist
+
+    def get_or_create_favorites(self):
+        """Создает или возвращает плейлист 'Избранное'"""
+        if not self.favorites_playlist:
+            playlist = Playlist.objects.create(
+                title="Избранное",
+                slug=f"favorites-{self.user.id}",
+                creator=self.user,
+                playlist_type='private',
+                description="Автоматически созданный плейлист для избранных видео"
+            )
+            self.favorites_playlist = playlist
+            self.save()
+        return self.favorites_playlist
+
+
+# Сигнал для автоматического создания настроек плейлистов
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=User)
+def create_user_playlist_preferences(sender, instance, created, **kwargs):
+    """Создаем настройки плейлистов для нового пользователя"""
+    if created:
+        UserPlaylistPreference.objects.create(user=instance)

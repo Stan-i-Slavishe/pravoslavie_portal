@@ -23,4 +23,7 @@ urlpatterns = [
     path('ajax/review/<int:template_id>/', views.add_review, name='add_review'),
     path('ajax/preview/', views.preview_personalization, name='preview_personalization'),
     path('ajax/calculate-price/', views.calculate_price, name='calculate_price'),
+    
+    # Legacy: подписка на уведомления (для совместимости со старыми ссылками)
+    path('ajax/subscribe/', views.subscribe_notification, name='subscribe_notification'),
 ]

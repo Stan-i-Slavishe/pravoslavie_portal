@@ -1,0 +1,268 @@
+// Окончание JavaScript для плейлистов
+
+        });
+        
+        btn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translate(-50%, -50%) scale(1.1)';
+        });
+    });
+    
+    // Эффекты наведения на карточки
+    document.querySelectorAll('.playlist-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+
+// Поддержка Web Share API
+function sharePlaylist(title, url) {
+    if (navigator.share) {
+        navigator.share({
+            title: `Плейлист "${title}" - Добрые истории`,
+            text: `Посмотрите плейлист "${title}" на сайте Добрые истории`,
+            url: url
+        }).catch((error) => {
+            console.log('Ошибка при поделиться:', error);
+            copyPlaylistLink(url.split('/').slice(-2, -1)[0]);
+        });
+    } else {
+        // Fallback - копируем ссылку
+        copyPlaylistLink(url.split('/').slice(-2, -1)[0]);
+    }
+}
+
+// Клавиатурная навигация
+document.addEventListener('keydown', function(e) {
+    // Только если фокус не на форме
+    if (document.activeElement.tagName === 'INPUT' || 
+        document.activeElement.tagName === 'TEXTAREA') {
+        return;
+    }
+    
+    const cards = document.querySelectorAll('.playlist-card');
+    let currentIndex = Array.from(cards).findIndex(card => card.classList.contains('keyboard-focused'));
+    
+    switch(e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+            e.preventDefault();
+            currentIndex = Math.min(currentIndex + 1, cards.length - 1);
+            focusCard(cards, currentIndex);
+            break;
+            
+        case 'ArrowLeft':
+        case 'ArrowUp':
+            e.preventDefault();
+            currentIndex = Math.max(currentIndex - 1, 0);
+            focusCard(cards, currentIndex);
+            break;
+            
+        case 'Enter':
+            if (currentIndex >= 0 && cards[currentIndex]) {
+                const playBtn = cards[currentIndex].querySelector('.playlist-play-btn');
+                if (playBtn) playBtn.click();
+            }
+            break;
+            
+        case 'c':
+            // Создать новый плейлист
+            showCreatePlaylistModal();
+            break;
+    }
+});
+
+function focusCard(cards, index) {
+    // Убираем фокус с других карточек
+    cards.forEach(card => card.classList.remove('keyboard-focused'));
+    
+    if (index >= 0 && index < cards.length) {
+        const card = cards[index];
+        card.classList.add('keyboard-focused');
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Добавляем визуальный фокус
+        card.style.outline = '3px solid var(--orthodox-blue)';
+        card.style.outlineOffset = '2px';
+        
+        // Убираем outline через некоторое время
+        setTimeout(() => {
+            card.style.outline = '';
+            card.style.outlineOffset = '';
+        }, 2000);
+    }
+}
+</script>
+
+<!-- Дополнительные стили для темной темы -->
+<style>
+[data-theme="dark"] {
+    --orthodox-blue: #4a90e2;
+    --soft-gray: #2d3748;
+    --warm-white: #1a202c;
+}
+
+[data-theme="dark"] .playlist-card {
+    background: #2d3748;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .playlist-title a {
+    color: #90cdf4;
+}
+
+[data-theme="dark"] .playlist-description {
+    color: #a0aec0;
+}
+
+[data-theme="dark"] .preview-fallback {
+    background: linear-gradient(45deg, #2d3748, #1a202c);
+    color: #a0aec0;
+}
+
+[data-theme="dark"] .playlist-meta {
+    border-top-color: #4a5568;
+}
+
+[data-theme="dark"] .stat-item {
+    background: rgba(74, 144, 226, 0.1);
+    color: #a0aec0;
+}
+
+[data-theme="dark"] .playlist-visibility.visibility-private {
+    background: #744444;
+    color: #fed7d7;
+}
+
+[data-theme="dark"] .playlist-visibility.visibility-public {
+    background: #22543d;
+    color: #c6f6d5;
+}
+
+[data-theme="dark"] .btn-secondary-custom {
+    background: #4a5568;
+    color: #e2e8f0;
+    border-color: #718096;
+}
+
+[data-theme="dark"] .btn-secondary-custom:hover {
+    background: #2d3748;
+    color: #e2e8f0;
+}
+
+/* Стили для клавиатурной навигации */
+.keyboard-focused {
+    outline: 3px solid var(--orthodox-blue) !important;
+    outline-offset: 2px !important;
+}
+
+/* Анимация для кнопок */
+.btn-playlist {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-playlist::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,0.2),
+        transparent
+    );
+    transition: left 0.5s;
+}
+
+.btn-playlist:hover::before {
+    left: 100%;
+}
+
+/* Улучшенные эффекты для превью */
+.preview-item {
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.playlist-card:hover .preview-item {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+/* Плавная загрузка изображений */
+.preview-item.loading {
+    background: linear-gradient(
+        90deg, 
+        #f0f0f0 0%, 
+        #e0e0e0 50%, 
+        #f0f0f0 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Responsive improvements */
+@media (max-width: 576px) {
+    .playlists-header {
+        margin-left: -15px;
+        margin-right: -15px;
+    }
+    
+    .playlist-actions {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    
+    .btn-playlist {
+        flex: 1;
+        min-width: calc(50% - 2px);
+        justify-content: center;
+    }
+    
+    .preview-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+    }
+    
+    .stories-count-badge {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+    }
+}
+
+/* Печать */
+@media print {
+    .playlist-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ddd;
+        margin-bottom: 20px;
+    }
+    
+    .playlist-play-btn,
+    .playlist-actions,
+    .create-playlist-btn {
+        display: none;
+    }
+    
+    .playlists-header {
+        background: none !important;
+        color: black !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+</style>
+{% endblock %}

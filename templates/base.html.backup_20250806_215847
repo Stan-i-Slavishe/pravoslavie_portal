@@ -1,0 +1,782 @@
+<!-- templates/base.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block description %}Добрые истории - духовные рассказы, книги, аудио и детские сказки{% endblock %}">
+    <meta name="keywords" content="православие, духовность, рассказы, книги, аудио, детские сказки">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    
+    <title>{% block title %}Добрые истории{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Font Awesome для социальных иконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Наши стили -->
+    <link rel="stylesheet" href="{% static 'css/azbyka-style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navigation-badges.css' %}">
+    <link rel="stylesheet" href="{% static 'css/mobile-navigation.css' %}">
+    <link rel="stylesheet" href="{% static 'css/mobile-burger-menu.css' %}">
+    <link rel="stylesheet" href="{% static 'css/purchase-button-fix.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dropdown-fix.css' %}">
+    
+    <!-- Дополнительные стили страниц -->
+    {% block extra_css %}{% endblock %}
+    
+    <!-- Принудительное скрытие бургера на десктопе -->
+    <style>
+        /* Скрываем бургер-меню на десктопе */
+        @media (min-width: 992px) {
+            .mobile-burger-menu {
+                display: none !important;
+            }
+        }
+        
+        /* Показываем только на мобильных */
+        @media (max-width: 991.98px) {
+            .mobile-burger-menu {
+                display: flex !important;
+            }
+        }
+        
+        /* Исправление ширины пользовательского dropdown меню */
+        .navbar-nav .dropdown-menu {
+            min-width: 250px !important;
+        }
+        
+        .navbar-nav .dropdown-item {
+            white-space: nowrap !important;
+            padding: 8px 16px !important;
+            font-size: 14px !important;
+        }
+        
+        .navbar-nav .dropdown-item i {
+            width: 16px !important;
+            text-align: center !important;
+            margin-right: 8px !important;
+        }
+        
+        /* Для мобильных устройств */
+        @media (max-width: 768px) {
+            .navbar-nav .dropdown-menu {
+                min-width: 280px !important;
+                max-width: 90vw !important;
+            }
+        }
+    </style>
+    
+    <!-- Стили для рейтинга звёзд -->
+    <style>
+        .rating-input {
+            display: flex;
+            flex-direction: row; /* Обычный порядок */
+            justify-content: flex-start;
+        }
+        
+        .rating-input input {
+            display: none;
+        }
+        
+        .rating-input .star-label {
+            color: #ddd !important;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            margin-right: 5px;
+        }
+        
+        /* Подсветка при наведении и выборе */
+        .rating-input .star-label:hover,
+        .rating-input .star-label.active {
+            color: #ffc107 !important;
+        }
+        
+        /* Отступы для иконок в кнопках */
+        .btn i {
+            margin-right: 6px !important;
+        }
+    </style>
+    
+    <!-- JavaScript для рейтинга -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ratingInputs = document.querySelectorAll('.rating-input');
+            
+            ratingInputs.forEach(function(ratingInput) {
+                const stars = ratingInput.querySelectorAll('.star-label');
+                const inputs = ratingInput.querySelectorAll('input[type="radio"]');
+                
+                console.log('Found', stars.length, 'stars and', inputs.length, 'inputs'); // Отладка
+                
+                // Обработка наведения и клика
+                stars.forEach(function(star, index) {
+                    star.addEventListener('mouseenter', function() {
+                        // Преобразуем индекс: 0,1,2,3,4 -> 5,4,3,2,1
+                        const rating = stars.length - index;
+                        console.log('Hover on star', index, 'rating:', rating); // Отладка
+                        highlightStars(stars, rating);
+                    });
+                    
+                    // Обработка клика
+                    star.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // Преобразуем индекс: 0,1,2,3,4 -> 5,4,3,2,1
+                        const rating = stars.length - index;
+                        console.log('Click on star', index, 'rating:', rating); // Отладка
+                        
+                        // Находим соответствующий input
+                        const targetInput = ratingInput.querySelector(`input[value="${rating}"]`);
+                        console.log('Target input:', targetInput); // Отладка
+                        
+                        if (targetInput) {
+                            // Очищаем все выборы
+                            inputs.forEach(inp => inp.checked = false);
+                            // Устанавливаем новый выбор
+                            targetInput.checked = true;
+                            console.log('Set input value:', targetInput.value, 'checked:', targetInput.checked);
+                            
+                            // Подсвечиваем звёзды
+                            highlightStars(stars, rating);
+                        } else {
+                            console.error('Input not found for rating:', rating);
+                        }
+                    });
+                });
+                
+                // Обработка ухода мыши
+                ratingInput.addEventListener('mouseleave', function() {
+                    const checkedInput = ratingInput.querySelector('input[type="radio"]:checked');
+                    if (checkedInput) {
+                        const rating = parseInt(checkedInput.value);
+                        highlightStars(stars, rating);
+                    } else {
+                        clearStars(stars);
+                    }
+                });
+                
+                // Обработка изменения inputов
+                inputs.forEach(function(input) {
+                    input.addEventListener('change', function() {
+                        const rating = parseInt(this.value);
+                        console.log('Input changed, rating:', rating);
+                        highlightStars(stars, rating);
+                    });
+                });
+                
+                // Проверяем наличие выбранного рейтинга при загрузке
+                const checkedInput = ratingInput.querySelector('input[type="radio"]:checked');
+                if (checkedInput) {
+                    const rating = parseInt(checkedInput.value);
+                    highlightStars(stars, rating);
+                }
+            });
+            
+            function highlightStars(stars, rating) {
+                clearStars(stars);
+                console.log('Highlighting', rating, 'stars'); // Отладка
+                // Подсвечиваем последние rating звёзд (справа налево)
+                for (let i = stars.length - rating; i < stars.length; i++) {
+                    stars[i].classList.add('active');
+                }
+            }
+            
+            function clearStars(stars) {
+                stars.forEach(function(star) {
+                    star.classList.remove('active');
+                });
+            }
+        });
+    </script>
+    
+    <!-- Дополнительные стили -->
+    <style>
+    .btn-purchase {
+        background: linear-gradient(135deg, #28a745, #20692b) !important;
+        border: none !important;
+        color: white !important;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        min-height: 48px;
+        white-space: nowrap;
+    }
+    
+    .btn-purchase:hover {
+        background: linear-gradient(135deg, #20692b, #28a745) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        color: white !important;
+        text-decoration: none;
+    }
+    </style>
+    
+    <!-- Дополнительные мета-теги -->
+    {% block extra_head %}{% endblock %}
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{% static 'icons/favicon.svg' %}">
+    <link rel="alternate icon" href="{% static 'icons/favicon.svg' %}">
+</head>
+<body class="has-mobile-nav">
+    <!-- Десктопная навигация -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm desktop-nav">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'core:home' %}">
+                <span class="orthodox-cross"></span> Добрые истории
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        {% url 'stories:list' as stories_url %}
+                        <a class="nav-link" href="{% if stories_url %}{{ stories_url }}{% else %}#stories{% endif %}">Видео-рассказы</a>
+                    </li>
+                    <li class="nav-item">
+                        {% url 'books:list' as books_url %}
+                        <a class="nav-link" href="{% if books_url %}{{ books_url }}{% else %}#books{% endif %}">Библиотека</a>
+                    </li>
+                    <li class="nav-item">
+                        {% url 'audio:list' as audio_url %}
+                        <a class="nav-link" href="{% if audio_url %}{{ audio_url }}{% else %}#audio{% endif %}">Аудио</a>
+                    </li>
+                    <li class="nav-item">
+                        {% url 'fairy_tales:list' as fairy_tales_url %}
+                        <a class="nav-link" href="{% if fairy_tales_url %}{{ fairy_tales_url }}{% else %}#fairy-tales{% endif %}">Сказки</a>
+                    </li>
+                    <li class="nav-item">
+                        {% url 'shop:catalog' as shop_url %}
+                        <a class="nav-link" href="{% if shop_url %}{{ shop_url }}{% else %}#shop{% endif %}">Магазин</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="sectionsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Разделы
+                        </a>
+                        <ul class="dropdown-menu">
+                            {% url 'core:categories' as categories_url %}
+                            <li><a class="dropdown-item" href="{% if categories_url %}{{ categories_url }}{% else %}#categories{% endif %}"><i class="bi bi-grid-3x3-gap me-2"></i> Категории</a></li>
+                            
+                            {% url 'core:tags' as tags_url %}
+                            <li><a class="dropdown-item" href="{% if tags_url %}{{ tags_url }}{% else %}#tags{% endif %}"><i class="bi bi-tags me-2"></i> Теги</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            
+                            {% url 'core:about' as about_url %}
+                            <li><a class="dropdown-item" href="{% if about_url %}{{ about_url }}{% else %}#about{% endif %}">О проекте</a></li>
+                            
+                            {% url 'core:contact' as contact_url %}
+                            <li><a class="dropdown-item" href="{% if contact_url %}{{ contact_url }}{% else %}#contact{% endif %}">Контакты</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <!-- Избранное -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'books:favorites' %}" title="Избранные книги">
+                                <i class="bi bi-bookmark"></i>
+                                <span class="badge" id="favorites-badge" style="display: none;">
+                                    0
+                                </span>
+                            </a>
+                        </li>
+                        
+                        <!-- Корзина -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'shop:cart' %}" title="Корзина">
+                                <i class="bi bi-cart3"></i>
+                                <span class="badge" id="cart-badge" style="display: none;">
+                                    0
+                                </span>
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle me-1"></i> {{ user.first_name|default:user.username }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                {% url 'accounts:profile' as profile_url %}
+                                <li><a class="dropdown-item" href="{% if profile_url %}{{ profile_url }}{% else %}#profile{% endif %}"><i class="bi bi-person me-2"></i> Профиль</a></li>
+                                
+                                {% url 'shop:my_purchases' as purchases_url %}
+                                <li><a class="dropdown-item" href="{% if purchases_url %}{{ purchases_url }}{% else %}#purchases{% endif %}"><i class="bi bi-bag-check me-2"></i> Мои покупки</a></li>
+                                
+                                {% url 'shop:my_orders' as orders_url %}
+                                <li><a class="dropdown-item" href="{% if orders_url %}{{ orders_url }}{% else %}#orders{% endif %}"><i class="bi bi-list-ul me-2"></i> Мои заказы</a></li>
+                                
+                                {% url 'books:favorites' as favorites_url %}
+                                <li><a class="dropdown-item" href="{% if favorites_url %}{{ favorites_url }}{% else %}#favorites{% endif %}"><i class="bi bi-bookmark me-2"></i> Избранные книги</a></li>
+                                
+                                {% url 'books:reading_history' as reading_history_url %}
+                                <li><a class="dropdown-item" href="{% if reading_history_url %}{{ reading_history_url }}{% else %}#reading-history{% endif %}"><i class="bi bi-clock-history me-2"></i> История чтения</a></li>
+                                
+                                {% url 'books:reading_stats' as reading_stats_url %}
+                                <li><a class="dropdown-item" href="{% if reading_stats_url %}{{ reading_stats_url }}{% else %}#reading-stats{% endif %}"><i class="bi bi-bar-chart me-2"></i> Статистика чтения</a></li>
+                                
+                                {% url 'stories:playlists_list' as playlists_url %}
+                                <li><a class="dropdown-item" href="{% if playlists_url %}{{ playlists_url }}{% else %}#playlists{% endif %}"><i class="bi bi-music-note-list me-2"></i> Мои плейлисты</a></li>
+                                
+                                {% url 'subscriptions:manage' as subscription_url %}
+                                <li><a class="dropdown-item" href="{% if subscription_url %}{{ subscription_url }}{% else %}#subscription{% endif %}"><i class="bi bi-card-checklist me-2"></i> Подписка</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                
+                                {% url 'account_logout' as logout_url %}
+                                <li><a class="dropdown-item" href="{% if logout_url %}{{ logout_url }}{% else %}#logout{% endif %}"><i class="bi bi-box-arrow-right me-2"></i> Выйти</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            {% url 'account_login' as login_url %}
+                            <a class="nav-link" href="{% if login_url %}{{ login_url }}{% else %}#login{% endif %}">Войти</a>
+                        </li>
+                        <li class="nav-item">
+                            {% url 'account_signup' as signup_url %}
+                            <a class="nav-link" href="{% if signup_url %}{{ signup_url }}{% else %}#register{% endif %}">Регистрация</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Кнопка-бургер в правом верхнем углу -->
+    <div class="mobile-burger-menu" id="mobileBurger" data-bs-toggle="modal" data-bs-target="#mobileMenuModal">
+        <i class="bi bi-list mobile-burger-icon"></i>
+    </div>
+
+    <!-- Сообщения -->
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Основной контент -->
+    <main class="container mt-4">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- ================== МОБИЛЬНАЯ НАВИГАЦИЯ ================== -->
+    <nav class="mobile-bottom-nav" id="mobileNav">
+        <ul class="mobile-nav-items">
+            <!-- Главная -->
+            <li>
+                <a href="{% url 'core:home' %}" class="mobile-nav-item" data-section="home">
+                    <i class="bi bi-house-fill mobile-nav-icon"></i>
+                    <span class="mobile-nav-text">Главная</span>
+                </a>
+            </li>
+
+            <!-- Видео-рассказы -->
+            <li>
+                <a href="{% url 'stories:list' %}" class="mobile-nav-item" data-section="stories">
+                    <i class="bi bi-play-circle-fill mobile-nav-icon"></i>
+                    <span class="mobile-nav-text">Рассказы</span>
+                </a>
+            </li>
+
+            <!-- Библиотека -->
+            <li>
+                <a href="{% url 'books:list' %}" class="mobile-nav-item" data-section="books">
+                    <i class="bi bi-book-fill mobile-nav-icon"></i>
+                    <span class="mobile-nav-text">Книги</span>
+                </a>
+            </li>
+
+            <!-- Сказки -->
+            <li>
+                <a href="{% url 'fairy_tales:list' %}" class="mobile-nav-item" data-section="fairy-tales">
+                    <i class="bi bi-stars mobile-nav-icon"></i>
+                    <span class="mobile-nav-text">Сказки</span>
+                </a>
+            </li>
+
+            <!-- Аудио -->
+            <li>
+                <a href="{% url 'audio:list' %}" class="mobile-nav-item" data-section="audio">
+                    <i class="bi bi-music-note-beamed mobile-nav-icon"></i>
+                    <span class="mobile-nav-text">Аудио</span>
+                </a>
+            </li>
+
+            <!-- Магазин -->
+            <li>
+                <a href="{% url 'shop:catalog' %}" class="mobile-nav-item" data-section="shop">
+                    <i class="bi bi-cart3 mobile-nav-icon"></i>
+                    <span class="mobile-nav-text">Магазин</span>
+                    {% if user.is_authenticated %}
+                        <span class="mobile-nav-badge" id="mobile-cart-badge" style="display: none;">0</span>
+                    {% endif %}
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Модальное окно дополнительного меню -->
+    <div class="modal fade mobile-menu-modal" id="mobileMenuModal" tabindex="-1" aria-labelledby="mobileMenuModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="mobileMenuModalLabel">Меню</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="list-group list-group-flush">
+                        
+                        {% if user.is_authenticated %}
+                            <!-- Личная секция -->
+                            <h6 class="menu-group-title">Мой профиль</h6>
+                            <div class="menu-group">
+                                {% url 'accounts:profile' as profile_url %}
+                                <a href="{% if profile_url %}{{ profile_url }}{% else %}#profile{% endif %}" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-person-circle me-3" style="color: var(--primary-color);"></i>
+                                    Мой профиль
+                                </a>
+                                
+                                <a href="{% url 'books:favorites' %}" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-bookmark-heart-fill me-3" style="color: #e53e3e;"></i>
+                                    Избранное
+                                    <span class="badge bg-secondary ms-auto" id="modal-favorites-badge" style="display: none;">0</span>
+                                </a>
+                                
+                                {% url 'stories:playlists_list' as playlists_url %}
+                                <a href="{% if playlists_url %}{{ playlists_url }}{% else %}#playlists{% endif %}" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-music-note-list me-3" style="color: var(--audio-color);"></i>
+                                    Мои плейлисты
+                                </a>
+                            </div>
+                            
+                            <!-- Покупки и заказы -->
+                            <h6 class="menu-group-title">Покупки</h6>
+                            <div class="menu-group">
+                                {% url 'shop:my_orders' as orders_url %}
+                                <a href="{% if orders_url %}{{ orders_url }}{% else %}#orders{% endif %}" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-bag-check me-3" style="color: var(--shop-color);"></i>
+                                    Мои заказы
+                                </a>
+                                
+                                {% url 'shop:my_purchases' as purchases_url %}
+                                <a href="{% if purchases_url %}{{ purchases_url }}{% else %}#purchases{% endif %}" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-download me-3" style="color: var(--shop-color);"></i>
+                                    Мои покупки
+                                </a>
+                                
+                                {% url 'subscriptions:manage' as subscription_url %}
+                                <a href="{% if subscription_url %}{{ subscription_url }}{% else %}#subscription{% endif %}" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-card-checklist me-3" style="color: var(--primary-color);"></i>
+                                    Подписки
+                                </a>
+                            </div>
+                            
+                        {% else %}
+                            <!-- Авторизация -->
+                            <h6 class="menu-group-title">Войти</h6>
+                            <div class="menu-group">
+                                {% url 'account_login' as login_url %}
+                                <a href="{% if login_url %}{{ login_url }}{% else %}#login{% endif %}" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-box-arrow-in-right me-3" style="color: var(--primary-color);"></i>
+                                    Войти
+                                </a>
+                                
+                                {% url 'account_signup' as signup_url %}
+                                <a href="{% if signup_url %}{{ signup_url }}{% else %}#register{% endif %}" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-person-plus me-3" style="color: var(--accent-color);"></i>
+                                    Регистрация
+                                </a>
+                            </div>
+                        {% endif %}
+
+                        <!-- Общие разделы -->
+                        <h6 class="menu-group-title">Информация</h6>
+                        <div class="menu-group">
+                            {% url 'core:about' as about_url %}
+                            <a href="{% if about_url %}{{ about_url }}{% else %}#about{% endif %}" class="list-group-item list-group-item-action">
+                                <i class="bi bi-info-circle me-3" style="color: var(--text-secondary);"></i>
+                                О проекте
+                            </a>
+                            
+                            {% url 'core:contact' as contact_url %}
+                            <a href="{% if contact_url %}{{ contact_url }}{% else %}#contact{% endif %}" class="list-group-item list-group-item-action">
+                                <i class="bi bi-telephone me-3" style="color: var(--text-secondary);"></i>
+                                Контакты
+                            </a>
+                        </div>
+
+                        {% if user.is_authenticated %}
+                            <!-- Выход -->
+                            <div class="menu-group">
+                                {% url 'account_logout' as logout_url %}
+                                <a href="{% if logout_url %}{{ logout_url }}{% else %}#logout{% endif %}" class="list-group-item list-group-item-action text-danger">
+                                    <i class="bi bi-box-arrow-right me-3"></i>
+                                    Выйти
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Футер -->
+    <footer class="bg-light mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Добрые истории</h5>
+                    <p class="text-muted">Духовные рассказы, книги и аудио для современного человека</p>
+                </div>
+                <div class="col-md-3">
+                    <h6>Разделы</h6>
+                    <ul class="list-unstyled">
+                        {% url 'stories:list' as stories_url %}
+                        <li><a href="{% if stories_url %}{{ stories_url }}{% else %}#stories{% endif %}" class="text-muted">Видео-рассказы</a></li>
+                        
+                        {% url 'books:list' as books_url %}
+                        <li><a href="{% if books_url %}{{ books_url }}{% else %}#books{% endif %}" class="text-muted">Библиотека</a></li>
+                        
+                        {% url 'audio:list' as audio_url %}
+                        <li><a href="{% if audio_url %}{{ audio_url }}{% else %}#audio{% endif %}" class="text-muted">Аудио</a></li>
+                        
+                        {% url 'fairy_tales:list' as fairy_tales_url %}
+                        <li><a href="{% if fairy_tales_url %}{{ fairy_tales_url }}{% else %}#fairy-tales{% endif %}" class="text-muted">Сказки</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6>Информация</h6>
+                    <ul class="list-unstyled">
+                        {% url 'core:about' as about_url %}
+                        <li><a href="{% if about_url %}{{ about_url }}{% else %}#about{% endif %}" class="text-muted">О проекте</a></li>
+                        
+                        {% url 'core:contact' as contact_url %}
+                        <li><a href="{% if contact_url %}{{ contact_url }}{% else %}#contact{% endif %}" class="text-muted">Контакты</a></li>
+                        
+                        {% url 'subscriptions:plans' as plans_url %}
+                        <li><a href="{% if plans_url %}{{ plans_url }}{% else %}#subscription{% endif %}" class="text-muted">Подписка</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="text-muted mb-0">&copy; 2024 Добрые истории. Все права защищены.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Скрипты мобильной навигации -->
+    <script src="{% static 'js/mobile-navigation.js' %}"></script>
+    
+    <!-- Обновление счетчика корзины -->
+    {% if user.is_authenticated %}
+    <script>
+    // Принудительная инициализация Bootstrap dropdown
+    document.addEventListener('DOMContentLoaded', function() {
+        // Проверяем, что Bootstrap загружен
+        if (typeof bootstrap !== 'undefined') {
+            // Инициализируем все dropdown
+            const dropdownTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));
+            const dropdownList = dropdownTriggerList.map(function (dropdownTriggerEl) {
+                return new bootstrap.Dropdown(dropdownTriggerEl);
+            });
+            console.log('Bootstrap dropdowns initialized:', dropdownList.length);
+        } else {
+            console.error('Bootstrap JavaScript not loaded!');
+        }
+    });
+    
+    function updateCartBadge() {
+        fetch('{% url "shop:cart_count" %}', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Обновляем десктопную навигацию
+            const badge = document.getElementById('cart-badge');
+            if (badge) {
+                badge.textContent = data.count;
+                badge.style.display = data.count > 0 ? 'inline' : 'none';
+            }
+            
+            // Обновляем мобильную навигацию
+            const mobileBadge = document.getElementById('mobile-cart-badge');
+            if (mobileBadge) {
+                mobileBadge.textContent = data.count;
+                mobileBadge.style.display = data.count > 0 ? 'inline' : 'none';
+            }
+        })
+        .catch(error => {
+            // Если ошибка - просто скрываем значки
+            const badge = document.getElementById('cart-badge');
+            const mobileBadge = document.getElementById('mobile-cart-badge');
+            if (badge) badge.style.display = 'none';
+            if (mobileBadge) mobileBadge.style.display = 'none';
+            console.log('Корзина недоступна:', error.message);
+        });
+    }
+    
+    // Обновляем при загрузке страницы
+    document.addEventListener('DOMContentLoaded', updateCartBadge);
+    </script>
+    {% endif %}
+    
+    <!-- Наш JavaScript -->
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    <!-- Иконки комментариев теперь отображаются корректно через Django template -->
+    <script>
+    // JavaScript для комментариев больше не нужен, так как они отображаются в шаблоне
+    console.log('✅ Комментарии отображаются через Django template');
+    </script>
+    
+    <!-- Обработчик ошибок сторонних скриптов -->
+    <script>
+    // Полностью приглушаем ошибки рекламных скриптов
+    (function() {
+        const originalAddEventListener = EventTarget.prototype.addEventListener;
+        EventTarget.prototype.addEventListener = function(type, listener, options) {
+            if (type === 'error') {
+                const wrappedListener = function(e) {
+                    if (e.filename && (
+                        e.filename.includes('googleads') || 
+                        e.filename.includes('doubleclick') ||
+                        e.filename.includes('pagead') ||
+                        e.filename.includes('googleleads')
+                    )) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return true;
+                    }
+                    return listener.call(this, e);
+                };
+                return originalAddEventListener.call(this, type, wrappedListener, options);
+            }
+            return originalAddEventListener.call(this, type, listener, options);
+        };
+        
+        // Переопределяем console.error для фильтрации
+        const originalConsoleError = console.error;
+        console.error = function(...args) {
+            const message = args.join(' ');
+            if (message.includes('googleads') || 
+                message.includes('doubleclick') ||
+                message.includes('ERR_BLOCKED_BY_CLIENT') ||
+                message.includes('googleleads') ||
+                message.includes('pagead/id')) {
+                return; // Полностью игнорируем эти ошибки
+            }
+            originalConsoleError.apply(console, args);
+        };
+        
+        // Глобальный обработчик ошибок
+        window.addEventListener('error', function(e) {
+            if (e.target && e.target.src && (
+                e.target.src.includes('googleads') ||
+                e.target.src.includes('doubleclick') ||
+                e.target.src.includes('googleleads')
+            )) {
+                e.preventDefault();
+                e.stopPropagation();
+                return true;
+            }
+        }, true);
+        
+        console.log('✅ Система фильтрации рекламных ошибок активирована');
+    })();
+    </script>
+    
+    <!-- Скрипт для обновления счетчиков в навигации -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Обновляем счетчик избранного
+        function updateFavoritesCount() {
+            {% if user.is_authenticated %}
+                fetch('/books/favorites-count/')
+                    .then(response => response.json())
+                    .then(data => {
+                        const badge = document.getElementById('favorites-badge');
+                        const modalBadge = document.getElementById('modal-favorites-badge');
+                        
+                        if (badge) {
+                            badge.textContent = data.count;
+                            badge.style.display = data.count > 0 ? 'block' : 'none';
+                        }
+                        
+                        if (modalBadge) {
+                            modalBadge.textContent = data.count;
+                            modalBadge.style.display = data.count > 0 ? 'inline' : 'none';
+                        }
+                    })
+                    .catch(error => {
+                        console.log('Ошибка при получении количества избранного:', error);
+                    });
+            {% endif %}
+        }
+        
+        // Обновляем при загрузке страницы
+        updateFavoritesCount();
+        
+        // Обновляем при изменении избранного
+        window.updateFavoritesCount = updateFavoritesCount;
+        
+        // Обработчик событий для обновления счетчика
+        document.addEventListener('favoriteToggled', function() {
+            updateFavoritesCount();
+        });
+    });
+    </script>
+    
+    <!-- ========== PRODUCTION ANALYTICS ========== -->
+    <!-- Продакшен система аналитики (без заглушек) -->
+    <meta name="user-id" content="{% if user.is_authenticated %}{{ user.id }}{% endif %}">
+    <script src="{% static 'js/production_analytics.js' %}"></script>
+    
+    <!-- Дополнительные скрипты -->
+    {% block extra_js %}{% endblock %}
+    
+    <!-- ========== LEGACY (отключено) ========== -->
+    {% comment %}
+    <!-- Старая аналитика покупательских намерений (отключена) -->
+    <script src="{% static 'js/analytics.js' %}"></script>
+    <!-- Тестовый виджет аналитики (отключен для продакшена) -->
+    {% include 'analytics/test_widget.html' %}
+    {% endcomment %}
+</body>
+</html>

@@ -1,0 +1,1109 @@
+{% extends 'base.html' %}
+{% load static %}
+{% csrf_token %}
+
+{% block title %}Чтение PDF: {{ book.title }} - Православный портал{% endblock %}
+
+{% block extra_head %}
+<meta name="csrf-token" content="{{ csrf_token }}">
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .pdf-reader-container {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .pdf-toolbar {
+        background: #2c3e50;
+        color: white;
+        padding: 10px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .pdf-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+        color: white;
+    }
+    
+    .pdf-controls {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .pdf-btn {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .pdf-btn:hover {
+        background: rgba(255,255,255,0.2);
+        border-color: rgba(255,255,255,0.3);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .pdf-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .page-navigation {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: white;
+    }
+    
+    .action-buttons {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .controls-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+        width: 100%;
+    }
+    
+    .page-input {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        width: 60px;
+        text-align: center;
+    }
+    
+    .zoom-controls {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .zoom-select {
+        background: rgba(255,255,255,0.1) !important;
+        border: 1px solid rgba(255,255,255,0.2) !important;
+        color: white !important;
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+    
+    .zoom-select option {
+        background: #2c3e50 !important;
+        color: white !important;
+        padding: 5px;
+        border: none;
+    }
+    
+    .zoom-select option:hover,
+    .zoom-select option:focus,
+    .zoom-select option:selected {
+        background: #34495e !important;
+        color: white !important;
+    }
+    
+    /* Дополнительные стили для борьбы с наследованием */
+    select#zoomSelect {
+        background-color: rgba(255,255,255,0.1) !important;
+        color: white !important;
+    }
+    
+    select#zoomSelect option {
+        background-color: #2c3e50 !important;
+        color: white !important;
+    }
+    
+    .pdf-viewer {
+        flex: 1;
+        background: #f5f5f5;
+        overflow: auto;
+        position: relative;
+    }
+    
+    .pdf-canvas-container {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100%;
+        padding: 20px;
+    }
+    
+    .pdf-canvas {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        border-radius: 4px;
+        background: white;
+        margin-bottom: 20px;
+    }
+    
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.9);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.2rem;
+        color: #666;
+        z-index: 100;
+    }
+    
+    .loading-spinner {
+        animation: spin 1s linear infinite;
+        margin-right: 10px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .progress-bar {
+        height: 3px;
+        background: rgba(255,255,255,0.3);
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: var(--gold-accent);
+        transition: width 0.3s ease;
+    }
+    
+    .bookmarks-panel {
+        position: absolute;
+        top: 0;
+        right: -300px;
+        width: 300px;
+        height: 100%;
+        background: #fff;
+        box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+        z-index: 200;
+        transition: right 0.3s ease;
+        border-left: 1px solid #ddd;
+    }
+    
+    .bookmarks-panel.show {
+        right: 0;
+    }
+    
+    .bookmarks-header {
+        background: #2c3e50;
+        color: white;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #34495e;
+    }
+    
+    .bookmarks-header h4 {
+        margin: 0;
+        font-size: 1.1rem;
+    }
+    
+    .close-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 3px;
+        transition: background 0.2s;
+    }
+    
+    .close-btn:hover {
+        background: rgba(255,255,255,0.1);
+    }
+    
+    .bookmarks-list {
+        padding: 0;
+        max-height: calc(100% - 70px);
+        overflow-y: auto;
+    }
+    
+    .bookmark-item {
+        padding: 12px 20px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+        transition: background 0.2s;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+    
+    .bookmark-item:hover {
+        background: #f8f9fa;
+    }
+    
+    .bookmark-content {
+        flex: 1;
+    }
+    
+    .bookmark-page {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 4px;
+    }
+    
+    .bookmark-note {
+        font-size: 0.9rem;
+        color: #666;
+        line-height: 1.3;
+    }
+    
+    .bookmark-delete {
+        background: none;
+        border: none;
+        color: #dc3545;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 3px;
+        font-size: 0.8rem;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    
+    .bookmark-item:hover .bookmark-delete {
+        opacity: 1;
+    }
+    
+    .bookmark-delete:hover {
+        background: rgba(220, 53, 69, 0.1);
+    }
+    
+    .no-bookmarks {
+        padding: 20px;
+        text-align: center;
+        color: #999;
+        font-style: italic;
+    }
+    
+    @media (max-width: 768px) {
+        .pdf-toolbar {
+            padding: 8px 10px;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .pdf-controls {
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .pdf-title {
+            font-size: 1rem;
+            text-align: center;
+        }
+        
+        .pdf-canvas-container {
+            padding: 10px;
+        }
+        
+        /* Скрываем некоторые кнопки на мобильных */
+        .action-buttons .pdf-btn[title="Полноэкранный режим"],
+        .action-buttons .pdf-btn[title="Скачать PDF"] {
+            display: none;
+        }
+        
+        .action-buttons {
+            gap: 15px;
+        }
+        
+        .controls-row {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .zoom-controls {
+            order: -1; /* Масштабирование сверху на мобильных */
+        }
+        
+        .bookmarks-panel {
+            width: 100%;
+            right: -100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pdf-reader-container">
+    <!-- Панель инструментов -->
+    <div class="pdf-toolbar">
+        <h1 class="pdf-title">{{ book.title }}</h1>
+        
+        <div class="pdf-main-controls">
+            <!-- Левые элементы управления -->
+            <div class="left-controls">
+                <div class="btn-group">
+                    <button class="pdf-btn" onclick="toggleBookmarks()" title="Показать закладки">
+                        <i class="bi bi-bookmarks"></i>
+                    </button>
+                    <button class="pdf-btn" onclick="addBookmark()" title="Добавить закладку">
+                        <i class="bi bi-bookmark-plus"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Центральная навигация -->
+            <div class="page-navigation">
+                <button class="pdf-btn" id="prevPage" onclick="prevPage()">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                
+                <input type="number" class="page-input" id="pageInput" value="1" min="1" 
+                       onchange="goToPage(this.value)">
+                
+                <span class="page-info">/ <span id="totalPages">-</span></span>
+                
+                <button class="pdf-btn" id="nextPage" onclick="nextPage()">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+            
+            <!-- Правые элементы управления -->
+            <div class="right-controls">
+                <div class="zoom-controls">
+                    <button class="pdf-btn" onclick="zoomOut()">
+                        <i class="bi bi-zoom-out"></i>
+                    </button>
+                    
+                    <select class="zoom-select" id="zoomSelect" onchange="setZoom(this.value)">
+                        <option value="auto">Авто</option>
+                        <option value="page-fit">По ширине</option>
+                        <option value="page-width">По странице</option>
+                        <option value="0.25">25%</option>
+                        <option value="0.5">50%</option>
+                        <option value="0.75">75%</option>
+                        <option value="1">100%</option>
+                        <option value="1.25">125%</option>
+                        <option value="1.5">150%</option>
+                        <option value="2">200%</option>
+                        <option value="2.5">250%</option>
+                        <option value="3">300%</option>
+                    </select>
+                    
+                    <button class="pdf-btn" onclick="zoomIn()">
+                        <i class="bi bi-zoom-in"></i>
+                    </button>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="pdf-btn" onclick="toggleFullscreen()" title="Полноэкранный режим">
+                        <i class="bi bi-fullscreen"></i>
+                    </button>
+                    <button class="pdf-btn" onclick="downloadPDF()" title="Скачать PDF">
+                        <i class="bi bi-download"></i>
+                    </button>
+                    <a href="{% url 'books:detail' book.slug %}" class="pdf-btn" title="К книге">
+                        <i class="bi bi-arrow-left"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Прогресс чтения -->
+        <div class="progress-bar">
+            <div class="progress-fill" id="readingProgress" style="width: 0%"></div>
+        </div>
+    </div>
+    
+    <!-- Область просмотра PDF -->
+    <div class="pdf-viewer" id="pdfViewer">
+        <!-- Панель закладок -->
+        <div class="bookmarks-panel" id="bookmarksPanel">
+            <div class="bookmarks-header">
+                <h4>Закладки</h4>
+                <button class="close-btn" onclick="toggleBookmarks()">×</button>
+            </div>
+            <div class="bookmarks-list" id="bookmarksList">
+                <div class="no-bookmarks">Нет закладок</div>
+            </div>
+        </div>
+        
+        <div class="loading-overlay" id="loadingOverlay">
+            <i class="bi bi-arrow-clockwise loading-spinner"></i>
+            Загрузка PDF...
+        </div>
+        
+        <div class="pdf-canvas-container" id="canvasContainer">
+            <canvas id="pdfCanvas"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+// Глобальные переменные (используем let вместо const для изменяемых)
+let pdfDoc = null;
+let pageNum = {{ reading_session.current_page|default:1 }};
+let pageRendering = false;
+let pageNumPending = null;
+let scale = 1.2;
+let canvas = null;
+let ctx = null;
+
+// Настройка PDF.js
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// Инициализация при загрузке DOM
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализируем canvas только после загрузки DOM
+    canvas = document.getElementById('pdfCanvas');
+    ctx = canvas.getContext('2d');
+    
+    // Устанавливаем автоматический масштаб по умолчанию
+    document.getElementById('zoomSelect').value = 'auto';
+    
+    // Принудительно применяем стили к всем опциям
+    fixZoomSelectStyles();
+    
+    // Запускаем загрузку PDF
+    loadPDF();
+});
+
+function fixZoomSelectStyles() {
+    const zoomSelect = document.getElementById('zoomSelect');
+    
+    // Применяем стили к самому select
+    zoomSelect.style.backgroundColor = 'rgba(255,255,255,0.1)';
+    zoomSelect.style.color = 'white';
+    zoomSelect.style.border = '1px solid rgba(255,255,255,0.2)';
+    
+    // Применяем стили ко всем опциям
+    for (let i = 0; i < zoomSelect.options.length; i++) {
+        const option = zoomSelect.options[i];
+        option.style.backgroundColor = '#2c3e50';
+        option.style.color = 'white';
+        option.style.padding = '5px';
+    }
+    
+    console.log('Стили выпадающего списка применены');
+}
+
+async function loadPDF() {
+    try {
+        console.log('Начинаем загрузку PDF:', '{{ book.file.url }}');
+        
+        const loadingTask = pdfjsLib.getDocument({
+            url: '{{ book.file.url }}',
+            cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+            cMapPacked: true,
+        });
+        
+        pdfDoc = await loadingTask.promise;
+        
+        console.log('PDF успешно загружен:', pdfDoc.numPages, 'страниц');
+        
+        document.getElementById('totalPages').textContent = pdfDoc.numPages;
+        document.getElementById('pageInput').max = pdfDoc.numPages;
+        
+        renderPage(pageNum);
+        hideLoading();
+        
+    } catch (error) {
+        console.error('Ошибка загрузки PDF:', error);
+        showError(`Ошибка загрузки PDF файла: ${error.message}.<br><br>Проверьте, что файл доступен по адресу:<br><a href="{{ book.file.url }}" target="_blank">{{ book.file.url }}</a>`);
+    }
+}
+
+function renderPage(num) {
+    if (pageRendering) {
+        pageNumPending = num;
+        return;
+    }
+    
+    if (!pdfDoc) {
+        console.error('PDF документ не загружен');
+        return;
+    }
+    
+    if (!canvas || !ctx) {
+        console.error('Canvas не инициализирован');
+        return;
+    }
+    
+    pageRendering = true;
+    pageNum = num;
+    
+    console.log(`Отображаем страницу ${num} с масштабом ${scale.toFixed(2)}`);
+    
+    // Обновляем интерфейс
+    document.getElementById('pageInput').value = num;
+    updateNavigationButtons();
+    updateProgress();
+    
+    // Рендерим страницу
+    pdfDoc.getPage(num).then(function(page) {
+        // Получаем viewport с текущим масштабом
+        const viewport = page.getViewport({scale: scale});
+        
+        // Устанавливаем размер canvas в соответствии с viewport
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        
+        // Очищаем canvas перед рендерингом
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        const renderContext = {
+            canvasContext: ctx,
+            viewport: viewport
+        };
+        
+        const renderTask = page.render(renderContext);
+        
+        renderTask.promise.then(function() {
+            pageRendering = false;
+            console.log(`Страница ${num} успешно отображена (${viewport.width}x${viewport.height})`);
+            
+            if (pageNumPending !== null) {
+                renderPage(pageNumPending);
+                pageNumPending = null;
+            }
+            
+            // Сохраняем прогресс чтения
+            saveReadingProgress();
+        }).catch(function(error) {
+            console.error('Ошибка рендеринга страницы:', error);
+            pageRendering = false;
+            showError(`Ошибка отображения страницы ${num}`);
+        });
+    }).catch(function(error) {
+        console.error('Ошибка получения страницы:', error);
+        pageRendering = false;
+        showError(`Ошибка загрузки страницы ${num}`);
+    });
+}
+
+function prevPage() {
+    if (pageNum <= 1) return;
+    renderPage(pageNum - 1);
+}
+
+function nextPage() {
+    if (pageNum >= pdfDoc.numPages) return;
+    renderPage(pageNum + 1);
+}
+
+function goToPage(page) {
+    const num = parseInt(page);
+    if (num >= 1 && num <= pdfDoc.numPages) {
+        renderPage(num);
+    }
+}
+
+function zoomIn() {
+    // Ограничиваем максимальный масштаб
+    if (scale >= 3.0) {
+        console.log('Максимальный масштаб достигнут');
+        return;
+    }
+    
+    scale = Math.min(scale * 1.2, 3.0);
+    console.log('Увеличение масштаба до:', scale.toFixed(2));
+    
+    // Обновляем выпадающий список
+    updateZoomSelect();
+    
+    renderPage(pageNum);
+}
+
+function zoomOut() {
+    // Ограничиваем минимальный масштаб
+    if (scale <= 0.25) {
+        console.log('Минимальный масштаб достигнут');
+        return;
+    }
+    
+    scale = Math.max(scale / 1.2, 0.25);
+    console.log('Уменьшение масштаба до:', scale.toFixed(2));
+    
+    // Обновляем выпадающий список
+    updateZoomSelect();
+    
+    renderPage(pageNum);
+}
+
+function setZoom(value) {
+    console.log('Установка масштаба:', value);
+    
+    if (value === 'auto') {
+        fitToContainer();
+    } else if (value === 'page-fit') {
+        fitToWidth();
+    } else if (value === 'page-width') {
+        fitToHeight();
+    } else {
+        scale = parseFloat(value);
+        if (isNaN(scale)) {
+            scale = 1.0;
+        }
+        console.log('Фиксированный масштаб:', scale);
+        renderPage(pageNum);
+    }
+}
+
+function fitToContainer() {
+    if (!pdfDoc) return;
+    
+    pdfDoc.getPage(pageNum).then(function(page) {
+        const viewport = page.getViewport({scale: 1});
+        const container = document.getElementById('canvasContainer');
+        const containerWidth = container.clientWidth - 40;
+        const containerHeight = container.clientHeight - 40;
+        
+        const scaleX = containerWidth / viewport.width;
+        const scaleY = containerHeight / viewport.height;
+        scale = Math.min(scaleX, scaleY, 2.0); // Ограничиваем максимум
+        
+        console.log('Подгон под контейнер, масштаб:', scale.toFixed(2));
+        renderPage(pageNum);
+    });
+}
+
+function fitToWidth() {
+    if (!pdfDoc) return;
+    
+    pdfDoc.getPage(pageNum).then(function(page) {
+        const viewport = page.getViewport({scale: 1});
+        const container = document.getElementById('canvasContainer');
+        const containerWidth = container.clientWidth - 40;
+        
+        scale = Math.min(containerWidth / viewport.width, 2.0); // Ограничиваем максимум
+        
+        console.log('Подгон по ширине, масштаб:', scale.toFixed(2));
+        renderPage(pageNum);
+    });
+}
+
+function fitToHeight() {
+    if (!pdfDoc) return;
+    
+    pdfDoc.getPage(pageNum).then(function(page) {
+        const viewport = page.getViewport({scale: 1});
+        const container = document.getElementById('canvasContainer');
+        const containerHeight = container.clientHeight - 40;
+        
+        scale = Math.min(containerHeight / viewport.height, 2.0); // Ограничиваем максимум
+        
+        console.log('Подгон по высоте, масштаб:', scale.toFixed(2));
+        renderPage(pageNum);
+    });
+}
+
+function updateNavigationButtons() {
+    document.getElementById('prevPage').disabled = pageNum <= 1;
+    document.getElementById('nextPage').disabled = pageNum >= pdfDoc.numPages;
+}
+
+function updateProgress() {
+    if (!pdfDoc) return;
+    
+    const progress = (pageNum / pdfDoc.numPages) * 100;
+    document.getElementById('readingProgress').style.width = progress + '%';
+}
+
+function updateZoomSelect() {
+    const zoomSelect = document.getElementById('zoomSelect');
+    const currentScale = scale;
+    
+    // Проверяем, есть ли такое значение в списке
+    let found = false;
+    for (let i = 0; i < zoomSelect.options.length; i++) {
+        const optionValue = zoomSelect.options[i].value;
+        if (optionValue !== 'auto' && optionValue !== 'page-fit' && optionValue !== 'page-width') {
+            const numValue = parseFloat(optionValue);
+            if (Math.abs(numValue - currentScale) < 0.01) {
+                zoomSelect.value = optionValue;
+                found = true;
+                break;
+            }
+        }
+    }
+    
+    if (!found) {
+        // Удаляем старые кастомные опции
+        const customOptions = zoomSelect.querySelectorAll('option[data-custom="true"]');
+        customOptions.forEach(option => option.remove());
+        
+        // Добавляем новую кастомную опцию
+        const customOption = document.createElement('option');
+        customOption.value = currentScale.toString();
+        customOption.textContent = Math.round(currentScale * 100) + '%';
+        customOption.setAttribute('data-custom', 'true');
+        customOption.selected = true;
+        
+        // Принудительно устанавливаем стили
+        customOption.style.backgroundColor = '#2c3e50';
+        customOption.style.color = 'white';
+        
+        // Находим место для вставки
+        let inserted = false;
+        for (let i = 3; i < zoomSelect.options.length; i++) {
+            const optionValue = parseFloat(zoomSelect.options[i].value);
+            if (!isNaN(optionValue) && optionValue > currentScale) {
+                zoomSelect.insertBefore(customOption, zoomSelect.options[i]);
+                inserted = true;
+                break;
+            }
+        }
+        
+        if (!inserted) {
+            zoomSelect.appendChild(customOption);
+        }
+    }
+    
+    // Принудительно обновляем стили всех опций
+    for (let i = 0; i < zoomSelect.options.length; i++) {
+        const option = zoomSelect.options[i];
+        option.style.backgroundColor = '#2c3e50';
+        option.style.color = 'white';
+    }
+    
+    console.log('Обновлен выпадающий список:', Math.round(currentScale * 100) + '%');
+}
+
+function saveReadingProgress() {
+    const token = getCSRFToken();
+    
+    if (!token) {
+        console.warn('Не удалось получить CSRF токен, пропускаем сохранение прогресса');
+        return;
+    }
+    
+    fetch(`/books/progress/{{ book.id }}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': token,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            current_page: pageNum,
+            reading_time: 1 // минута за страницу
+        })
+    })
+    .then(response => {
+        if (response.ok) {
+            console.log('Прогресс сохранен: страница', pageNum);
+        } else {
+            console.warn('Ошибка сохранения прогресса:', response.status);
+        }
+    })
+    .catch(error => {
+        console.error('Error saving progress:', error);
+    });
+}
+
+function addBookmark() {
+    const note = prompt('Добавить заметку к закладке (необязательно):');
+    
+    if (note === null) return; // Отмена
+    
+    const token = getCSRFToken();
+    
+    if (!token) {
+        showToast('Не удалось получить CSRF токен', 'error');
+        return;
+    }
+    
+    fetch(`/books/bookmark/{{ book.id }}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': token,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            page: pageNum,
+            note: note || ''
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            showToast('Закладка добавлена', 'success');
+            loadBookmarks(); // Обновляем список закладок
+        } else {
+            showToast(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Ошибка при добавлении закладки', 'error');
+    });
+}
+
+function toggleBookmarks() {
+    const panel = document.getElementById('bookmarksPanel');
+    panel.classList.toggle('show');
+    
+    if (panel.classList.contains('show')) {
+        loadBookmarks();
+    }
+}
+
+function loadBookmarks() {
+    // Загружаем закладки для текущей книги
+    fetch(`/books/bookmarks/{{ book.id }}/`)
+        .then(response => response.json())
+        .then(data => {
+            displayBookmarks(data.bookmarks || []);
+        })
+        .catch(error => {
+            console.error('Error loading bookmarks:', error);
+            displayBookmarks([]);
+        });
+}
+
+function displayBookmarks(bookmarks) {
+    const bookmarksList = document.getElementById('bookmarksList');
+    
+    if (bookmarks.length === 0) {
+        bookmarksList.innerHTML = '<div class="no-bookmarks">Нет закладок</div>';
+        return;
+    }
+    
+    bookmarksList.innerHTML = bookmarks.map((bookmark, index) => `
+        <div class="bookmark-item" onclick="goToBookmark(${bookmark.page})">
+            <div class="bookmark-content">
+                <div class="bookmark-page">Страница ${bookmark.page}</div>
+                ${bookmark.note ? `<div class="bookmark-note">${bookmark.note}</div>` : ''}
+            </div>
+            <button class="bookmark-delete" onclick="deleteBookmark(event, ${index})" title="Удалить">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+function goToBookmark(page) {
+    renderPage(page);
+    showToast(`Переход к странице ${page}`, 'success');
+}
+
+function deleteBookmark(event, index) {
+    event.stopPropagation(); // Предотвращаем переход к закладке
+    
+    const token = getCSRFToken();
+    if (!token) {
+        showToast('Не удалось получить CSRF токен', 'error');
+        return;
+    }
+    
+    fetch(`/books/bookmark/{{ book.id }}/${index}/`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRFToken': token,
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            showToast('Закладка удалена', 'success');
+            loadBookmarks(); // Обновляем список
+        } else {
+            showToast(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Ошибка при удалении закладки', 'error');
+    });
+}
+
+function toggleFullscreen() {
+    const element = document.documentElement;
+    
+    if (!document.fullscreenElement) {
+        // Вход в полноэкранный режим
+        if (element.requestFullscreen) {
+            element.requestFullscreen();
+        } else if (element.webkitRequestFullscreen) {
+            element.webkitRequestFullscreen();
+        } else if (element.msRequestFullscreen) {
+            element.msRequestFullscreen();
+        }
+        showToast('Полноэкранный режим включен', 'info');
+    } else {
+        // Выход из полноэкранного режима
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+        showToast('Полноэкранный режим выключен', 'info');
+    }
+}
+
+function downloadPDF() {
+    // Переход к скачиванию файла
+    const downloadUrl = '/books/download/{{ book.id }}/';
+    
+    // Открываем в новой вкладке
+    window.open(downloadUrl, '_blank');
+    
+    showToast('Начато скачивание PDF', 'success');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+function showError(message) {
+    const overlay = document.getElementById('loadingOverlay');
+    overlay.innerHTML = `
+        <div class="text-center text-danger" style="max-width: 500px; padding: 20px;">
+            <i class="bi bi-exclamation-triangle" style="font-size: 3rem; margin-bottom: 20px; color: #dc3545;"></i><br>
+            <h4 style="color: #dc3545; margin-bottom: 15px;">Ошибка загрузки</h4>
+            <div style="margin-bottom: 20px; line-height: 1.5;">${message}</div>
+            <button class="pdf-btn" onclick="location.reload()" style="background: #dc3545; border-color: #dc3545;">
+                <i class="bi bi-arrow-clockwise"></i> Попробовать снова
+            </button>
+            <a href="{% url 'books:detail' book.slug %}" class="pdf-btn" style="background: #6c757d; border-color: #6c757d; margin-left: 10px;">
+                <i class="bi bi-arrow-left"></i> К книге
+            </a>
+        </div>
+    `;
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 6px;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    `;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Альтернативный способ получения CSRF токена
+function getCSRFToken() {
+    // Сначала пробуем из cookie
+    let token = getCookie('csrftoken');
+    
+    // Если не найден, ищем в мета-тегах
+    if (!token) {
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta) {
+            token = meta.getAttribute('content');
+        }
+    }
+    
+    // Если всё еще не найден, ищем в скрытых полях формы
+    if (!token) {
+        const input = document.querySelector('input[name="csrfmiddlewaretoken"]');
+        if (input) {
+            token = input.value;
+        }
+    }
+    
+    return token;
+}
+
+// Обработка клавиатуры
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowLeft') {
+        prevPage();
+    } else if (e.key === 'ArrowRight') {
+        nextPage();
+    } else if (e.key === '+' || e.key === '=') {
+        zoomIn();
+    } else if (e.key === '-') {
+        zoomOut();
+    } else if (e.key === 'b' && e.altKey) {
+        e.preventDefault();
+        addBookmark();
+    }
+});
+
+// Автоматическое сохранение прогресса
+setInterval(saveReadingProgress, 30000);
+
+// Предотвращение потери данных
+window.addEventListener('beforeunload', saveReadingProgress);
+
+// Обработка изменения размера окна
+window.addEventListener('resize', function() {
+    // Перерендерим страницу при изменении размера окна
+    if (pdfDoc && !pageRendering) {
+        setTimeout(() => {
+            if (document.getElementById('zoomSelect').value === 'auto') {
+                fitToContainer();
+            } else if (document.getElementById('zoomSelect').value === 'page-fit') {
+                fitToWidth();
+            } else if (document.getElementById('zoomSelect').value === 'page-width') {
+                fitToHeight();
+            }
+        }, 100);
+    }
+});
+</script>
+{% endblock %}

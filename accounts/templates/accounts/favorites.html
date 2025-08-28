@@ -1,12 +1,830 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ title }} - Православный портал{% endblock %}
 
+{% block extra_css %}
+<style>
+/* Красивое сердечко в заголовке */
+.heart-icon {
+    color: #e91e63;
+    filter: drop-shadow(0 2px 4px rgba(233, 30, 99, 0.3));
+    animation: heartGlow 3s ease-in-out infinite;
+}
+
+@keyframes heartGlow {
+    0%, 100% { 
+        filter: drop-shadow(0 2px 4px rgba(233, 30, 99, 0.3));
+        transform: scale(1);
+    }
+    50% { 
+        filter: drop-shadow(0 4px 8px rgba(233, 30, 99, 0.5));
+        transform: scale(1.05);
+    }
+}
+
+.favorites-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    border-radius: 0 0 25px 25px;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+}
+
+.stats-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+    backdrop-filter: blur(10px);
+}
+
+.back-button {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 15px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    backdrop-filter: blur(10px);
+}
+
+.back-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+}
+
+.book-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.1);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    overflow: hidden;
+    height: 100%;
+    position: relative;
+    border: 1px solid rgba(102, 126, 234, 0.05);
+}
+
+.book-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.book-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2);
+}
+
+.book-card:hover::before {
+    opacity: 1;
+}
+
+.book-cover {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+    border-radius: 20px 20px 0 0;
+}
+
+.book-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.book-card:hover .book-cover img {
+    transform: scale(1.1);
+}
+
+.book-cover .placeholder {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #6c757d;
+}
+
+.book-initial {
+    font-size: 4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.favorite-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: linear-gradient(135deg, #ff6b9d, #e91e63);
+    color: white;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
+    backdrop-filter: blur(10px);
+    animation: heartbeat 2s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.book-info {
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 220px);
+}
+
+.book-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: #2c3e50;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.book-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.book-rating i {
+    font-size: 0.9rem;
+}
+
+.rating-text {
+    font-weight: 600;
+    color: #667eea;
+    font-size: 0.9rem;
+}
+
+.book-meta {
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin-bottom: 1.25rem;
+    flex-grow: 1;
+}
+
+.book-meta .meta-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding: 0.25rem 0;
+}
+
+.book-meta .meta-item:last-child {
+    margin-bottom: 0;
+}
+
+.book-meta i {
+    width: 16px;
+    color: #667eea;
+    margin-right: 0.5rem;
+}
+
+.book-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: auto;
+}
+
+.btn-read {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    color: white;
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    flex: 1;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-read:hover {
+    background: linear-gradient(135deg, #5a67d8, #6b46c1);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-buy {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none;
+    color: white;
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    flex: 1;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-buy:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-remove {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    border: none;
+    color: white;
+    padding: 0.75rem;
+    border-radius: 12px;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+.btn-remove:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+.btn-remove:active {
+    transform: translateY(0) scale(0.95);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #6c757d;
+    background: white;
+    border-radius: 25px;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.1);
+    margin: 2rem 0;
+}
+
+.empty-state-icon {
+    font-size: 5rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1.5rem;
+    display: block;
+}
+
+.empty-state h3 {
+    color: #2c3e50;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: #6c757d;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.empty-state .btn {
+    border-radius: 15px;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.empty-state .btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.empty-state .btn-primary:hover {
+    background: linear-gradient(135deg, #5a67d8, #6b46c1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.empty-state .btn-outline-secondary {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+}
+
+.empty-state .btn-outline-secondary:hover {
+    background: #6c757d;
+    border-color: #6c757d;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Пагинация */
+.pagination {
+    margin-top: 3rem;
+}
+
+.page-link {
+    border-radius: 12px !important;
+    border: 2px solid #e9ecef !important;
+    color: #667eea !important;
+    padding: 0.75rem 1rem !important;
+    margin: 0 0.25rem !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+}
+
+.page-link:hover {
+    background-color: #667eea !important;
+    border-color: #667eea !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
+}
+
+.page-item.active .page-link {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    border-color: #667eea !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
+}
+
+/* Уведомления */
+.alert {
+    border-radius: 15px !important;
+    border: none !important;
+    padding: 1rem 1.5rem !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0) !important;
+    color: #065f46 !important;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #fee2e2, #fecaca) !important;
+    color: #991b1b !important;
+}
+
+@media (max-width: 768px) {
+    .favorites-header {
+        padding: 1.5rem 0;
+        border-radius: 0 0 20px 20px;
+    }
+    
+    .book-info {
+        padding: 1.25rem;
+    }
+    
+    .book-cover {
+        height: 180px;
+    }
+    
+    .book-card {
+        border-radius: 15px;
+    }
+    
+    .book-cover {
+        border-radius: 15px 15px 0 0;
+    }
+    
+    .btn-read {
+        padding: 0.625rem 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .btn-remove {
+        width: 38px;
+        height: 38px;
+        padding: 0.625rem;
+    }
+    
+    .empty-state {
+        padding: 2rem 1rem;
+        border-radius: 20px;
+    }
+    
+    .empty-state-icon {
+        font-size: 3.5rem;
+    }
+}
+
+/* Анимации загрузки */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.book-card {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+/* Эффект shimmer для загрузки */
+.loading-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h1>{{ title }}</h1>
-        <p>Страница находится в разработке...</p>
+<!-- Заголовок -->
+<div class="favorites-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="mb-1">
+                    <i class="bi bi-heart-fill heart-icon me-2"></i>
+                    {{ title }}
+                </h1>
+                <p class="mb-2 opacity-75">
+                    Ваши любимые книги для душевного чтения
+                </p>
+                <div class="stats-badge">
+                    <i class="bi bi-book me-1"></i>
+                    {{ total_favorites }} 
+                    {% if total_favorites == 1 %}книга{% elif total_favorites < 5 %}книги{% else %}книг{% endif %}
+                    в избранном
+                </div>
+            </div>
+            <div class="col-auto">
+                <a href="{% url 'accounts:profile' %}" class="back-button">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Назад к профилю
+                </a>
+            </div>
+        </div>
     </div>
 </div>
+
+<div class="container">
+    {% if favorite_books %}
+        <div class="row g-4">
+            {% for favorite in favorite_books %}
+            <div class="col-xl-3 col-lg-4 col-md-6">
+                <div class="book-card">
+                    <div class="book-cover">
+                        {% if favorite.book.cover %}
+                            <img src="{{ favorite.book.cover.url }}" 
+                                 alt="{{ favorite.book.title }}"
+                                 loading="lazy"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <!-- Fallback placeholder -->
+                            <div class="placeholder" style="display: none;">
+                                <div class="book-initial">
+                                    {{ favorite.book.title|first|upper }}
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="placeholder">
+                                <div class="book-initial">
+                                    {{ favorite.book.title|first|upper }}
+                                </div>
+                            </div>
+                        {% endif %}
+                        <div class="favorite-badge" title="В избранном">
+                            <i class="bi bi-heart-fill"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="book-info">
+                        <h5 class="book-title">{{ favorite.book.title }}</h5>
+                        
+                        <!-- Рейтинг книги -->
+                        {% if favorite.book.rating and favorite.book.rating > 0 %}
+                        <div class="book-rating mb-2">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= favorite.book.rating %}
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                {% else %}
+                                    <i class="bi bi-star text-muted"></i>
+                                {% endif %}
+                            {% endfor %}
+                            <span class="rating-text ms-1">{{ favorite.book.rating|floatformat:1 }}</span>
+                            {% if favorite.book.reviews_count > 0 %}
+                                <small class="text-muted">({{ favorite.book.reviews_count }})</small>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="book-meta">
+                            {% if favorite.book.author %}
+                                <div class="meta-item">
+                                    <i class="bi bi-person"></i>
+                                    <span>{{ favorite.book.author }}</span>
+                                </div>
+                            {% endif %}
+                            <div class="meta-item">
+                                <i class="bi bi-calendar-plus"></i>
+                                <span>Добавлено {{ favorite.added_at|timesince }} назад</span>
+                            </div>
+                            {% if favorite.book.category %}
+                                <div class="meta-item">
+                                    <i class="bi bi-tag"></i>
+                                    <span>{{ favorite.book.category.name }}</span>
+                                </div>
+                            {% endif %}
+                            {% if favorite.book.pages %}
+                                <div class="meta-item">
+                                    <i class="bi bi-file-text"></i>
+                                    <span>{{ favorite.book.pages }} страниц</span>
+                                </div>
+                            {% endif %}
+                            {% if favorite.book.format %}
+                                <div class="meta-item">
+                                    <i class="bi bi-filetype-{{ favorite.book.format|lower }}"></i>
+                                    <span>{{ favorite.book.get_format_display }}</span>
+                                </div>
+                            {% endif %}
+                            {% if not favorite.book.is_free %}
+                                <div class="meta-item">
+                                    <i class="bi bi-currency-exchange"></i>
+                                    <span class="text-success fw-bold">{{ favorite.book.price }} ₽</span>
+                                </div>
+                            {% else %}
+                                <div class="meta-item">
+                                    <i class="bi bi-gift"></i>
+                                    <span class="text-primary fw-bold">Бесплатно</span>
+                                </div>
+                            {% endif %}
+                            {% if favorite.book.downloads_count > 0 %}
+                                <div class="meta-item">
+                                    <i class="bi bi-download"></i>
+                                    <span>{{ favorite.book.downloads_count }} скачиваний</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="book-actions">
+                            {% if favorite.book.is_free %}
+                                <a href="{% url 'books:detail' favorite.book.slug %}" 
+                                   class="btn-read">
+                                    <i class="bi bi-book-open me-1"></i>
+                                    Читать
+                                </a>
+                            {% else %}
+                                <a href="{% url 'books:detail' favorite.book.slug %}" 
+                                   class="btn-buy">
+                                    <i class="bi bi-cart-plus me-1"></i>
+                                    Купить {{ favorite.book.price }} ₽
+                                </a>
+                            {% endif %}
+                            
+                            <button type="button" 
+                                    class="btn-remove"
+                                    onclick="removeFavorite({{ favorite.book.id }}, this)"
+                                    title="Убрать из избранного">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Пагинация -->
+        {% if favorite_books.has_other_pages %}
+        <nav aria-label="Навигация по избранным книгам">
+            <ul class="pagination justify-content-center">
+                {% if favorite_books.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1" title="Первая страница">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ favorite_books.previous_page_number }}" title="Предыдущая">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+                
+                {% for num in favorite_books.paginator.page_range %}
+                    {% if favorite_books.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > favorite_books.number|add:'-3' and num < favorite_books.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if favorite_books.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ favorite_books.next_page_number }}" title="Следующая">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ favorite_books.paginator.num_pages }}" title="Последняя страница">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+    {% else %}
+        <!-- Пустое состояние -->
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="bi bi-heart"></i>
+            </div>
+            <h3>Пока нет избранных книг</h3>
+            <p>
+                Добавляйте понравившиеся книги в избранное, чтобы создать свою персональную библиотеку.<br>
+                Нажмите на сердечко ❤️ рядом с любой книгой, чтобы добавить её сюда.
+            </p>
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a href="{% url 'books:list' %}" class="btn btn-primary">
+                    <i class="bi bi-book me-2"></i>
+                    Найти книги
+                </a>
+                <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-person me-2"></i>
+                    Мой профиль
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function removeFavorite(bookId, button) {
+    if (!confirm('Убрать эту книгу из избранного?')) {
+        return;
+    }
+    
+    const bookCard = button.closest('.book-card');
+    const originalContent = button.innerHTML;
+    
+    // Показываем индикатор загрузки
+    button.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+    button.disabled = true;
+    
+    // AJAX запрос на удаление из избранного
+    fetch(`/books/favorite/toggle/${bookId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value || 
+                          document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Анимация удаления
+            bookCard.style.transition = 'all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+            bookCard.style.transform = 'scale(0.8) rotateY(90deg)';
+            bookCard.style.opacity = '0';
+            
+            setTimeout(() => {
+                const col = bookCard.closest('.col-xl-3, .col-lg-4, .col-md-6');
+                col.remove();
+                
+                // Проверяем, остались ли книги
+                const remainingBooks = document.querySelectorAll('.book-card').length;
+                if (remainingBooks === 0) {
+                    location.reload(); // Перезагружаем для показа пустого состояния
+                }
+            }, 500);
+            
+            // Показываем уведомление
+            showNotification('Книга удалена из избранного', 'success');
+        } else {
+            // Восстанавливаем кнопку при ошибке
+            button.innerHTML = originalContent;
+            button.disabled = false;
+            showNotification('Ошибка при удалении из избранного', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        button.innerHTML = originalContent;
+        button.disabled = false;
+        showNotification('Произошла ошибка', 'error');
+    });
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Автоматическое удаление через 4 секунды
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 4000);
+}
+
+// Анимация появления карточек
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.book-card');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 100);
+            }
+        });
+    });
+    
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        card.style.animationDelay = `${index * 0.1}s`;
+        observer.observe(card);
+    });
+    
+    // Плавная прокрутка к началу при клике на пагинацию
+    document.querySelectorAll('.pagination .page-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            if (this.getAttribute('href') !== '#') {
+                setTimeout(() => {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }, 100);
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

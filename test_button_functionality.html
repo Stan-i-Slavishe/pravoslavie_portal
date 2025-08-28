@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Тест кнопок категорий</title>
+    <style>
+        .category-description {
+            transition: all 0.3s ease;
+            overflow: hidden;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .description-collapsed {
+            max-height: 4.8em;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            display: -webkit-box;
+        }
+
+        .description-expanded {
+            max-height: none;
+        }
+
+        .expand-toggle {
+            background: none;
+            border: none;
+            color: #667eea;
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding: 0.25rem 0;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            border-radius: 4px;
+        }
+
+        .expand-toggle:hover {
+            color: #5a6fd8;
+            text-decoration: none;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem;
+            max-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Тест функциональности кнопок</h1>
+    
+    <div class="card">
+        <h3>Тестовая категория</h3>
+        <div class="category-description description-collapsed" data-category-id="1">
+            Это очень длинное описание категории, которое должно быть сокращено до трех строк. 
+            Здесь много текста, который должен скрываться под кнопкой "Показать всё". 
+            Когда пользователь кликнет на кнопку, весь текст должен стать видимым.
+            Это дополнительный текст для проверки функциональности.
+        </div>
+        
+        <button class="expand-toggle" data-category-id="1">
+            <span class="toggle-text">Показать всё</span>
+            <span>▼</span>
+        </button>
+    </div>
+
+    <script>
+        console.log('🔧 Начало тестирования...');
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 DOM загружен');
+            
+            const toggle = document.querySelector('.expand-toggle');
+            const description = document.querySelector('.category-description');
+            const toggleText = document.querySelector('.toggle-text');
+            
+            console.log('Элементы найдены:', {
+                toggle: !!toggle,
+                description: !!description,
+                toggleText: !!toggleText
+            });
+            
+            if (toggle) {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('👆 КЛИК ПО КНОПКЕ!');
+                    
+                    if (description.classList.contains('description-collapsed')) {
+                        console.log('🔽 Разворачиваем');
+                        description.classList.remove('description-collapsed');
+                        description.classList.add('description-expanded');
+                        toggleText.textContent = 'Свернуть';
+                    } else {
+                        console.log('🔼 Сворачиваем');
+                        description.classList.remove('description-expanded');
+                        description.classList.add('description-collapsed');
+                        toggleText.textContent = 'Показать всё';
+                    }
+                });
+                
+                console.log('✅ Обработчик событий добавлен');
+            } else {
+                console.error('❌ Кнопка не найдена!');
+            }
+        });
+    </script>
+</body>
+</html>

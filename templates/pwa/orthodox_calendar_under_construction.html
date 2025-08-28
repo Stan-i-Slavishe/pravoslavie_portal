@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Православный календарь - В разработке{% endblock %}
+
+{% block extra_css %}
+<style>
+.under-construction {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    padding: 2rem;
+    border-radius: 20px;
+    margin: 2rem 0;
+}
+
+.construction-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 3rem;
+    max-width: 600px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.construction-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+.construction-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.construction-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.features-list {
+    text-align: left;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 2rem;
+    margin: 2rem 0;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.feature-item:last-child {
+    margin-bottom: 0;
+}
+
+.feature-icon {
+    margin-right: 1rem;
+    font-size: 1.3rem;
+}
+
+.notification-form {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.notification-input {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.notification-input::placeholder {
+    color: #666;
+}
+
+.notification-btn {
+    background: linear-gradient(135deg, #ffeaa7, #fab1a0);
+    color: #333;
+    border: none;
+    border-radius: 10px;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    width: 100%;
+}
+
+.notification-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.back-link {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-decoration: none;
+    padding: 0.75rem 2rem;
+    border-radius: 50px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-block;
+    margin-top: 2rem;
+}
+
+.back-link:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .construction-card {
+        padding: 2rem 1rem;
+        margin: 1rem;
+    }
+    
+    .construction-title {
+        font-size: 2rem;
+    }
+    
+    .construction-subtitle {
+        font-size: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="under-construction">
+    <div class="construction-card">
+        <div class="construction-icon">📅⚒️</div>
+        
+        <h1 class="construction-title">Православный календарь</h1>
+        <p class="construction-subtitle">Находится в разработке</p>
+        
+        <p class="lead">
+            Мы создаем для вас полноценный православный календарь с расширенными возможностями. 
+            Совсем скоро здесь появятся все необходимые функции!
+        </p>
+        
+        <div class="features-list">
+            <h4 class="mb-3">🛠️ Что будет в календаре:</h4>
+            
+            <div class="feature-item">
+                <span class="feature-icon">📅</span>
+                <span>Все православные праздники и дни святых</span>
+            </div>
+            
+            <div class="feature-item">
+                <span class="feature-icon">⛪</span>
+                <span>Информация о постах и их правилах</span>
+            </div>
+            
+            <div class="feature-item">
+                <span class="feature-icon">📖</span>
+                <span>Евангельские и апостольские чтения</span>
+            </div>
+            
+            <div class="feature-item">
+                <span class="feature-icon">🥚</span>
+                <span>Автоматический расчет даты Пасхи</span>
+            </div>
+            
+            <div class="feature-item">
+                <span class="feature-icon">🍽️</span>
+                <span>Подробные рекомендации по питанию</span>
+            </div>
+            
+            <div class="feature-item">
+                <span class="feature-icon">🔔</span>
+                <span>Напоминания о важных датах</span>
+            </div>
+            
+            <div class="feature-item">
+                <span class="feature-icon">📱</span>
+                <span>Удобное мобильное приложение</span>
+            </div>
+        </div>
+        
+        <div class="notification-form">
+            <h5 class="mb-3">📧 Узнайте первым о запуске!</h5>
+            <p class="small mb-3">Оставьте email, и мы сообщим, когда календарь будет готов</p>
+            
+            <form id="notificationForm" onsubmit="return subscribeNotification(event)">
+                <input 
+                    type="email" 
+                    class="notification-input" 
+                    placeholder="Ваш email адрес"
+                    required
+                    id="emailInput"
+                >
+                <button type="submit" class="notification-btn">
+                    📬 Уведомить о запуске
+                </button>
+            </form>
+            
+            <div id="subscribeMessage" class="mt-2" style="display: none;"></div>
+        </div>
+        
+        <a href="{% url 'core:home' %}" class="back-link">
+            ← Вернуться на главную
+        </a>
+    </div>
+</div>
+
+<script>
+function subscribeNotification(event) {
+    event.preventDefault();
+    
+    const email = document.getElementById('emailInput').value;
+    const messageDiv = document.getElementById('subscribeMessage');
+    
+    // Простая валидация email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        messageDiv.innerHTML = '<div class="alert alert-warning">📧 Пожалуйста, введите корректный email адрес</div>';
+        messageDiv.style.display = 'block';
+        return false;
+    }
+    
+    // Имитация отправки (в будущем здесь будет AJAX запрос)
+    messageDiv.innerHTML = '<div class="alert alert-success">✅ Спасибо! Мы уведомим вас о запуске календаря</div>';
+    messageDiv.style.display = 'block';
+    
+    // Очищаем поле
+    document.getElementById('emailInput').value = '';
+    
+    // Через 5 секунд скрываем сообщение
+    setTimeout(() => {
+        messageDiv.style.display = 'none';
+    }, 5000);
+    
+    // В будущем здесь можно добавить отправку на сервер
+    console.log('Подписка на уведомления:', email);
+    
+    return false;
+}
+
+// Добавляем немного интерактивности
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация появления карточки
+    const card = document.querySelector('.construction-card');
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(30px)';
+    
+    setTimeout(() => {
+        card.style.transition = 'all 0.6s ease';
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+    }, 100);
+    
+    // Анимация элементов списка
+    const features = document.querySelectorAll('.feature-item');
+    features.forEach((feature, index) => {
+        feature.style.opacity = '0';
+        feature.style.transform = 'translateX(-20px)';
+        
+        setTimeout(() => {
+            feature.style.transition = 'all 0.4s ease';
+            feature.style.opacity = '1';
+            feature.style.transform = 'translateX(0)';
+        }, 800 + (index * 100));
+    });
+});
+</script>
+{% endblock %}

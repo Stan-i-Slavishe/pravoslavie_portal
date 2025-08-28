@@ -2,11 +2,17 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse, Http404
-from django.db.models import Q, Avg
+from django.db.models import Q, Avg, F
+from django.db.models.functions import Extract  # Добавлено для reading_stats
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_POST
 from django.utils import timezone
-from .models import Book, Category, Tag, BookDownload, UserFavoriteBook, BookReview
+from django.db import models, transaction, IntegrityError
+import time
+from .models import Book, Category, Tag, BookDownload, UserFavoriteBook, BookReview, ReadingSession, ReadingBookmark, BookChapter
+from core.utils.views import track_view_session
+from core.seo import page_meta
+from core.seo.meta_tags import SEOManager
 
 
 def book_list(request):
@@ -54,10 +60,24 @@ def book_list(request):
     page = request.GET.get('page')
     books = paginator.get_page(page)
     
+    # Получаем список избранных книг пользователя
+    user_favorites = []
+    if request.user.is_authenticated:
+        user_favorites = Book.objects.filter(
+            userfavoritebook__user=request.user
+        ).values_list('id', flat=True)
+    
     context = {
         'books': books,
         'categories': categories,
+        'user_favorites': user_favorites,
         'title': 'Библиотека',
+        'page_key': 'books_list',
+        'seo': page_meta('books_list', request=request),
+        'breadcrumbs': [
+            {'name': 'Главная', 'url': '/'},
+            {'name': 'Библиотека', 'url': ''},
+        ],
     }
     
     return render(request, 'books/book_list.html', context)
@@ -71,9 +91,8 @@ def book_detail(request, slug):
         is_published=True
     )
     
-    # Увеличиваем счетчик просмотров
-    book.views_count += 1
-    book.save(update_fields=['views_count'])
+    # Отслеживаем просмотр (один раз за сессию)
+    track_view_session(request, book)
     
     # Похожие книги
     related_books = Book.objects.filter(
@@ -83,21 +102,60 @@ def book_detail(request, slug):
     
     # Проверяем, добавлена ли книга в избранное текущим пользователем
     is_favorite = False
+    reading_session = None
+    
+    # Определяем, может ли пользователь читать книгу
+    if book.is_free and (not book.price or book.price == 0):
+        # Книга действительно бесплатная
+        user_can_read = True
+    else:
+        # Книга платная
+        user_can_read = False
+        if request.user.is_authenticated:
+            # Проверяем, купил ли пользователь книгу
+            from shop.models import Purchase
+            user_can_read = Purchase.objects.filter(
+                user=request.user,
+                product__title__icontains=book.title
+            ).exists()
+    
     if request.user.is_authenticated:
         is_favorite = UserFavoriteBook.objects.filter(
             user=request.user,
             book=book
         ).exists()
+        
+        # Получаем сессию чтения если есть
+        if user_can_read:
+            try:
+                reading_session = ReadingSession.objects.get(
+                    user=request.user,
+                    book=book
+                )
+            except ReadingSession.DoesNotExist:
+                pass
     
     # Получаем отзывы
     reviews = book.reviews.select_related('user').order_by('-created_at')
+    
+    # SEO мета-теги для книги
+    seo_manager = SEOManager(request)
+    book_seo = seo_manager.get_dynamic_meta(book)
     
     context = {
         'book': book,
         'related_books': related_books,
         'is_favorite': is_favorite,
         'reviews': reviews,
+        'user_can_read': user_can_read,
+        'reading_session': reading_session,
         'title': book.title,
+        'seo': book_seo,
+        'breadcrumbs': [
+            {'name': 'Главная', 'url': '/'},
+            {'name': 'Библиотека', 'url': '/books/'},
+            {'name': book.title, 'url': ''},
+        ],
     }
     
     return render(request, 'books/book_detail.html', context)
@@ -105,7 +163,10 @@ def book_detail(request, slug):
 
 @login_required
 def download_book(request, book_id):
-    """Скачивание книги"""
+    """Скачивание книги - ПРОСТОЕ РЕШЕНИЕ ДЛЯ ИСПРАВЛЕНИЯ ИМЕНИ"""
+    import os
+    
+    # Получаем книгу
     book = get_object_or_404(Book, id=book_id, is_published=True)
     
     # Проверяем права на скачивание
@@ -128,46 +189,91 @@ def download_book(request, book_id):
     book.downloads_count += 1
     book.save(update_fields=['downloads_count'])
     
-    # Возвращаем файл
-    response = HttpResponse(book.file.read(), content_type='application/octet-stream')
-    response['Content-Disposition'] = f'attachment; filename=\"{book.title}.{book.format}\"'
+    # Получаем реальное расширение файла
+    file_extension = os.path.splitext(book.file.name)[1]
+    if not file_extension:
+        file_extension = f'.{book.format}'
     
-    return response
+    # ПРОСТОЕ И НАДЕЖНОЕ ИМЯ ФАЙЛА (только ASCII)
+    # Для книги "Яндекс директ" используем простое имя
+    if book.id == 2:  # Яндекс директ
+        filename = f"Yandeks_direkt{file_extension}"
+    else:
+        # Для других книг создаем простое ASCII имя
+        filename = f"book_{book.id}{file_extension}"
+    
+    # ПРИНУДИТЕЛЬНО ИСПОЛЬЗУЕМ application/octet-stream
+    mime_type = 'application/octet-stream'
+    
+    # Возвращаем файл
+    try:
+        with open(book.file.path, 'rb') as file:
+            response = HttpResponse(file.read(), content_type=mime_type)
+            
+            # ПРОСТОЙ заголовок Content-Disposition (только ASCII)
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            response['Content-Length'] = os.path.getsize(book.file.path)
+            
+            # Отключаем кеширование
+            response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response['Pragma'] = 'no-cache'
+            response['Expires'] = '0'
+            response['X-Content-Type-Options'] = 'nosniff'
+            
+            return response
+            
+    except Exception as e:
+        messages.error(request, f'Ошибка при скачивании файла: {str(e)}')
+        return redirect('books:detail', slug=book.slug)
 
 
 @login_required
 @require_POST
 def toggle_favorite(request, book_id):
     """Добавление/удаление книги из избранного"""
-    book = get_object_or_404(Book, id=book_id)
-    
-    favorite, created = UserFavoriteBook.objects.get_or_create(
-        user=request.user,
-        book=book
-    )
-    
-    if not created:
-        favorite.delete()
-        is_favorite = False
-        message = 'Книга удалена из избранного'
-    else:
-        is_favorite = True
-        message = 'Книга добавлена в избранное'
-    
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return JsonResponse({
-            'is_favorite': is_favorite,
-            'message': message
-        })
-    
-    messages.success(request, message)
-    return redirect('books:detail', slug=book.slug)
+    try:
+        book = get_object_or_404(Book, id=book_id)
+        
+        favorite, created = UserFavoriteBook.objects.get_or_create(
+            user=request.user,
+            book=book
+        )
+        
+        if not created:
+            favorite.delete()
+            is_favorite = False
+            message = 'Книга удалена из избранного'
+        else:
+            is_favorite = True
+            message = 'Книга добавлена в избранное'
+        
+        # Всегда возвращаем JSON для AJAX запросов
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.content_type == 'application/json':
+            return JsonResponse({
+                'status': 'success',
+                'is_favorite': is_favorite,
+                'message': message
+            })
+        
+        messages.success(request, message)
+        return redirect('books:detail', slug=book.slug)
+        
+    except Exception as e:
+        # Обработка ошибок для AJAX
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.content_type == 'application/json':
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=400)
+        
+        messages.error(request, f'Ошибка: {str(e)}')
+        return redirect('books:list')
 
 
 @login_required
 @require_POST
 def add_review(request, book_id):
-    """Добавление отзыва о книге"""
+    """Добавление отзыва о книге с защитой от блокировки БД"""
     book = get_object_or_404(Book, id=book_id)
     
     rating = request.POST.get('rating')
@@ -177,20 +283,72 @@ def add_review(request, book_id):
         messages.error(request, 'Необходимо указать корректную оценку от 1 до 5.')
         return redirect('books:detail', slug=book.slug)
     
-    # Создаем или обновляем отзыв
-    review, created = BookReview.objects.update_or_create(
-        book=book,
-        user=request.user,
-        defaults={
-            'rating': int(rating),
-            'comment': review_text
-        }
-    )
+    rating = int(rating)
     
-    # Пересчитываем средний рейтинг книги
-    avg_rating = book.reviews.aggregate(avg_rating=Avg('rating'))['avg_rating']
-    book.rating = round(avg_rating, 2) if avg_rating else 0
-    book.save(update_fields=['rating'])
+    # Попытки с повторными попытками при блокировке БД
+    max_retries = 3
+    retry_delay = 0.1  # 100ms
+    
+    for attempt in range(max_retries):
+        try:
+            with transaction.atomic():
+                # Используем более безопасный подход без update_or_create
+                try:
+                    # Пытаемся найти существующий отзыв
+                    review = BookReview.objects.select_for_update().get(
+                        book=book,
+                        user=request.user
+                    )
+                    # Обновляем существующий отзыв
+                    review.rating = rating
+                    review.comment = review_text
+                    review.save()
+                    created = False
+                    
+                except BookReview.DoesNotExist:
+                    # Создаем новый отзыв
+                    try:
+                        review = BookReview.objects.create(
+                            book=book,
+                            user=request.user,
+                            rating=rating,
+                            comment=review_text
+                        )
+                        created = True
+                    except IntegrityError:
+                        # Если отзыв был создан другим процессом между проверкой и созданием
+                        # Повторяем попытку обновления
+                        review = BookReview.objects.select_for_update().get(
+                            book=book,
+                            user=request.user
+                        )
+                        review.rating = rating
+                        review.comment = review_text
+                        review.save()
+                        created = False
+                
+                # Пересчитываем средний рейтинг книги
+                avg_rating = book.reviews.aggregate(avg_rating=Avg('rating'))['avg_rating']
+                book.rating = round(avg_rating, 2) if avg_rating else 0
+                book.save(update_fields=['rating'])
+                
+                # Если дошли сюда - операция успешна
+                break
+                
+        except Exception as e:
+            if 'database is locked' in str(e).lower() and attempt < max_retries - 1:
+                # Это блокировка БД и у нас есть еще попытки
+                time.sleep(retry_delay)
+                retry_delay *= 2  # Экспоненциальная задержка
+                continue
+            else:
+                # Это другая ошибка или последняя попытка
+                messages.error(request, 'Произошла ошибка при добавлении отзыва. Попробуйте еще раз.')
+                return redirect('books:detail', slug=book.slug)
+    else:
+        # Если все попытки исчерпаны
+        messages.error(request, 'Сервер временно недоступен. Попробуйте позже.')
+        return redirect('books:detail', slug=book.slug)
     
     message = 'Отзыв обновлен' if not created else 'Отзыв добавлен'
     messages.success(request, f'{message}. Спасибо за вашу оценку!')
@@ -218,6 +376,36 @@ def category_detail(request, slug):
         is_published=True
     ).order_by('-created_at')
     
+    # Получаем связанные категории для боковой панели
+    related_categories = Category.objects.exclude(id=category.id)
+    
+    # Получаем список избранных книг пользователя
+    user_favorites = []
+    if request.user.is_authenticated:
+        user_favorites = Book.objects.filter(
+            userfavoritebook__user=request.user
+        ).values_list('id', flat=True)
+    
+    # Поиск в категории
+    search_query = request.GET.get('search')
+    if search_query:
+        books = books.filter(
+            Q(title__icontains=search_query) |
+            Q(author__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+    
+    # Сортировка
+    sort_by = request.GET.get('sort', 'newest')
+    if sort_by == 'popular':
+        books = books.order_by('-downloads_count')
+    elif sort_by == 'rating':
+        books = books.order_by('-rating')
+    elif sort_by == 'title':
+        books = books.order_by('title')
+    else:  # newest
+        books = books.order_by('-created_at')
+    
     # Пагинация
     paginator = Paginator(books, 12)
     page = request.GET.get('page')
@@ -226,6 +414,8 @@ def category_detail(request, slug):
     context = {
         'category': category,
         'books': books,
+        'related_categories': related_categories,
+        'user_favorites': user_favorites,
         'title': f'Категория: {category.name}',
     }
     
@@ -239,6 +429,28 @@ def user_favorites(request):
         user=request.user
     ).select_related('book__category').order_by('-added_at')
     
+    # Получаем список ID купленных книг пользователя
+    from shop.models import Purchase
+    user_purchased_books = []
+    try:
+        purchases = Purchase.objects.filter(
+            user=request.user
+        ).select_related('product')
+        
+        # Собираем ID книг из покупок
+        for purchase in purchases:
+            # Ищем книгу по названию продукта или другим критериям
+            book_title = purchase.product.name
+            from django.db.models import Q
+            books = Book.objects.filter(
+                Q(title__icontains=book_title) |
+                Q(title__iexact=book_title)
+            )
+            user_purchased_books.extend([book.id for book in books])
+    except:
+        # Если модель Purchase не найдена или ошибка
+        pass
+    
     # Пагинация
     paginator = Paginator(favorites, 12)
     page = request.GET.get('page')
@@ -246,6 +458,7 @@ def user_favorites(request):
     
     context = {
         'favorites': favorites,
+        'user_purchased_books': user_purchased_books,
         'title': 'Мои избранные книги',
     }
     
@@ -277,3 +490,355 @@ def search_books(request):
         })
     
     return JsonResponse({'books': books_data})
+
+
+@require_POST
+def track_book_view(request, book_id):
+    """Отслеживание просмотров книги (AJAX)"""
+    try:
+        book = get_object_or_404(Book, id=book_id)
+        
+        # Отслеживаем просмотр (один раз за сессию)
+        track_view_session(request, book)
+        
+        return JsonResponse({
+            'status': 'success',
+            'views_count': book.views_count
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+
+
+@login_required
+def get_favorites_count(request):
+    """Получение количества избранных книг (AJAX)"""
+    try:
+        count = UserFavoriteBook.objects.filter(user=request.user).count()
+        return JsonResponse({
+            'status': 'success',
+            'count': count
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+
+
+@login_required
+def modern_reader(request, slug):
+    """Современный полноэкранный reader для книг"""
+    book = get_object_or_404(
+        Book.objects.select_related('category'),
+        slug=slug,
+        is_published=True
+    )
+    
+    # Проверяем права на чтение
+    user_can_read = book.is_free
+    if not book.is_free:
+        # Проверяем, купил ли пользователь книгу
+        from shop.models import Purchase
+        user_can_read = Purchase.objects.filter(
+            user=request.user,
+            product__title__icontains=book.title
+        ).exists()
+    
+    if not user_can_read:
+        messages.error(request, f'Для чтения книги "{book.title}" необходимо её приобрести.')
+        # Перенаправляем на страницу магазина с поиском по книге
+        return redirect(f'/shop/?search={book.title}')
+    
+    # Получаем или создаем сессию чтения
+    reading_session, created = ReadingSession.objects.get_or_create(
+        user=request.user,
+        book=book,
+        defaults={
+            'total_pages': book.pages or 100,
+        }
+    )
+    
+    # Обновляем время последнего чтения
+    reading_session.last_read = timezone.now()
+    reading_session.save()
+    
+    context = {
+        'book': book,
+        'reading_session': reading_session,
+        'title': f'Чтение: {book.title}',
+    }
+    
+    return render(request, 'books/modern_reader.html', context)
+
+
+@login_required
+def read_book(request, slug):
+    """Чтение книги онлайн"""
+    book = get_object_or_404(
+        Book.objects.select_related('category').prefetch_related('chapters'),
+        slug=slug,
+        is_published=True
+    )
+    
+    # Проверяем права на чтение
+    user_can_read = book.is_free
+    if not book.is_free:
+        # Проверяем, купил ли пользователь книгу (интеграция с магазином)
+        from shop.models import Purchase
+        user_can_read = Purchase.objects.filter(
+            user=request.user,
+            product__title__icontains=book.title  # Простая проверка по названию
+        ).exists()
+    
+    if not user_can_read:
+        messages.error(request, 'У вас нет доступа к чтению этой книги. Необходимо приобрести её.')
+        return redirect('books:detail', slug=book.slug)
+    
+    # Получаем или создаем сессию чтения
+    reading_session, created = ReadingSession.objects.get_or_create(
+        user=request.user,
+        book=book,
+        defaults={
+            'total_pages': book.pages or 100,  # Если не указано, ставим 100
+        }
+    )
+    
+    # Получаем главы если есть
+    chapters = book.chapters.all().order_by('order')
+    
+    # Определяем шаблон в зависимости от формата книги
+    if book.format == 'pdf' and book.file:
+        template = 'books/reader_pdf.html'
+    else:
+        template = 'books/reader_html.html'
+    
+    context = {
+        'book': book,
+        'reading_session': reading_session,
+        'chapters': chapters,
+        'title': f'Чтение: {book.title}',
+        'user_can_read': user_can_read,
+    }
+    
+    return render(request, template, context)
+
+
+@login_required
+@require_POST
+def update_reading_progress(request, book_id):
+    """Обновление прогресса чтения (AJAX)"""
+    try:
+        import json
+        
+        book = get_object_or_404(Book, id=book_id)
+        data = json.loads(request.body)
+        
+        current_page = data.get('current_page', 1)
+        reading_time = data.get('reading_time', 0)
+        
+        # Получаем сессию чтения
+        reading_session = get_object_or_404(
+            ReadingSession,
+            user=request.user,
+            book=book
+        )
+        
+        # Обновляем прогресс
+        reading_session.current_page = current_page
+        reading_session.reading_time += reading_time
+        reading_session.save()
+        
+        return JsonResponse({
+            'status': 'success',
+            'progress_percentage': reading_session.progress_percentage,
+            'reading_time': reading_session.reading_time
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+
+
+@login_required
+@require_POST
+def add_bookmark(request, book_id):
+    """Добавление закладки (AJAX)"""
+    try:
+        import json
+        
+        book = get_object_or_404(Book, id=book_id)
+        data = json.loads(request.body)
+        
+        page = data.get('page', 1)
+        note = data.get('note', '')
+        
+        # Получаем сессию чтения
+        reading_session = get_object_or_404(
+            ReadingSession,
+            user=request.user,
+            book=book
+        )
+        
+        # Проверяем, нет ли уже закладки на этой странице
+        bookmark, created = ReadingBookmark.objects.get_or_create(
+            session=reading_session,
+            page=page,
+            defaults={'note': note}
+        )
+        
+        if not created:
+            bookmark.note = note
+            bookmark.save()
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Закладка добавлена' if created else 'Закладка обновлена'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+
+
+@login_required
+@require_POST
+def remove_bookmark(request, book_id, bookmark_id):
+    """Удаление закладки (AJAX)"""
+    try:
+        book = get_object_or_404(Book, id=book_id)
+        
+        # Получаем сессию чтения
+        reading_session = get_object_or_404(
+            ReadingSession,
+            user=request.user,
+            book=book
+        )
+        
+        # Получаем закладку по индексу
+        bookmarks = reading_session.bookmarks.all()
+        if 0 <= bookmark_id < len(bookmarks):
+            bookmarks[bookmark_id].delete()
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Закладка удалена'
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Закладка не найдена'
+            }, status=404)
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+
+
+@login_required
+def reading_history(request):
+    """История чтения пользователя"""
+    reading_sessions = ReadingSession.objects.filter(
+        user=request.user
+    ).select_related('book').order_by('-last_read')
+    
+    # Пагинация
+    paginator = Paginator(reading_sessions, 12)
+    page = request.GET.get('page')
+    sessions = paginator.get_page(page)
+    
+    context = {
+        'sessions': sessions,
+        'title': 'История чтения',
+    }
+    
+    return render(request, 'books/reading_history.html', context)
+
+
+@login_required
+def reading_stats(request):
+    """Статистика чтения пользователя"""
+    sessions = ReadingSession.objects.filter(user=request.user)
+    
+    total_books = sessions.count()
+    completed_books = sessions.filter(current_page__gte=F('total_pages')).count()
+    total_reading_time = sum(session.reading_time for session in sessions)
+    
+    # Последние прочитанные книги
+    recent_books = sessions.select_related('book').order_by('-last_read')[:5]
+    
+    # Статистика по месяцам (последние 6 месяцев) - исправленная версия
+    from django.db.models import Count
+    from datetime import datetime, timedelta
+    
+    six_months_ago = timezone.now() - timedelta(days=180)
+    
+    # Используем Django ORM функцию Extract вместо raw SQL
+    monthly_stats = sessions.filter(
+        last_read__gte=six_months_ago
+    ).annotate(
+        month=Extract('last_read', 'month')
+    ).values('month').annotate(
+        count=Count('id')
+    ).order_by('month')
+    
+    context = {
+        'total_books': total_books,
+        'completed_books': completed_books,
+        'total_reading_time': total_reading_time,
+        'recent_books': recent_books,
+        'monthly_stats': list(monthly_stats),
+        'title': 'Статистика чтения',
+    }
+    
+    return render(request, 'books/reading_stats.html', context)
+
+
+@login_required
+def get_bookmarks(request, book_id):
+    """Получение списка закладок (AJAX)"""
+    try:
+        book = get_object_or_404(Book, id=book_id)
+        
+        # Получаем сессию чтения
+        try:
+            reading_session = ReadingSession.objects.get(
+                user=request.user,
+                book=book
+            )
+            
+            # Получаем все закладки
+            bookmarks = reading_session.bookmarks.all().order_by('page')
+            
+            bookmarks_data = []
+            for bookmark in bookmarks:
+                bookmarks_data.append({
+                    'page': bookmark.page,
+                    'note': bookmark.note,
+                    'created_at': bookmark.created_at.strftime('%d.%m.%Y %H:%M')
+                })
+            
+            return JsonResponse({
+                'status': 'success',
+                'bookmarks': bookmarks_data
+            })
+            
+        except ReadingSession.DoesNotExist:
+            return JsonResponse({
+                'status': 'success',
+                'bookmarks': []
+            })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)

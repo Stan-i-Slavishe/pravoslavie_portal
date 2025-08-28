@@ -16,9 +16,11 @@
 }
 
 .product-image {
-    height: 200px;
-    object-fit: cover;
+    height: 280px;
+    object-fit: contain;
     width: 100%;
+    background: #f8f9fa;
+    border-radius: 8px 8px 0 0;
 }
 
 .product-price {
@@ -112,15 +114,6 @@
             <p class="text-muted">
                 Духовные книги, аудио и персонализированные сказки для всей семьи
             </p>
-            
-            <!-- Уведомление о разработке -->
-            <div class="alert alert-primary alert-dismissible fade show" role="alert">
-                <i class="bi bi-info-circle me-2"></i>
-                <strong>🚀 Платежная система скоро заработает!</strong>
-                Мы записываем ваш интерес к товарам и уведомим о запуске покупок. Скоро вы сможете приобрести любой товар!
-                <a href="{% url 'analytics:subscription_form' %}" class="alert-link">Подписаться на уведомления</a>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
-            </div>
         </div>
     </div>
 
@@ -215,11 +208,23 @@
                 <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                     <div class="card product-card h-100">
                         <div class="position-relative">
+                            {% comment %}
+                            Исправленная логика отображения обложек:
+                            1. Сначала пробуем product.image (прямое изображение товара)
+                            2. Если нет, пробуем получить через content_object (связанную книгу)
+                            3. Если и этого нет, показываем placeholder
+                            {% endcomment %}
+                            
                             {% if product.image %}
                                 <img src="{{ product.image.url }}" class="card-img-top product-image" alt="{{ product.title }}">
+                            {% elif product.content_object and product.content_object.cover %}
+                                <img src="{{ product.content_object.cover.url }}" class="card-img-top product-image" alt="{{ product.title }}">
                             {% else %}
                                 <div class="product-image bg-light d-flex align-items-center justify-content-center">
-                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                    <div class="text-center">
+                                        <i class="bi bi-{% if product.product_type == 'book' %}book{% elif product.product_type == 'audio' %}music-note{% elif product.product_type == 'fairy_tale' %}magic{% else %}box{% endif %} text-muted" style="font-size: 3rem;"></i>
+                                        <p class="text-muted mt-2 mb-0 small">{{ product.get_product_type_display }}</p>
+                                    </div>
                                 </div>
                             {% endif %}
                             
@@ -255,22 +260,20 @@
                                     </a>
                                     
                                     {% if not product.requires_personalization %}
-                                    <!-- Аналитическая заглушка вместо реальной корзины -->
-                                    <button class="btn btn-primary btn-sm analytics-purchase-btn" 
-                                            data-content-type="product"
-                                            data-object-id="{{ product.id }}"
-                                            data-button-type="buy">
+                                    <!-- Реальная кнопка корзины -->
+                                    <button class="btn btn-primary btn-sm add-to-cart-btn" 
+                                            data-product-id="{{ product.id }}"
+                                            data-product-type="{{ product.product_type }}"
+                                            data-price="{{ product.price }}">
                                         <i class="bi bi-cart-plus me-1"></i>
                                         Купить {{ product.price }}₽
                                     </button>
                                     {% else %}
-                                    <button class="btn btn-warning btn-sm analytics-purchase-btn" 
-                                            data-content-type="product"
-                                            data-object-id="{{ product.id }}"
-                                            data-button-type="personalize">
+                                    <a href="{% url 'shop:product_detail' product.id %}" 
+                                       class="btn btn-warning btn-sm">
                                         <i class="bi bi-magic me-1"></i>
                                         Персонализировать
-                                    </button>
+                                    </a>
                                     {% endif %}
                                 </div>
                             </div>
@@ -330,73 +333,87 @@
 
 {% block extra_js %}
 <script>
-// Аналитика покупательских намерений в магазине
+// Реальная система корзины
 document.addEventListener('DOMContentLoaded', function() {
-    const analyticsButtons = document.querySelectorAll('.analytics-purchase-btn');
+    const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
     
-    analyticsButtons.forEach(button => {
+    addToCartButtons.forEach(button => {
         button.addEventListener('click', function() {
-            const contentType = this.dataset.contentType;
-            const objectId = this.dataset.objectId;
-            const buttonType = this.dataset.buttonType;
+            const productId = this.dataset.productId;
+            const productType = this.dataset.productType;
+            const price = this.dataset.price;
+            
+            // Проверяем авторизацию
+            {% if not user.is_authenticated %}
+                alert('Для покупок необходимо войти в систему');
+                window.location.href = '/accounts/login/?next=' + encodeURIComponent(window.location.pathname);
+                return;
+            {% endif %}
+            
+            // Отслеживаем добавление в корзину через новую аналитику
+            if (window.analytics) {
+                window.analytics.trackAddToCart(productId, productType, price);
+            }
             
             // Блокируем кнопку
             this.disabled = true;
             const originalText = this.innerHTML;
-            this.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Обрабатываем...';
+            this.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Добавляем...';
             
-            // Отправляем аналитику
-            fetch('/analytics/track-purchase-intent/', {
+            // Отправляем в корзину
+            fetch('/shop/add-to-cart/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': '{{ csrf_token }}'
                 },
                 body: JSON.stringify({
-                    content_type: contentType,
-                    object_id: parseInt(objectId),
-                    button_type: buttonType,
-                    session_key: 'shop_session_' + Date.now(),
-                    page_url: window.location.href,
-                    referer: document.referrer
+                    product_id: parseInt(productId),
+                    quantity: 1
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Ошибка сервера: ' + response.status);
+                }
+                return response.json();
+            })
             .then(data => {
-                if (data.success) {
-                    // Показываем сообщение о запуске платежей
-                    this.innerHTML = '<i class="bi bi-check-circle me-1"></i>Интерес записан!';
-                    this.classList.remove('btn-primary', 'btn-warning');
+                if (data.status === 'success') {
+                    // Показываем успех
+                    this.innerHTML = '<i class="bi bi-check-circle me-1"></i>Добавлено!';
+                    this.classList.remove('btn-primary');
                     this.classList.add('btn-success');
                     
-                    // Добавляем пульсацию для привлечения внимания
-                    this.style.animation = 'pulse 0.5s ease-in-out 3';
-                    
-                    // Показываем попап с подпиской
-                    setTimeout(() => {
-                        if (typeof showSubscribePopup === 'function') {
-                            showSubscribePopup(contentType);
+                    // 🚀 ГЛАВНОЕ ИСПРАВЛЕНИЕ: Используем новую систему синхронизации корзины
+                    if (data.cart_total_items !== undefined) {
+                        if (window.CartSync && window.CartSync.updateAllCartBadges) {
+                            // Используем нашу новую систему для обновления ВСЕХ счетчиков
+                            window.CartSync.updateAllCartBadges(data.cart_total_items);
                         } else {
-                            alert('🚀 Платежная система скоро заработает!\n\nВаш интерес записан. Мы уведомим вас о запуске покупок!');
+                            // Fallback: обновляем только основной счетчик
+                            const cartBadge = document.querySelector('#cart-badge');
+                            if (cartBadge) {
+                                cartBadge.textContent = data.cart_total_items;
+                                cartBadge.style.display = data.cart_total_items > 0 ? 'inline' : 'none';
+                            }
                         }
-                    }, 1500); // Увеличили с 1000 до 1500мс
+                    }
                     
-                    // Возвращаем кнопку через 5 секунд (было 3)
+                    // Показываем уведомление
+                    if (data.message) {
+                        showToast(data.message, 'success');
+                    } else {
+                        showToast('Товар добавлен в корзину!', 'success');
+                    }
+                    
+                    // Возвращаем кнопку через 2 секунды
                     setTimeout(() => {
                         this.innerHTML = originalText;
                         this.classList.remove('btn-success');
-                        if (buttonType === 'buy') {
-                            this.classList.add('btn-primary');
-                        } else {
-                            this.classList.add('btn-warning');
-                        }
+                        this.classList.add('btn-primary');
                         this.disabled = false;
-                        
-                        // Сбрасываем анимацию и z-index
-                        this.style.animation = '';
-                        this.style.zIndex = '';
-                        this.style.position = '';
-                    }, 5000);
+                    }, 2000);
                     
                 } else {
                     throw new Error(data.error || 'Неизвестная ошибка');
@@ -404,7 +421,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('ℹ️ Платежная система скоро заработает!\nМы записали ваш интерес к этому товару.');
+                showToast('Ошибка при добавлении в корзину: ' + error.message, 'error');
                 
                 // Возвращаем кнопку
                 this.innerHTML = originalText;
@@ -412,6 +429,53 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
+    
+    // Функция для показа Toast уведомлений
+    function showToast(message, type = 'info') {
+        const toastContainer = getOrCreateToastContainer();
+        
+        const toastId = 'toast-' + Date.now();
+        const toastHtml = `
+            <div id="${toastId}" class="toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Закрыть"></button>
+                </div>
+            </div>
+        `;
+        
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+        
+        const toastElement = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastElement, {
+            autohide: true,
+            delay: 4000
+        });
+        
+        toast.show();
+        
+        // Удаляем элемент после скрытия
+        toastElement.addEventListener('hidden.bs.toast', () => {
+            toastElement.remove();
+        });
+    }
+    
+    // Функция получения или создания контейнера для toast уведомлений
+    function getOrCreateToastContainer() {
+        let container = document.querySelector('.toast-container');
+        
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container position-fixed top-0 end-0 p-3';
+            container.style.zIndex = '1055';
+            document.body.appendChild(container);
+        }
+        
+        return container;
+    }
 });
 </script>
 {% endblock %}

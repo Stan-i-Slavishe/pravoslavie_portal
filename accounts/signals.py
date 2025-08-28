@@ -1,13 +1,18 @@
 from allauth.socialaccount.signals import pre_social_login
 from django.dispatch import receiver
-from django.contrib.auth import login
-from allauth.account.utils import perform_login
+from django.contrib import messages
 
 @receiver(pre_social_login)
-def auto_login_social_user(sender, request, sociallogin, **kwargs):
+def handle_social_login(sender, request, sociallogin, **kwargs):
     """
-    Автоматически авторизует пользователя после успешной социальной авторизации
+    Обработка социального входа без дублирования сообщений
     """
-    # Если пользователь уже существует, авторизуем его
+    # Если пользователь уже существует, просто пропускаем
+    # (allauth сам обработает вход и покажет одно сообщение)
     if sociallogin.user and sociallogin.user.pk:
-        perform_login(request, sociallogin.user, email_verification='none')
+        # Убираем дополнительный perform_login - он дублирует сообщения
+        # Просто добавляем кастомную логику если нужно
+        pass
+    
+    # Можно добавить дополнительную логику здесь,
+    # но без дублирования входа в систему

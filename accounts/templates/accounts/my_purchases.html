@@ -1,0 +1,400 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Православный портал{% endblock %}
+
+{% block extra_css %}
+<style>
+.purchases-header {
+    background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+    color: white;
+    padding: 1.5rem 0;
+    margin-bottom: 2rem;
+}
+
+.purchase-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.purchase-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.product-cover {
+    width: 80px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.download-count {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.filter-pills {
+    margin-bottom: 2rem;
+}
+
+.filter-pills .nav-link {
+    background: #f8f9fa;
+    color: #6c757d;
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    margin-right: 0.5rem;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.filter-pills .nav-link:hover {
+    background: #6f42c1;
+    color: white;
+}
+
+.filter-pills .nav-link.active {
+    background: #6f42c1;
+    color: white;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #6f42c1;
+    margin-bottom: 0.5rem;
+}
+
+.download-btn {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.download-btn:hover {
+    background: linear-gradient(135deg, #218838, #1abc9c);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6c757d;
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .product-cover {
+        width: 60px;
+        height: 80px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Заголовок -->
+<div class="purchases-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="mb-0">
+                    <i class="bi bi-download me-2"></i>
+                    {{ title }}
+                </h1>
+                <p class="mb-0 opacity-75">Все ваши приобретения доступны для скачивания</p>
+            </div>
+            <div class="col-auto">
+                <a href="{% url 'accounts:profile' %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Назад к профилю
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Статистика покупок -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ purchase_stats.total }}</div>
+            <div class="text-muted">Всего покупок</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ purchase_stats.books }}</div>
+            <div class="text-muted">Книги</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ purchase_stats.audio }}</div>
+            <div class="text-muted">Аудио</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ purchase_stats.subscriptions }}</div>
+            <div class="text-muted">Подписки</div>
+        </div>
+    </div>
+
+    <!-- Фильтры -->
+    <ul class="nav filter-pills">
+        <li class="nav-item">
+            <a class="nav-link {% if not current_filter %}active{% endif %}" 
+               href="{% url 'accounts:my_purchases' %}">
+                <i class="bi bi-grid me-1"></i>
+                Все
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if current_filter == 'book' %}active{% endif %}" 
+               href="?type=book">
+                <i class="bi bi-book me-1"></i>
+                Книги
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if current_filter == 'audio' %}active{% endif %}" 
+               href="?type=audio">
+                <i class="bi bi-music-note me-1"></i>
+                Аудио
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if current_filter == 'subscription' %}active{% endif %}" 
+               href="?type=subscription">
+                <i class="bi bi-star me-1"></i>
+                Подписки
+            </a>
+        </li>
+    </ul>
+
+    <!-- Список покупок -->
+    {% if purchases %}
+        <div class="row g-4">
+            {% for purchase in purchases %}
+            <div class="col-lg-6">
+                <div class="purchase-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0 me-3">
+                                {% if purchase.product.image %}
+                                    <img src="{{ purchase.product.image.url }}" 
+                                         alt="{{ purchase.product.title }}" 
+                                         class="product-cover">
+                                {% else %}
+                                    <div class="bg-light d-flex align-items-center justify-content-center product-cover">
+                                        {% if purchase.product.product_type == 'book' %}
+                                            <i class="bi bi-book text-muted"></i>
+                                        {% elif purchase.product.product_type == 'audio' %}
+                                            <i class="bi bi-music-note text-muted"></i>
+                                        {% else %}
+                                            <i class="bi bi-box text-muted"></i>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="flex-grow-1">
+                                <h6 class="mb-2">{{ purchase.product.title|truncatechars:50 }}</h6>
+                                
+                                <div class="mb-2">
+                                    <span class="badge bg-light text-dark me-2">
+                                        {% if purchase.product.product_type == 'book' %}
+                                            <i class="bi bi-book me-1"></i>Книга
+                                        {% elif purchase.product.product_type == 'audio' %}
+                                            <i class="bi bi-music-note me-1"></i>Аудио
+                                        {% elif purchase.product.product_type == 'subscription' %}
+                                            <i class="bi bi-star me-1"></i>Подписка
+                                        {% else %}
+                                            <i class="bi bi-box me-1"></i>{{ purchase.product.product_type|title }}
+                                        {% endif %}
+                                    </span>
+                                    
+                                    {% if purchase.download_count > 0 %}
+                                        <span class="download-count">
+                                            <i class="bi bi-download me-1"></i>
+                                            {{ purchase.download_count }} скачиван{{ purchase.download_count|pluralize:"ие,ия,ий" }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar me-1"></i>
+                                        Куплено: {{ purchase.purchased_at|date:"d M Y" }}
+                                    </small>
+                                    {% if purchase.last_downloaded %}
+                                        <br>
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock me-1"></i>
+                                            Последнее скачивание: {{ purchase.last_downloaded|timesince }} назад
+                                        </small>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="d-flex gap-2">
+                                    {% if purchase.product.product_type == 'book' and purchase.product.book_id %}
+                                        <a href="{% url 'books:detail' purchase.product.book_id %}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye me-1"></i>
+                                            Читать
+                                        </a>
+                                        <a href="{% url 'books:download' purchase.product.book_id %}" 
+                                           class="download-btn btn-sm">
+                                            <i class="bi bi-download me-1"></i>
+                                            Скачать
+                                        </a>
+                                    {% else %}
+                                        <button class="download-btn btn-sm" disabled>
+                                            <i class="bi bi-download me-1"></i>
+                                            Недоступно
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Пагинация -->
+        {% if purchases.has_other_pages %}
+        <nav aria-label="Навигация по покупкам" class="mt-5">
+            <ul class="pagination justify-content-center">
+                {% if purchases.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if current_filter %}&type={{ current_filter }}{% endif %}">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ purchases.previous_page_number }}{% if current_filter %}&type={{ current_filter }}{% endif %}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+                
+                {% for num in purchases.paginator.page_range %}
+                    {% if purchases.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > purchases.number|add:'-3' and num < purchases.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if current_filter %}&type={{ current_filter }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if purchases.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ purchases.next_page_number }}{% if current_filter %}&type={{ current_filter }}{% endif %}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ purchases.paginator.num_pages }}{% if current_filter %}&type={{ current_filter }}{% endif %}">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+    {% else %}
+        <!-- Пустое состояние -->
+        <div class="empty-state">
+            <i class="bi bi-box" style="font-size: 3rem; color: #dee2e6; margin-bottom: 1rem;"></i>
+            <h4>
+                {% if current_filter %}
+                    Нет покупок этого типа
+                {% else %}
+                    У вас пока нет покупок
+                {% endif %}
+            </h4>
+            <p class="mb-3">
+                {% if current_filter %}
+                    Попробуйте изменить фильтр или сделайте новую покупку
+                {% else %}
+                    Перейдите в магазин, чтобы приобрести цифровые товары
+                {% endif %}
+            </p>
+            <div class="d-flex gap-3 justify-content-center">
+                <a href="{% url 'shop:catalog' %}" class="btn btn-primary">
+                    <i class="bi bi-shop me-2"></i>
+                    Перейти в магазин
+                </a>
+                {% if current_filter %}
+                <a href="{% url 'accounts:my_purchases' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-grid me-2"></i>
+                    Все покупки
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация появления карточек
+    const cards = document.querySelectorAll('.purchase-card, .stat-card');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 50);
+            }
+        });
+    });
+    
+    cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.6s ease';
+        observer.observe(card);
+    });
+});
+</script>
+{% endblock %}

@@ -1,6 +1,7 @@
 from django.views.generic import ListView, DetailView
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.db.models import Count, Q
 from django.contrib import messages
 from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
@@ -18,17 +19,41 @@ from .models import Story, StoryLike, StoryComment, CommentReaction
 from core.models import Category, Tag
 from django.template.loader import render_to_string
 from django.utils.html import escape
+from core.seo import page_meta
+from core.seo.meta_tags import SEOManager
 
 
-class StoryListView(ListView):
+
+# ==========================================
+# БАЗОВЫЙ MIXIN ДЛЯ ПОДСЧЕТА КОММЕНТАРИЕВ  
+# ==========================================
+
+class StoryQuerysetMixin:
+    """Миксин для добавления подсчета комментариев к queryset"""
+    
+    def get_base_queryset(self):
+        """Возвращает базовый queryset с аннотациями"""
+        return Story.objects.filter(is_published=True).select_related('category').prefetch_related('tags').annotate(
+            # Подсчитываем только основные комментарии (не ответы)
+            comments_count=Count('comments', filter=Q(comments__is_approved=True, comments__parent=None)),
+            # Подсчитываем лайки
+            likes_count=Count('likes', distinct=True)
+        )
+
+class StoryListView(StoryQuerysetMixin, ListView):
     """Список всех видео-рассказов"""
     model = Story
     template_name = 'stories/story_list.html'
     context_object_name = 'stories'
-    paginate_by = 12
+    paginate_by = 9
     
     def get_queryset(self):
-        queryset = Story.objects.filter(is_published=True).select_related('category').prefetch_related('tags')
+        queryset = self.get_base_queryset()
+        
+        # Добавляем подсчет комментариев
+        queryset = queryset.annotate(
+            comments_count=Count('comments', filter=Q(comments__is_approved=True, comments__parent=None))
+        )
         
         # Поиск
         search_query = self.request.GET.get('search')
@@ -68,6 +93,14 @@ class StoryListView(ListView):
             is_published=True, 
             is_featured=True
         )[:3]
+        
+        # SEO мета-теги
+        context['page_key'] = 'stories_list'
+        context['seo'] = page_meta('stories_list', request=self.request)
+        context['breadcrumbs'] = [
+            {'name': 'Главная', 'url': '/'},
+            {'name': 'Видео-рассказы', 'url': ''},
+        ]
         
         # Передаем параметры поиска и фильтрации в контекст
         context['search_query'] = self.request.GET.get('search', '')
@@ -144,8 +177,10 @@ class StoryDetailView(DetailView):
             ).select_related('user').prefetch_related('replies').order_by('-is_pinned', '-created_at')[:5]
             
             context['comments'] = comments
+            # ИСПРАВЛЕНИЕ: Правильный подсчет только основных комментариев (не ответы)
             context['comments_count'] = StoryComment.objects.filter(
                 story=story, 
+                parent=None,  # Только основные комментарии
                 is_approved=True
             ).count()
             
@@ -164,6 +199,37 @@ class StoryDetailView(DetailView):
             context['comments'] = []
             context['comments_count'] = 0
             context['user_reactions'] = {}
+        
+        # Добавляем плейлисты пользователя для сайдбара
+        if self.request.user.is_authenticated:
+            try:
+                # Импортируем модель Playlist
+                from .models import Playlist
+                
+                # Получаем плейлисты пользователя (ограничиваем до 5 для сайдбара)
+                user_playlists = Playlist.objects.filter(
+                    creator=self.request.user
+                ).annotate(
+                    calculated_stories_count=Count('playlist_items')
+                ).order_by('-created_at')[:5]
+                
+                context['user_playlists'] = user_playlists
+                
+            except Exception as e:
+                # Если модели плейлистов еще не созданы или есть ошибка
+                context['user_playlists'] = []
+        else:
+            context['user_playlists'] = []
+        
+        # SEO мета-теги для рассказа
+        seo_manager = SEOManager(self.request)
+        story_seo = seo_manager.get_dynamic_meta(story)
+        context['seo'] = story_seo
+        context['breadcrumbs'] = [
+            {'name': 'Главная', 'url': '/'},
+            {'name': 'Видео-рассказы', 'url': '/stories/'},
+            {'name': story.title, 'url': ''},
+        ]
         
         return context
 
@@ -219,19 +285,18 @@ def story_view_count(request, story_id):
         }, status=400)
 
 
-class StoryCategoryView(ListView):
+class StoryCategoryView(StoryQuerysetMixin, ListView):
     """Рассказы по категории"""
     model = Story
     template_name = 'stories/story_list.html'
     context_object_name = 'stories'
-    paginate_by = 12
+    paginate_by = 9
     
     def get_queryset(self):
         category_slug = self.kwargs.get('category_slug')
-        return Story.objects.filter(
-            is_published=True,
+        return self.get_base_queryset().filter(
             category__slug=category_slug
-        ).select_related('category').prefetch_related('tags').order_by('-created_at')
+        ).order_by('-created_at')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -248,19 +313,18 @@ class StoryCategoryView(ListView):
         return context
 
 
-class StoryTagView(ListView):
+class StoryTagView(StoryQuerysetMixin, ListView):
     """Рассказы по тегу"""
     model = Story
     template_name = 'stories/story_list.html'
     context_object_name = 'stories'
-    paginate_by = 12
+    paginate_by = 9
     
     def get_queryset(self):
         tag_slug = self.kwargs.get('tag_slug')
-        return Story.objects.filter(
-            is_published=True,
+        return self.get_base_queryset().filter(
             tags__slug=tag_slug
-        ).select_related('category').prefetch_related('tags').order_by('-created_at')
+        ).order_by('-created_at')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -278,17 +342,15 @@ class StoryTagView(ListView):
 
 
 @method_decorator(cache_page(60 * 15), name='dispatch')
-class PopularStoriesView(ListView):
+class PopularStoriesView(StoryQuerysetMixin, ListView):
     """Популярные рассказы"""
     model = Story
     template_name = 'stories/story_list.html'
     context_object_name = 'stories'
-    paginate_by = 12
+    paginate_by = 9
     
     def get_queryset(self):
-        return Story.objects.filter(
-            is_published=True
-        ).select_related('category').prefetch_related('tags').order_by(
+        return self.get_base_queryset().order_by(
             '-views_count', '-created_at'
         )
     
@@ -301,18 +363,17 @@ class PopularStoriesView(ListView):
 
 
 @method_decorator(cache_page(60 * 15), name='dispatch')
-class FeaturedStoriesView(ListView):
+class FeaturedStoriesView(StoryQuerysetMixin, ListView):
     """Рекомендуемые рассказы"""
     model = Story
     template_name = 'stories/story_list.html'
     context_object_name = 'stories'
-    paginate_by = 12
+    paginate_by = 9
     
     def get_queryset(self):
-        return Story.objects.filter(
-            is_published=True,
+        return self.get_base_queryset().filter(
             is_featured=True
-        ).select_related('category').prefetch_related('tags').order_by('-created_at')
+        ).order_by('-created_at')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -322,7 +383,7 @@ class FeaturedStoriesView(ListView):
         return context
 
 
-class StorySearchView(ListView):
+class StorySearchView(StoryQuerysetMixin, ListView):
     """Поиск по рассказам с расширенными возможностями"""
     model = Story
     template_name = 'stories/search_results.html'
@@ -334,13 +395,12 @@ class StorySearchView(ListView):
         if not query:
             return Story.objects.none()
         
-        return Story.objects.filter(
+        return self.get_base_queryset().filter(
             Q(title__icontains=query) |
             Q(description__icontains=query) |
             Q(tags__name__icontains=query) |
-            Q(category__name__icontains=query),
-            is_published=True
-        ).select_related('category').prefetch_related('tags').distinct().order_by('-created_at')
+            Q(category__name__icontains=query)
+        ).distinct().order_by('-created_at')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -581,4 +641,61 @@ def load_comments(request, story_id):
         return JsonResponse({
             'status': 'error',
             'message': f'Ошибка при загрузке комментариев: {str(e)}'
+        }, status=500)
+
+
+def load_more_comments(request, story_id):
+    """Загрузка дополнительных комментариев (для кнопки 'Показать еще')"""
+    try:
+        story = get_object_or_404(Story, id=story_id, is_published=True)
+        offset = int(request.GET.get('offset', 0))
+        limit = 5  # Загружаем по 5 комментариев за раз
+        
+        # Получаем основные комментарии (не ответы) с offset
+        comments = StoryComment.objects.filter(
+            story=story,
+            parent=None,
+            is_approved=True
+        ).select_related('user').prefetch_related('replies').order_by('-is_pinned', '-created_at')[offset:offset + limit]
+        
+        # Проверяем, есть ли еще комментарии
+        total_comments = StoryComment.objects.filter(
+            story=story,
+            parent=None,
+            is_approved=True
+        ).count()
+        
+        has_more = (offset + limit) < total_comments
+        
+        # Получаем реакции пользователя если он авторизован
+        user_reactions = {}
+        if request.user.is_authenticated:
+            reactions = CommentReaction.objects.filter(
+                comment__in=[c.id for c in comments],
+                user=request.user
+            ).values('comment_id', 'reaction_type')
+            user_reactions = {r['comment_id']: r['reaction_type'] for r in reactions}
+        
+        # Рендерим HTML для новых комментариев
+        comments_html = ''
+        for comment in comments:
+            comment_html = render_to_string('stories/comment_item.html', {
+                'comment': comment,
+                'user': request.user,
+                'user_reactions': user_reactions
+            })
+            comments_html += comment_html
+        
+        return JsonResponse({
+            'status': 'success',
+            'comments_html': comments_html,
+            'has_more': has_more,
+            'loaded_count': len(comments),
+            'total_comments': total_comments
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
         }, status=500)

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .rating-input {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+        
+        .rating-input input {
+            display: none;
+        }
+        
+        .rating-input .star-label {
+            color: #ddd;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            margin-right: 5px;
+        }
+        
+        .rating-input .star-label:hover,
+        .rating-input .star-label:hover ~ .star-label,
+        .rating-input input:checked ~ .star-label {
+            color: #ffc107 !important; /* Жёлтый цвет */
+        }
+    </style>
+</head>
+<body>
+    <div class="rating-input">
+        <input type="radio" id="star5" name="rating" value="5" required>
+        <label for="star5" class="star-label">★</label>
+        
+        <input type="radio" id="star4" name="rating" value="4" required>
+        <label for="star4" class="star-label">★</label>
+        
+        <input type="radio" id="star3" name="rating" value="3" required>
+        <label for="star3" class="star-label">★</label>
+        
+        <input type="radio" id="star2" name="rating" value="2" required>
+        <label for="star2" class="star-label">★</label>
+        
+        <input type="radio" id="star1" name="rating" value="1" required>
+        <label for="star1" class="star-label">★</label>
+    </div>
+</body>
+</html>

@@ -1,0 +1,244 @@
+/* КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ НАЛОЖЕНИЯ БУРГЕР-МЕНЮ НА КОРЗИНУ */
+
+/* ========================= ОСНОВНОЕ ИСПРАВЛЕНИЕ ========================= */
+
+/* 1. ПОЛНОЕ СКРЫТИЕ ДЕСКТОПНОЙ НАВИГАЦИИ НА МОБИЛЬНЫХ */
+@media (max-width: 991.98px) {
+    /* Скрываем всю десктопную навигацию целиком */
+    .navbar.desktop-nav {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+        position: absolute !important;
+        left: -9999px !important;
+        pointer-events: none !important;
+    }
+    
+    /* Принудительно скрываем все дочерние элементы */
+    .navbar.desktop-nav * {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }
+}
+
+/* 2. ПРАВИЛЬНОЕ ПОЗИЦИОНИРОВАНИЕ БУРГЕР-МЕНЮ */
+.mobile-burger-menu {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1060; /* Высокий z-index для отображения поверх всего */
+    display: none; /* Скрыта на десктопе */
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(226, 232, 240, 0.5);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    width: 50px;
+    height: 50px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 3. ПОКАЗЫВАЕМ БУРГЕР ТОЛЬКО НА МОБИЛЬНЫХ */
+@media (max-width: 991.98px) {
+    .mobile-burger-menu {
+        display: flex !important;
+    }
+}
+
+/* 4. АДАПТАЦИЯ ДЛЯ МАЛЕНЬКИХ ЭКРАНОВ */
+@media (max-width: 575.98px) {
+    .mobile-burger-menu {
+        top: 15px;
+        right: 15px;
+        width: 46px;
+        height: 46px;
+    }
+    
+    .mobile-burger-icon {
+        font-size: 20px;
+    }
+}
+
+/* 5. СТИЛИ ИКОНКИ БУРГЕРА */
+.mobile-burger-icon {
+    font-size: 22px;
+    color: var(--primary-color, #1a365d);
+    transition: all 0.3s ease;
+}
+
+/* 6. ХОВЕР И АКТИВНЫЕ СОСТОЯНИЯ */
+.mobile-burger-menu:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.05);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+}
+
+.mobile-burger-menu:active {
+    transform: scale(0.95);
+}
+
+.mobile-burger-menu.active .mobile-burger-icon {
+    transform: rotate(90deg);
+}
+
+/* 7. КОРРЕКТИРОВКА ОТСТУПОВ КОНТЕНТА */
+@media (max-width: 991.98px) {
+    /* Убираем стандартные отступы */
+    body {
+        padding-top: 0 !important;
+    }
+    
+    /* Добавляем отступ сверху для основного контента */
+    main.container {
+        margin-top: 80px !important;
+        padding-top: 20px !important;
+    }
+    
+    /* Корректируем отступ для body с мобильной навигацией */
+    body.has-mobile-nav {
+        padding-bottom: var(--mobile-nav-height, 70px) !important;
+    }
+}
+
+/* 8. Z-INDEX ИЕРАРХИЯ */
+.navbar {
+    z-index: 1020 !important;
+}
+
+.mobile-bottom-nav {
+    z-index: 1040 !important;
+}
+
+.mobile-burger-menu {
+    z-index: 1060 !important;
+}
+
+.mobile-menu-modal {
+    z-index: 1070 !important;
+}
+
+/* 9. ДОПОЛНИТЕЛЬНАЯ БЕЗОПАСНОСТЬ - ПОЛНОЕ УДАЛЕНИЕ ДЕСКТОПНОЙ НАВИГАЦИИ */
+@media (max-width: 991.98px) {
+    .navbar-nav,
+    .navbar-nav .nav-item,
+    .navbar-nav .nav-link,
+    .navbar-toggler,
+    .navbar-collapse,
+    .dropdown-menu {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        position: absolute !important;
+        left: -10000px !important;
+        top: -10000px !important;
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+        pointer-events: none !important;
+    }
+}
+
+/* 10. УЛУЧШЕНИЯ ДЛЯ ДОСТУПНОСТИ */
+.mobile-burger-menu:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Увеличенная область клика для сенсорных экранов */
+.mobile-burger-menu::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    background: transparent;
+    border-radius: 20px;
+}
+
+/* 11. ФИНАЛЬНАЯ ПРОВЕРКА - КРИТИЧЕСКИЕ ПРАВИЛА */
+@media screen and (max-width: 991.98px) {
+    /* Абсолютно все элементы навигации скрываем */
+    .desktop-nav,
+    .desktop-nav *,
+    .navbar.navbar-expand-lg,
+    .navbar.navbar-expand-lg * {
+        display: none !important;
+    }
+    
+    /* Показываем только бургер-меню */
+    .mobile-burger-menu {
+        display: flex !important;
+        position: fixed !important;
+        z-index: 9999 !important;
+    }
+    
+    /* Показываем мобильную навигацию снизу */
+    .mobile-bottom-nav {
+        display: block !important;
+    }
+}
+
+/* 12. ТЕМНАЯ ТЕМА ДЛЯ БУРГЕРА */
+@media (prefers-color-scheme: dark) {
+    .mobile-burger-menu {
+        background: rgba(26, 32, 44, 0.95);
+        border-color: rgba(45, 55, 72, 0.5);
+    }
+    
+    .mobile-burger-menu:hover {
+        background: rgba(26, 32, 44, 1);
+    }
+    
+    .mobile-burger-icon {
+        color: #a0aec0;
+    }
+}
+
+/* 13. СПЕЦИАЛЬНЫЕ ПРАВИЛА ДЛЯ SAFARI НА iOS */
+@supports (-webkit-touch-callout: none) {
+    .mobile-burger-menu {
+        -webkit-transform: none !important;
+        -webkit-transition: all 0.3s ease !important;
+    }
+}
+
+/* 14. АНИМАЦИЯ ПОЯВЛЕНИЯ */
+.mobile-burger-menu {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ========================= ОТЛАДОЧНЫЕ СТИЛИ ========================= */
+/* Раскомментируйте для отладки */
+/*
+@media (max-width: 991.98px) {
+    .mobile-burger-menu {
+        background: red !important;
+        border: 2px solid blue !important;
+    }
+    
+    .desktop-nav {
+        background: yellow !important;
+        opacity: 0.5 !important;
+        display: block !important;
+    }
+}
+*/

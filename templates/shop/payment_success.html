@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Оплата успешна - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.success-container {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.success-icon {
+    font-size: 5rem;
+    color: #28a745;
+    margin-bottom: 1rem;
+}
+
+.success-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 1rem;
+    padding: 3rem 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.order-details {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin: 2rem 0;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.order-item:last-child {
+    border-bottom: none;
+}
+
+.total-row {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #2B5AA0;
+    border-top: 2px solid #dee2e6;
+    padding-top: 1rem;
+    margin-top: 1rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+}
+
+.download-info {
+    background: #e3f2fd;
+    border: 1px solid #2196f3;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 1.5rem 0;
+}
+
+@media (max-width: 768px) {
+    .success-card {
+        padding: 2rem 1rem;
+        margin: 0 1rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .action-buttons .btn {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="success-container">
+        <div class="success-card">
+            <!-- Иконка успеха -->
+            <div class="success-icon">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            
+            <!-- Заголовок -->
+            <h1 class="h2 text-success mb-3">Оплата прошла успешно!</h1>
+            
+            <p class="lead text-muted mb-4">
+                Спасибо за покупку! Ваш заказ <strong>#{{ order.short_id }}</strong> успешно оплачен.
+            </p>
+            
+            <!-- Информация о скачивании -->
+            <div class="download-info">
+                <div class="d-flex align-items-center justify-content-center mb-2">
+                    <i class="bi bi-download text-primary me-2" style="font-size: 1.5rem;"></i>
+                    <h5 class="mb-0 text-primary">Как получить ваши покупки</h5>
+                </div>
+                <p class="mb-2">
+                    <strong>Email уведомление:</strong> Ссылки для скачивания отправлены на {{ order.email }}
+                </p>
+                <p class="mb-0">
+                    <strong>Личный кабинет:</strong> Все покупки доступны в разделе "Мои покупки"
+                </p>
+            </div>
+            
+            <!-- Детали заказа -->
+            <div class="order-details text-start">
+                <h5 class="mb-3">
+                    <i class="bi bi-receipt me-2"></i>
+                    Детали заказа
+                </h5>
+                
+                <div class="row mb-3">
+                    <div class="col-sm-6">
+                        <strong>Номер заказа:</strong><br>
+                        <span class="text-muted">#{{ order.short_id }}</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <strong>Дата оплаты:</strong><br>
+                        <span class="text-muted">{{ order.created_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-sm-6">
+                        <strong>Покупатель:</strong><br>
+                        <span class="text-muted">{{ order.first_name }} {{ order.last_name }}</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <strong>Email:</strong><br>
+                        <span class="text-muted">{{ order.email }}</span>
+                    </div>
+                </div>
+                
+                <!-- Список товаров -->
+                <h6 class="mt-4 mb-3">Приобретенные товары:</h6>
+                
+                {% for item in order.items.all %}
+                    <div class="order-item">
+                        <div class="flex-grow-1">
+                            <strong>{{ item.product_title }}</strong>
+                            <div class="small text-muted">
+                                {{ item.product.get_product_type_display }}
+                                {% if item.quantity > 1 %} × {{ item.quantity }}{% endif %}
+                            </div>
+                            
+                            {% if item.personalization_data %}
+                                <div class="small text-info mt-1">
+                                    <i class="bi bi-magic me-1"></i>
+                                    Персонализированная сказка для {{ item.personalization_data.child_name }}
+                                </div>
+                            {% endif %}
+                            
+                            {% if item.include_audio or item.include_illustrations %}
+                                <div class="mt-1">
+                                    {% if item.include_audio %}
+                                        <small class="badge bg-info me-1">+ Озвучка</small>
+                                    {% endif %}
+                                    {% if item.include_illustrations %}
+                                        <small class="badge bg-warning">+ Иллюстрации</small>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="text-end">
+                            <strong>{{ item.product_price }}₽</strong>
+                            {% if item.quantity > 1 %}
+                                <div class="small text-muted">{{ item.total_price }}₽ итого</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+                
+                <!-- Итого -->
+                <div class="d-flex justify-content-between total-row">
+                    <span>Итого к оплате:</span>
+                    <span class="text-success">{{ order.total_amount }}₽</span>
+                </div>
+            </div>
+            
+            <!-- Кнопки действий -->
+            <div class="action-buttons">
+                <a href="{% url 'shop:my_purchases' %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-download me-2"></i>
+                    Мои покупки
+                </a>
+                
+                <a href="{% url 'shop:my_orders' %}" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-list-check me-2"></i>
+                    Мои заказы
+                </a>
+                
+                <a href="{% url 'shop:catalog' %}" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Продолжить покупки
+                </a>
+            </div>
+            
+            <!-- Дополнительная информация -->
+            <div class="mt-4 pt-3 border-top">
+                <p class="small text-muted mb-2">
+                    <i class="bi bi-info-circle me-1"></i>
+                    <strong>Важно:</strong> Сохраните ссылки из email для повторного скачивания
+                </p>
+                <p class="small text-muted mb-0">
+                    Если у вас возникли вопросы, свяжитесь с нами через 
+                    <a href="{% url 'core:contact' %}">форму обратной связи</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация появления
+    const card = document.querySelector('.success-card');
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+        card.style.transition = 'all 0.5s ease';
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+    }, 100);
+    
+    // Автоматическое перенаправление через 5 минут (для безопасности)
+    setTimeout(() => {
+        if (confirm('Перенаправить на страницу "Мои покупки"?')) {
+            window.location.href = "{% url 'shop:my_purchases' %}";
+        }
+    }, 300000); // 5 минут
+});
+</script>
+{% endblock %}

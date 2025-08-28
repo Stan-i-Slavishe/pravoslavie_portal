@@ -206,6 +206,134 @@ class ContactMessage(TimeStampedModel):
         self.is_read = True
         self.save(update_fields=['is_read'])
 
+class MobileFeedback(TimeStampedModel):
+    """Обратная связь через мобильное долгое нажатие"""
+    
+    FEEDBACK_TYPES = [
+        ('bug', 'Нашёл ошибку'),
+        ('feature', 'Предложить улучшение'),
+        ('design', 'Дизайн и интерфейс'),
+        ('content', 'Контент и материалы'),
+        ('performance', 'Скорость работы'),
+        ('other', 'Другое'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('new', 'Новое'),
+        ('in_progress', 'В обработке'),
+        ('resolved', 'Решено'),
+        ('closed', 'Закрыто'),
+    ]
+    
+    PRIORITY_CHOICES = [
+        ('low', 'Низкий'),
+        ('medium', 'Средний'),
+        ('high', 'Высокий'),
+        ('urgent', 'Срочный'),
+    ]
+    
+    feedback_type = models.CharField(
+        max_length=20,
+        choices=FEEDBACK_TYPES,
+        verbose_name='Тип обращения'
+    )
+    message = models.TextField(
+        verbose_name='Сообщение',
+        validators=[MinLengthValidator(5)]
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='new',
+        verbose_name='Статус'
+    )
+    priority = models.CharField(
+        max_length=20,
+        choices=PRIORITY_CHOICES,
+        default='medium',
+        verbose_name='Приоритет'
+    )
+    
+    # Техническая информация
+    user_agent = models.TextField(
+        blank=True,
+        verbose_name='User Agent'
+    )
+    url = models.URLField(
+        blank=True,
+        verbose_name='URL страницы'
+    )
+    ip_address = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+        verbose_name='IP адрес'
+    )
+    screen_resolution = models.CharField(
+        max_length=20,
+        blank=True,
+        verbose_name='Разрешение экрана'
+    )
+    
+    # Связь с пользователем (если авторизован)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Пользователь'
+    )
+    
+    # Административные поля
+    is_read = models.BooleanField(
+        default=False,
+        verbose_name='Прочитано'
+    )
+    admin_notes = models.TextField(
+        blank=True,
+        verbose_name='Заметки администратора'
+    )
+    assigned_to = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_feedback',
+        verbose_name='Назначено'
+    )
+    
+    class Meta:
+        verbose_name = 'Мобильная обратная связь'
+        verbose_name_plural = 'Мобильная обратная связь'
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return f"{self.get_feedback_type_display()} - {self.message[:50]}..."
+    
+    def mark_as_read(self):
+        """Отметить как прочитанное"""
+        self.is_read = True
+        self.save(update_fields=['is_read'])
+    
+    @property
+    def is_bug_report(self):
+        """Является ли это сообщением об ошибке"""
+        return self.feedback_type == 'bug'
+    
+    @property
+    def is_high_priority(self):
+        """Высокий приоритет"""
+        return self.priority in ['high', 'urgent']
+    
+    def get_priority_color(self):
+        """Цвет приоритета для админки"""
+        colors = {
+            'low': '#28a745',
+            'medium': '#ffc107', 
+            'high': '#fd7e14',
+            'urgent': '#dc3545'
+        }
+        return colors.get(self.priority, '#6c757d')
+
 class SiteSettings(models.Model):
     """Настройки сайта"""
     

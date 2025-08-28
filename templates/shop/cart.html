@@ -14,16 +14,36 @@
                             <div class="cart-item border-bottom py-3">
                                 <div class="row align-items-center">
                                     <div class="col-md-2">
-                                        {% if item.product.image %}
+                                        {% if item.product.product_type == 'book' %}
+                                            <!-- Для книг показываем обложку самой книги -->
+                                            {% with item.product.content_object as book %}
+                                                {% if book and book.cover %}
+                                                    <img src="{{ book.cover.url }}" alt="{{ item.product.title }}" class="img-fluid rounded">
+                                                {% else %}
+                                                    <div class="placeholder-image bg-light d-flex align-items-center justify-content-center rounded" style="height: 80px;">
+                                                        <i class="bi bi-book text-muted" style="font-size: 2rem;"></i>
+                                                    </div>
+                                                {% endif %}
+                                            {% endwith %}
+                                        {% elif item.product.image %}
+                                            <!-- Для остальных товаров -->
                                             <img src="{{ item.product.image.url }}" alt="{{ item.product.title }}" class="img-fluid rounded">
                                         {% else %}
                                             <div class="placeholder-image bg-light d-flex align-items-center justify-content-center rounded" style="height: 80px;">
-                                                <i class="bi bi-image text-muted"></i>
+                                                {% if item.product.product_type == 'book' %}
+                                                    <i class="bi bi-book text-muted" style="font-size: 2rem;"></i>
+                                                {% elif item.product.product_type == 'audio' %}
+                                                    <i class="bi bi-music-note text-muted" style="font-size: 2rem;"></i>
+                                                {% elif item.product.product_type == 'fairy_tale' %}
+                                                    <i class="bi bi-stars text-muted" style="font-size: 2rem;"></i>
+                                                {% else %}
+                                                    <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
+                                                {% endif %}
                                             </div>
                                         {% endif %}
                                     </div>
                                     
-                                    <div class="col-md-5">
+                                    <div class="col-md-4">
                                         <h5>{{ item.product.title }}</h5>
                                         <p class="text-muted mb-1">{{ item.product.get_product_type_display }}</p>
                                         
@@ -47,37 +67,58 @@
                                         {% endif %}
                                     </div>
                                     
+                                    <!-- Счетчик количества для всех товаров -->
                                     <div class="col-md-2">
-                                        {% if item.product.is_digital or item.product.product_type == 'fairy_tale' %}
-                                            <span class="badge bg-info">Цифровой</span>
-                                        {% else %}
-                                            <form method="post" class="d-inline update-cart-form" data-item-id="{{ item.id }}">
-                                                {% csrf_token %}
-                                                <div class="input-group input-group-sm">
-                                                    <button type="button" class="btn btn-outline-secondary decrease-btn">-</button>
-                                                    <input type="text" class="form-control text-center quantity-input" value="{{ item.quantity }}" readonly>
-                                                    <button type="button" class="btn btn-outline-secondary increase-btn">+</button>
-                                                </div>
-                                            </form>
-                                        {% endif %}
-                                    </div>
-                                    
-                                    <div class="col-md-2">
-                                        <div class="text-end">
-                                            <div class="h5 text-success mb-1">{{ item.total_price }}₽</div>
-                                            {% if item.product.product_type == 'fairy_tale' and item.include_audio or item.include_illustrations %}
-                                                <small class="text-muted">
-                                                    Базовая: {{ item.product.price }}₽
-                                                    {% if item.include_audio %}+ {{ item.product.audio_option_price }}₽{% endif %}
-                                                    {% if item.include_illustrations %}+ {{ item.product.illustration_option_price }}₽{% endif %}
+                                        <div class="quantity-control">
+                                            <label class="form-label text-muted small mb-1">Количество:</label>
+                                            <div class="input-group input-group-sm">
+                                                <button type="button" class="btn btn-outline-secondary decrease-btn" 
+                                                        data-item-id="{{ item.id }}"
+                                                        {% if item.quantity <= 1 %}disabled{% endif %}>
+                                                    <i class="bi bi-dash"></i>
+                                                </button>
+                                                <input type="text" class="form-control text-center quantity-input" 
+                                                       value="{{ item.quantity }}" 
+                                                       data-item-id="{{ item.id }}"
+                                                       min="1" max="99" readonly>
+                                                <button type="button" class="btn btn-outline-secondary increase-btn"
+                                                        data-item-id="{{ item.id }}"
+                                                        {% if item.quantity >= 99 %}disabled{% endif %}>
+                                                    <i class="bi bi-plus"></i>
+                                                </button>
+                                            </div>
+                                            {% if item.product.is_digital %}
+                                                <small class="text-info d-block mt-1">
+                                                    <i class="bi bi-download"></i> Цифровой товар
                                                 </small>
                                             {% endif %}
                                         </div>
                                     </div>
                                     
+                                    <div class="col-md-3">
+                                        <div class="d-flex align-items-center justify-content-between mobile-price-quantity">
+                                            <div class="text-end price-section">
+                                                {% if item.quantity > 1 %}
+                                                    <div class="small text-muted mb-1 price-breakdown" data-unit-price="{{ item.product.price }}">
+                                                        <span class="price-value">{{ item.product.price }}</span> ₽ × {{ item.quantity }}
+                                                    </div>
+                                                {% endif %}
+                                                <div class="h5 text-success mb-1 item-total-price"><span class="price-value">{{ item.total_price }}</span> ₽</div>
+                                                {% if item.product.product_type == 'fairy_tale' and item.include_audio or item.include_illustrations %}
+                                                    <small class="text-muted">
+                                                        Базовая: <span class="price-value">{{ item.product.price }}</span> ₽
+                                                        {% if item.include_audio %}+ <span class="price-value">{{ item.product.audio_option_price }}</span> ₽{% endif %}
+                                                        {% if item.include_illustrations %}+ <span class="price-value">{{ item.product.illustration_option_price }}</span> ₽{% endif %}
+                                                    </small>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="col-md-1">
                                         <button type="button" class="btn btn-outline-danger btn-sm remove-item-btn" 
-                                                data-item-id="{{ item.id }}">
+                                                data-item-id="{{ item.id }}"
+                                                title="Удалить из корзины">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
@@ -88,11 +129,8 @@
                 </div>
                 
                 <div class="mt-3 text-end">
-                    <a href="{% url 'shop:catalog' %}" class="btn btn-outline-primary me-2">
+                    <a href="{% url 'shop:catalog' %}" class="btn btn-outline-primary">
                         <i class="bi bi-arrow-left"></i> Продолжить покупки
-                    </a>
-                    <a href="{% url 'shop:checkout' %}" class="btn btn-success btn-lg">
-                        <i class="bi bi-credit-card"></i> Оформить заказ
                     </a>
                 </div>
                 
@@ -118,19 +156,55 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-2">
                             <span>Товаров в корзине:</span>
-                            <span>{{ cart.total_items }}</span>
+                            <span class="total-items-count">{{ cart.total_items }}</span>
                         </div>
                         
                         <div class="d-flex justify-content-between mb-3">
                             <span>Сумма:</span>
-                            <span>{{ cart.total_price }}₽</span>
+                            <span class="original-price"><span class="price-value">{{ cart.total_price }}</span> ₽</span>
+                        </div>
+                        
+                        <!-- Промокод -->
+                        <div class="mt-3 mb-3">
+                            <h6 class="mb-2">Промокод</h6>
+                            <form id="discount-form">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="discount_code" placeholder="Введите промокод">
+                                    <button type="submit" class="btn btn-outline-primary">Применить</button>
+                                </div>
+                            </form>
+                            <div id="discount-message" class="mt-2"></div>
+                        </div>
+                        
+                        <!-- Отображение скидки -->
+                        <div id="discount-applied" class="mb-3" style="display: none;">
+                            <div class="alert alert-success p-2 mb-2">
+                                <small class="text-success">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    <span id="discount-text">Промокод применен!</span>
+                                </small>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between text-success">
+                                <span>Скидка:</span>
+                                <span id="discount-amount">-0 ₽</span>
+                            </div>
                         </div>
                         
                         <hr>
                         
-                        <div class="d-flex justify-content-between h5">
+                        <div class="d-flex justify-content-between h5 mb-0">
                             <span>Итого:</span>
-                            <span class="text-success">{{ cart.total_price }}₽</span>
+                            <div class="d-flex flex-column align-items-end">
+                                <!-- Старая цена (показывается только при скидке) -->
+                                <span id="old-total" class="text-decoration-line-through text-danger small" style="display: none;">
+                                    <span class="price-value">{{ cart.total_price }}</span> ₽
+                                </span>
+                                <!-- Новая цена -->
+                                <span id="final-total" class="text-success fw-bold">
+                                    <span class="price-value">{{ cart.total_price }}</span> ₽
+                                </span>
+                            </div>
                         </div>
                         
                         <a href="{% url 'shop:checkout' %}" class="btn btn-success w-100 mt-3">
@@ -138,29 +212,384 @@
                         </a>
                     </div>
                 </div>
-                
-                <!-- Промокод -->
-                <div class="card mt-3">
-                    <div class="card-header">
-                        <h6 class="mb-0">Промокод</h6>
-                    </div>
-                    <div class="card-body">
-                        <form id="discount-form">
-                            <div class="input-group">
-                                <input type="text" class="form-control" name="discount_code" placeholder="Введите промокод">
-                                <button type="submit" class="btn btn-outline-primary">Применить</button>
-                            </div>
-                        </form>
-                        <div id="discount-message" class="mt-2"></div>
-                    </div>
-                </div>
             {% endif %}
         </div>
     </div>
 </div>
 
+<style>
+/* Улучшение отображения обложек в корзине */
+.cart-item .col-md-2 img {
+    max-height: 100px;
+    object-fit: cover;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.placeholder-image {
+    border: 1px solid #dee2e6;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.cart-item {
+    transition: background-color 0.2s ease;
+}
+
+.cart-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Принудительное горизонтальное расположение кнопок */
+.quantity-control .input-group {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    max-width: 120px;
+    align-items: center;
+}
+
+.quantity-control .input-group > * {
+    float: none !important;
+    display: inline-block !important;
+}
+
+.quantity-control .btn {
+    min-width: 30px !important;
+    max-width: 30px !important;
+    padding: 0.25rem 0.4rem !important;
+    height: 32px !important;
+    flex: 0 0 auto !important;
+}
+
+.quantity-control .form-control {
+    text-align: center !important;
+    min-width: 50px !important;
+    max-width: 50px !important;
+    font-weight: 600 !important;
+    height: 32px !important;
+    flex: 0 0 auto !important;
+    border-left: 1px solid #ced4da !important;
+    border-right: 1px solid #ced4da !important;
+}
+
+/* Убираем все отступы которые могут мешать */
+.quantity-control .input-group .btn,
+.quantity-control .input-group .form-control {
+    margin: 0 !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+.toast-container {
+    z-index: 1055;
+}
+
+/* Стили для отображения скидок */
+#old-total {
+    font-size: 0.85rem;
+    margin-bottom: 2px;
+}
+
+#final-total {
+    font-size: 1.1rem;
+    font-weight: bold !important;
+}
+
+#discount-applied .alert {
+    border-radius: 8px;
+    border: 1px solid #d1e7dd;
+    background-color: #d1e7dd;
+}
+
+#discount-applied .alert small {
+    font-weight: 500;
+}
+
+#discount-amount {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #198754 !important; /* Зелёный цвет */
+}
+
+/* Скидка зелёным цветом */
+.text-success {
+    color: #198754 !important;
+}
+
+/* Анимация появления скидки */
+#discount-applied {
+    animation: slideInDown 0.3s ease-out;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Мобильная версия - цена на одной линии со счетчиком */
+@media (max-width: 768px) {
+    .cart-item {
+        padding: 15px 10px;
+    }
+    
+    .cart-item .row {
+        flex-wrap: wrap;
+    }
+    
+    /* Переносим счетчик и цену на одну строку */
+    .cart-item .col-md-2:nth-child(3),
+    .cart-item .col-md-3:nth-child(4) {
+        width: 50%;
+        padding: 5px;
+    }
+    
+    .cart-item .col-md-1:last-child {
+        width: 100%;
+        text-align: center;
+        margin-top: 10px;
+    }
+    
+    /* Компактный счетчик */
+    .quantity-control {
+        max-width: 110px;
+    }
+    
+    .quantity-control .input-group {
+        max-width: 100px;
+    }
+    
+    /* Компактная цена */
+    .mobile-price-quantity {
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+    }
+    
+    .price-section {
+        text-align: right !important;
+    }
+    
+    /* Прячем расчет на мобильном */
+    .cart-item .price-breakdown {
+        display: none;
+    }
+    
+    /* Компактная цена */
+    .cart-item .item-total-price {
+        font-size: 1rem !important;
+        margin-bottom: 0 !important;
+        font-weight: 600;
+    }
+    
+    /* Маленькие подписи */
+    .cart-item small {
+        font-size: 0.7rem;
+        display: none; /* скрываем на мобильном */
+    }
+    
+    /* Кнопка удаления */
+    .cart-item .remove-item-btn {
+        padding: 8px 12px;
+    }
+    
+    /* Скрываем только кнопку внизу под списком товаров */
+    .mt-3.text-end .btn-success[href*="checkout"] {
+        display: none !important;
+    }
+}
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Функция для форматирования цены (убираем .00)
+    function formatPrice(price) {
+        const num = parseFloat(price);
+        if (num === Math.floor(num)) {
+            return Math.floor(num) + ' ₽';
+        }
+        return num + ' ₽';
+    }
+    
+    // Убираем .00 из всех цен на странице и добавляем пробел
+    function cleanAllPrices() {
+        document.querySelectorAll('.price-value').forEach(element => {
+            let text = element.textContent;
+            // Убираем .00
+            if (text.endsWith('.00') || text.endsWith(',00')) {
+                text = text.replace(/[\.,]00$/, '');
+            }
+            element.textContent = text;
+        });
+        
+        // Добавляем пробел перед знаком рубля
+        document.querySelectorAll('*').forEach(element => {
+            if (element.childNodes.length === 1 && element.childNodes[0].nodeType === 3) {
+                let text = element.textContent;
+                if (text.includes('₽') && !text.includes(' ₽')) {
+                    element.textContent = text.replace(/([0-9])₽/g, '$1 ₽');
+                }
+            }
+        });
+    }
+    
+    // Запускаем очистку при загрузке
+    cleanAllPrices();
+    // Функция для отображения уведомлений
+    function showToast(message, type = 'success') {
+        // Создаем toast уведомление
+        const toastHtml = `
+            <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+        
+        // Добавляем в контейнер для toast'ов
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
+        }
+        
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+        const toast = toastContainer.lastElementChild;
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        // Удаляем toast после скрытия
+        toast.addEventListener('hidden.bs.toast', () => {
+            toast.remove();
+        });
+    }
+    
+    // Функция для обновления итогов
+    function updateCartTotals(data) {
+        if (data.cart_total !== undefined) {
+            document.querySelectorAll('.total-price').forEach(el => {
+                el.textContent = formatPrice(data.cart_total);
+                el.classList.add('price-highlight');
+                setTimeout(() => el.classList.remove('price-highlight'), 300);
+            });
+        }
+        
+        if (data.cart_total_items !== undefined) {
+            document.querySelectorAll('.total-items-count').forEach(el => {
+                el.textContent = data.cart_total_items;
+            });
+        }
+    }
+    
+    // Функция для обновления количества
+    function updateQuantity(itemId, newQuantity, button) {
+        // Визуальная обратная связь
+        const cartItem = button.closest('.cart-item');
+        cartItem.classList.add('quantity-updating');
+        
+        fetch('{% url "shop:update_cart_item" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                item_id: itemId,
+                quantity: newQuantity
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            cartItem.classList.remove('quantity-updating');
+            
+            if (data.status === 'success') {
+                // Обновляем количество в поле ввода
+                const quantityInput = cartItem.querySelector('.quantity-input');
+                quantityInput.value = newQuantity;
+                
+                // Обновляем цену за этот товар
+                if (data.item_total) {
+                    const priceElement = cartItem.querySelector('.item-total-price');
+                    if (priceElement) {
+                        priceElement.textContent = formatPrice(data.item_total);
+                        priceElement.classList.add('price-highlight');
+                        setTimeout(() => priceElement.classList.remove('price-highlight'), 300);
+                    }
+                }
+                
+                // Обновляем итоги корзины
+                updateCartTotals(data);
+                
+                // Обновляем состояние кнопок
+                const decreaseBtn = cartItem.querySelector('.decrease-btn');
+                const increaseBtn = cartItem.querySelector('.increase-btn');
+                
+                decreaseBtn.disabled = newQuantity <= 1;
+                increaseBtn.disabled = newQuantity >= 99;
+                
+                // Обновляем/показываем расчет если количество > 1
+                let priceBreakdown = cartItem.querySelector('.price-breakdown');
+                const unitPrice = data.unit_price || parseFloat(data.item_total) / newQuantity;
+                
+                if (newQuantity > 1) {
+                    if (!priceBreakdown) {
+                        priceBreakdown = document.createElement('div');
+                        priceBreakdown.className = 'small text-muted mb-1 price-breakdown';
+                        priceBreakdown.setAttribute('data-unit-price', unitPrice);
+                        cartItem.querySelector('.item-total-price').parentNode.insertBefore(priceBreakdown, cartItem.querySelector('.item-total-price'));
+                    }
+                    priceBreakdown.textContent = `${formatPrice(unitPrice)} × ${newQuantity}`;
+                } else if (newQuantity === 1 && priceBreakdown) {
+                    priceBreakdown.remove();
+                }
+                
+                showToast('Количество обновлено');
+            } else {
+                showToast('Ошибка: ' + (data.error || 'Не удалось обновить количество'), 'error');
+            }
+        })
+        .catch(error => {
+            cartItem.classList.remove('quantity-updating');
+            console.error('Error:', error);
+            showToast('Ошибка сервера', 'error');
+        });
+    }
+    
+    // Обработчики для кнопок увеличения/уменьшения количества
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.decrease-btn')) {
+            const button = e.target.closest('.decrease-btn');
+            const itemId = button.dataset.itemId;
+            const quantityInput = button.parentNode.querySelector('.quantity-input');
+            const currentQuantity = parseInt(quantityInput.value);
+            
+            if (currentQuantity > 1) {
+                updateQuantity(itemId, currentQuantity - 1, button);
+            }
+        }
+        
+        if (e.target.closest('.increase-btn')) {
+            const button = e.target.closest('.increase-btn');
+            const itemId = button.dataset.itemId;
+            const quantityInput = button.parentNode.querySelector('.quantity-input');
+            const currentQuantity = parseInt(quantityInput.value);
+            
+            if (currentQuantity < 99) {
+                updateQuantity(itemId, currentQuantity + 1, button);
+            }
+        }
+    });
+    
     // Промокод
     const discountForm = document.getElementById('discount-form');
     const messageDiv = document.getElementById('discount-message');
@@ -169,27 +598,68 @@ document.addEventListener('DOMContentLoaded', function() {
         discountForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const formData = new FormData(this);
+            const discountCode = discountForm.querySelector('input[name="discount_code"]').value.trim();
             
+            if (!discountCode) {
+                messageDiv.innerHTML = '<div class="alert alert-danger alert-sm">Введите промокод</div>';
+                return;
+            }
+            
+            // Отправляем JSON данные в правильном формате
             fetch('{% url "shop:apply_discount" %}', {
                 method: 'POST',
-                body: formData,
                 headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                }
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value || '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    code: discountCode
+                })
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    messageDiv.innerHTML = '<div class="alert alert-success alert-sm">' + data.message + '</div>';
-                    // Можно обновить итоговую сумму
-                    location.reload();
+                if (data.status === 'success') {
+                    // Очищаем сообщения
+                    messageDiv.innerHTML = '';
+                    
+                    // Показываем блок с примененной скидкой
+                    const discountApplied = document.getElementById('discount-applied');
+                    const discountText = document.getElementById('discount-text');
+                    const discountAmount = document.getElementById('discount-amount');
+                    const oldTotal = document.getElementById('old-total');
+                    const finalTotal = document.getElementById('final-total');
+                    
+                    // Обновляем текст и суммы
+                    discountText.textContent = `Промокод "${discountCode}" применен!`;
+                    discountAmount.textContent = `-${data.discount_amount} ₽`;
+                    
+                    // Показываем старую цену (зачёркнутую красным)
+                    oldTotal.style.display = 'block';
+                    
+                    // Обновляем финальную цену (зелёным)
+                    finalTotal.querySelector('.price-value').textContent = data.final_price;
+                    
+                    // Показываем блок со скидкой
+                    discountApplied.style.display = 'block';
+                    
+                    // Очищаем поле ввода
+                    discountForm.querySelector('input[name="discount_code"]').value = '';
+                    
+                    // Отключаем форму промокода
+                    discountForm.querySelector('input[name="discount_code"]').disabled = true;
+                    discountForm.querySelector('button[type="submit"]').disabled = true;
+                    discountForm.querySelector('button[type="submit"]').textContent = 'Применён';
+                    
+                    showToast('Промокод применён!');
                 } else {
-                    messageDiv.innerHTML = '<div class="alert alert-danger alert-sm">' + data.message + '</div>';
+                    messageDiv.innerHTML = '<div class="alert alert-danger alert-sm">' + (data.error || data.message) + '</div>';
+                    showToast(data.error || data.message, 'error');
                 }
             })
             .catch(error => {
+                console.error('Error:', error);
                 messageDiv.innerHTML = '<div class="alert alert-danger alert-sm">Ошибка применения промокода</div>';
+                showToast('Ошибка применения промокода', 'error');
             });
         });
     }
@@ -200,13 +670,30 @@ document.addEventListener('DOMContentLoaded', function() {
     removeButtons.forEach(button => {
         button.addEventListener('click', function() {
             const itemId = this.dataset.itemId;
+            const cartItem = this.closest('.cart-item');
+            const productTitle = cartItem.querySelector('h5').textContent;
             
-            if (confirm('Удалить товар из корзины?')) {
+            if (confirm(`Удалить "${productTitle}" из корзины?`)) {
+                cartItem.style.opacity = '0.5';
+                
+                // Получаем CSRF токен
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+                                document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                                getCookie('csrftoken');
+                
+                if (!csrfToken) {
+                    console.error('CSRF token not found');
+                    cartItem.style.opacity = '1';
+                    showToast('Ошибка безопасности. Перезагрузите страницу.', 'error');
+                    return;
+                }
+                
                 fetch('{% url "shop:remove_from_cart" %}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
+                        'X-CSRFToken': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
                     body: JSON.stringify({
                         item_id: itemId
@@ -215,74 +702,74 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        // Перезагружаем страницу
-                        location.reload();
+                        // Плавно удаляем элемент
+                        cartItem.style.transition = 'all 0.3s ease';
+                        cartItem.style.transform = 'translateX(-100%)';
+                        
+                        setTimeout(() => {
+                            location.reload(); // Перезагружаем страницу для полного обновления
+                        }, 300);
+                        
+                        showToast('Товар удален из корзины');
+                        
+                        // Обновляем счетчик корзины
+                        if (window.updateCartCount) {
+                            window.updateCartCount();
+                        }
                     } else {
-                        alert('Ошибка: ' + (data.error || 'Не удалось удалить товар'));
+                        cartItem.style.opacity = '1';
+                        showToast('Ошибка: ' + (data.error || 'Не удалось удалить товар'), 'error');
                     }
                 })
                 .catch(error => {
+                    cartItem.style.opacity = '1';
                     console.error('Error:', error);
-                    alert('Ошибка сервера');
+                    showToast('Ошибка сервера', 'error');
                 });
             }
         });
     });
     
-    // Обновление количества (для нецифровых товаров)
-    const updateCartForms = document.querySelectorAll('.update-cart-form');
+    // Функция показа уведомлений
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; max-width: 400px;';
+        toast.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                <span>${message}</span>
+                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 4000);
+    }
     
-    updateCartForms.forEach(form => {
-        const itemId = form.dataset.itemId;
-        const decreaseBtn = form.querySelector('.decrease-btn');
-        const increaseBtn = form.querySelector('.increase-btn');
-        const quantityInput = form.querySelector('.quantity-input');
-        
-        function updateQuantity(newQuantity) {
-            fetch('{% url "shop:update_cart_item" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({
-                    item_id: itemId,
-                    quantity: newQuantity
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // Перезагружаем страницу для обновления цен
-                    location.reload();
-                } else {
-                    alert('Ошибка: ' + (data.error || 'Не удалось обновить количество'));
+    // Функция получения CSRF токена
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Ошибка сервера');
-            });
+            }
         }
-        
-        if (decreaseBtn) {
-            decreaseBtn.addEventListener('click', function() {
-                const currentQuantity = parseInt(quantityInput.value);
-                if (currentQuantity > 1) {
-                    updateQuantity(currentQuantity - 1);
-                }
-            });
-        }
-        
-        if (increaseBtn) {
-            increaseBtn.addEventListener('click', function() {
-                const currentQuantity = parseInt(quantityInput.value);
-                if (currentQuantity < 99) {
-                    updateQuantity(currentQuantity + 1);
-                }
-            });
-        }
-    });
-});
+        return cookieValue;
+    }
+});    
 </script>
+
+<!-- CSRF токен для AJAX запросов -->
+{% csrf_token %}
 {% endblock %}

@@ -1,0 +1,430 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Православный портал{% endblock %}
+
+{% block extra_css %}
+<style>
+    .story-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    
+    .story-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .story-video-thumbnail {
+        position: relative;
+        aspect-ratio: 16/9;
+        background: #f8f9fa;
+        overflow: hidden;
+    }
+    
+    .story-video-thumbnail iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+    
+    .story-meta {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+    }
+    
+    .story-badge {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        background: #D4AF37;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: bold;
+    }
+    
+    .filter-section {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .tag-cloud .badge {
+        margin: 2px;
+        font-size: 0.8rem;
+    }
+    
+    .featured-section {
+        background: linear-gradient(135deg, #2B5AA0, #4a7bc8);
+        color: white;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .featured-story {
+        background: rgba(255,255,255,0.1);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .featured-story:last-child {
+        margin-bottom: 0;
+    }
+    
+    .stats-badge {
+        background: rgba(43, 90, 160, 0.1);
+        color: #2B5AA0;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        margin-right: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Заголовок и поиск -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="mb-3">
+            <i class="bi bi-play-circle text-primary me-2"></i>
+            {{ title }}
+        </h1>
+        {% if current_category %}
+            <p class="text-muted">Категория: {{ current_category.name }}</p>
+        {% elif current_tag %}
+            <p class="text-muted">Тег: {{ current_tag.name }}</p>
+        {% endif %}
+    </div>
+    <div class="col-md-4">
+        <form method="GET" class="d-flex">
+            <input type="search" name="search" value="{{ search_query }}" 
+                   class="form-control me-2" placeholder="Поиск рассказов...">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Рекомендуемые рассказы -->
+{% if featured_stories and not search_query and not current_category and not current_tag %}
+<div class="featured-section">
+    <h3 class="mb-3">
+        <i class="bi bi-star-fill me-2"></i>
+        Рекомендуемые рассказы
+    </h3>
+    <div class="row">
+        {% for story in featured_stories %}
+        <div class="col-md-4">
+            <div class="featured-story">
+                <h6><a href="{% url 'stories:detail' story.slug %}" class="text-white text-decoration-none">{{ story.title }}</a></h6>
+                <p class="small mb-2">{{ story.description|truncatewords:15 }}</p>
+                <div class="d-flex align-items-center text-white-50 small">
+                    <span class="me-3">
+                        <i class="bi bi-eye me-1"></i>{{ story.views_count }}
+                    </span>
+                    <span>{{ story.created_at|date:"d.m.Y" }}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Фильтры -->
+<div class="filter-section">
+    <div class="row">
+        <div class="col-md-6">
+            <h6 class="mb-3">Категории</h6>
+            <div class="d-flex flex-wrap">
+                <a href="{% url 'stories:list' %}" 
+                   class="badge bg-outline-primary text-decoration-none me-2 mb-2 {% if not current_category %}bg-primary text-white{% endif %}">
+                    Все
+                </a>
+                {% for category in categories %}
+                <a href="{% url 'stories:category' category.slug %}" 
+                   class="badge bg-outline-primary text-decoration-none me-2 mb-2 {% if current_category == category.slug %}bg-primary text-white{% endif %}">
+                    {{ category.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h6 class="mb-3">Теги</h6>
+            <div class="tag-cloud">
+                {% for tag in tags %}
+                <a href="{% url 'stories:tag' tag.slug %}" 
+                   class="badge text-decoration-none me-1 mb-1"
+                   style="background-color: {{ tag.color|default:'#6c757d' }}; color: white;">
+                    {{ tag.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Сортировка -->
+    <div class="row mt-3">
+        <div class="col-md-6">
+            <h6 class="mb-2">Сортировка</h6>
+            <div class="btn-group" role="group">
+                <a href="?sort=-created_at" 
+                   class="btn btn-sm {% if current_sort == '-created_at' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    Новые
+                </a>
+                <a href="?sort=popular" 
+                   class="btn btn-sm {% if current_sort == 'popular' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    Популярные
+                </a>
+                <a href="?sort=title" 
+                   class="btn btn-sm {% if current_sort == 'title' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    По алфавиту
+                </a>
+            </div>
+        </div>
+        <div class="col-md-6 text-end">
+            <p class="text-muted mb-0">
+                Найдено рассказов: {{ paginator.count|default:stories.count }}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Список рассказов -->
+<div class="row">
+    {% for story in stories %}
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card story-card h-100">
+            <div class="story-video-thumbnail">
+                {% if story.youtube_embed_id %}
+                    <iframe src="https://www.youtube.com/embed/{{ story.youtube_embed_id }}" 
+                            allowfullscreen loading="lazy"></iframe>
+                {% else %}
+                    <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                        <i class="bi bi-play-circle text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                {% endif %}
+                
+                {% if story.is_featured %}
+                <div class="story-badge">
+                    <i class="bi bi-star-fill me-1"></i>Рекомендуемое
+                </div>
+                {% endif %}
+                
+                <div class="story-meta">
+                    <span class="me-2">
+                        <i class="bi bi-eye me-1"></i>{{ story.views_count }}
+                    </span>
+                    <span>
+                        <i class="bi bi-chat me-1"></i>{{ story.comments_count|default:0 }}
+                    </span>
+                    <!-- Отладка: {{ story.comments_count|default:"None" }} -->
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <h5 class="card-title">
+                    <a href="{% url 'stories:detail' story.slug %}" class="text-decoration-none">
+                        {{ story.title }}
+                    </a>
+                </h5>
+                <p class="card-text text-muted">{{ story.description|truncatewords:20 }}</p>
+                
+                <!-- Теги -->
+                {% if story.tags.all %}
+                <div class="mb-3">
+                    {% for tag in story.tags.all %}
+                    <span class="badge me-1" style="background-color: {{ tag.color|default:'#6c757d' }};">
+                        {{ tag.name }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Метаинформация -->
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        {% if story.category %}
+                        <span class="stats-badge">
+                            <i class="bi bi-folder me-1"></i>{{ story.category.name }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <small class="text-muted">{{ story.created_at|date:"d.m.Y" }}</small>
+                </div>
+            </div>
+            
+            <div class="card-footer bg-transparent">
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'stories:detail' story.slug %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-play me-1"></i>Смотреть
+                    </a>
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-link btn-sm text-muted p-0 me-2" 
+                                onclick="likeStory({{ story.id }})" id="like-btn-{{ story.id }}">
+                            <i class="bi bi-heart me-1"></i>
+                            <span id="likes-count-{{ story.id }}">{{ story.likes.count }}</span>
+                        </button>
+                        <button class="btn btn-link btn-sm text-muted p-0" 
+                                onclick="favoriteStory({{ story.id }})">
+                            <i class="bi bi-bookmark"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
+            <h3 class="mt-3 text-muted">Рассказы не найдены</h3>
+            {% if search_query %}
+                <p>По запросу "{{ search_query }}" ничего не найдено.</p>
+                <a href="{% url 'stories:list' %}" class="btn btn-primary">Показать все рассказы</a>
+            {% else %}
+                <p>В этом разделе пока нет рассказов.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Пагинация -->
+{% if is_paginated %}
+<nav aria-label="Навигация по страницам">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1">Первая</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Последняя</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// AJAX функции для лайков и избранного
+function likeStory(storyId) {
+    {% if user.is_authenticated %}
+    fetch(`/stories/ajax/${storyId}/like/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const btn = document.getElementById(`like-btn-${storyId}`);
+            const icon = btn.querySelector('i');
+            const count = document.getElementById(`likes-count-${storyId}`);
+            
+            if (data.liked) {
+                icon.className = 'bi bi-heart-fill me-1 text-danger';
+                btn.classList.add('text-danger');
+            } else {
+                icon.className = 'bi bi-heart me-1';
+                btn.classList.remove('text-danger');
+            }
+            count.textContent = data.likes_count;
+        }
+    })
+    .catch(error => console.error('Error:', error));
+    {% else %}
+    window.location.href = '/accounts/login/';
+    {% endif %}
+}
+
+function favoriteStory(storyId) {
+    {% if user.is_authenticated %}
+    fetch(`/stories/ajax/${storyId}/favorite/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Показываем уведомление
+            showNotification(data.message, 'success');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+    {% else %}
+    window.location.href = '/accounts/login/';
+    {% endif %}
+}
+
+function showNotification(message, type) {
+    // Простое уведомление (можно заменить на более красивое)
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alert.style.top = '20px';
+    alert.style.right = '20px';
+    alert.style.zIndex = '9999';
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alert);
+    
+    // Автоматически убираем через 3 секунды
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.parentNode.removeChild(alert);
+        }
+    }, 3000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,355 @@
+/* ================== МОБИЛЬНАЯ НАВИГАЦИЯ ================== */
+/* Файл: static/css/mobile-navigation.css */
+
+/* ================== ИСПРАВЛЕНИЕ КОНФЛИКТОВ С БУРГЕР-МЕНЮ ================== */
+/* Универсальное правило для плавающих элементов, чтобы не перекрывались с бургер-меню */
+@media (max-width: 991.98px) {
+    /* Все плавающие элементы в правом верхнем углу сдвигаем влево */
+    .cart-indicator,
+    .floating-action,
+    .fixed-top-right {
+        left: 20px !important;
+        right: auto !important;
+        top: 15px !important;
+    }
+    
+    /* Для очень маленьких экранов */
+    @media (max-width: 575.98px) {
+        .cart-indicator,
+        .floating-action,
+        .fixed-top-right {
+            left: 12px !important;
+            top: 12px !important;
+        }
+    }
+}
+
+/* Основные переменные для мобильной навигации */
+:root {
+    --mobile-nav-height: 70px;
+    --mobile-nav-bg: #ffffff;
+    --mobile-nav-border: #e2e8f0;
+    --mobile-nav-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    --mobile-nav-text: #64748b;
+    --mobile-nav-active: var(--accent-color, #e53e3e);
+    --mobile-nav-radius: 12px;
+}
+
+/* Отступ снизу для контента, чтобы навигация не перекрывала */
+body.has-mobile-nav {
+    padding-bottom: var(--mobile-nav-height);
+}
+
+/* Контейнер мобильной навигации */
+.mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--mobile-nav-bg);
+    border-top: 1px solid var(--mobile-nav-border);
+    box-shadow: var(--mobile-nav-shadow);
+    z-index: 1000;
+    display: none; /* Скрыта на десктопе */
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); /* Учитываем notch */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Список элементов навигации */
+.mobile-nav-items {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: 0;
+    padding: 0 12px;
+    list-style: none;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* Отдельный элемент навигации */
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--mobile-nav-text);
+    min-width: 50px;
+    padding: 6px 8px;
+    border-radius: var(--mobile-nav-radius);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Ховер эффект */
+.mobile-nav-item:hover {
+    color: var(--primary-color);
+    background: rgba(26, 54, 93, 0.05);
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+/* Активное состояние */
+.mobile-nav-item.active {
+    color: var(--mobile-nav-active);
+    background: rgba(229, 62, 62, 0.1);
+}
+
+/* Иконка в навигации */
+.mobile-nav-icon {
+    font-size: 20px;
+    margin-bottom: 4px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    line-height: 1;
+}
+
+/* Анимация активной иконки */
+.mobile-nav-item.active .mobile-nav-icon {
+    transform: scale(1.1);
+}
+
+/* Текст под иконкой */
+.mobile-nav-text {
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    letter-spacing: 0.025em;
+}
+
+/* ================== ЦВЕТОВАЯ СХЕМА ДЛЯ РАЗДЕЛОВ ================== */
+
+/* Видео-рассказы */
+.mobile-nav-item[data-section="stories"] {
+    color: var(--stories-color, #e53e3e);
+}
+.mobile-nav-item[data-section="stories"].active {
+    background: rgba(229, 62, 62, 0.15);
+}
+
+/* Книги */
+.mobile-nav-item[data-section="books"] {
+    color: var(--books-color, #38a169);
+}
+.mobile-nav-item[data-section="books"].active {
+    background: rgba(56, 161, 105, 0.15);
+}
+
+/* Аудио */
+.mobile-nav-item[data-section="audio"] {
+    color: var(--audio-color, #3182ce);
+}
+.mobile-nav-item[data-section="audio"].active {
+    background: rgba(49, 130, 206, 0.15);
+}
+
+/* Сказки */
+.mobile-nav-item[data-section="fairy-tales"] {
+    color: var(--fairy-tales-color, #9f7aea);
+}
+.mobile-nav-item[data-section="fairy-tales"].active {
+    background: rgba(159, 122, 234, 0.15);
+}
+
+/* Магазин */
+.mobile-nav-item[data-section="shop"] {
+    color: var(--shop-color, #d69e2e);
+}
+.mobile-nav-item[data-section="shop"].active {
+    background: rgba(214, 158, 46, 0.15);
+}
+
+/* Главная страница */
+.mobile-nav-item[data-section="home"] .mobile-nav-icon {
+    font-size: 22px;
+    color: var(--primary-color, #1a365d);
+}
+
+/* ================== БЕЙДЖИ УВЕДОМЛЕНИЙ ================== */
+.mobile-nav-badge {
+    position: absolute;
+    top: 2px;
+    right: 8px;
+    background: var(--accent-color, #e53e3e);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 16px;
+    text-align: center;
+    line-height: 1.2;
+    box-shadow: 0 2px 8px rgba(229, 62, 62, 0.3);
+    animation: pulseIn 0.3s ease-out;
+}
+
+/* Анимация появления бейджа */
+@keyframes pulseIn {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ================== АДАПТИВНОСТЬ ================== */
+@media (max-width: 991.98px) {
+    /* Показываем мобильную навигацию */
+    .mobile-bottom-nav {
+        display: block;
+    }
+    
+    /* Добавляем отступ снизу */
+    body {
+        padding-bottom: var(--mobile-nav-height);
+    }
+    
+    /* Скрываем десктопную навигацию на мобильных */
+    .navbar.desktop-nav {
+        display: none !important;
+    }
+    
+    /* Увеличиваем область клика */
+    .mobile-nav-item {
+        min-height: 50px;
+        justify-content: center;
+        padding: 8px 6px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    /* Уменьшаем размеры на очень маленьких экранах */
+    .mobile-nav-text {
+        font-size: 9px;
+    }
+    
+    .mobile-nav-icon {
+        font-size: 18px;
+    }
+    
+    .mobile-nav-item[data-section="home"] .mobile-nav-icon {
+        font-size: 20px;
+    }
+    
+    .mobile-nav-items {
+        padding: 0 8px;
+    }
+}
+
+/* ================== АНИМАЦИИ ================== */
+
+/* Появление навигации */
+.mobile-bottom-nav {
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Эффект нажатия */
+.mobile-nav-item:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+}
+
+/* Плавное скрытие/показ при скролле */
+.mobile-bottom-nav.hide {
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-bottom-nav.show {
+    transform: translateY(0);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ================== ТЕМНАЯ ТЕМА (опционально) ================== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --mobile-nav-bg: #1a202c;
+        --mobile-nav-border: #2d3748;
+        --mobile-nav-text: #a0aec0;
+        --mobile-nav-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .mobile-nav-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+}
+
+/* ================== ДОПОЛНИТЕЛЬНЫЕ УЛУЧШЕНИЯ ================== */
+
+/* Индикатор загрузки для навигации */
+.mobile-nav-item.loading .mobile-nav-icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Эффект ряби при клике */
+.mobile-nav-item {
+    overflow: hidden;
+    position: relative;
+}
+
+.mobile-nav-item::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.mobile-nav-item:active::before {
+    width: 60px;
+    height: 60px;
+}
+
+/* Улучшенная доступность */
+.mobile-nav-item:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Скрытие текста при очень узких экранах */
+@media (max-width: 350px) {
+    .mobile-nav-text {
+        display: none;
+    }
+    
+    .mobile-nav-item {
+        padding: 12px 4px;
+    }
+    
+    .mobile-nav-icon {
+        margin-bottom: 0;
+        font-size: 20px;
+    }
+}

@@ -1,117 +1,55 @@
-# shop/signals.py
-from django.db.models.signals import post_save, pre_save
+# shop/signals.py - Автоматическая синхронизация товаров
+
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
-from django.conf import settings
-from django.utils import timezone
-import logging
+from books.models import Book
+from .models import Product
 
-from .models import Order, OrderItem
-from .utils import send_order_email
-
-logger = logging.getLogger(__name__)
-
-
-@receiver(post_save, sender=Order)
-def order_created_notification(sender, instance, created, **kwargs):
-    """
-    Отправка email при создании нового заказа
-    """
-    if created and instance.status == 'pending':
-        try:
-            # Отправляем email покупателю
-            send_order_email(
-                order=instance,
-                template_type='order_created',
-                recipient_email=instance.email
-            )
+@receiver(post_save, sender=Book)
+def sync_book_with_shop(sender, instance, created, **kwargs):
+    """Автоматически создает/обновляет товар при сохранении книги"""
+    if instance.price > 0:  # Только для платных книг
+        product, product_created = Product.objects.get_or_create(
+            product_type='book',
+            book_id=instance.id,
+            defaults={
+                'title': instance.title,
+                'description': instance.description or f"Духовная книга '{instance.title}' - погрузитесь в мир веры и мудрости.",
+                'price': instance.price,
+                'is_active': True,
+                'is_digital': True,
+                'image': getattr(instance, 'cover_image', None),
+            }
+        )
+        
+        if not product_created:
+            # Обновляем существующий товар
+            product.title = instance.title
+            product.description = instance.description or f"Духовная книга '{instance.title}'"
+            product.price = instance.price
+            product.is_active = True
+            product.save()
             
-            # Отправляем уведомление администраторам
-            admin_emails = getattr(settings, 'ADMIN_EMAIL_LIST', [])
-            if admin_emails:
-                send_order_email(
-                    order=instance,
-                    template_type='order_created_admin',
-                    recipient_email=admin_emails
-                )
-                
-            logger.info(f"Order created emails sent for order {instance.short_id}")
-            
-        except Exception as e:
-            logger.error(f"Failed to send order created email for {instance.short_id}: {e}")
+        print(f"📚 Синхронизирована книга с магазином: {instance.title}")
+    else:
+        # Если книга стала бесплатной, деактивируем товар
+        Product.objects.filter(
+            product_type='book',
+            book_id=instance.id
+        ).update(is_active=False)
+        print(f"📚 Книга '{instance.title}' деактивирована в магазине (стала бесплатной)")
 
+@receiver(post_delete, sender=Book)
+def remove_book_from_shop(sender, instance, **kwargs):
+    """Удаляет товар при удалении книги"""
+    deleted_count = Product.objects.filter(
+        product_type='book',
+        book_id=instance.id
+    ).delete()[0]
+    
+    if deleted_count > 0:
+        print(f"📚 Товар для книги '{instance.title}' удален из магазина")
 
-@receiver(pre_save, sender=Order)
-def order_status_changed_notification(sender, instance, **kwargs):
-    """
-    Отправка email при изменении статуса заказа
-    """
-    if instance.pk:  # Только для существующих заказов
-        try:
-            old_instance = Order.objects.get(pk=instance.pk)
-            
-            # Проверяем, изменился ли статус
-            if old_instance.status != instance.status:
-                
-                # Отправляем email покупателю о смене статуса
-                send_order_email(
-                    order=instance,
-                    template_type='order_status_changed',
-                    recipient_email=instance.email,
-                    context={'old_status': old_instance.status}
-                )
-                
-                # Специальные уведомления для определенных статусов
-                if instance.status == 'paid':
-                    # Заказ оплачен - отправляем инструкции по скачиванию
-                    send_order_email(
-                        order=instance,
-                        template_type='order_paid_download_instructions',
-                        recipient_email=instance.email
-                    )
-                    
-                    # Обновляем время оплаты
-                    instance.paid_at = timezone.now()
-                    
-                elif instance.status == 'completed':
-                    # Заказ завершен
-                    send_order_email(
-                        order=instance,
-                        template_type='order_completed',
-                        recipient_email=instance.email
-                    )
-                    
-                    # Обновляем время завершения
-                    instance.completed_at = timezone.now()
-                
-                logger.info(f"Order status changed email sent for order {instance.short_id}: {old_instance.status} -> {instance.status}")
-                
-        except Order.DoesNotExist:
-            # Новый заказ, обрабатывается в post_save
-            pass
-        except Exception as e:
-            logger.error(f"Failed to send order status email for {instance.short_id}: {e}")
-
-
-@receiver(post_save, sender=OrderItem)
-def fairy_tale_status_changed_notification(sender, instance, **kwargs):
-    """
-    Отправка email при изменении статуса терапевтической сказки
-    """
-    if instance.is_fairy_tale and instance.fairy_tale_status:
-        try:
-            # Отправляем уведомление только для определенных статусов
-            if instance.fairy_tale_status in ['ready', 'delivered']:
-                send_order_email(
-                    order=instance.order,
-                    template_type='fairy_tale_ready',
-                    recipient_email=instance.order.email,
-                    context={'order_item': instance}
-                )
-                
-                logger.info(f"Fairy tale ready email sent for order {instance.order.short_id}")
-                
-        except Exception as e:
-            logger.error(f"Failed to send fairy tale ready email: {e}")
+# В будущем можно добавить сигналы для других типов товаров,
+# когда соответствующие модели будут созданы
+print("✅ Сигналы синхронизации товаров подключены (только для книг)")

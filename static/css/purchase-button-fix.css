@@ -1,0 +1,197 @@
+/* 🛒 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ КНОПКИ ПОКУПКИ - purchase-button-fix.css */
+
+/* Основные стили для кнопки покупки */
+.btn-purchase {
+    background: linear-gradient(135deg, #28a745, #20692b) !important;
+    border: 2px solid #28a745 !important;
+    color: white !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    min-height: 44px !important;
+    justify-content: center !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    position: relative !important;
+    z-index: 10 !important;
+    box-sizing: border-box !important;
+}
+
+/* Эффекты при наведении */
+.btn-purchase:hover {
+    background: linear-gradient(135deg, #218838, #1e7e34) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4) !important;
+    color: white !important;
+    text-decoration: none !important;
+    border-color: #1e7e34 !important;
+}
+
+/* Эффект при нажатии */
+.btn-purchase:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3) !important;
+}
+
+/* Фокус для доступности */
+.btn-purchase:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25) !important;
+}
+
+/* Убираем возможные конфликты со стилями ссылок */
+a.btn-purchase {
+    background: linear-gradient(135deg, #28a745, #20692b) !important;
+    color: white !important;
+}
+
+a.btn-purchase:visited,
+a.btn-purchase:link {
+    color: white !important;
+}
+
+/* Дополнительные стили для надежности */
+.book-actions .btn-purchase {
+    flex: 1 !important;
+    max-width: 100% !important;
+    white-space: nowrap !important;
+}
+
+/* Стили для иконки в кнопке */
+.btn-purchase i {
+    color: white !important;
+    margin-right: 8px !important;
+    font-size: 14px !important;
+}
+
+/* Убираем любые inline стили, которые могут скрывать кнопку */
+.btn-purchase[style*="display: none"] {
+    display: inline-flex !important;
+}
+
+.btn-purchase[style*="visibility: hidden"] {
+    visibility: visible !important;
+}
+
+.btn-purchase[style*="opacity: 0"] {
+    opacity: 1 !important;
+}
+
+/* Мобильная адаптивность */
+@media (max-width: 768px) {
+    .btn-purchase {
+        width: 100% !important;
+        justify-content: center !important;
+        margin-bottom: 10px !important;
+        font-size: 16px !important; /* Больше для мобильных */
+        min-height: 48px !important; /* Больше для удобства нажатия */
+    }
+}
+
+/* Дополнительная защита от скрытия */
+.btn-purchase {
+    /* Убираем возможные негативные стили */
+    transform: none !important;
+    clip: auto !important;
+    clip-path: none !important;
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    width: auto !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+}
+
+/* Особый стиль для темной темы (если есть) */
+.dark-theme .btn-purchase,
+.theme-dark .btn-purchase {
+    background: linear-gradient(135deg, #28a745, #20692b) !important;
+    color: white !important;
+    border-color: #28a745 !important;
+}
+
+/* Анимация загрузки для кнопки */
+.btn-purchase.loading {
+    pointer-events: none !important;
+    opacity: 0.7 !important;
+}
+
+.btn-purchase.loading::after {
+    content: "" !important;
+    display: inline-block !important;
+    width: 12px !important;
+    height: 12px !important;
+    border: 2px solid transparent !important;
+    border-top-color: white !important;
+    border-radius: 50% !important;
+    animation: spin 1s linear infinite !important;
+    margin-left: 8px !important;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Стили для отключенной кнопки */
+.btn-purchase:disabled,
+.btn-purchase.disabled {
+    background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+    border-color: #6c757d !important;
+    color: white !important;
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.btn-purchase:disabled:hover,
+.btn-purchase.disabled:hover {
+    background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* 🎯 КРАЙНИЙ СЛУЧАЙ: Если кнопка все еще не видна */
+.book-actions a[href*="shop"] {
+    background: linear-gradient(135deg, #28a745, #20692b) !important;
+    color: white !important;
+    border: 2px solid #28a745 !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Альтернативный селектор для кнопки покупки */
+a[href*="shop/?book"],
+button[onclick*="shop"],
+.purchase-btn,
+.buy-btn,
+.btn-buy {
+    background: linear-gradient(135deg, #28a745, #20692b) !important;
+    color: white !important;
+    border: 2px solid #28a745 !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    gap: 8px !important;
+}

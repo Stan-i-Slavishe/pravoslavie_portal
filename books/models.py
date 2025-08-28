@@ -2,7 +2,10 @@ from django.db import models
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.utils.text import slugify
+from django.utils import timezone
+from core.models import Tag  # Используем единую модель Tag из core
 import re
+import json
 
 
 def create_slug(text):
@@ -59,30 +62,6 @@ class Category(models.Model):
             self.slug = slug
         super().save(*args, **kwargs)
 
-
-class Tag(models.Model):
-    """Теги для книг"""
-    name = models.CharField('Название', max_length=50)
-    slug = models.SlugField('URL-имя', unique=True, blank=True)
-    
-    class Meta:
-        verbose_name = 'Тег'
-        verbose_name_plural = 'Теги'
-        ordering = ['name']
-    
-    def __str__(self):
-        return self.name
-    
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            base_slug = create_slug(self.name)
-            slug = base_slug
-            counter = 1
-            while Tag.objects.filter(slug=slug).exists():
-                slug = f"{base_slug}-{counter}"
-                counter += 1
-            self.slug = slug
-        super().save(*args, **kwargs)
 
 
 class Book(models.Model):
@@ -158,6 +137,11 @@ class Book(models.Model):
         return reverse('books:detail', kwargs={'slug': self.slug})
     
     @property
+    def reviews_count(self):
+        """Количество отзывов"""
+        return self.reviews.count()
+    
+    @property
     def is_available_for_download(self):
         """Доступна ли книга для скачивания"""
         return self.is_published and (self.is_free or self.file)
@@ -211,3 +195,77 @@ class UserFavoriteBook(models.Model):
     
     def __str__(self):
         return f'{self.user.username} - {self.book.title}'
+
+
+class ReadingSession(models.Model):
+    """Сессии чтения пользователей"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, verbose_name='Книга')
+    current_page = models.PositiveIntegerField('Текущая страница', default=1)
+    total_pages = models.PositiveIntegerField('Всего страниц', default=1)
+    reading_time = models.PositiveIntegerField('Время чтения (минуты)', default=0)
+    last_read = models.DateTimeField('Последнее чтение', auto_now=True)
+    created_at = models.DateTimeField('Создано', auto_now_add=True)
+    
+    # Настройки чтения
+    font_size = models.FloatField('Размер шрифта', default=1.1)
+    theme = models.CharField('Тема', max_length=20, default='light', choices=[
+        ('light', 'Светлая'),
+        ('dark', 'Темная'),
+        ('sepia', 'Сепия')
+    ])
+    
+    class Meta:
+        verbose_name = 'Сессия чтения'
+        verbose_name_plural = 'Сессии чтения'
+        unique_together = ['user', 'book']
+        ordering = ['-last_read']
+    
+    def __str__(self):
+        return f'{self.user.username} - {self.book.title} (стр. {self.current_page})'
+    
+    @property
+    def progress_percentage(self):
+        """Процент прочитанного"""
+        if self.total_pages == 0:
+            return 0
+        return min(100, (self.current_page / self.total_pages) * 100)
+    
+    @property
+    def is_completed(self):
+        """Книга прочитана полностью"""
+        return self.current_page >= self.total_pages
+
+
+class ReadingBookmark(models.Model):
+    """Закладки в книгах"""
+    session = models.ForeignKey(ReadingSession, on_delete=models.CASCADE, verbose_name='Сессия чтения', related_name='bookmarks')
+    page = models.PositiveIntegerField('Страница')
+    note = models.TextField('Заметка', blank=True)
+    created_at = models.DateTimeField('Создано', auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Закладка'
+        verbose_name_plural = 'Закладки'
+        ordering = ['page']
+    
+    def __str__(self):
+        return f'{self.session.book.title} - стр. {self.page}'
+
+
+class BookChapter(models.Model):
+    """Главы книг для структурированного чтения"""
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, verbose_name='Книга', related_name='chapters')
+    title = models.CharField('Название главы', max_length=200)
+    content = models.TextField('Содержание главы')
+    order = models.PositiveIntegerField('Порядок', default=0)
+    page_start = models.PositiveIntegerField('Начальная страница', default=1)
+    page_end = models.PositiveIntegerField('Конечная страница', default=1)
+    
+    class Meta:
+        verbose_name = 'Глава книги'
+        verbose_name_plural = 'Главы книг'
+        ordering = ['order']
+    
+    def __str__(self):
+        return f'{self.book.title} - {self.title}'

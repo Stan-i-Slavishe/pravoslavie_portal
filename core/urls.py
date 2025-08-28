@@ -1,16 +1,22 @@
 from django.urls import path
-from . import views
+from .views.main_views import (
+    HomeView, AboutView, ContactView, CategoryListView, 
+    CategoryDetailView, TagListView, TagDetailView, MobileFeedbackView
+)
 
 app_name = 'core'
 
 urlpatterns = [
-    path('', views.HomeView.as_view(), name='home'),
-    path('about/', views.AboutView.as_view(), name='about'),
-    path('contact/', views.ContactView.as_view(), name='contact'),
+    path('', HomeView.as_view(), name='home'),
+    path('about/', AboutView.as_view(), name='about'),
+    path('contact/', ContactView.as_view(), name='contact'),
     
     # Категории и теги
-    path('categories/', views.CategoryListView.as_view(), name='categories'),
-    path('category/<str:slug>/', views.CategoryDetailView.as_view(), name='category'),
-    path('tags/', views.TagListView.as_view(), name='tags'),
-    path('tag/<str:slug>/', views.TagDetailView.as_view(), name='tag'),
+    path('categories/', CategoryListView.as_view(), name='categories'),
+    path('category/<str:slug>/', CategoryDetailView.as_view(), name='category'),
+    path('tags/', TagListView.as_view(), name='tags'),
+    path('tags/<str:slug>/', TagDetailView.as_view(), name='tag_detail'),
+    
+    # API для мобильной обратной связи
+    path('api/mobile-feedback/', MobileFeedbackView.as_view(), name='mobile_feedback'),
 ]

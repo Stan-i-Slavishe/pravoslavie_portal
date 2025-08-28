@@ -5,17 +5,19 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.core.paginator import Paginator
-from django.db.models import Q, Count, Avg
+from django.db.models import Q, Count, Avg, F
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.text import slugify
 from django.utils.crypto import get_random_string
+from django.template.loader import render_to_string
+from django.db import models
 import json
 
 try:
-    from .models import Story, Playlist, PlaylistItem, StoryView, StoryRecommendation
+    from .models import Story, Playlist, PlaylistItem, StoryView, StoryRecommendation, UserPlaylistPreference
 except ImportError:
     # Если модели плейлистов еще не созданы
     from .models import Story
@@ -23,6 +25,7 @@ except ImportError:
     PlaylistItem = None
     StoryView = None
     StoryRecommendation = None
+    UserPlaylistPreference = None
 
 
 def get_story_recommendations(story, user=None, limit=6):
@@ -69,6 +72,36 @@ def get_story_recommendations(story, user=None, limit=6):
 
 
 @login_required
+def playlist_modal_content(request, playlist_id):
+    """AJAX: Загрузка содержимого плейлиста для модального окна"""
+    try:
+        playlist = get_object_or_404(Playlist, id=playlist_id, creator=request.user)
+        
+        # Получаем элементы плейлиста с информацией о рассказах
+        playlist_items = PlaylistItem.objects.filter(
+            playlist=playlist
+        ).select_related(
+            'story', 'story__category'
+        ).prefetch_related(
+            'story__tags'
+        ).order_by('order')
+        
+        context = {
+            'playlist': playlist,
+            'playlist_items': playlist_items,
+        }
+        
+        # Рендерим шаблон содержимого плейлиста
+        html = render_to_string('stories/playlist_modal_content.html', context, request)
+        return HttpResponse(html)
+        
+    except Exception as e:
+        return HttpResponse(
+            f'<div class="alert alert-danger m-3">Ошибка загрузки плейлиста: {e}</div>'
+        )
+
+
+@login_required
 def playlists_list(request):
     """Список плейлистов пользователя"""
     if not Playlist:
@@ -80,7 +113,14 @@ def playlists_list(request):
             creator=request.user
         ).annotate(
             calculated_stories_count=Count('playlist_items')
+        ).prefetch_related(
+            'playlist_items__story'
         ).order_by('-created_at')
+        
+        # Добавляем информацию о первом рассказе каждого плейлиста для превью
+        for playlist in playlists:
+            first_item = playlist.playlist_items.order_by('order').first()
+            playlist.first_story = first_item.story if first_item else None
         
         # Пагинация
         paginator = Paginator(playlists, 12)
@@ -100,22 +140,44 @@ def playlists_list(request):
 @login_required
 def playlist_detail(request, slug):
     """Детальная страница плейлиста"""
+    playlist = None
+    
     try:
-        playlist = get_object_or_404(Playlist, slug=slug, creator=request.user)
+        # Пытаемся найти плейлист пользователя
+        try:
+            playlist = Playlist.objects.get(slug=slug, creator=request.user)
+        except Playlist.DoesNotExist:
+            # Пытаемся найти публичные плейлисты
+            try:
+                playlist = Playlist.objects.get(slug=slug, playlist_type='public')
+            except Playlist.DoesNotExist:
+                messages.error(request, f'Плейлист с адресом "{slug}" не найден')
+                return redirect('stories:playlists_list')
         
-        # Получаем элементы плейлиста в правильном порядке
+        # Проверяем доступ
+        if playlist and playlist.creator != request.user and playlist.playlist_type != 'public':
+            messages.error(request, 'У вас нет доступа к этому плейлисту')
+            return redirect('stories:playlists_list')
+        
+        # Получаем элементы плейлиста
         playlist_items = PlaylistItem.objects.filter(
             playlist=playlist
-        ).select_related('story').order_by('order')
+        ).select_related('story', 'story__category').order_by('order')
+        
+        # Увеличиваем счетчик просмотров
+        if playlist.creator != request.user and playlist.playlist_type == 'public':
+            playlist.increment_views()
         
         context = {
             'playlist': playlist,
             'playlist_items': playlist_items,
+            'can_edit': playlist.can_be_edited_by(request.user),
         }
         
         return render(request, 'stories/playlist_detail.html', context)
+        
     except Exception as e:
-        messages.error(request, 'Плейлист не найден или недоступен')
+        messages.error(request, f'Ошибка при загрузке плейлиста: {e}')
         return redirect('stories:playlists_list')
 
 
@@ -126,13 +188,19 @@ def create_playlist(request):
         name = request.POST.get('name', '').strip()
         description = request.POST.get('description', '').strip()
         is_public = request.POST.get('is_public') == 'on'
+        initial_story_id = request.POST.get('initial_story_id')
         
         if not name:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Название плейлиста обязательно'
+                })
             messages.error(request, 'Название плейлиста обязательно')
             return redirect('stories:playlists_list')
         
         # Создаем слаг
-        base_slug = slugify(name)
+        base_slug = slugify(name, allow_unicode=True)
         if not base_slug:
             base_slug = 'playlist'
         
@@ -143,6 +211,7 @@ def create_playlist(request):
                 slug = f"{base_slug}-{counter}"
                 counter += 1
             
+            # Создаем плейлист
             playlist = Playlist.objects.create(
                 creator=request.user,
                 title=name,
@@ -151,9 +220,40 @@ def create_playlist(request):
                 playlist_type='public' if is_public else 'private'
             )
             
+            # Добавляем текущий рассказ, если указан
+            if initial_story_id:
+                try:
+                    story = Story.objects.get(id=initial_story_id, is_published=True)
+                    PlaylistItem.objects.create(
+                        playlist=playlist,
+                        story=story,
+                        order=1
+                    )
+                except Story.DoesNotExist:
+                    pass
+            
+            # Возвращаем JSON для AJAX запросов
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': f'Плейлист "{name}" создан успешно!',
+                    'playlist': {
+                        'id': playlist.id,
+                        'title': playlist.title,
+                        'slug': playlist.slug,
+                        'url': playlist.get_absolute_url()
+                    }
+                })
+            
             messages.success(request, f'Плейлист "{name}" создан успешно!')
             return redirect('stories:playlist_detail', slug=playlist.slug)
+            
         except Exception as e:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Ошибка при создании плейлиста'
+                })
             messages.error(request, 'Ошибка при создании плейлиста')
             return redirect('stories:playlists_list')
     
@@ -255,10 +355,30 @@ def add_to_playlist(request):
 @require_http_methods(["POST"])
 def remove_from_playlist(request):
     """AJAX: Удаление рассказа из плейлиста"""
+    print(f"Headers: {dict(request.headers)}")
+    print(f"Content-Type: {request.content_type}")
+    print(f"Body: {request.body[:200]}")
+    
+    # Проверяем, что это AJAX запрос
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        print("Not an AJAX request")
+        return JsonResponse({
+            'success': False,
+            'message': 'Недопустимый тип запроса'
+        })
+    
     try:
         data = json.loads(request.body)
+        print(f"Parsed data: {data}")
         story_id = data.get('story_id')
         playlist_id = data.get('playlist_id')
+        
+        if not story_id or not playlist_id:
+            print("Missing parameters")
+            return JsonResponse({
+                'success': False,
+                'message': 'Не указаны обязательные параметры'
+            })
         
         story = get_object_or_404(Story, id=story_id)
         playlist = get_object_or_404(Playlist, id=playlist_id, creator=request.user)
@@ -270,6 +390,7 @@ def remove_from_playlist(request):
         )
         
         playlist_item.delete()
+        print(f"Deleted playlist item for story {story_id}")
         
         # Переупорядочиваем оставшиеся элементы
         remaining_items = PlaylistItem.objects.filter(
@@ -281,12 +402,20 @@ def remove_from_playlist(request):
                 item.order = i
                 item.save(update_fields=['order'])
         
+        print("Success! Returning JSON response")
         return JsonResponse({
             'success': True,
             'message': f'Рассказ удален из плейлиста "{playlist.title}"'
         })
         
+    except json.JSONDecodeError as e:
+        print(f"JSON decode error: {e}")
+        return JsonResponse({
+            'success': False,
+            'message': 'Неверный формат данных'
+        })
     except Exception as e:
+        print(f"General error: {e}")
         return JsonResponse({
             'success': False,
             'message': 'Произошла ошибка при удалении'
@@ -459,6 +588,9 @@ def enhanced_story_detail(request, slug):
     # Плейлисты пользователя (если авторизован)
     user_playlists = []
     story_in_playlists = []
+    story_in_watch_later = []
+    story_in_favorites = []
+    
     if request.user.is_authenticated and Playlist:
         try:
             # Получаем плейлисты с аннотацией количества рассказов
@@ -466,17 +598,36 @@ def enhanced_story_detail(request, slug):
                 creator=request.user
             ).annotate(
                 calculated_stories_count=Count('playlist_items')
-            )
-            
-            print(f"Отладка: Найдено плейлистов: {user_playlists.count()}")
+            ).order_by('-updated_at')
             
             # Проверяем, в каких плейлистах уже есть этот рассказ
-            story_in_playlists = PlaylistItem.objects.filter(
+            story_in_playlists = list(PlaylistItem.objects.filter(
                 playlist__creator=request.user,
                 story=story
-            ).values_list('playlist_id', flat=True)
+            ).values_list('playlist_id', flat=True))
             
-            print(f"Отладка: Рассказ в плейлистах: {list(story_in_playlists)}")
+            # Проверяем системные плейлисты
+            if UserPlaylistPreference:
+                try:
+                    prefs = UserPlaylistPreference.objects.get(user=request.user)
+                    
+                    if prefs.watch_later_playlist:
+                        if PlaylistItem.objects.filter(
+                            playlist=prefs.watch_later_playlist,
+                            story=story
+                        ).exists():
+                            story_in_watch_later = [story.id]
+                    
+                    if prefs.favorites_playlist:
+                        if PlaylistItem.objects.filter(
+                            playlist=prefs.favorites_playlist,
+                            story=story
+                        ).exists():
+                            story_in_favorites = [story.id]
+                            
+                except UserPlaylistPreference.DoesNotExist:
+                    pass
+                    
         except Exception as e:
             print(f"Ошибка получения плейлистов: {e}")
             pass
@@ -519,7 +670,8 @@ def enhanced_story_detail(request, slug):
             'replies__user'
         ).order_by('-is_pinned', '-created_at')[:5]  # Первые 5 комментариев
         
-        comments_count = story.comments.filter(is_approved=True).count()
+        # ИСПРАВЛЕНИЕ: Считаем только основные комментарии (без ответов)
+        comments_count = story.comments.filter(is_approved=True, parent=None).count()
         
         # Получаем реакции пользователя на комментарии
         user_reactions = {}
@@ -557,6 +709,8 @@ def enhanced_story_detail(request, slug):
         'recommendations': recommendations,
         'user_playlists': user_playlists,
         'story_in_playlists': story_in_playlists,
+        'story_in_watch_later': story_in_watch_later,
+        'story_in_favorites': story_in_favorites,
         'user_liked': user_liked,
         'likes_count': likes_count,
         'comments': comments,
@@ -566,4 +720,939 @@ def enhanced_story_detail(request, slug):
         'next_story': next_story,
     }
     
-    return render(request, 'stories/detail_v2.html', context)
+    return render(request, 'stories/story_detail.html', context)
+
+
+# ==========================================
+# НОВЫЕ ФУНКЦИИ ДЛЯ ИНТЕРАКТИВНОГО САЙДБАРА
+# ==========================================
+
+@login_required
+@require_http_methods(["POST"])
+def toggle_watch_later(request):
+    """AJAX: Добавить/убрать рассказ из 'Посмотреть позже'"""
+    try:
+        data = json.loads(request.body)
+        story_id = data.get('story_id')
+        
+        story = get_object_or_404(Story, id=story_id)
+        
+        # Получаем или создаем настройки пользователя
+        if not UserPlaylistPreference:
+            return JsonResponse({
+                'success': False,
+                'message': 'Функция недоступна - отсутствуют модели'
+            })
+            
+        prefs, created = UserPlaylistPreference.objects.get_or_create(user=request.user)
+        watch_later_playlist = prefs.get_or_create_watch_later()
+        
+        # Проверяем, есть ли уже рассказ в плейлисте
+        playlist_item = PlaylistItem.objects.filter(
+            playlist=watch_later_playlist,
+            story=story
+        ).first()
+        
+        if playlist_item:
+            # Удаляем из плейлиста
+            playlist_item.delete()
+            message = "Убрано из 'Посмотреть позже'"
+            action = "removed"
+        else:
+            # Добавляем в плейлист
+            PlaylistItem.objects.create(
+                playlist=watch_later_playlist,
+                story=story,
+                order=watch_later_playlist.playlist_items.count() + 1
+            )
+            message = "Добавлено в 'Посмотреть позже'"
+            action = "added"
+        
+        return JsonResponse({
+            'success': True,
+            'message': message,
+            'action': action
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'Произошла ошибка'
+        })
+
+
+@login_required
+@require_http_methods(["POST"])
+def toggle_favorites(request):
+    """AJAX: Добавить/убрать рассказ из 'Избранное'"""
+    try:
+        data = json.loads(request.body)
+        story_id = data.get('story_id')
+        
+        story = get_object_or_404(Story, id=story_id)
+        
+        # Получаем или создаем настройки пользователя
+        if not UserPlaylistPreference:
+            return JsonResponse({
+                'success': False,
+                'message': 'Функция недоступна - отсутствуют модели'
+            })
+            
+        prefs, created = UserPlaylistPreference.objects.get_or_create(user=request.user)
+        favorites_playlist = prefs.get_or_create_favorites()
+        
+        # Проверяем, есть ли уже рассказ в плейлисте
+        playlist_item = PlaylistItem.objects.filter(
+            playlist=favorites_playlist,
+            story=story
+        ).first()
+        
+        if playlist_item:
+            # Удаляем из плейлиста
+            playlist_item.delete()
+            message = "Убрано из избранного"
+            action = "removed"
+        else:
+            # Добавляем в плейлист
+            PlaylistItem.objects.create(
+                playlist=favorites_playlist,
+                story=story,
+                order=favorites_playlist.playlist_items.count() + 1
+            )
+            message = "Добавлено в избранное"
+            action = "added"
+        
+        return JsonResponse({
+            'success': True,
+            'message': message,
+            'action': action
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'Произошла ошибка'
+        })
+
+
+@login_required
+def sidebar_playlists_partial(request, story_slug):
+    """Частичный рендер сайдбара плейлистов для AJAX обновления"""
+    try:
+        story = get_object_or_404(Story, slug=story_slug, is_published=True)
+        
+        # Получаем плейлисты пользователя с информацией о наличии рассказа
+        user_playlists = []
+        story_in_playlists = []
+        story_in_watch_later = []
+        story_in_favorites = []
+        
+        if Playlist:
+            # Получаем плейлисты с аннотацией количества рассказов
+            user_playlists = Playlist.objects.filter(
+                creator=request.user
+            ).annotate(
+                calculated_stories_count=Count('playlist_items')
+            ).order_by('-updated_at')
+            
+            # Проверяем, в каких плейлистах уже есть этот рассказ
+            story_in_playlists = list(PlaylistItem.objects.filter(
+                playlist__creator=request.user,
+                story=story
+            ).values_list('playlist_id', flat=True))
+            
+            # Проверяем системные плейлисты
+            if UserPlaylistPreference:
+                try:
+                    prefs = UserPlaylistPreference.objects.get(user=request.user)
+                    
+                    if prefs.watch_later_playlist:
+                        if PlaylistItem.objects.filter(
+                            playlist=prefs.watch_later_playlist,
+                            story=story
+                        ).exists():
+                            story_in_watch_later = [story.id]
+                    
+                    if prefs.favorites_playlist:
+                        if PlaylistItem.objects.filter(
+                            playlist=prefs.favorites_playlist,
+                            story=story
+                        ).exists():
+                            story_in_favorites = [story.id]
+                            
+                except UserPlaylistPreference.DoesNotExist:
+                    pass
+        
+        context = {
+            'story': story,
+            'user_playlists': user_playlists,
+            'story_in_playlists': story_in_playlists,
+            'story_in_watch_later': story_in_watch_later,
+            'story_in_favorites': story_in_favorites,
+        }
+        
+        # Возвращаем только HTML сайдбара
+        html = render_to_string('stories/partials/playlist_sidebar.html', context, request)
+        return HttpResponse(html)
+        
+    except Exception as e:
+        return HttpResponse('<div class="alert alert-danger">Ошибка загрузки плейлистов</div>')
+
+
+@login_required
+def watch_later_playlist(request):
+    """Страница плейлиста 'Посмотреть позже'"""
+    if not UserPlaylistPreference:
+        messages.error(request, 'Функция недоступна')
+        return redirect('stories:list')
+        
+    try:
+        prefs, created = UserPlaylistPreference.objects.get_or_create(user=request.user)
+        playlist = prefs.get_or_create_watch_later()
+        
+        # Получаем элементы плейлиста
+        playlist_items = PlaylistItem.objects.filter(
+            playlist=playlist
+        ).select_related('story').order_by('-added_at')  # Последние добавленные сверху
+        
+        # Пагинация
+        paginator = Paginator(playlist_items, 20)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        context = {
+            'playlist': playlist,
+            'page_obj': page_obj,
+            'is_system_playlist': True,
+            'playlist_type': 'watch_later'
+        }
+        
+        return render(request, 'stories/system_playlist.html', context)
+    except Exception as e:
+        messages.error(request, 'Ошибка загрузки плейлиста')
+        return redirect('stories:playlists_list')
+
+
+@login_required
+@require_http_methods(["POST"])
+def remove_from_playlist(request):
+    """AJAX: Удаление рассказа из плейлиста с правильным переупорядочиванием"""
+    try:
+        # Получаем данные из JSON
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+        else:
+            # Fallback для form data
+            data = request.POST
+            
+        story_id = data.get('story_id')
+        playlist_id = data.get('playlist_id')
+        
+        if not story_id or not playlist_id:
+            return JsonResponse({
+                'success': False,
+                'message': 'Не указан ID рассказа или плейлиста'
+            }, status=400)
+        
+        story = get_object_or_404(Story, id=story_id)
+        playlist = get_object_or_404(Playlist, id=playlist_id, creator=request.user)
+        
+        playlist_item = get_object_or_404(
+            PlaylistItem,
+            playlist=playlist,
+            story=story
+        )
+        
+        # Сохраняем порядок удаляемого элемента
+        deleted_order = playlist_item.order
+        
+        # Удаляем элемент
+        playlist_item.delete()
+        
+        # Переупорядочиваем все элементы с порядком больше удаленного
+        PlaylistItem.objects.filter(
+            playlist=playlist,
+            order__gt=deleted_order
+        ).update(order=F('order') - 1)
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Рассказ удален из плейлиста "{playlist.title}"'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Ошибка в формате данных'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Произошла ошибка: {str(e)}'
+        }, status=500)
+
+
+def system_playlist_content(request, playlist_type):
+    """Загрузка содержимого системного плейлиста для AJAX"""
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'message': 'Необходима авторизация'
+        }, status=401)
+    
+    try:
+        stories = []
+        
+        if playlist_type == 'favorites':
+            # Получаем избранные рассказы
+            if UserPlaylistPreference:
+                try:
+                    prefs = UserPlaylistPreference.objects.get(user=request.user)
+                    favorites_playlist = prefs.get_or_create_favorites()
+                    playlist_items = PlaylistItem.objects.filter(
+                        playlist=favorites_playlist
+                    ).select_related('story').order_by('-added_at')[:20]
+                    
+                    for item in playlist_items:
+                        story = item.story
+                        stories.append({
+                            'id': story.id,
+                            'title': story.title,
+                            'slug': story.slug,
+                            'youtube_id': getattr(story, 'youtube_embed_id', None),
+                            'views_count': getattr(story, 'views_count', 0),
+                            'created_at': story.created_at.strftime('%d.%m.%Y') if story.created_at else 'Недавно'
+                        })
+                except UserPlaylistPreference.DoesNotExist:
+                    pass
+        
+        elif playlist_type == 'watch_later':
+            # Получаем рассказы "Посмотреть позже"
+            if UserPlaylistPreference:
+                try:
+                    prefs = UserPlaylistPreference.objects.get(user=request.user)
+                    watch_later_playlist = prefs.get_or_create_watch_later()
+                    playlist_items = PlaylistItem.objects.filter(
+                        playlist=watch_later_playlist
+                    ).select_related('story').order_by('-added_at')[:20]
+                    
+                    for item in playlist_items:
+                        story = item.story
+                        stories.append({
+                            'id': story.id,
+                            'title': story.title,
+                            'slug': story.slug,
+                            'youtube_id': getattr(story, 'youtube_embed_id', None),
+                            'views_count': getattr(story, 'views_count', 0),
+                            'created_at': story.created_at.strftime('%d.%m.%Y') if story.created_at else 'Недавно'
+                        })
+                except UserPlaylistPreference.DoesNotExist:
+                    pass
+        
+        elif playlist_type == 'history':
+            # Получаем историю просмотров
+            if StoryView:
+                story_views = StoryView.objects.filter(
+                    user=request.user
+                ).select_related('story').order_by('-viewed_at')[:20]
+                
+                for view in story_views:
+                    story = view.story
+                    stories.append({
+                        'id': story.id,
+                        'title': story.title,
+                        'slug': story.slug,
+                        'youtube_id': getattr(story, 'youtube_embed_id', None),
+                        'views_count': getattr(story, 'views_count', 0),
+                        'created_at': view.viewed_at.strftime('%d.%m.%Y') if view.viewed_at else 'Недавно'
+                    })
+        
+        return JsonResponse({
+            'success': True,
+            'stories': stories,
+            'playlist_type': playlist_type,
+            'message': f'Загружено {len(stories)} рассказов'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Ошибка загрузки: {str(e)}',
+            'stories': []
+        }, status=500)
+
+
+@login_required
+@require_http_methods(["POST"])
+def playlists_for_save(request):
+    """
+    Получение списка плейлистов пользователя для модального окна "Сохранить в плейлист"
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    logger.info(f"playlists_for_save called by user: {request.user}")
+    
+    # Проверка доступности моделей
+    try:
+        from .models import Playlist as PlaylistModel, PlaylistItem as PlaylistItemModel
+        logger.info("Successfully imported models directly")
+    except ImportError as e:
+        logger.error(f"Failed to import models directly: {e}")
+        return JsonResponse({'error': 'Модели недоступны'}, status=503)
+    
+    # Проверка таблиц в базе данных
+    try:
+        from django.db import connection
+        cursor = connection.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '%playlist%';")
+        tables = cursor.fetchall()
+        logger.info(f"Playlist tables in database: {tables}")
+    except Exception as e:
+        logger.error(f"Error checking database tables: {e}")
+    
+    if not Playlist:
+        logger.error("Playlist model is None in global scope")
+        return JsonResponse({'error': 'Функция недоступна'}, status=503)
+    
+    try:
+        logger.info("Parsing request body...")
+        data = json.loads(request.body)
+        story_id = data.get('story_id')
+        
+        logger.info(f"Received story_id: {story_id}")
+        
+        if not story_id:
+            return JsonResponse({'error': 'Не указан ID рассказа'}, status=400)
+        
+        try:
+            story = Story.objects.get(id=story_id, is_published=True)
+            logger.info(f"Found story: {story.title}")
+        except Story.DoesNotExist:
+            logger.error(f"Story with id {story_id} not found")
+            return JsonResponse({'error': 'Рассказ не найден'}, status=404)
+        except Exception as story_error:
+            logger.error(f"Error finding story: {story_error}")
+            return JsonResponse({'error': f'Ошибка поиска рассказа: {str(story_error)}'}, status=500)
+        
+        # Получаем все плейлисты пользователя
+        logger.info("Querying user playlists...")
+        try:
+            # Проверяем, существует ли таблица
+            user_playlists = Playlist.objects.filter(
+                creator=request.user,
+                is_active=True
+            )
+            
+            # Проверяем, можно ли делать count
+            playlists_count = user_playlists.count()
+            logger.info(f"Found {playlists_count} playlists for user {request.user}")
+            
+            # Если нет плейлистов, возвращаем пустой список
+            if playlists_count == 0:
+                return JsonResponse({
+                    'success': True,
+                    'playlists': []
+                })
+            
+            # Простое получение без annotate сначала
+            user_playlists_list = list(user_playlists.order_by('-created_at'))
+            logger.info(f"Retrieved {len(user_playlists_list)} playlists")
+            
+        except Exception as query_error:
+            logger.error(f"Error querying playlists: {query_error}")
+            logger.exception("Full traceback for playlist query:")
+            return JsonResponse({'error': f'Ошибка запроса плейлистов: {str(query_error)}'}, status=500)
+        
+        # Формируем список плейлистов
+        playlists_data = []
+        for playlist in user_playlists_list:
+            try:
+                logger.info(f"Processing playlist: {playlist.title}")
+                
+                # Получаем количество рассказов через related объект
+                try:
+                    stories_count = playlist.playlist_items.count()
+                except Exception as count_error:
+                    logger.warning(f"Error counting stories for playlist {playlist.id}: {count_error}")
+                    stories_count = 0
+                
+                # Проверяем, есть ли рассказ в плейлисте
+                try:
+                    contains_story = PlaylistItem.objects.filter(
+                        playlist=playlist,
+                        story=story
+                    ).exists()
+                except Exception as contains_error:
+                    logger.warning(f"Error checking if story in playlist {playlist.id}: {contains_error}")
+                    contains_story = False
+                
+                playlists_data.append({
+                    'id': playlist.id,
+                    'title': playlist.title,
+                    'is_public': playlist.playlist_type == 'public',
+                    'stories_count': stories_count,
+                    'contains_story': contains_story
+                })
+                
+            except Exception as playlist_error:
+                logger.error(f"Error processing playlist {playlist.id}: {playlist_error}")
+                continue
+        
+        logger.info(f"Returning {len(playlists_data)} playlists")
+        return JsonResponse({
+            'success': True,
+            'playlists': playlists_data
+        })
+        
+    except json.JSONDecodeError as e:
+        logger.error(f"JSON decode error: {e}")
+        return JsonResponse({'error': 'Неверный формат данных'}, status=400)
+    except Exception as e:
+        logger.error(f"Unexpected error in playlists_for_save: {e}")
+        logger.exception("Full traceback:")
+        return JsonResponse({'error': f'Внутренняя ошибка: {str(e)}'}, status=500)
+
+
+@login_required
+@require_http_methods(["POST"])
+def add_to_playlist(request):
+    """
+    Добавление рассказа в плейлист
+    """
+    if not Playlist or not PlaylistItem:
+        return JsonResponse({'success': False, 'message': 'Функция недоступна'}, status=503)
+    
+    try:
+        data = json.loads(request.body)
+        story_id = data.get('story_id')
+        playlist_id = data.get('playlist_id')
+        
+        if not story_id or not playlist_id:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Не указаны необходимые параметры'
+            })
+        
+        try:
+            story = Story.objects.get(id=story_id, is_published=True)
+        except Story.DoesNotExist:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Рассказ не найден'
+            })
+        
+        try:
+            playlist = Playlist.objects.get(
+                id=playlist_id, 
+                creator=request.user,
+                is_active=True
+            )
+        except Playlist.DoesNotExist:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Плейлист не найден'
+            })
+        
+        # Проверяем, нет ли рассказа в плейлисте
+        if PlaylistItem.objects.filter(playlist=playlist, story=story).exists():
+            return JsonResponse({
+                'success': False, 
+                'message': 'Рассказ уже в плейлисте'
+            })
+        
+        # Добавляем рассказ в плейлист
+        PlaylistItem.objects.create(
+            playlist=playlist,
+            story=story
+        )
+        
+        # Получаем обновлённый счётчик
+        stories_count = PlaylistItem.objects.filter(playlist=playlist).count()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Рассказ добавлен в плейлист "{playlist.title}"',
+            'stories_count': stories_count
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False, 
+            'message': 'Неверный формат данных'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False, 
+            'message': 'Произошла ошибка при добавлении рассказа'
+        })
+
+
+@login_required
+@require_http_methods(["POST"])
+def remove_from_playlist(request):
+    """
+    Удаление рассказа из плейлиста
+    """
+    if not Playlist or not PlaylistItem:
+        return JsonResponse({'success': False, 'message': 'Функция недоступна'}, status=503)
+    
+    try:
+        data = json.loads(request.body)
+        story_id = data.get('story_id')
+        playlist_id = data.get('playlist_id')
+        
+        if not story_id or not playlist_id:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Не указаны необходимые параметры'
+            })
+        
+        try:
+            story = Story.objects.get(id=story_id, is_published=True)
+        except Story.DoesNotExist:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Рассказ не найден'
+            })
+        
+        try:
+            playlist = Playlist.objects.get(
+                id=playlist_id, 
+                creator=request.user,
+                is_active=True
+            )
+        except Playlist.DoesNotExist:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Плейлист не найден'
+            })
+        
+        # Пытаемся удалить рассказ из плейлиста
+        try:
+            playlist_item = PlaylistItem.objects.get(
+                playlist=playlist, 
+                story=story
+            )
+            playlist_item.delete()
+        except PlaylistItem.DoesNotExist:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Рассказ не находится в плейлисте'
+            })
+        
+        # Получаем обновлённый счётчик
+        stories_count = PlaylistItem.objects.filter(playlist=playlist).count()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Рассказ удалён из плейлиста "{playlist.title}"',
+            'stories_count': stories_count
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False, 
+            'message': 'Неверный формат данных'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False, 
+            'message': 'Произошла ошибка при удалении рассказа'
+        })
+
+
+@login_required
+@require_http_methods(["POST"])
+def toggle_watch_later(request):
+    """
+    Переключение "Посмотреть позже"
+    """
+    if not UserPlaylistPreference:
+        return JsonResponse({'success': False, 'message': 'Функция недоступна'}, status=503)
+    
+    try:
+        data = json.loads(request.body)
+        story_id = data.get('story_id')
+        
+        if not story_id:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Не указан ID рассказа'
+            })
+        
+        try:
+            story = Story.objects.get(id=story_id, is_published=True)
+        except Story.DoesNotExist:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Рассказ не найден'
+            })
+        
+        # Получаем или создаем настройки пользователя
+        prefs, created = UserPlaylistPreference.objects.get_or_create(user=request.user)
+        playlist = prefs.get_or_create_watch_later()
+        
+        # Проверяем, есть ли рассказ в плейлисте
+        playlist_item = PlaylistItem.objects.filter(
+            playlist=playlist, 
+            story=story
+        ).first()
+        
+        if playlist_item:
+            # Удаляем из плейлиста
+            playlist_item.delete()
+            action = 'removed'
+            message = 'Рассказ удален из "Посмотреть позже"'
+        else:
+            # Добавляем в плейлист
+            PlaylistItem.objects.create(
+                playlist=playlist,
+                story=story
+            )
+            action = 'added'
+            message = 'Рассказ добавлен в "Посмотреть позже"'
+        
+        return JsonResponse({
+            'success': True,
+            'action': action,
+            'message': message
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False, 
+            'message': 'Неверный формат данных'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False, 
+            'message': 'Произошла ошибка'
+        })
+
+
+@login_required
+@require_http_methods(["POST"])
+def toggle_favorites(request):
+    """
+    Переключение "Избранное"
+    """
+    if not UserPlaylistPreference:
+        return JsonResponse({'success': False, 'message': 'Функция недоступна'}, status=503)
+    
+    try:
+        data = json.loads(request.body)
+        story_id = data.get('story_id')
+        
+        if not story_id:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Не указан ID рассказа'
+            })
+        
+        try:
+            story = Story.objects.get(id=story_id, is_published=True)
+        except Story.DoesNotExist:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Рассказ не найден'
+            })
+        
+        # Получаем или создаем настройки пользователя
+        prefs, created = UserPlaylistPreference.objects.get_or_create(user=request.user)
+        playlist = prefs.get_or_create_favorites()
+        
+        # Проверяем, есть ли рассказ в плейлисте
+        playlist_item = PlaylistItem.objects.filter(
+            playlist=playlist, 
+            story=story
+        ).first()
+        
+        if playlist_item:
+            # Удаляем из плейлиста
+            playlist_item.delete()
+            action = 'removed'
+            message = 'Рассказ удален из избранного'
+        else:
+            # Добавляем в плейлист
+            PlaylistItem.objects.create(
+                playlist=playlist,
+                story=story
+            )
+            action = 'added'
+            message = 'Рассказ добавлен в избранное'
+        
+        return JsonResponse({
+            'success': True,
+            'action': action,
+            'message': message
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False, 
+            'message': 'Неверный формат данных'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False, 
+            'message': 'Произошла ошибка'
+        })
+
+
+def public_playlist_detail(request, user_id, slug):
+    """Публичная страница плейлиста"""
+    try:
+        playlist = get_object_or_404(
+            Playlist, 
+            slug=slug, 
+            creator_id=user_id,
+            playlist_type='public'
+        )
+        
+        # Получаем элементы плейлиста
+        playlist_items = PlaylistItem.objects.filter(
+            playlist=playlist
+        ).select_related('story', 'story__category').order_by('order')
+        
+        # Увеличиваем счетчик просмотров
+        playlist.increment_views()
+        
+        context = {
+            'playlist': playlist,
+            'playlist_items': playlist_items,
+            'can_edit': False,  # Публичный просмотр - редактирование недоступно
+            'is_public_view': True,
+        }
+        
+        return render(request, 'stories/playlist_detail.html', context)
+    except Exception as e:
+        messages.error(request, 'Плейлист не найден')
+        return redirect('stories:list')
+
+
+@login_required
+def quick_add_to_playlist_modal(request, story_id):
+    """Модальное окно для быстрого добавления в плейлист"""
+    story = get_object_or_404(Story, id=story_id)
+    
+    # Получаем все плейлисты пользователя с информацией о наличии рассказа
+    user_playlists = Playlist.objects.filter(
+        creator=request.user
+    ).annotate(
+        has_story=Count('playlist_items', filter=Q(playlist_items__story=story))
+    ).order_by('-updated_at')
+    
+    context = {
+        'story': story,
+        'user_playlists': user_playlists,
+    }
+    
+    return render(request, 'stories/quick_add_playlist_modal.html', context)
+
+
+def story_player(request, slug):
+    """Проигрыватель рассказа с поддержкой плейлистов"""
+    story = get_object_or_404(Story, slug=slug, is_published=True)
+    
+    # Получаем информацию о плейлисте, если передан
+    playlist_slug = request.GET.get('playlist')
+    current_playlist = None
+    next_story = None
+    prev_story = None
+    
+    if playlist_slug and request.user.is_authenticated:
+        try:
+            current_playlist = Playlist.objects.get(
+                slug=playlist_slug,
+                creator=request.user
+            )
+            
+            # Получаем следующий и предыдущий рассказы в плейлисте
+            try:
+                current_item = PlaylistItem.objects.get(playlist=current_playlist, story=story)
+                next_item = PlaylistItem.objects.filter(
+                    playlist=current_playlist,
+                    order__gt=current_item.order
+                ).order_by('order').first()
+                
+                prev_item = PlaylistItem.objects.filter(
+                    playlist=current_playlist,
+                    order__lt=current_item.order
+                ).order_by('-order').first()
+                
+                next_story = next_item.story if next_item else None
+                prev_story = prev_item.story if prev_item else None
+            except PlaylistItem.DoesNotExist:
+                pass
+            
+        except Playlist.DoesNotExist:
+            pass
+    
+    # Проверяем статус системных плейлистов
+    in_watch_later = False
+    in_favorites = False
+    
+    if request.user.is_authenticated and UserPlaylistPreference:
+        try:
+            prefs = UserPlaylistPreference.objects.get(user=request.user)
+            
+            if prefs.watch_later_playlist:
+                in_watch_later = PlaylistItem.objects.filter(
+                    playlist=prefs.watch_later_playlist,
+                    story=story
+                ).exists()
+            
+            if prefs.favorites_playlist:
+                in_favorites = PlaylistItem.objects.filter(
+                    playlist=prefs.favorites_playlist,
+                    story=story
+                ).exists()
+                
+        except UserPlaylistPreference.DoesNotExist:
+            pass
+    
+    context = {
+        'story': story,
+        'current_playlist': current_playlist,
+        'next_story': next_story,
+        'prev_story': prev_story,
+        'in_watch_later': in_watch_later,
+        'in_favorites': in_favorites,
+    }
+    
+    return render(request, 'stories/player.html', context)
+
+
+@login_required
+def favorites_playlist(request):
+    """Страница плейлиста 'Избранное'"""
+    if not UserPlaylistPreference:
+        messages.error(request, 'Функция недоступна')
+        return redirect('stories:list')
+        
+    try:
+        prefs, created = UserPlaylistPreference.objects.get_or_create(user=request.user)
+        playlist = prefs.get_or_create_favorites()
+        
+        # Получаем элементы плейлиста
+        playlist_items = PlaylistItem.objects.filter(
+            playlist=playlist
+        ).select_related('story').order_by('-added_at')  # Последние добавленные сверху
+        
+        # Пагинация
+        paginator = Paginator(playlist_items, 20)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        context = {
+            'playlist': playlist,
+            'page_obj': page_obj,
+            'is_system_playlist': True,
+            'playlist_type': 'favorites'
+        }
+        
+        return render(request, 'stories/system_playlist.html', context)
+    except Exception as e:
+        messages.error(request, 'Ошибка загрузки плейлиста')
+        return redirect('stories:playlists_list')

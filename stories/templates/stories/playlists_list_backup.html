@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Мои плейлисты{% endblock %}
+
+{% block extra_css %}
+<style>
+.playlist-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    background: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.playlist-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.playlist-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--orthodox-blue, #2B5AA0);
+    margin-bottom: 10px;
+}
+
+.playlist-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.playlist-stats {
+    display: flex;
+    gap: 15px;
+}
+
+.playlist-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-playlist {
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: var(--orthodox-blue, #2B5AA0);
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: #1e3f73;
+    color: white;
+}
+
+.btn-secondary {
+    background: #f8f9fa;
+    color: #495057;
+    border: 1px solid #dee2e6;
+}
+
+.btn-secondary:hover {
+    background: #e2e6ea;
+    color: #495057;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+    border: none;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+    color: white;
+}
+
+.create-playlist-btn {
+    background: var(--gold-accent, #D4AF37);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin-bottom: 30px;
+}
+
+.create-playlist-btn:hover {
+    background: #b8941f;
+    color: white;
+    transform: translateY(-1px);
+}
+
+.playlist-description {
+    color: #666;
+    margin: 10px 0;
+    line-height: 1.5;
+}
+
+.playlist-visibility {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.visibility-public {
+    background: #d4edda;
+    color: #155724;
+}
+
+.visibility-private {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.no-playlists {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+}
+
+.no-playlists i {
+    font-size: 4rem;
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    .playlist-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .playlist-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">
+                    <i class="fas fa-list-ul me-2"></i>
+                    Мои плейлисты
+                </h1>
+                <a href="{% url 'stories:create_playlist' %}" class="create-playlist-btn">
+                    <i class="fas fa-plus"></i>
+                    Создать плейлист
+                </a>
+            </div>
+            
+            {% if page_obj.object_list %}
+                <div class="row">
+                    {% for playlist in page_obj %}
+                        <div class="col-lg-6 col-12">
+                            <div class="playlist-card">
+                                <div class="playlist-title">
+                                    <a href="{% url 'stories:playlist_detail' playlist.slug %}" class="text-decoration-none">
+                                        {{ playlist.title }}
+                                    </a>
+                                </div>
+                                
+                                {% if playlist.description %}
+                                    <div class="playlist-description">
+                                        {{ playlist.description|truncatewords:20 }}
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="playlist-meta">
+                                    <div class="playlist-stats">
+                                        <span>
+                                            <i class="fas fa-video me-1"></i>
+                                            {{ playlist.calculated_stories_count }} рассказ{{ playlist.calculated_stories_count|pluralize:"ов" }}
+                                        </span>
+                                        <span class="playlist-visibility {% if playlist.is_public %}visibility-public{% else %}visibility-private{% endif %}">
+                                            <i class="fas {% if playlist.is_public %}fa-globe{% else %}fa-lock{% endif %} me-1"></i>
+                                            {% if playlist.is_public %}Публичный{% else %}Приватный{% endif %}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="playlist-actions">
+                                        <a href="{% url 'stories:playlist_detail' playlist.slug %}" 
+                                           class="btn-playlist btn-primary" title="Просмотр">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'stories:edit_playlist' playlist.slug %}" 
+                                           class="btn-playlist btn-secondary" title="Редактировать">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="post" action="{% url 'stories:delete_playlist' playlist.slug %}" 
+                                              style="display: inline;" 
+                                              onsubmit="return confirm('Вы уверены, что хотите удалить плейлист?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn-playlist btn-danger" title="Удалить">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Пагинация -->
+                {% if page_obj.has_other_pages %}
+                    <nav aria-label="Пагинация плейлистов" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+                
+            {% else %}
+                <div class="no-playlists">
+                    <i class="fas fa-list-ul"></i>
+                    <h3>У вас пока нет плейлистов</h3>
+                    <p>Создайте свой первый плейлист, чтобы организовать любимые видео-рассказы</p>
+                    <a href="{% url 'stories:create_playlist' %}" class="create-playlist-btn">
+                        <i class="fas fa-plus"></i>
+                        Создать первый плейлист
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация появления карточек
+    const cards = document.querySelectorAll('.playlist-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

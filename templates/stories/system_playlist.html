@@ -1,0 +1,382 @@
+<!-- templates/stories/system_playlist.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if playlist_type == 'watch_later' %}
+        Посмотреть позже
+    {% elif playlist_type == 'favorites' %}
+        Избранное
+    {% else %}
+        {{ playlist.title }}
+    {% endif %} - Добрые истории
+{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+.playlist-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem 0;
+}
+
+.story-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.story-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.story-thumbnail {
+    position: relative;
+    background: #f8f9fa;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.story-thumbnail iframe {
+    width: 100%;
+    height: 120px;
+    border-radius: 6px;
+}
+
+.story-meta {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.remove-btn {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.story-card:hover .remove-btn {
+    opacity: 1;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="playlist-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center mb-3">
+                    {% if playlist_type == 'watch_later' %}
+                        <i class="bi bi-clock-history me-3" style="font-size: 3rem;"></i>
+                        <div>
+                            <h1 class="mb-2">Посмотреть позже</h1>
+                            <p class="mb-0 opacity-75">Рассказы, сохраненные для просмотра</p>
+                        </div>
+                    {% elif playlist_type == 'favorites' %}
+                        <i class="bi bi-heart-fill me-3" style="font-size: 3rem;"></i>
+                        <div>
+                            <h1 class="mb-2">Избранное</h1>
+                            <p class="mb-0 opacity-75">Ваши любимые рассказы</p>
+                        </div>
+                    {% else %}
+                        <i class="bi bi-music-note-list me-3" style="font-size: 3rem;"></i>
+                        <div>
+                            <h1 class="mb-2">{{ playlist.title }}</h1>
+                            {% if playlist.description %}
+                                <p class="mb-0 opacity-75">{{ playlist.description }}</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="d-flex flex-column align-items-md-end">
+                    <div class="mb-2">
+                        <span class="badge bg-light text-dark px-3 py-2">
+                            <i class="bi bi-collection me-1"></i>
+                            {{ page_obj.paginator.count }} рассказов
+                        </span>
+                    </div>
+                    {% if not is_system_playlist %}
+                        <div>
+                            <a href="{% url 'stories:playlist_detail' playlist.slug %}" class="btn btn-light btn-sm">
+                                <i class="bi bi-pencil me-1"></i>
+                                Редактировать
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-4">
+    {% if page_obj %}
+        <div class="row">
+            {% for item in page_obj %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card story-card h-100">
+                        <div class="story-thumbnail">
+                            {% if item.story.youtube_embed_id %}
+                                <iframe src="https://www.youtube.com/embed/{{ item.story.youtube_embed_id }}" 
+                                        frameborder="0" allowfullscreen></iframe>
+                            {% else %}
+                                <div class="text-center p-3">
+                                    <i class="bi bi-play-circle" style="font-size: 2rem; color: #dc3545;"></i>
+                                    <p class="small text-muted mt-2 mb-0">Видео недоступно</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <a href="{{ item.story.get_absolute_url }}" 
+                                   class="text-decoration-none text-dark">
+                                    {{ item.story.title }}
+                                </a>
+                            </h6>
+                            
+                            {% if item.story.description %}
+                                <p class="card-text small text-muted">
+                                    {{ item.story.description|truncatewords:15 }}
+                                </p>
+                            {% endif %}
+                            
+                            <div class="story-meta d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-eye me-1"></i>
+                                    {{ item.story.views_count }} просмотров
+                                </div>
+                                <small class="text-muted">
+                                    {{ item.added_at|date:"d M Y" }}
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-transparent border-0 pt-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{ item.story.get_absolute_url }}" 
+                                   class="btn btn-primary btn-sm">
+                                    <i class="bi bi-play me-1"></i>
+                                    Смотреть
+                                </a>
+                                
+                                <button class="btn btn-outline-danger btn-sm remove-btn"
+                                        onclick="removeFromPlaylist({{ item.story.id }}, '{{ playlist_type }}')"
+                                        title="Удалить из плейлиста">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Пагинация -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Пагинация плейлиста">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">
+                                <i class="bi bi-chevron-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">
+                                <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+        
+    {% else %}
+        <div class="empty-state">
+            {% if playlist_type == 'watch_later' %}
+                <i class="bi bi-clock-history"></i>
+                <h3>Список пуст</h3>
+                <p>Добавляйте рассказы в "Посмотреть позже", чтобы не потерять их.</p>
+            {% elif playlist_type == 'favorites' %}
+                <i class="bi bi-heart"></i>
+                <h3>Пока нет избранных рассказов</h3>
+                <p>Отмечайте понравившиеся рассказы сердечком, чтобы они появились здесь.</p>
+            {% else %}
+                <i class="bi bi-music-note-list"></i>
+                <h3>Плейлист пуст</h3>
+                <p>Добавьте рассказы в этот плейлист.</p>
+            {% endif %}
+            
+            <a href="{% url 'stories:list' %}" class="btn btn-primary mt-3">
+                <i class="bi bi-search me-1"></i>
+                Найти рассказы
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{% csrf_token %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Функция удаления из системного плейлиста
+async function removeFromPlaylist(storyId, playlistType) {
+    if (!confirm('Удалить рассказ из плейлиста?')) {
+        return;
+    }
+    
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    try {
+        let url;
+        if (playlistType === 'watch_later') {
+            url = '/stories/playlists/toggle-watch-later/';
+        } else if (playlistType === 'favorites') {
+            url = '/stories/playlists/toggle-favorites/';
+        } else {
+            // Для обычных плейлистов
+            url = '/stories/playlists/remove-from-playlist/';
+        }
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ story_id: storyId })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Удаляем карточку со страницы с анимацией
+            const storyCard = event.target.closest('.col-md-6');
+            if (storyCard) {
+                storyCard.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                storyCard.style.opacity = '0';
+                storyCard.style.transform = 'scale(0.9)';
+                
+                setTimeout(() => {
+                    storyCard.remove();
+                    
+                    // Проверяем, есть ли еще рассказы
+                    const remainingCards = document.querySelectorAll('.story-card');
+                    if (remainingCards.length === 0) {
+                        location.reload(); // Перезагружаем для показа пустого состояния
+                    }
+                }, 300);
+            }
+            
+            showNotification(data.message, 'success');
+        } else {
+            showNotification(data.message, 'error');
+        }
+    } catch (error) {
+        console.error('Remove error:', error);
+        showNotification('Произошла ошибка при удалении', 'error');
+    }
+}
+
+// Функция уведомлений
+function showNotification(message, type = 'info') {
+    const container = getOrCreateToastContainer();
+    
+    const alertClass = type === 'success' ? 'alert-success' : 
+                      type === 'error' ? 'alert-danger' : 'alert-info';
+    
+    const notification = document.createElement('div');
+    notification.className = `alert ${alertClass} alert-dismissible fade show`;
+    notification.style.cssText = 'margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);';
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+            <span>${message}</span>
+        </div>
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Автоматически убираем через 4 секунды
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 4000);
+}
+
+function getOrCreateToastContainer() {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 1055; max-width: 350px;';
+        document.body.appendChild(container);
+    }
+    return container;
+}
+
+// Инициализация
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📱 Системный плейлист загружен');
+    
+    // Добавляем класс для плавной анимации при загрузке
+    const storyCards = document.querySelectorAll('.story-card');
+    storyCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

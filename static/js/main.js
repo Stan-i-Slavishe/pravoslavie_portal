@@ -1,5 +1,61 @@
 // Улучшенный JavaScript для портала "Добрые истории"
 
+// Функция получения CSRF токена
+function getCSRFToken() {
+    const cookieValue = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+    
+    if (cookieValue) {
+        return cookieValue;
+    }
+    
+    // Альтернативный способ - из мета-тега
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    if (csrfMeta) {
+        return csrfMeta.getAttribute('content');
+    }
+    
+    // Еще один способ - из скрытого поля
+    const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    if (csrfInput) {
+        return csrfInput.value;
+    }
+    
+    return null;
+}
+
+// Функция для безопасных AJAX запросов
+function safeFetch(url, options = {}) {
+    const defaultOptions = {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json',
+        }
+    };
+    
+    // Добавляем CSRF токен только для POST, PUT, DELETE запросов
+    if (['POST', 'PUT', 'DELETE', 'PATCH'].includes((options.method || 'GET').toUpperCase())) {
+        const csrfToken = getCSRFToken();
+        if (csrfToken) {
+            defaultOptions.headers['X-CSRFToken'] = csrfToken;
+        }
+    }
+    
+    // Объединяем опции
+    const mergedOptions = {
+        ...defaultOptions,
+        ...options,
+        headers: {
+            ...defaultOptions.headers,
+            ...options.headers
+        }
+    };
+    
+    return fetch(url, mergedOptions);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Инициализация Bootstrap tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));

@@ -3,28 +3,80 @@
 
 {% block title %}{{ category.name }} - Православный портал{% endblock %}
 
+{% block extra_css %}
+<style>
+.category-header {
+    background: linear-gradient(135deg, {{ category.color }}20, {{ category.color }}10);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.category-icon {
+    color: {{ category.color }};
+    font-size: 3rem;
+    margin-right: 1rem;
+}
+
+.content-card {
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.content-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.empty-state {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 20px;
+    padding: 3rem;
+    text-align: center;
+}
+
+.redirect-info {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    border-left: 4px solid #2196f3;
+}
+
+.auto-redirect {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <!-- Хлебные крошки -->
-        <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Главная</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'core:categories' %}">Категории</a></li>
-                <li class="breadcrumb-item active">{{ category.name }}</li>
-            </ol>
-        </nav>
-        
-        <!-- Заголовок категории -->
-        <div class="d-flex align-items-center mb-4">
+<div class="container">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:categories' %}">Категории</a></li>
+            <li class="breadcrumb-item active">{{ category.name }}</li>
+        </ol>
+    </nav>
+    
+    <!-- Заголовок категории -->
+    <div class="category-header">
+        <div class="d-flex align-items-center">
             {% if category.icon %}
-                <i class="{{ category.icon }} me-3" 
-                   style="color: {{ category.color }}; font-size: 2.5rem;"></i>
+                <i class="{{ category.icon }} category-icon"></i>
             {% endif %}
             <div>
-                <h1 class="mb-1">{{ category.name }}</h1>
-                <span class="badge rounded-pill" 
-                      style="background-color: {{ category.color }};">
+                <h1 class="mb-2">{{ category.name }}</h1>
+                <span class="badge rounded-pill px-3 py-2" 
+                      style="background-color: {{ category.color }}; font-size: 0.9rem;">
                     {{ category.get_content_type_display }}
                 </span>
             </div>
@@ -32,102 +84,231 @@
         
         <!-- Описание категории -->
         {% if category.description %}
-            <div class="alert alert-info mb-4">
-                <i class="bi bi-info-circle me-2"></i>
-                {{ category.description }}
+            <div class="mt-3">
+                <p class="mb-0 fs-6 text-muted">{{ category.description }}</p>
             </div>
         {% endif %}
-        
-        <!-- Контент категории -->
-        <div class="row">
-            <div class="col-lg-8">
-                {% if content_items %}
-                    <div class="row g-4">
-                        {% for item in content_items %}
-                            <div class="col-md-6">
-                                <div class="card h-100 shadow-sm">
-                                    <div class="card-body">
-                                        <h5 class="card-title">{{ item.title }}</h5>
-                                        <p class="card-text">{{ item.description|truncatewords:20 }}</p>
-                                        <a href="{{ item.get_absolute_url }}" class="btn btn-primary btn-sm">
-                                            Подробнее
+    </div>
+    
+    <!-- Контент категории -->
+    <div class="row">
+        <div class="col-lg-8">
+            {% if has_content %}
+                <!-- Отображение контента -->
+                <div class="row g-4">
+                    {% for item in content_items %}
+                        <div class="col-md-6">
+                            <div class="card content-card h-100">
+                                {% if item.image %}
+                                    <img src="{{ item.image }}" class="card-img-top" alt="{{ item.title }}" style="height: 200px; object-fit: cover;">
+                                {% endif %}
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <small class="text-muted">{{ item.content_type }}</small>
+                                        {% if item.views_count %}
+                                            <small class="text-muted">
+                                                <i class="bi bi-eye"></i> {{ item.views_count }}
+                                            </small>
+                                        {% endif %}
+                                    </div>
+                                    <h5 class="card-title">{{ item.title }}</h5>
+                                    <p class="card-text">{{ item.description|truncatewords:15 }}</p>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <a href="{{ item.url }}" class="btn btn-primary btn-sm">
+                                            Смотреть
                                         </a>
+                                        {% if item.duration %}
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock"></i> {{ item.duration }}
+                                            </small>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="text-center py-5">
-                        <i class="bi bi-inbox display-1 text-muted"></i>
-                        <h3 class="mt-3">Контент в разработке</h3>
-                        <p class="text-muted">Материалы для этой категории скоро появятся</p>
-                        
-                        <!-- Предложения по типу контента -->
-                        <div class="mt-4">
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <!-- Состояние "контент в разработке" с умным перенаправлением -->
+                <div class="empty-state">
+                    <i class="bi bi-arrow-right-circle display-1 text-primary mb-3 auto-redirect"></i>
+                    <h3>Переходим к контенту...</h3>
+                    <p class="text-muted mb-4">
+                        Контент категории "{{ category.name }}" доступен в специальном разделе
+                    </p>
+                    
+                    {% if alternative_url %}
+                        <div class="redirect-info">
+                            <h5><i class="bi bi-info-circle me-2"></i>Автоматическое перенаправление</h5>
+                            <p class="mb-3">
+                                Для лучшего просмотра и фильтрации контента категории "{{ category.name }}" 
+                                мы перенаправим вас на специализированную страницу.
+                            </p>
+                            <a href="{{ alternative_url }}" class="btn btn-primary btn-lg" id="redirectButton">
+                                <i class="bi bi-arrow-right me-2"></i>
+                                {{ alternative_text|default:"Перейти к контенту" }}
+                            </a>
+                            <div class="mt-3">
+                                <small class="text-muted">
+                                    Автоматический переход через <span id="countdown">5</span> секунд...
+                                </small>
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Если нет альтернативного URL -->
+                        <div class="alert alert-info">
+                            <h5><i class="bi bi-construction me-2"></i>Раздел в разработке</h5>
+                            <p class="mb-3">Материалы для этой категории скоро появятся.</p>
+                            
                             {% if category.content_type == 'story' %}
                                 <p>Здесь будут отображаться видео-рассказы категории "{{ category.name }}"</p>
                                 <a href="{% url 'stories:list' %}" class="btn btn-outline-primary">
-                                    <i class="bi bi-play-circle"></i> Все видео-рассказы
+                                    <i class="bi bi-play-circle me-2"></i> Все видео-рассказы
                                 </a>
                             {% elif category.content_type == 'book' %}
                                 <p>Здесь будут отображаться книги категории "{{ category.name }}"</p>
                                 <a href="{% url 'books:list' %}" class="btn btn-outline-success">
-                                    <i class="bi bi-book"></i> Все книги
+                                    <i class="bi bi-book me-2"></i> Все книги
                                 </a>
                             {% elif category.content_type == 'audio' %}
                                 <p>Здесь будут отображаться аудио категории "{{ category.name }}"</p>
                                 <a href="{% url 'audio:list' %}" class="btn btn-outline-info">
-                                    <i class="bi bi-music-note"></i> Все аудио
+                                    <i class="bi bi-music-note me-2"></i> Все аудио
                                 </a>
                             {% else %}
                                 <a href="{% url 'core:home' %}" class="btn btn-outline-primary">
-                                    <i class="bi bi-house"></i> На главную
+                                    <i class="bi bi-house me-2"></i> На главную
                                 </a>
                             {% endif %}
                         </div>
-                    </div>
-                {% endif %}
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Боковая панель -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        О категории
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm table-borderless mb-0">
+                        <tr>
+                            <td><strong>Тип:</strong></td>
+                            <td>{{ category.get_content_type_display }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Материалов:</strong></td>
+                            <td>
+                                {% if has_content %}
+                                    {{ content_items|length }}
+                                {% else %}
+                                    <span class="text-muted">В разработке</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Создана:</strong></td>
+                            <td>{{ category.created_at|date:"d.m.Y" }}</td>
+                        </tr>
+                        {% if category.color %}
+                        <tr>
+                            <td><strong>Цвет:</strong></td>
+                            <td>
+                                <span class="badge rounded-pill" style="background-color: {{ category.color }};">
+                                    {{ category.color }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
             </div>
             
-            <!-- Боковая панель -->
-            <div class="col-lg-4">
-                <div class="card bg-light">
-                    <div class="card-header">
-                        <h5 class="mb-0">О категории</h5>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-sm table-borderless">
-                            <tr>
-                                <td><strong>Тип:</strong></td>
-                                <td>{{ category.get_content_type_display }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Материалов:</strong></td>
-                                <td>{{ content_items|length }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Создана:</strong></td>
-                                <td>{{ category.created_at|date:"d.m.Y" }}</td>
-                            </tr>
-                        </table>
+            <!-- Быстрые переходы -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning me-2"></i>
+                        Быстрые переходы
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if category.content_type == 'story' %}
+                            <a href="{% url 'stories:list' %}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-collection-play me-2"></i>Все видео-рассказы
+                            </a>
+                            <a href="/stories/?category={{ category.slug }}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-filter me-2"></i>Только {{ category.name }}
+                            </a>
+                        {% elif category.content_type == 'book' %}
+                            <a href="{% url 'books:list' %}" class="btn btn-outline-success btn-sm">
+                                <i class="bi bi-book me-2"></i>Все книги
+                            </a>
+                        {% elif category.content_type == 'audio' %}
+                            <a href="{% url 'audio:list' %}" class="btn btn-outline-info btn-sm">
+                                <i class="bi bi-music-note me-2"></i>Все аудио
+                            </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'core:categories' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-grid me-2"></i>Все категории
+                        </a>
                     </div>
                 </div>
-                
-                <!-- Похожие категории -->
-                <div class="card mt-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">Другие категории {{ category.get_content_type_display|lower }}</h5>
-                    </div>
-                    <div class="card-body">
-                        {% comment %}
-                        Здесь будем показывать другие категории того же типа
-                        {% endcomment %}
-                        <p class="text-muted small">Раздел в разработке</p>
-                    </div>
+            </div>
+            
+            <!-- Похожие категории -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-collection me-2"></i>
+                        Другие категории
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-0">
+                        <i class="bi bi-gear me-1"></i>
+                        Раздел в разработке
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Автоматическое перенаправление через 5 секунд
+    const redirectButton = document.getElementById('redirectButton');
+    const countdownElement = document.getElementById('countdown');
+    
+    if (redirectButton && countdownElement) {
+        let countdown = 5;
+        
+        const timer = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+            
+            if (countdown <= 0) {
+                clearInterval(timer);
+                window.location.href = redirectButton.href;
+            }
+        }, 1000);
+        
+        // Отменяем таймер при клике на кнопку
+        redirectButton.addEventListener('click', () => {
+            clearInterval(timer);
+        });
+    }
+});
+</script>
 {% endblock %}

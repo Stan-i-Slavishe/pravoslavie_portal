@@ -102,20 +102,43 @@
                                     <i class="bi bi-receipt me-1"></i>
                                     Заказ: #{{ purchase.order.short_id }}
                                 </div>
-                                <div>
+                                <div class="mb-1">
                                     <i class="bi bi-tag me-1"></i>
                                     {{ purchase.product.get_product_type_display }}
                                 </div>
+                                {% if purchase.download_count > 0 %}
+                                    <div class="mb-1">
+                                        <i class="bi bi-download me-1"></i>
+                                        Скачиваний: {{ purchase.download_count }}
+                                        {% if purchase.last_downloaded %}
+                                            (последнее: {{ purchase.last_downloaded|date:"d.m.Y H:i" }})
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
                             </div>
                         </div>
                         
                         <div class="col-auto">
-                            {% if purchase.product.product_type == 'book' and purchase.product.content_object.file %}
-                                <a href="{% url 'shop:download_purchase' purchase_id=purchase.id %}" 
-                                   class="btn btn-success download-btn">
-                                    <i class="bi bi-download me-1"></i>
-                                    Скачать
-                                </a>
+                            {% if purchase.product.product_type == 'book' and purchase.product.content_object %}
+                                {% if purchase.product.content_object.pdf_file %}
+                                    <a href="{% url 'shop:download_purchase' purchase_id=purchase.id %}" 
+                                       class="btn btn-success download-btn">
+                                        <i class="bi bi-download me-1"></i>
+                                        Скачать
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">Файл недоступен</span>
+                                {% endif %}
+                            {% elif purchase.product.product_type == 'audio' and purchase.product.content_object %}
+                                {% if purchase.product.content_object.audio_file %}
+                                    <a href="{% url 'shop:download_purchase' purchase_id=purchase.id %}" 
+                                       class="btn btn-success download-btn">
+                                        <i class="bi bi-download me-1"></i>
+                                        Скачать
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">Файл недоступен</span>
+                                {% endif %}
                             {% else %}
                                 <span class="text-muted">Недоступно для скачивания</span>
                             {% endif %}
@@ -123,6 +146,38 @@
                     </div>
                 </div>
             {% endfor %}
+            
+            <!-- Пагинация -->
+            {% if purchases.has_other_pages %}
+                <nav aria-label="Навигация по покупкам">
+                    <ul class="pagination justify-content-center">
+                        {% if purchases.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ purchases.previous_page_number }}">Предыдущая</a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in purchases.paginator.page_range %}
+                            {% if purchases.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > purchases.number|add:'-3' and num < purchases.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if purchases.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ purchases.next_page_number }}">Следующая</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+            
         {% else %}
             <!-- Пустой список покупок -->
             <div class="empty-purchases">
@@ -132,6 +187,21 @@
                 <a href="{% url 'shop:catalog' %}" class="btn btn-primary">
                     <i class="bi bi-shop me-2"></i>
                     Перейти в магазин
+                </a>
+            </div>
+        {% endif %}
+        
+        <!-- Терапевтические сказки -->
+        {% if fairy_tale_orders %}
+            <div class="mt-5">
+                <h3>
+                    <i class="bi bi-magic me-2"></i>
+                    Ваши терапевтические сказки
+                </h3>
+                <p class="text-muted mb-3">Персонализированные сказки находятся в отдельном разделе</p>
+                <a href="{% url 'fairy_tales:my_orders' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-star me-2"></i>
+                    Посмотреть сказки ({{ fairy_tale_orders|length }})
                 </a>
             </div>
         {% endif %}

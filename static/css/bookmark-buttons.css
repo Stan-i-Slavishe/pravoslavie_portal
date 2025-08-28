@@ -1,0 +1,202 @@
+/* Стили для кнопок-закладок в каталоге книг */
+
+/* Базовые стили для кнопки-закладки - КОМПАКТНАЯ ВЕРСИЯ */
+.btn-bookmark {
+    background: transparent !important;
+    border: 1px solid #e0e6ed !important;
+    color: #6c757d !important;
+    padding: 6px 8px !important;
+    border-radius: 4px !important;
+    font-weight: 400 !important;
+    transition: all 0.3s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    width: 32px !important;
+    height: 32px !important;
+    position: relative !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    user-select: none !important;
+    flex-shrink: 0 !important;
+}
+
+/* Состояние наведения */
+.btn-bookmark:hover {
+    background: rgba(255, 193, 7, 0.1) !important;
+    border-color: #ffc107 !important;
+    color: #ffc107 !important;
+    transform: translateY(-1px) scale(1.05) !important;
+    text-decoration: none !important;
+}
+
+/* Активное состояние (в избранном) */
+.btn-bookmark.active,
+.btn-bookmark.favorited {
+    background: #ffc107 !important;
+    border-color: #ffc107 !important;
+    color: white !important;
+    box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3) !important;
+}
+
+/* Наведение на активную кнопку */
+.btn-bookmark.active:hover,
+.btn-bookmark.favorited:hover {
+    background: #e0a800 !important;
+    transform: translateY(-1px) scale(1.05) !important;
+    box-shadow: 0 3px 8px rgba(255, 193, 7, 0.4) !important;
+}
+
+/* Иконка закладки */
+.btn-bookmark i {
+    font-size: 0.875rem !important;
+    transition: transform 0.2s ease !important;
+    margin: 0 !important;
+}
+
+.btn-bookmark:hover i {
+    transform: scale(1.1) !important;
+}
+
+/* Анимация нажатия */
+.btn-bookmark:active {
+    transform: scale(0.95) !important;
+    transition: transform 0.1s ease !important;
+}
+
+/* Заблокированное состояние */
+.btn-bookmark:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+/* Мобильная адаптивность */
+@media (max-width: 768px) {
+    .btn-bookmark {
+        min-width: 28px !important;
+        min-height: 28px !important;
+        width: 28px !important;
+        height: 28px !important;
+        padding: 4px 6px !important;
+    }
+    
+    .btn-bookmark i {
+        font-size: 0.8rem !important;
+    }
+}
+
+/* Анимация появления для новых кнопок */
+@keyframes bookmarkFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.btn-bookmark.new {
+    animation: bookmarkFadeIn 0.3s ease-out;
+}
+
+/* Специальные эффекты при изменении состояния */
+.btn-bookmark.adding {
+    animation: pulse 0.6s ease-in-out;
+}
+
+.btn-bookmark.removing {
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+}
+
+/* Стили для счетчика избранного в навигации */
+.favorites-counter {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ffc107;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Интеграция с существующими стилями Bootstrap */
+.btn-group .btn-bookmark {
+    border-radius: 6px !important;
+}
+
+.btn-bookmark:focus {
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25) !important;
+    outline: none !important;
+}
+
+/* Темная тема (если используется) */
+@media (prefers-color-scheme: dark) {
+    .btn-bookmark {
+        border-color: #495057 !important;
+        color: #adb5bd !important;
+    }
+    
+    .btn-bookmark:hover {
+        background: rgba(255, 193, 7, 0.2) !important;
+        border-color: #ffc107 !important;
+        color: #ffc107 !important;
+    }
+}
+
+/* Поддержка RTL языков */
+[dir="rtl"] .btn-bookmark {
+    direction: rtl;
+}
+
+/* Высокий контраст для доступности */
+@media (prefers-contrast: high) {
+    .btn-bookmark {
+        border-width: 3px !important;
+    }
+    
+    .btn-bookmark.active,
+    .btn-bookmark.favorited {
+        border-color: #000 !important;
+    }
+}
+
+/* Уменьшенная анимация для пользователей с ограниченными возможностями */
+@media (prefers-reduced-motion: reduce) {
+    .btn-bookmark,
+    .btn-bookmark i {
+        transition: none !important;
+    }
+    
+    .btn-bookmark:hover {
+        transform: none !important;
+    }
+    
+    .btn-bookmark.adding,
+    .btn-bookmark.removing {
+        animation: none !important;
+    }
+}

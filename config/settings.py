@@ -13,7 +13,7 @@ from decouple import config
 # Определяем окружение
 ENVIRONMENT = config('DJANGO_ENV', default='local')
 
-print(f"🔧 Загружается окружение: {ENVIRONMENT.upper()}")
+print(f"Загружается окружение: {ENVIRONMENT.upper()}")
 
 # Импортируем настройки в зависимости от окружения
 if ENVIRONMENT == 'production':
@@ -41,6 +41,6 @@ allowed_hosts_env = config('ALLOWED_HOSTS', default=None)
 if allowed_hosts_env:
     ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',')]
 
-print(f"✅ Настройки загружены для {ENVIRONMENT.upper()} окружения")
+print(f"Настройки загружены для {ENVIRONMENT.upper()} окружения")
 print(f"   DEBUG: {DEBUG}")
 print(f"   ALLOWED_HOSTS: {ALLOWED_HOSTS}")

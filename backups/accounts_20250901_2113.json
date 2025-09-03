@@ -1,0 +1,170 @@
+[
+{
+  "model": "accounts.userprofile",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "avatar": "avatars/Мальчик.jpg",
+    "bio": "Волшебник",
+    "gender": "M",
+    "birth_date": null,
+    "phone": "87014740135",
+    "city": "Алматы",
+    "favorite_saints": "",
+    "confession_frequency": "",
+    "favorite_prayers": "",
+    "parish": "",
+    "email_notifications": "important",
+    "newsletter_subscription": true,
+    "new_content_notifications": true,
+    "order_notifications": true,
+    "preferred_font_size": 1.0,
+    "preferred_theme": "light",
+    "created_at": "2025-08-03T00:06:00.386Z",
+    "updated_at": "2025-08-29T23:27:46.830Z",
+    "last_activity": "2025-08-29T23:27:46.830Z"
+  }
+},
+{
+  "model": "accounts.userprofile",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "stassilin"
+    ],
+    "avatar": "",
+    "bio": "",
+    "gender": "",
+    "birth_date": null,
+    "phone": "",
+    "city": "",
+    "favorite_saints": "",
+    "confession_frequency": "",
+    "favorite_prayers": "",
+    "parish": "",
+    "email_notifications": "important",
+    "newsletter_subscription": true,
+    "new_content_notifications": true,
+    "order_notifications": true,
+    "preferred_font_size": 1.0,
+    "preferred_theme": "light",
+    "created_at": "2025-08-03T16:48:34.011Z",
+    "updated_at": "2025-08-09T01:10:26.356Z",
+    "last_activity": "2025-08-09T01:10:26.356Z"
+  }
+},
+{
+  "model": "accounts.userprofile",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "testuser"
+    ],
+    "avatar": "",
+    "bio": "",
+    "gender": "",
+    "birth_date": null,
+    "phone": "",
+    "city": "",
+    "favorite_saints": "",
+    "confession_frequency": "",
+    "favorite_prayers": "",
+    "parish": "",
+    "email_notifications": "important",
+    "newsletter_subscription": true,
+    "new_content_notifications": true,
+    "order_notifications": true,
+    "preferred_font_size": 1.0,
+    "preferred_theme": "light",
+    "created_at": "2025-08-04T01:23:27.735Z",
+    "updated_at": "2025-08-04T01:23:28.678Z",
+    "last_activity": "2025-08-04T01:23:28.678Z"
+  }
+},
+{
+  "model": "accounts.userprofile",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "test_cart_user"
+    ],
+    "avatar": "",
+    "bio": "",
+    "gender": "",
+    "birth_date": null,
+    "phone": "",
+    "city": "",
+    "favorite_saints": "",
+    "confession_frequency": "",
+    "favorite_prayers": "",
+    "parish": "",
+    "email_notifications": "important",
+    "newsletter_subscription": true,
+    "new_content_notifications": true,
+    "order_notifications": true,
+    "preferred_font_size": 1.0,
+    "preferred_theme": "light",
+    "created_at": "2025-08-07T00:34:13.994Z",
+    "updated_at": "2025-08-07T00:34:14.931Z",
+    "last_activity": "2025-08-07T00:34:14.931Z"
+  }
+},
+{
+  "model": "accounts.userprofile",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "stassilin1984"
+    ],
+    "avatar": "",
+    "bio": "",
+    "gender": "",
+    "birth_date": null,
+    "phone": "",
+    "city": "",
+    "favorite_saints": "",
+    "confession_frequency": "",
+    "favorite_prayers": "",
+    "parish": "",
+    "email_notifications": "important",
+    "newsletter_subscription": true,
+    "new_content_notifications": true,
+    "order_notifications": true,
+    "preferred_font_size": 1.0,
+    "preferred_theme": "light",
+    "created_at": "2025-08-09T01:35:53.051Z",
+    "updated_at": "2025-08-19T23:59:55.095Z",
+    "last_activity": "2025-08-19T23:59:55.095Z"
+  }
+},
+{
+  "model": "accounts.userprofile",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "stassilin0"
+    ],
+    "avatar": "",
+    "bio": "",
+    "gender": "",
+    "birth_date": null,
+    "phone": "",
+    "city": "",
+    "favorite_saints": "",
+    "confession_frequency": "",
+    "favorite_prayers": "",
+    "parish": "",
+    "email_notifications": "important",
+    "newsletter_subscription": true,
+    "new_content_notifications": true,
+    "order_notifications": true,
+    "preferred_font_size": 1.0,
+    "preferred_theme": "light",
+    "created_at": "2025-08-11T15:43:57.085Z",
+    "updated_at": "2025-08-11T15:43:57.773Z",
+    "last_activity": "2025-08-11T15:43:57.773Z"
+  }
+}
+]

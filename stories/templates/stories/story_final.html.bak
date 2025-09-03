@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'stories/css/ajax_comments.css' %}">
+{% endblock %}
+
+{% block title %}{{ story.title }} - Видео-рассказы{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'stories:list' %}">Рассказы</a></li>
+            <li class="breadcrumb-item active">{{ story.title }}</li>
+        </ol>
+    </nav>
+    
+    <!-- Основное содержимое -->
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Видео -->
+            <div class="video-container mb-4">
+                {% if story.youtube_embed_id %}
+                    <div class="ratio ratio-16x9">
+                        <iframe 
+                            src="https://www.youtube.com/embed/{{ story.youtube_embed_id }}"
+                            title="{{ story.title }}"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Информация о видео -->
+            <div class="video-info mb-4">
+                <h1 class="h3 mb-3">{{ story.title }}</h1>
+                
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="video-meta">
+                        <span class="text-muted">
+                            <i class="fas fa-eye me-1"></i>{{ story.views_count }} просмотров
+                        </span>
+                        <span class="text-muted ms-3">
+                            <i class="fas fa-calendar me-1"></i>{{ story.created_at|date:"d.m.Y" }}
+                        </span>
+                    </div>
+                    
+                    <!-- Кнопки действий -->
+                    <div class="video-actions">
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'stories:story_like' story.id %}" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-heart me-1"></i>
+                                {{ likes_count }}
+                            </a>
+                        {% endif %}
+                        
+                        <!-- Кнопка "Поделиться" -->
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" 
+                                    data-bs-toggle="dropdown">
+                                <i class="fas fa-share me-1"></i>Поделиться
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" 
+                                       href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text={{ story.title }}"
+                                       target="_blank">
+                                        <i class="fab fa-telegram me-2"></i>Telegram
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" 
+                                       href="https://vk.com/share.php?url={{ request.build_absolute_uri }}&title={{ story.title }}"
+                                       target="_blank">
+                                        <i class="fab fa-vk me-2"></i>ВКонтакте
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" 
+                                       href="https://api.whatsapp.com/send?text={{ story.title }} {{ request.build_absolute_uri }}"
+                                       target="_blank">
+                                        <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="#" onclick="copyToClipboard('{{ request.build_absolute_uri }}')">
+                                        <i class="fas fa-copy me-2"></i>Копировать ссылку
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Описание -->
+                {% if story.description %}
+                <div class="video-description">
+                    <p>{{ story.description|linebreaks }}</p>
+                </div>
+                {% endif %}
+                
+                <!-- Теги и категория -->
+                <div class="video-tags mt-3">
+                    {% if story.category %}
+                        <a href="{% url 'stories:category' story.category.slug %}" 
+                           class="badge bg-primary text-decoration-none me-2">
+                            {{ story.category.name }}
+                        </a>
+                    {% endif %}
+                    
+                    {% for tag in story.tags.all %}
+                        <a href="{% url 'stories:tag' tag.slug %}" 
+                           class="badge bg-secondary text-decoration-none me-1">
+                            #{{ tag.name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- КОММЕНТАРИИ -->
+            {% include 'stories/youtube_comments_fixed.html' %}
+        </div>
+        
+        <!-- Боковая панель -->
+        <div class="col-lg-4">
+            <!-- Похожие рассказы -->
+            {% if related_stories %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-video me-2"></i>Похожие рассказы
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for related in related_stories %}
+                    <div class="d-flex mb-3">
+                        <div class="flex-shrink-0">
+                            {% if related.youtube_embed_id %}
+                                <img src="https://img.youtube.com/vi/{{ related.youtube_embed_id }}/mqdefault.jpg" 
+                                     alt="{{ related.title }}"
+                                     class="rounded"
+                                     style="width: 100px; height: 75px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                                     style="width: 100px; height: 75px;">
+                                    <i class="fas fa-video text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">
+                                <a href="{% url 'stories:detail' related.slug %}" 
+                                   class="text-decoration-none">
+                                    {{ related.title|truncatechars:60 }}
+                                </a>
+                            </h6>
+                            <small class="text-muted">
+                                <i class="fas fa-eye me-1"></i>{{ related.views_count }}
+                                <span class="ms-2">{{ related.created_at|date:"d.m.Y" }}</span>
+                            </small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Навигация -->
+            {% if previous_story or next_story %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Навигация</h5>
+                </div>
+                <div class="card-body">
+                    {% if previous_story %}
+                        <a href="{% url 'stories:detail' previous_story.slug %}" 
+                           class="btn btn-outline-primary btn-sm mb-2 w-100">
+                            <i class="fas fa-chevron-left me-1"></i>Предыдущий рассказ
+                        </a>
+                    {% endif %}
+                    
+                    {% if next_story %}
+                        <a href="{% url 'stories:detail' next_story.slug %}" 
+                           class="btn btn-outline-primary btn-sm w-100">
+                            Следующий рассказ<i class="fas fa-chevron-right ms-1"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- AJAX JavaScript для комментариев -->
+<script src="{% static 'stories/js/ajax_comments.js' %}"></script>
+
+<!-- 🔧 ПРИНУДИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ AJAX -->
+<script>
+// ПРИНУДИТЕЛЬНО проверяем и инициализируем AJAX
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎯 Проверка AJAX системы...');
+    
+    // Проверяем, что класс AjaxComments доступен
+    if (typeof AjaxComments === 'undefined') {
+        console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: AjaxComments класс не найден!');
+        console.error('ajax_comments.js не загрузился или есть ошибка в файле');
+        return;
+    }
+    
+    // Проверяем переменные
+    console.log('USER_ID:', window.USER_ID);
+    console.log('STORY_SLUG:', window.STORY_SLUG);
+    console.log('CSRF_TOKEN:', window.CSRF_TOKEN);
+    
+    // Принудительно создаем экземпляр AJAX
+    try {
+        if (!window.ajaxComments) {
+            console.log('🚀 Принудительное создание AJAX системы...');
+            window.ajaxComments = new AjaxComments();
+            console.log('✅ AJAX система принудительно создана!');
+        } else {
+            console.log('✅ AJAX система уже создана');
+        }
+    } catch (error) {
+        console.error('❌ Ошибка создания AJAX системы:', error);
+    }
+    
+    // Проверяем форму
+    const form = document.getElementById('main-comment-form');
+    if (form) {
+        console.log('✅ Форма найдена:', form);
+        
+        // 🔧 ПРИНУДИТЕЛЬНО ПЕРЕХВАТЫВАЕМ SUBMIT!
+        form.addEventListener('submit', function(e) {
+            console.log('🚨 ПЕРЕХВАТ SUBMIT! Останавливаем обычную отправку...');
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Проверяем авторизацию
+            if (!window.USER_ID) {
+                console.log('❌ Пользователь не авторизован - перенаправляем на вход');
+                window.location.href = '/accounts/login/';
+                return false;
+            }
+            
+            // Проверяем AJAX систему
+            if (window.ajaxComments && typeof window.ajaxComments.submitMainCommentAjax === 'function') {
+                console.log('✅ Вызываем AJAX отправку...');
+                window.ajaxComments.submitMainCommentAjax(form);
+            } else {
+                console.error('❌ AJAX система недоступна! Отправка остановлена.');
+                alert('Ошибка: AJAX система не работает. Обновите страницу.');
+            }
+            
+            return false;
+        }, true); // true = перехват на capturing фазе
+        
+        console.log('✅ Принудительный обработчик submit установлен!');
+        
+        // Проверяем обработчики
+        const events = getEventListeners ? getEventListeners(form) : 'Недоступно';
+        console.log('Обработчики формы:', events);
+    } else {
+        console.error('❌ Форма main-comment-form не найдена!');
+    }
+});
+
+<!-- Простой JavaScript -->
+<script>
+// Переменные для AJAX комментариев
+window.USER_ID = {% if user.is_authenticated %}{{ user.id }}{% else %}null{% endif %};
+window.USER_NAME = "{{ user.username }}";
+window.USER_FIRST_NAME = "{{ user.first_name }}";
+window.USER_AVATAR = "{% if user.first_name %}{{ user.first_name|first|upper }}{% else %}{{ user.username|first|upper }}{% endif %}";
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Простое уведомление
+        if (window.ajaxComments) {
+            window.ajaxComments.showNotification('Ссылка скопирована в буфер обмена!', 'success');
+        } else {
+            alert('Ссылка скопирована в буфер обмена!');
+        }
+    }, function(err) {
+        console.error('Ошибка копирования: ', err);
+        if (window.ajaxComments) {
+            window.ajaxComments.showNotification('Не удалось скопировать ссылку', 'error');
+        } else {
+            alert('Не удалось скопировать ссылку');
+        }
+    });
+}
+
+// Простая обработка форм комментариев
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ Страница рассказа загружена');
+    
+    // Проверяем, есть ли комментарии в URL (якорь)
+    if (window.location.hash) {
+        const target = document.querySelector(window.location.hash);
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+    
+    // Уведомление о том, что AJAX активирован
+    if (window.ajaxComments) {
+        console.log('🚀 AJAX комментарии активированы - комментарии будут добавляться без перезагрузки!');
+    }
+});
+</script>
+{% endblock %}

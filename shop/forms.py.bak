@@ -1,0 +1,124 @@
+from django import forms
+# from .models import PersonalizationOrder  # Удаляем ненужный импорт
+
+
+class PersonalizationForm(forms.Form):
+    """Форма персонализации сказки"""
+    
+    child_name = forms.CharField(
+        label='Имя ребенка',
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Введите имя ребенка'
+        }),
+        help_text='Как зовут вашего ребенка?'
+    )
+    
+    child_age = forms.IntegerField(
+        label='Возраст ребенка',
+        min_value=1,
+        max_value=18,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Возраст в годах'
+        }),
+        help_text='Сколько лет вашему ребенку?'
+    )
+    
+    main_problem = forms.ChoiceField(
+        label='Основная проблема',
+        choices=[
+            ('', 'Выберите проблему'),
+            ('fears', 'Страхи и тревоги'),
+            ('confidence', 'Низкая самооценка'),
+            ('relationships', 'Проблемы в отношениях'),
+            ('behavior', 'Поведенческие проблемы'),
+            ('emotions', 'Управление эмоциями'),
+            ('sleep', 'Проблемы со сном'),
+            ('separation', 'Тревога разлуки'),
+            ('school', 'Школьные проблемы'),
+            ('sibling', 'Ревность к братьям/сестрам'),
+            ('other', 'Другое')
+        ],
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        help_text='Какую проблему нужно решить?'
+    )
+    
+    child_interests = forms.CharField(
+        label='Интересы и увлечения ребенка',
+        max_length=500,
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'Расскажите о том, что любит ваш ребенок: игрушки, животные, мультфильмы, хобби...'
+        }),
+        help_text='Это поможет сделать сказку более интересной'
+    )
+    
+    parent_goals = forms.CharField(
+        label='Ваши цели и пожелания',
+        max_length=500,
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'Чего вы хотите добиться? Какие качества развить у ребенка?'
+        }),
+        help_text='Опишите, какого результата вы ожидаете'
+    )
+    
+    include_audio = forms.BooleanField(
+        label='Профессиональная озвучка',
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        help_text='Добавить аудио-версию сказки'
+    )
+    
+    include_illustrations = forms.BooleanField(
+        label='Персональные иллюстрации',
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        help_text='Создать уникальные иллюстрации'
+    )
+    
+    special_requests = forms.CharField(
+        label='Особые пожелания',
+        max_length=1000,
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 4,
+            'placeholder': 'Любые дополнительные пожелания к сказке...'
+        }),
+        help_text='Расскажите о любых особых требованиях или пожеланиях'
+    )
+
+
+class CartForm(forms.Form):
+    """Форма добавления товара в корзину"""
+    
+    product_id = forms.IntegerField(widget=forms.HiddenInput())
+    quantity = forms.IntegerField(
+        min_value=1,
+        max_value=10,
+        initial=1,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'style': 'max-width: 100px;'
+        })
+    )
+
+
+class DiscountForm(forms.Form):
+    """Форма применения промокода"""
+    
+    code = forms.CharField(
+        label='Промокод',
+        max_length=50,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Введите промокод'
+        })
+    )

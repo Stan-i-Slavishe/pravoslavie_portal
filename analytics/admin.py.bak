@@ -1,0 +1,438 @@
+# analytics/admin.py
+
+from django.contrib import admin
+from django.utils.html import format_html
+from django.urls import reverse
+from django.db.models import Count
+from .models import PurchaseIntent, PopularContent, UserBehavior, EmailSubscription, WeeklyReport
+
+@admin.register(PurchaseIntent)
+class PurchaseIntentAdmin(admin.ModelAdmin):
+    list_display = [
+        'content_info', 'button_type', 'user_info', 'click_count', 
+        'admin_notified_display', 'clicked_at'
+    ]
+    list_filter = [
+        'content_type', 'button_type', 'admin_notified', 'clicked_at'
+    ]
+    search_fields = [
+        'user__username', 'session_key', 'page_url'
+    ]
+    readonly_fields = [
+        'clicked_at', 'ip_address', 'user_agent', 'referer', 'notification_sent_at'
+    ]
+    ordering = ['-clicked_at']
+    
+    # Русские заголовки для списка
+    list_display_links = ['content_info']
+    list_per_page = 25
+    
+    # Русские названия полей
+    def content_info(self, obj):
+        """Красивое отображение контента с названием"""
+        icons = {
+            'book': '📚',
+            'fairy_tale': '🧚‍♀️',
+            'subscription': '👑',
+            'audio': '🎧',
+            'product': '🛍️'
+        }
+        icon = icons.get(obj.content_type, '📄')
+        
+        # Получаем название объекта
+        content_name = self.get_content_name(obj)
+        
+        return format_html(
+            '{} {} (ID: {})',
+            icon,
+            content_name,
+            obj.object_id
+        )
+    content_info.short_description = 'Контент'
+    
+    def get_content_name(self, obj):
+        """Получаем человекопонятное название контента"""
+        try:
+            if obj.content_type == 'book':
+                from books.models import Book
+                book = Book.objects.get(id=obj.object_id)
+                return book.title[:50]  # Обрезаем до 50 символов
+            elif obj.content_type == 'fairy_tale':
+                from fairy_tales.models import FairyTaleTemplate
+                fairy_tale = FairyTaleTemplate.objects.get(id=obj.object_id)
+                return fairy_tale.title[:50]
+            elif obj.content_type == 'audio':
+                from audio.models import AudioTrack
+                audio = AudioTrack.objects.get(id=obj.object_id)
+                return audio.title[:50]
+            elif obj.content_type == 'subscription':
+                from subscriptions.models import Subscription
+                subscription = Subscription.objects.get(id=obj.object_id)
+                return subscription.name[:50]
+            elif obj.content_type == 'product':
+                from shop.models import Product
+                product = Product.objects.get(id=obj.object_id)
+                return product.name[:50]
+            else:
+                return f"{obj.get_content_type_display()} #{obj.object_id}"
+        except Exception:
+            return f"{obj.get_content_type_display()} #{obj.object_id} (не найден)"
+    
+    def user_info(self, obj):
+        """Информация о пользователе"""
+        if obj.user:
+            return obj.user.username
+        else:
+            return f"Анонимный_{obj.session_key[:8]}"
+    user_info.short_description = 'Пользователь'
+    
+    def button_type(self, obj):
+        return obj.get_button_type_display()
+    button_type.short_description = 'Тип кнопки'
+    
+    def click_count(self, obj):
+        return f"{obj.click_count} раз"
+    click_count.short_description = 'Количество кликов'
+    
+    def admin_notified_display(self, obj):
+        if obj.admin_notified:
+            return format_html('<span style="color: green;">✅ Отправлено</span>')
+        else:
+            return format_html('<span style="color: red;">❌ Не отправлено</span>')
+    admin_notified_display.short_description = 'Уведомление админу'
+    
+    def clicked_at(self, obj):
+        return obj.clicked_at.strftime('%d.%m.%Y %H:%M')
+    clicked_at.short_description = 'Дата и время'
+    
+    # Группировка полей в форме
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('content_type', 'object_id', 'button_type', 'click_count')
+        }),
+        ('Пользователь', {
+            'fields': ('user', 'session_key')
+        }),
+        ('Технические данные', {
+            'fields': ('ip_address', 'user_agent', 'page_url', 'referer'),
+            'classes': ('collapse',)
+        }),
+        ('Email уведомления', {
+            'fields': ('admin_notified', 'notification_sent_at'),
+            'classes': ('collapse',)
+        }),
+        ('Временные метки', {
+            'fields': ('clicked_at',),
+            'classes': ('collapse',)
+        })
+    )
+
+@admin.register(PopularContent)
+class PopularContentAdmin(admin.ModelAdmin):
+    list_display = [
+        'content_info', 'views_count', 'purchase_intents', 
+        'conversion_rate_display', 'last_viewed_display'
+    ]
+    list_filter = ['content_type', 'last_viewed']
+    ordering = ['-purchase_intents']
+    readonly_fields = ['last_viewed', 'conversion_rate']
+    list_per_page = 20
+    
+    def content_info(self, obj):
+        icons = {
+            'book': '📚',
+            'fairy_tale': '🧚‍♀️',
+            'subscription': '👑',
+            'audio': '🎧',
+            'product': '🛍️'
+        }
+        icon = icons.get(obj.content_type, '📄')
+        
+        # Получаем название объекта (используем тот же метод)
+        content_name = self.get_content_name(obj)
+        
+        return format_html(
+            '{} {} (ID: {})',
+            icon, 
+            content_name, 
+            obj.object_id
+        )
+    content_info.short_description = 'Контент'
+    
+    def get_content_name(self, obj):
+        """Получаем человекопонятное название контента"""
+        try:
+            if obj.content_type == 'book':
+                from books.models import Book
+                book = Book.objects.get(id=obj.object_id)
+                return book.title[:50]
+            elif obj.content_type == 'fairy_tale':
+                from fairy_tales.models import FairyTaleTemplate
+                fairy_tale = FairyTaleTemplate.objects.get(id=obj.object_id)
+                return fairy_tale.title[:50]
+            elif obj.content_type == 'audio':
+                from audio.models import AudioTrack
+                audio = AudioTrack.objects.get(id=obj.object_id)
+                return audio.title[:50]
+            elif obj.content_type == 'subscription':
+                from subscriptions.models import Subscription
+                subscription = Subscription.objects.get(id=obj.object_id)
+                return subscription.name[:50]
+            elif obj.content_type == 'product':
+                from shop.models import Product
+                product = Product.objects.get(id=obj.object_id)
+                return product.name[:50]
+            else:
+                return f"{obj.content_type.title()} #{obj.object_id}"
+        except Exception:
+            return f"{obj.content_type.title()} #{obj.object_id} (не найден)"
+    
+    def views_count(self, obj):
+        return f"{obj.views_count} просмотров"
+    views_count.short_description = 'Просмотры'
+    
+    def purchase_intents(self, obj):
+        return f"{obj.purchase_intents} кликов"
+    purchase_intents.short_description = 'Намерения покупки'
+    
+    def conversion_rate_display(self, obj):
+        if obj.conversion_rate >= 10:
+            color = 'red'
+        elif obj.conversion_rate >= 5:
+            color = 'orange'
+        else:
+            color = 'green'
+        
+        return format_html(
+            '<span style="color: {}; font-weight: bold;">{:.1f}%</span>',
+            color, obj.conversion_rate
+        )
+    conversion_rate_display.short_description = 'Конверсия'
+    
+    def last_viewed_display(self, obj):
+        return obj.last_viewed.strftime('%d.%m.%Y %H:%M')
+    last_viewed_display.short_description = 'Последний просмотр'
+
+@admin.register(UserBehavior)
+class UserBehaviorAdmin(admin.ModelAdmin):
+    list_display = [
+        'user_info', 'total_page_views', 'total_purchase_intents',
+        'purchase_probability_display', 'last_active_display'
+    ]
+    list_filter = [
+        'purchase_probability', 'last_active'
+    ]
+    search_fields = ['user__username', 'session_key']
+    readonly_fields = ['last_active', 'purchase_probability']
+    ordering = ['-purchase_probability']
+    list_per_page = 20
+    
+    def user_info(self, obj):
+        if obj.user:
+            return obj.user.username
+        else:
+            return f"Анонимный_{obj.session_key[:8]}"
+    user_info.short_description = 'Пользователь'
+    
+    def total_page_views(self, obj):
+        return f"{obj.total_page_views} страниц"
+    total_page_views.short_description = 'Просмотрено страниц'
+    
+    def total_purchase_intents(self, obj):
+        return f"{obj.total_purchase_intents} кликов"
+    total_purchase_intents.short_description = 'Кликов на покупку'
+    
+    def purchase_probability_display(self, obj):
+        probability = obj.purchase_probability
+        
+        if probability >= 80:
+            color = 'red'
+            emoji = '🔥'
+        elif probability >= 60:
+            color = 'orange'
+            emoji = '⚡'
+        elif probability >= 40:
+            color = 'blue'
+            emoji = '💡'
+        else:
+            color = 'gray'
+            emoji = '💤'
+        
+        return format_html(
+            '{} <span style="color: {}; font-weight: bold;">{:.0f}%</span>',
+            emoji, color, probability
+        )
+    purchase_probability_display.short_description = 'Вероятность покупки'
+    
+    def last_active_display(self, obj):
+        return obj.last_active.strftime('%d.%m.%Y %H:%M')
+    last_active_display.short_description = 'Последняя активность'
+    
+    actions = ['recalculate_probability']
+    
+    def recalculate_probability(self, request, queryset):
+        """Пересчитать вероятность покупки"""
+        for behavior in queryset:
+            behavior.calculate_purchase_probability()
+        
+        self.message_user(
+            request,
+            f'Пересчитана вероятность для {queryset.count()} пользователей'
+        )
+    recalculate_probability.short_description = 'Пересчитать вероятность покупки'
+
+@admin.register(EmailSubscription)
+class EmailSubscriptionAdmin(admin.ModelAdmin):
+    list_display = [
+        'email', 'user_link', 'interested_in_display', 'subscribed_at_display',
+        'is_active_display', 'confirmed_display', 'notification_preferences'
+    ]
+    list_filter = [
+        'interested_in', 'is_active', 'confirmed', 'subscribed_at',
+        'notify_payment_launch', 'notify_new_content'
+    ]
+    search_fields = ['email', 'user__username']
+    readonly_fields = ['subscribed_at', 'confirmation_token']
+    ordering = ['-subscribed_at']
+    list_per_page = 30
+    
+    def user_link(self, obj):
+        if obj.user:
+            return obj.user.username
+        else:
+            return 'Не зарегистрирован'
+    user_link.short_description = 'Пользователь'
+    
+    def interested_in_display(self, obj):
+        interest_names = {
+            'book': 'Книги',
+            'fairy_tale': 'Сказки', 
+            'subscription': 'Подписки',
+            'audio': 'Аудио'
+        }
+        return interest_names.get(obj.interested_in, obj.interested_in or 'Не указано')
+    interested_in_display.short_description = 'Интересует'
+    
+    def subscribed_at_display(self, obj):
+        return obj.subscribed_at.strftime('%d.%m.%Y %H:%M')
+    subscribed_at_display.short_description = 'Дата подписки'
+    
+    def is_active_display(self, obj):
+        return '✅ Активна' if obj.is_active else '❌ Неактивна'
+    is_active_display.short_description = 'Статус'
+    
+    def confirmed_display(self, obj):
+        return '✅ Подтвержден' if obj.confirmed else '⏳ Ожидает подтверждения'
+    confirmed_display.short_description = 'Email подтвержден'
+    
+    def notification_preferences(self, obj):
+        prefs = []
+        if obj.notify_payment_launch:
+            prefs.append('🚀 Запуск платежей')
+        if obj.notify_new_content:
+            prefs.append('📝 Новый контент')
+        if obj.notify_discounts:
+            prefs.append('💰 Скидки')
+        
+        return ' | '.join(prefs) if prefs else 'Нет уведомлений'
+    notification_preferences.short_description = 'Типы уведомлений'
+    
+    actions = ['send_test_notification', 'mark_as_confirmed']
+    
+    def send_test_notification(self, request, queryset):
+        """Отправить тестовое уведомление"""
+        # Здесь будет логика отправки email
+        count = queryset.count()
+        self.message_user(
+            request,
+            f'Отправлено тестовое уведомление для {count} подписчиков'
+        )
+    send_test_notification.short_description = 'Отправить тестовое уведомление'
+    
+    def mark_as_confirmed(self, request, queryset):
+        """Подтвердить email адреса"""
+        count = queryset.update(confirmed=True)
+        self.message_user(
+            request,
+            f'Подтверждено {count} email адресов'
+        )
+    mark_as_confirmed.short_description = 'Подтвердить email адреса'
+    
+    # Группировка полей в форме
+    fieldsets = (
+        ('Контактная информация', {
+            'fields': ('email', 'user')
+        }),
+        ('Настройки уведомлений', {
+            'fields': ('notify_payment_launch', 'notify_new_content', 'notify_discounts')
+        }),
+        ('Интересы', {
+            'fields': ('interested_in', 'source_page')
+        }),
+        ('Статус подписки', {
+            'fields': ('is_active', 'confirmed', 'confirmation_token')
+        }),
+        ('Системная информация', {
+            'fields': ('subscribed_at',),
+            'classes': ('collapse',)
+        })
+    )
+
+
+@admin.register(WeeklyReport)
+class WeeklyReportAdmin(admin.ModelAdmin):
+    list_display = [
+        'week_period', 'total_purchase_intents', 'unique_users', 
+        'new_subscriptions', 'sent_to_admins_display', 'sent_to_subscribers_display',
+        'created_at_display'
+    ]
+    list_filter = [
+        'sent_to_admins', 'sent_to_subscribers', 'created_at', 'week_start'
+    ]
+    readonly_fields = [
+        'created_at', 'top_content'
+    ]
+    ordering = ['-week_start']
+    list_per_page = 20
+    
+    def week_period(self, obj):
+        return f"{obj.week_start.strftime('%d.%m')} - {obj.week_end.strftime('%d.%m.%Y')}"
+    week_period.short_description = 'Период'
+    
+    def sent_to_admins_display(self, obj):
+        if obj.sent_to_admins:
+            return format_html('<span style="color: green;">✅ Отправлен</span>')
+        else:
+            return format_html('<span style="color: red;">❌ Не отправлен</span>')
+    sent_to_admins_display.short_description = 'Админам'
+    
+    def sent_to_subscribers_display(self, obj):
+        if obj.sent_to_subscribers:
+            return format_html('<span style="color: green;">✅ Отправлен</span>')
+        else:
+            return format_html('<span style="color: red;">❌ Не отправлен</span>')
+    sent_to_subscribers_display.short_description = 'Подписчикам'
+    
+    def created_at_display(self, obj):
+        return obj.created_at.strftime('%d.%m.%Y %H:%M')
+    created_at_display.short_description = 'Создан'
+    
+    fieldsets = (
+        ('Период отчета', {
+            'fields': ('week_start', 'week_end')
+        }),
+        ('Статистика', {
+            'fields': ('total_purchase_intents', 'unique_users', 'new_subscriptions')
+        }),
+        ('Популярный контент', {
+            'fields': ('top_content',),
+            'classes': ('collapse',)
+        }),
+        ('Статус отправки', {
+            'fields': ('sent_to_admins', 'sent_to_subscribers')
+        }),
+        ('Системная информация', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        })
+    )

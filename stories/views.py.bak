@@ -1,0 +1,437 @@
+from django.views.generic import ListView, DetailView
+from django.http import Http404, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib import messages
+from django.views.decorators.http import require_POST, require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q, F, Count, Avg
+from django.core.paginator import Paginator
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.utils.text import slugify
+from django.utils.crypto import get_random_string
+import json
+
+# Импортируем основные модели
+from .models import Story, StoryLike
+from core.models import Category, Tag
+from django.template.loader import render_to_string
+from django.utils.html import escape
+
+# Импортируем новые модели комментариев после создания миграций
+try:
+    from .comment_models import StoryComment, StoryCommentLike
+    COMMENTS_AVAILABLE = True
+except ImportError:
+    # Модели еще не созданы, используем заглушки
+    COMMENTS_AVAILABLE = False
+    StoryComment = None
+    StoryCommentLike = None
+
+
+class StoryListView(ListView):
+    """Список всех видео-рассказов"""
+    model = Story
+    template_name = 'stories/story_list.html'
+    context_object_name = 'stories'
+    paginate_by = 12
+    
+    def get_queryset(self):
+        queryset = Story.objects.filter(is_published=True).select_related('category').prefetch_related('tags')
+        
+        # Поиск
+        search_query = self.request.GET.get('search')
+        if search_query:
+            queryset = queryset.filter(
+                Q(title__icontains=search_query) |
+                Q(description__icontains=search_query)
+            )
+        
+        # Фильтр по категории
+        category_slug = self.request.GET.get('category')
+        if category_slug:
+            queryset = queryset.filter(category__slug=category_slug)
+        
+        # Фильтр по тегу
+        tag_slug = self.request.GET.get('tag')
+        if tag_slug:
+            queryset = queryset.filter(tags__slug=tag_slug)
+        
+        # Сортировка
+        sort_by = self.request.GET.get('sort', '-created_at')
+        if sort_by == 'popular':
+            queryset = queryset.order_by('-views_count', '-created_at')
+        elif sort_by == 'title':
+            queryset = queryset.order_by('title')
+        else:
+            queryset = queryset.order_by(sort_by)
+        
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Видео-рассказы'
+        context['categories'] = Category.objects.all()
+        context['tags'] = Tag.objects.all()
+        context['featured_stories'] = Story.objects.filter(
+            is_published=True, 
+            is_featured=True
+        )[:3]
+        
+        # Передаем параметры поиска и фильтрации в контекст
+        context['search_query'] = self.request.GET.get('search', '')
+        context['current_category'] = self.request.GET.get('category', '')
+        context['current_tag'] = self.request.GET.get('tag', '')
+        context['current_sort'] = self.request.GET.get('sort', '-created_at')
+        
+        return context
+
+
+class StoryDetailView(DetailView):
+    """Детальная страница видео-рассказа"""
+    model = Story
+    template_name = 'stories/story_detail.html'
+    context_object_name = 'story'
+    slug_field = 'slug'
+    slug_url_kwarg = 'slug'
+    
+    def get_queryset(self):
+        return Story.objects.filter(is_published=True).select_related('category').prefetch_related('tags')
+    
+    def get_object(self, queryset=None):
+        # Получаем объект без увеличения счетчика
+        obj = super().get_object(queryset)
+        
+        # Увеличиваем счетчик только один раз за сессию
+        session_key = f'viewed_story_{obj.id}'
+        if not self.request.session.get(session_key, False):
+            obj.increment_views()
+            self.request.session[session_key] = True
+        
+        return obj
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        story = self.get_object()
+        
+        # Похожие рассказы (по категории и тегам)
+        related_stories = Story.objects.filter(
+            is_published=True
+        ).exclude(
+            id=story.id
+        ).select_related('category')
+        
+        if story.category:
+            related_stories = related_stories.filter(category=story.category)
+        
+        context['related_stories'] = related_stories[:3]
+        
+        # Проверяем, лайкнул ли пользователь этот рассказ
+        try:
+            if self.request.user.is_authenticated:
+                context['user_liked'] = StoryLike.objects.filter(
+                    story=story, 
+                    user=self.request.user
+                ).exists()
+            else:
+                context['user_liked'] = False
+            
+            # Общее количество лайков
+            context['likes_count'] = story.likes.count()
+        except Exception:
+            # Если модель лайков еще не создана
+            context['user_liked'] = False
+            context['likes_count'] = 0
+        
+        # Комментарии из новой системы (если доступны)
+        if COMMENTS_AVAILABLE and StoryComment:
+            try:
+                comments = StoryComment.objects.filter(
+                    story=story,
+                    is_approved=True,
+                    parent=None
+                ).select_related('user').prefetch_related(
+                    'replies__user'
+                ).order_by('-created_at')
+                
+                context['comments'] = comments
+                context['comments_count'] = StoryComment.objects.filter(
+                    story=story,
+                    is_approved=True
+                ).count()
+            except Exception as e:
+                print(f'Ошибка загрузки комментариев: {e}')
+                context['comments'] = []
+                context['comments_count'] = 0
+        else:
+            context['comments'] = []
+            context['comments_count'] = 0
+        
+        return context
+
+
+@require_POST
+@login_required
+def story_like(request, story_id):
+    """Лайк/дизлайк рассказа"""
+    try:
+        story = get_object_or_404(Story, id=story_id, is_published=True)
+        like, created = StoryLike.objects.get_or_create(
+            story=story,
+            user=request.user
+        )
+        
+        if not created:
+            # Если лайк уже есть, удаляем его (дизлайк)
+            like.delete()
+            liked = False
+        else:
+            liked = True
+        
+        likes_count = story.likes.count()
+        
+        return JsonResponse({
+            'status': 'success',
+            'liked': liked,
+            'likes_count': likes_count
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+
+
+@require_POST
+@csrf_exempt
+def story_view_count(request, story_id):
+    """Увеличение счетчика просмотров"""
+    try:
+        story = get_object_or_404(Story, id=story_id, is_published=True)
+        story.increment_views()
+        return JsonResponse({
+            'status': 'success', 
+            'views': story.views_count
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error', 
+            'message': str(e)
+        }, status=400)
+
+
+class StoryCategoryView(ListView):
+    """Рассказы по категории"""
+    model = Story
+    template_name = 'stories/story_list.html'
+    context_object_name = 'stories'
+    paginate_by = 12
+    
+    def get_queryset(self):
+        category_slug = self.kwargs.get('category_slug')
+        return Story.objects.filter(
+            is_published=True,
+            category__slug=category_slug
+        ).select_related('category').prefetch_related('tags').order_by('-created_at')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        category_slug = self.kwargs.get('category_slug')
+        try:
+            category = Category.objects.get(slug=category_slug)
+            context['title'] = f'Рассказы: {category.name}'
+            context['current_category'] = category
+        except Category.DoesNotExist:
+            context['title'] = 'Категория не найдена'
+        
+        context['categories'] = Category.objects.all()
+        context['tags'] = Tag.objects.all()
+        return context
+
+
+class StoryTagView(ListView):
+    """Рассказы по тегу"""
+    model = Story
+    template_name = 'stories/story_list.html'
+    context_object_name = 'stories'
+    paginate_by = 12
+    
+    def get_queryset(self):
+        tag_slug = self.kwargs.get('tag_slug')
+        return Story.objects.filter(
+            is_published=True,
+            tags__slug=tag_slug
+        ).select_related('category').prefetch_related('tags').order_by('-created_at')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tag_slug = self.kwargs.get('tag_slug')
+        try:
+            tag = Tag.objects.get(slug=tag_slug)
+            context['title'] = f'Рассказы по тегу: {tag.name}'
+            context['current_tag'] = tag
+        except Tag.DoesNotExist:
+            context['title'] = 'Тег не найден'
+        
+        context['categories'] = Category.objects.all()
+        context['tags'] = Tag.objects.all()
+        return context
+
+
+@method_decorator(cache_page(60 * 15), name='dispatch')
+class PopularStoriesView(ListView):
+    """Популярные рассказы"""
+    model = Story
+    template_name = 'stories/story_list.html'
+    context_object_name = 'stories'
+    paginate_by = 12
+    
+    def get_queryset(self):
+        return Story.objects.filter(
+            is_published=True
+        ).select_related('category').prefetch_related('tags').order_by(
+            '-views_count', '-created_at'
+        )
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Популярные рассказы'
+        context['categories'] = Category.objects.all()
+        context['tags'] = Tag.objects.all()
+        return context
+
+
+@method_decorator(cache_page(60 * 15), name='dispatch')
+class FeaturedStoriesView(ListView):
+    """Рекомендуемые рассказы"""
+    model = Story
+    template_name = 'stories/story_list.html'
+    context_object_name = 'stories'
+    paginate_by = 12
+    
+    def get_queryset(self):
+        return Story.objects.filter(
+            is_published=True,
+            is_featured=True
+        ).select_related('category').prefetch_related('tags').order_by('-created_at')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Рекомендуемые рассказы'
+        context['categories'] = Category.objects.all()
+        context['tags'] = Tag.objects.all()
+        return context
+
+
+class StorySearchView(ListView):
+    """Поиск по рассказам с расширенными возможностями"""
+    model = Story
+    template_name = 'stories/search_results.html'
+    context_object_name = 'stories'
+    paginate_by = 10
+    
+    def get_queryset(self):
+        query = self.request.GET.get('q', '')
+        if not query:
+            return Story.objects.none()
+        
+        return Story.objects.filter(
+            Q(title__icontains=query) |
+            Q(description__icontains=query) |
+            Q(tags__name__icontains=query) |
+            Q(category__name__icontains=query),
+            is_published=True
+        ).select_related('category').prefetch_related('tags').distinct().order_by('-created_at')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search_query'] = self.request.GET.get('q', '')
+        context['title'] = f"Результаты поиска: {context['search_query']}"
+        return context
+
+
+# ================================================
+# ЗАГЛУШКИ ДЛЯ КОММЕНТАРИЕВ (до создания миграций)
+# ================================================
+
+def add_comment(request, story_slug):
+    """Заглушка для добавления комментария"""
+    messages.info(request, 'Система комментариев будет доступна после создания миграций')
+    story = get_object_or_404(Story, slug=story_slug)
+    return redirect('stories:detail', slug=story.slug)
+
+def add_reply(request, comment_id):
+    """Заглушка для добавления ответа"""
+    messages.info(request, 'Система комментариев будет доступна после создания миграций')
+    return redirect('stories:list')
+
+def delete_comment(request, comment_id):
+    """Заглушка для удаления комментария"""
+    messages.info(request, 'Система комментариев будет доступна после создания миграций')
+    return redirect('stories:list')
+
+def toggle_comment_reaction(request, comment_id, reaction_type):
+    """Заглушка для реакций на комментарии"""
+    messages.info(request, 'Система комментариев будет доступна после создания миграций')
+    return redirect('stories:list')
+
+def ajax_add_comment(request, story_slug):
+    """Заглушка для AJAX комментариев"""
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Система комментариев будет доступна после создания миграций'
+    })
+
+def ajax_add_reply(request, comment_id):
+    """Заглушка для AJAX ответов"""
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Система комментариев будет доступна после создания миграций'
+    })
+
+def ajax_delete_comment(request, comment_id):
+    """Заглушка для AJAX удаления"""
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Система комментариев будет доступна после создания миграций'
+    })
+
+def ajax_toggle_comment_reaction(request, comment_id, reaction_type):
+    """Заглушка для AJAX реакций"""
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Система комментариев будет доступна после создания миграций'
+    })
+
+def ajax_load_comments(request, story_slug):
+    """Заглушка для загрузки комментариев"""
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Система комментариев будет доступна после создания миграций'
+    })
+
+def ajax_report_comment(request, comment_id):
+    """Заглушка для жалоб на комментарии"""
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Система комментариев будет доступна после создания миграций'
+    })
+
+def add_simple_comment(request, story_id):
+    """Заглушка для простых комментариев"""
+    messages.info(request, 'Система комментариев будет доступна после создания миграций')
+    return redirect('stories:list')
+
+def add_simple_reply(request, comment_id):
+    """Заглушка для простых ответов"""
+    messages.info(request, 'Система комментариев будет доступна после создания миграций')
+    return redirect('stories:list')
+
+def story_favorite(request, story_id):
+    """Заглушка для избранного"""
+    return JsonResponse({
+        'status': 'info',
+        'message': 'Функция "Избранное" будет добавлена в будущих обновлениях'
+    })

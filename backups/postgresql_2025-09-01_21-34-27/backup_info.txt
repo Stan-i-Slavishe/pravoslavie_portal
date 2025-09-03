@@ -1,0 +1,48 @@
+POSTGRESQL BACKUP - PRAVOSLAVIE PORTAL
+==================================================
+
+Создан: 2025-09-01 21:34:35.085262
+База данных: pravoslavie_local_db
+Пользователь: pravoslavie_user
+Хост: localhost
+Порт: 5432
+
+СОДЕРЖИМОЕ БЭКАПА:
+- database.sql     : SQL дамп (читаемый)
+- database.dump    : Сжатый дамп (для pg_restore)
+- django_data.json : Django fixture
+- media/           : Медиа-файлы
+
+КОМАНДЫ ВОССТАНОВЛЕНИЯ:
+1. Из SQL дампа:
+   psql -h localhost -U pravoslavie_user -d pravoslavie_local_db -f database.sql
+
+2. Из сжатого дампа:
+   pg_restore -h localhost -U pravoslavie_user -d pravoslavie_local_db database.dump
+
+3. Django fixture:
+   python manage.py loaddata django_data.json
+
+РАЗМЕРЫ ФАЙЛОВ:
+database.dump: 0 байт
+django_data.json: 1,018,604 байт
+media\avatars\Мальчик.jpg: 6,866 байт
+media\books\covers\книга.jpg: 81,024 байт
+media\books\covers\книга_4.jpg: 234,597 байт
+media\books\covers\Книга_NLs8jMw.jpg: 367,731 байт
+media\books\covers\Мальчик.jpg: 346,916 байт
+media\books\covers\Обложка.jpg: 173,612 байт
+media\books\covers\Обложка_5cFA4e6.jpg: 144,015 байт
+media\books\covers\Обложка_Fzv3jCM.jpg: 144,015 байт
+media\books\covers\титульный_лист.jpg: 65,991 байт
+media\books\files\sharewood.biz_12_видов_цветов_которые_должны_быть_в_каждом_цветнике.pdf: 14,142,449 байт
+media\books\files\sharewood.biz_12_видов_цветов_которые_должны_быть_в_каждом_цветнике_I0DlK6B.pdf: 14,142,449 байт
+media\books\files\sharewood.biz_Презентация.Тонкости_устройства_газонов_в_дачном_саду.pdf: 8,415,218 байт
+media\books\files\SW.BAND_9may.avi: 5,694,856 байт
+media\books\files\SW.BAND_Яндекс_Директ_-Прзентация_и_ссылки_на_сервисы.pdf: 4,969,358 байт
+media\fairy_tales\covers\2025\06\Шапочка.jpg: 62,799 байт
+media\fairy_tales\covers\2025\07\Ребёнок.jpg: 89,255 байт
+media\fairy_tales\covers\2025\08\Мальчик.jpg: 346,916 байт
+media\shop\products\книга_2.jpg: 222,324 байт
+media\shop\products\книга_3.jpg: 342,671 байт
+media\shop\products\Обложка.jpg: 173,612 байт

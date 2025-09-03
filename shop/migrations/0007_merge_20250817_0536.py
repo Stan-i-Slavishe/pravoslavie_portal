@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('shop', '0006_emergency_discount_fields'),
+        ('shop', '0004_add_discount_fields_to_order'),  # Исправлено: была ссылка на удаленную миграцию
         ('shop', '0006_merge_20250817_0521'),
     ]
 

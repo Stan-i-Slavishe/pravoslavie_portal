@@ -2,9 +2,15 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from core.health_views import HealthCheckView, ReadinessCheckView, LivenessCheckView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # 🩺 Health Checks (for Docker/Kubernetes monitoring)
+    path('health/', HealthCheckView.as_view(), name='health_check'),
+    path('health/ready/', ReadinessCheckView.as_view(), name='readiness_check'),
+    path('health/live/', LivenessCheckView.as_view(), name='liveness_check'),
     
     # Основные страницы
     path('', include('core.urls')),

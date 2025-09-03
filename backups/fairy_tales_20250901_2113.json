@@ -1,0 +1,397 @@
+[
+{
+  "model": "fairy_tales.fairytalecategory",
+  "pk": 1,
+  "fields": {
+    "created_at": "2025-07-02T01:56:37.159Z",
+    "updated_at": "2025-07-02T01:56:37.159Z",
+    "name": "Боязнь темнтоы",
+    "slug": "boyazn-temnoty",
+    "description": "Из названия понятно, что за вид страха рассматривается.",
+    "age_group": "child",
+    "icon": "magic",
+    "color": "#9b59b6",
+    "is_active": true,
+    "order": 0
+  }
+},
+{
+  "model": "fairy_tales.fairytalecategory",
+  "pk": 2,
+  "fields": {
+    "created_at": "2025-08-13T11:52:08.050Z",
+    "updated_at": "2025-08-13T11:52:08.050Z",
+    "name": "Преодоление страхов",
+    "slug": "преодоление-страхов",
+    "description": "Сказки для детей, которые боятся темноты, монстров или новых ситуаций",
+    "age_group": "child",
+    "icon": "shield-check",
+    "color": "#e74c3c",
+    "is_active": true,
+    "order": 1
+  }
+},
+{
+  "model": "fairy_tales.fairytalecategory",
+  "pk": 3,
+  "fields": {
+    "created_at": "2025-08-13T11:52:08.163Z",
+    "updated_at": "2025-08-13T11:52:08.163Z",
+    "name": "Повышение уверенности",
+    "slug": "повышение-уверенности",
+    "description": "Истории для застенчивых детей и повышения самооценки",
+    "age_group": "child",
+    "icon": "heart-fill",
+    "color": "#f39c12",
+    "is_active": true,
+    "order": 2
+  }
+},
+{
+  "model": "fairy_tales.fairytalecategory",
+  "pk": 4,
+  "fields": {
+    "created_at": "2025-08-13T11:52:08.309Z",
+    "updated_at": "2025-08-13T11:52:08.309Z",
+    "name": "Семейные отношения",
+    "slug": "семейные-отношения",
+    "description": "Сказки о дружбе, семье и важности отношений",
+    "age_group": "family",
+    "icon": "people-fill",
+    "color": "#27ae60",
+    "is_active": true,
+    "order": 3
+  }
+},
+{
+  "model": "fairy_tales.fairytalecategory",
+  "pk": 5,
+  "fields": {
+    "created_at": "2025-08-13T11:52:08.407Z",
+    "updated_at": "2025-08-13T11:52:08.407Z",
+    "name": "Православные добродетели",
+    "slug": "православные-добродетели",
+    "description": "Истории о терпении, прощении, благодарности и доброте",
+    "age_group": "family",
+    "icon": "brightness-high",
+    "color": "#3498db",
+    "is_active": true,
+    "order": 4
+  }
+},
+{
+  "model": "fairy_tales.fairytalecategory",
+  "pk": 6,
+  "fields": {
+    "created_at": "2025-08-13T11:52:08.508Z",
+    "updated_at": "2025-08-13T11:52:08.508Z",
+    "name": "Эмоциональное развитие",
+    "slug": "эмоциональное-развитие",
+    "description": "Управление эмоциями, справление с гневом и грустью",
+    "age_group": "child",
+    "icon": "emoji-smile",
+    "color": "#9b59b6",
+    "is_active": true,
+    "order": 5
+  }
+},
+{
+  "model": "fairy_tales.fairytalecategory",
+  "pk": 7,
+  "fields": {
+    "created_at": "2025-08-14T01:34:42.400Z",
+    "updated_at": "2025-08-14T01:34:42.400Z",
+    "name": "Развитие уверенности",
+    "slug": "развитие-уверенности",
+    "description": "Истории для повышения самооценки и уверенности в себе",
+    "age_group": "child",
+    "icon": "star-fill",
+    "color": "#f39c12",
+    "is_active": true,
+    "order": 2
+  }
+},
+{
+  "model": "fairy_tales.fairytalecategory",
+  "pk": 8,
+  "fields": {
+    "created_at": "2025-08-14T01:34:42.526Z",
+    "updated_at": "2025-08-14T01:34:42.526Z",
+    "name": "Духовные ценности",
+    "slug": "духовные-ценности",
+    "description": "Православные сказки о вере, добре и милосердии",
+    "age_group": "family",
+    "icon": "church",
+    "color": "#3498db",
+    "is_active": true,
+    "order": 4
+  }
+},
+{
+  "model": "fairy_tales.fairytalecategory",
+  "pk": 9,
+  "fields": {
+    "created_at": "2025-08-14T16:36:45.793Z",
+    "updated_at": "2025-08-14T16:36:45.793Z",
+    "name": "Улучшение отношений",
+    "slug": "улучшение-отношений",
+    "description": "Сказки о дружбе, семейных отношениях и умении находить общий язык",
+    "age_group": "child",
+    "icon": "people-fill",
+    "color": "#2ecc71",
+    "is_active": true,
+    "order": 3
+  }
+},
+{
+  "model": "fairy_tales.fairytalecategory",
+  "pk": 10,
+  "fields": {
+    "created_at": "2025-08-14T16:36:45.928Z",
+    "updated_at": "2025-08-14T16:36:45.928Z",
+    "name": "Коррекция поведения",
+    "slug": "коррекция-поведения",
+    "description": "Истории для непослушных детей, обучение хорошим манерам и дисциплине",
+    "age_group": "child",
+    "icon": "award-fill",
+    "color": "#3498db",
+    "is_active": true,
+    "order": 4
+  }
+},
+{
+  "model": "fairy_tales.fairytalecategory",
+  "pk": 11,
+  "fields": {
+    "created_at": "2025-08-14T16:36:46.037Z",
+    "updated_at": "2025-08-14T16:36:46.037Z",
+    "name": "Управление эмоциями",
+    "slug": "управление-эмоциями",
+    "description": "Сказки о том, как справляться с гневом, грустью и сильными переживаниями",
+    "age_group": "child",
+    "icon": "emoji-smile-fill",
+    "color": "#9b59b6",
+    "is_active": true,
+    "order": 5
+  }
+},
+{
+  "model": "fairy_tales.fairytalecategory",
+  "pk": 12,
+  "fields": {
+    "created_at": "2025-08-14T16:36:46.139Z",
+    "updated_at": "2025-08-14T16:36:46.139Z",
+    "name": "Духовное воспитание",
+    "slug": "духовное-воспитание",
+    "description": "Православные сказки о вере, доброте, прощении и духовных ценностях",
+    "age_group": "family",
+    "icon": "church",
+    "color": "#2B5AA0",
+    "is_active": true,
+    "order": 6
+  }
+},
+{
+  "model": "fairy_tales.fairytaletemplate",
+  "pk": 24,
+  "fields": {
+    "created_at": "2025-08-14T16:50:11.878Z",
+    "updated_at": "2025-08-14T16:50:11.878Z",
+    "title": "Храбрый малыш и волшебный фонарик",
+    "slug": "hrabryj-malysh-i-volshebnyj-fonarik",
+    "category": 2,
+    "short_description": "Сказка о том, как малыш победил страх темноты с помощью волшебного фонарика.",
+    "therapeutic_goals": [],
+    "content_template": "Жил-был маленький {name}, который очень боялся темноты. Каждый вечер, когда мама выключала свет, {name} прятался под одеяло и дрожал от страха.\n\nОднажды к {name} в гости пришел добрый ангел и подарил волшебный фонарик. \"Этот фонарик особенный, - сказал ангел, - он светит не только вокруг, но и внутри твоего сердца, прогоняя все страхи.\"\n\n{name} взял фонарик и удивился - он действительно излучал теплый, ласковый свет. И в этом свете {name} увидел, что темнота совсем не страшная, а просто тихая и спокойная.\n\nС тех пор {name} больше не боялся темноты, ведь он знал, что Божий свет всегда с ним.\n\nКОНЕЦ\n\nДорогой {name}, помни: когда становится страшно, можно помолиться, и Господь пошлет тебе мужество!",
+    "personalization_fields": {},
+    "target_age_min": 3,
+    "target_age_max": 8,
+    "is_free": true,
+    "base_price": "0.00",
+    "has_audio_option": false,
+    "audio_price": "0.00",
+    "has_illustration_option": false,
+    "illustration_price": "0.00",
+    "views_count": 0,
+    "orders_count": 0,
+    "cover_image": "",
+    "author": "",
+    "is_published": true,
+    "featured": true
+  }
+},
+{
+  "model": "fairy_tales.fairytaletemplate",
+  "pk": 25,
+  "fields": {
+    "created_at": "2025-08-14T16:50:12.020Z",
+    "updated_at": "2025-08-14T16:50:12.020Z",
+    "title": "Малыш и добрый доктор",
+    "slug": "malysh-i-dobryj-doktor",
+    "category": 2,
+    "short_description": "История о том, как малыш перестал бояться врачей.",
+    "therapeutic_goals": [],
+    "content_template": "Маленький {name} очень боялся ходить к доктору. Каждый раз, когда мама говорила: \"Завтра идем к врачу\", {name} начинал плакать.\n\nНо однажды {name} заболел, и пришлось идти в больницу. Там его встретил очень добрый доктор, который улыбался как солнышко.\n\n\"Здравствуй, {name}! - сказал доктор. - Знаешь, я не просто лечу детей, я помогаю им стать здоровыми и сильными, как богатыри!\"\n\nДоктор показал {name} свои инструменты и объяснил, что каждый из них - это волшебный помощник. Стетоскоп слушает, как поет сердце, а градусник проверяет, не слишком ли жарко организму.\n\n{name} понял, что доктор - это друг, который хочет помочь. И больше не боялся лечиться.\n\nКОНЕЦ\n\nПомни, {name}: врачи - это Божьи помощники, они лечат наши тела, как священники лечат наши души.",
+    "personalization_fields": {},
+    "target_age_min": 3,
+    "target_age_max": 8,
+    "is_free": true,
+    "base_price": "0.00",
+    "has_audio_option": false,
+    "audio_price": "0.00",
+    "has_illustration_option": false,
+    "illustration_price": "0.00",
+    "views_count": 1,
+    "orders_count": 0,
+    "cover_image": "",
+    "author": "",
+    "is_published": true,
+    "featured": false
+  }
+},
+{
+  "model": "fairy_tales.fairytaletemplate",
+  "pk": 26,
+  "fields": {
+    "created_at": "2025-08-14T16:50:12.141Z",
+    "updated_at": "2025-08-14T16:50:12.141Z",
+    "title": "Как малыш поверил в себя",
+    "slug": "kak-malysh-poveril-v-sebya",
+    "category": 3,
+    "short_description": "Вдохновляющая история о том, как малыш обрел уверенность в себе.",
+    "therapeutic_goals": [],
+    "content_template": "Маленький {name} был очень застенчивым ребенком. Он боялся отвечать в садике, знакомиться с новыми детьми и даже заказывать мороженое в кафе.\n\nОднажды {name} нашел в саду маленькое семечко. \"Интересно, что из него вырастет?\" - подумал {name} и посадил его в горшочек.\n\nКаждый день {name} поливал семечко, разговаривал с ним и ждал. И вот однажды показался маленький зеленый росточек!\n\n\"Ты такой маленький, но такой храбрый! - сказал {name}. - Ты не боишься расти!\"\n\nИ тут {name} понял: он тоже может быть храбрым! Ведь внутри него, как и в семечке, есть сила для роста.\n\nНа следующий день {name} первый поднял руку в садике, познакомился с новым мальчиком и даже сам попросил у мамы купить ему книжку.\n\nКОНЕЦ\n\n{name}, помни: Бог дал тебе много талантов. Не прячь их, а дари миру!",
+    "personalization_fields": {},
+    "target_age_min": 4,
+    "target_age_max": 10,
+    "is_free": true,
+    "base_price": "0.00",
+    "has_audio_option": false,
+    "audio_price": "0.00",
+    "has_illustration_option": false,
+    "illustration_price": "0.00",
+    "views_count": 1,
+    "orders_count": 0,
+    "cover_image": "",
+    "author": "",
+    "is_published": true,
+    "featured": true
+  }
+},
+{
+  "model": "fairy_tales.fairytaletemplate",
+  "pk": 27,
+  "fields": {
+    "created_at": "2025-08-14T16:50:12.296Z",
+    "updated_at": "2025-08-14T17:15:47.622Z",
+    "title": "Секрет настоящей дружбы",
+    "slug": "sekret-nastoyashchej-druzhby",
+    "category": 9,
+    "short_description": "Сказка о том, как малыш научился быть хорошим другом.",
+    "therapeutic_goals": [],
+    "content_template": "Маленький {name} очень хотел иметь много друзей, но почему-то дети не хотели с ним играть. {name} расстраивался и не понимал, в чем дело.\r\n\r\nОднажды {name} увидел, как маленький котенок плачет под дождем. Вместо того чтобы пройти мимо, {name} укрыл котенка своей курткой и отнес домой.\r\n\r\n\"Почему ты помог котенку?\" - спросила мама.\r\n\r\n\"Потому что ему было плохо, - ответил {name}. - Я не мог пройти мимо.\"\r\n\r\nНа следующий день в садике {name} увидел, что новенький мальчик Миша сидит один и грустит. {name} подошел к нему: \"Привет! Хочешь, я покажу тебе наши игрушки?\"\r\n\r\nМиша обрадовался, и они стали играть вместе. Потом к ним присоединились другие дети.\r\n\r\n{name} понял секрет дружбы: чтобы иметь друзей, нужно самому быть другом - добрым, внимательным и готовым помочь.\r\n\r\nКОНЕЦ\r\n\r\n{name}, помни слова Христа: \"Относись к людям так, как хочешь, чтобы они относились к тебе.\"",
+    "personalization_fields": {},
+    "target_age_min": 4,
+    "target_age_max": 10,
+    "is_free": true,
+    "base_price": "299.00",
+    "has_audio_option": false,
+    "audio_price": "0.00",
+    "has_illustration_option": false,
+    "illustration_price": "0.00",
+    "views_count": 1,
+    "orders_count": 0,
+    "cover_image": "fairy_tales/covers/2025/08/Мальчик.jpg",
+    "author": "",
+    "is_published": true,
+    "featured": false
+  }
+},
+{
+  "model": "fairy_tales.fairytaletemplate",
+  "pk": 28,
+  "fields": {
+    "created_at": "2025-08-14T16:50:12.473Z",
+    "updated_at": "2025-08-14T16:50:12.473Z",
+    "title": "Учимся слушаться родителей",
+    "slug": "uchimsya-slushatsya-roditelej",
+    "category": 10,
+    "short_description": "История о том, как малыш понял, почему важно слушаться родителей.",
+    "therapeutic_goals": [],
+    "content_template": "Маленький {name} был очень непослушным ребенком. Он не хотел убирать игрушки, капризничал за едой и не слушался маму с папой.\n\n\"Почему я должен всех слушаться? - думал {name}. - Я уже большой!\"\n\nОднажды {name} пошел с дедушкой в лес за грибами. Дедушка сказал: \"Не отходи далеко и не трогай незнакомые грибы.\"\n\nНо {name} подумал: \"Я сам знаю!\" И побежал в глубь леса за красивыми мухоморами.\n\nВскоре {name} понял, что заблудился. Было страшно и темно. {name} заплакал и стал звать дедушку.\n\nКогда дедушка нашел {name}, он обнял его и сказал: \"Видишь, милый, старшие говорят нам важные вещи не для того, чтобы нас мучить, а чтобы защитить.\"\n\n{name} понял, что родители любят его и хотят, чтобы с ним все было хорошо. Поэтому их нужно слушаться.\n\nКОНЕЦ\n\n{name}, помни: \"Чти отца и мать\" - это одна из Божьих заповедей. Слушайся родителей с любовью!",
+    "personalization_fields": {},
+    "target_age_min": 3,
+    "target_age_max": 8,
+    "is_free": false,
+    "base_price": "399.00",
+    "has_audio_option": true,
+    "audio_price": "199.00",
+    "has_illustration_option": false,
+    "illustration_price": "0.00",
+    "views_count": 1,
+    "orders_count": 0,
+    "cover_image": "",
+    "author": "",
+    "is_published": true,
+    "featured": false
+  }
+},
+{
+  "model": "fairy_tales.fairytaletemplate",
+  "pk": 29,
+  "fields": {
+    "created_at": "2025-08-14T16:50:12.595Z",
+    "updated_at": "2025-08-14T16:50:12.595Z",
+    "title": "Волшебное дыхание",
+    "slug": "volshebnoe-dyhanie",
+    "category": 11,
+    "short_description": "Сказка о том, как малыш научился справляться с гневом.",
+    "therapeutic_goals": [],
+    "content_template": "Маленький {name} был хорошим ребенком, но иногда очень сильно злился. Когда что-то не получалось, {name} кричал, топал ногами и даже мог что-то бросить.\n\nОднажды к {name} пришла добрая фея и сказала: \"Я научу тебя волшебству, которое поможет справиться со злостью.\"\n\n\"Какому волшебству?\" - удивился {name}.\n\n\"Волшебному дыханию! - улыбнулась фея. - Когда ты злишься, медленно вдохни через нос, представляя, как вдыхаешь спокойствие. А потом медленно выдохни через рот, выдыхая всю злость.\"\n\n{name} попробовал. Он глубоко вдохнул... и выдохнул. И правда, злость стала уходить!\n\n\"А еще, - добавила фея, - когда злишься, можно сосчитать до десяти или помолиться. Бог всегда поможет успокоиться.\"\n\nС тех пор {name} пользовался волшебным дыханием и больше не устраивал истерик.\n\nКОНЕЦ\n\n{name}, помни: гнев - это огонь, который сжигает того, кто его носит. Научись его тушить!",
+    "personalization_fields": {},
+    "target_age_min": 4,
+    "target_age_max": 10,
+    "is_free": false,
+    "base_price": "399.00",
+    "has_audio_option": false,
+    "audio_price": "0.00",
+    "has_illustration_option": false,
+    "illustration_price": "0.00",
+    "views_count": 7,
+    "orders_count": 0,
+    "cover_image": "",
+    "author": "",
+    "is_published": true,
+    "featured": true
+  }
+},
+{
+  "model": "fairy_tales.fairytaletemplate",
+  "pk": 30,
+  "fields": {
+    "created_at": "2025-08-14T16:50:12.731Z",
+    "updated_at": "2025-08-14T16:50:12.731Z",
+    "title": "Чудо доброты",
+    "slug": "chudo-dobroty",
+    "category": 12,
+    "short_description": "Православная сказка о том, как малыш открыл силу добрых дел.",
+    "therapeutic_goals": [],
+    "content_template": "Маленький {name} жил в маленьком городке рядом с красивым храмом. Каждое воскресенье семья ходила на службу, но {name} не очень понимал, зачем это нужно.\n\nОднажды {name} увидел, как старенькая бабушка никак не может донести тяжелую сумку до дома. Сердце {name} дрогнуло, и он подбежал помочь.\n\n\"Спасибо тебе, мой хороший! - сказала бабушка. - Пусть Господь благословит тебя!\"\n\nВ этот момент {name} почувствовал в сердце необыкновенное тепло и радость. Словно солнышко заглянуло прямо в душу!\n\n\"Что это было?\" - спросил {name} у мамы.\n\n\"Это радость от доброго дела, - объяснила мама. - Когда мы помогаем людям, Бог радуется вместе с нами.\"\n\nС тех пор {name} старался каждый день делать что-то доброе: помогал маме, делился игрушками, кормил птиц. И каждый раз чувствовал то же чудесное тепло в сердце.\n\n{name} понял: добрые дела - это молитва не словами, а поступками.\n\nКОНЕЦ\n\n{name}, помни слова святого Серафима: \"Стяжи мирный дух, и тысячи вокруг тебя спасутся.\"",
+    "personalization_fields": {},
+    "target_age_min": 5,
+    "target_age_max": 12,
+    "is_free": false,
+    "base_price": "499.00",
+    "has_audio_option": true,
+    "audio_price": "199.00",
+    "has_illustration_option": true,
+    "illustration_price": "299.00",
+    "views_count": 6,
+    "orders_count": 0,
+    "cover_image": "",
+    "author": "",
+    "is_published": true,
+    "featured": true
+  }
+}
+]

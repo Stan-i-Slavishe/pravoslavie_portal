@@ -1,0 +1,57 @@
+=== BACKUP СИСТЕМНОЙ ИНФОРМАЦИИ ===
+Дата создания: 2025-08-31
+Проект: Православный портал (dobrist.com)
+Backup: РАБОЧАЯ конфигурация продакшена
+
+=== ФАЙЛЫ ПРОЕКТА ===
+✅ .env.production (главный файл настроек продакшена)
+✅ .env (текущий файл настроек)
+✅ config/settings.py (основной файл Django)
+✅ config/settings_production.py
+✅ config/settings_local.py
+✅ requirements.txt
+
+=== ПЕРЕМЕННЫЕ ОКРУЖЕНИЯ (должны быть) ===
+DJANGO_ENV: production
+DEBUG: False
+ALLOWED_HOSTS: dobrist.com,www.dobrist.com
+
+=== БАЗА ДАННЫХ ===
+Тип: PostgreSQL
+База: pravoslavie_db
+Пользователь: pravoslavie_user
+Хост: localhost:5432
+
+=== API ИНТЕГРАЦИИ ===
+- YouTube API (для видео-рассказов)
+- YooKassa (для платежей)
+- Yandex Mail (для email)
+- Redis (для кеширования)
+
+=== DJANGO ПРИЛОЖЕНИЯ ===
+- core (основная навигация)
+- stories (видео-рассказы)
+- fairy_tales (терапевтические сказки)
+- books (система книг)
+- shop (интернет-магазин)
+- accounts (пользователи)
+- audio (аудио контент)
+- subscriptions (подписки)
+
+=== СТАТУС НА МОМЕНТ BACKUP ===
+Проект: 97% готовности до MVP
+Функциональность: Полный интернет-магазин, плейлисты, книги
+Проблема: Хаос с .env файлами (7 разных файлов!)
+
+=== СЛЕДУЮЩИЕ ШАГИ ===
+1. Очистить лишние .env файлы
+2. Создать staging окружение  
+3. Настроить стабильный процесс деплоя
+4. После стабилизации - OAuth интеграция
+
+=== ВАЖНЫЕ КОМАНДЫ ===
+python manage.py check --deploy
+python manage.py migrate
+python manage.py collectstatic
+sudo systemctl restart gunicorn
+sudo systemctl restart nginx

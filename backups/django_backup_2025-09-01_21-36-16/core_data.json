@@ -1,0 +1,699 @@
+[
+{
+  "model": "core.category",
+  "pk": 1,
+  "fields": {
+    "created_at": "2025-06-30T04:24:07.918Z",
+    "updated_at": "2025-07-19T01:29:51.092Z",
+    "name": "Врачебные истории",
+    "slug": "vrachebnye-istorii",
+    "description": "Врачебные истории — это рассказы о врачах и пациентах, о боли и надежде, о человеческом участии и Божьем промысле. Здесь — судьбоносные диагнозы, удивительные исцеления, тяжёлые решения и случаи, когда врач становится не просто специалистом, а проводником милости и любви. Эти истории показывают медицину не только как науку, но и как служение, в котором человек встречается с чудом.",
+    "content_type": "story",
+    "icon": "",
+    "color": "#6c5ce7",
+    "is_active": true,
+    "order": 0
+  }
+},
+{
+  "model": "core.category",
+  "pk": 2,
+  "fields": {
+    "created_at": "2025-07-02T10:49:24.514Z",
+    "updated_at": "2025-07-19T01:30:27.980Z",
+    "name": "Школьные истории",
+    "slug": "shkolnye-istorii",
+    "description": "Школьные истории — это рассказы о детстве и юности, о первых открытиях, трудностях, дружбе и становлении личности. Здесь — учителя, оставившие след в судьбе, ученики с непростой судьбой, уроки, которые запоминаются на всю жизнь, и ситуации, где простое слово меняет всё. Эти истории раскрывают школу как не только место знаний, но и пространство духовного роста, выбора и внутренних перемен.",
+    "content_type": "story",
+    "icon": "",
+    "color": "#6c5ce7",
+    "is_active": true,
+    "order": 0
+  }
+},
+{
+  "model": "core.category",
+  "pk": 3,
+  "fields": {
+    "created_at": "2025-07-17T23:40:44.038Z",
+    "updated_at": "2025-07-17T23:40:44.038Z",
+    "name": "Вразумление через скорби",
+    "slug": "vrazumlenie-cherez-skorbi",
+    "description": "Вразумление через скорби — это рассказы и свидетельства о том, как жизненные испытания, болезни, потери и трудности становятся поворотным моментом в жизни человека, ведут к покаянию, обращению к Богу и переосмыслению пути. Здесь раскрывается таинственный промысл Божий, когда через боль и страдания душа очищается, смиряется и возвращается к Истине. Эти истории укрепляют веру, утешают страдающих и напоминают, что ни одна скорбь не бывает напрасной, если она приближает к Спасителю.",
+    "content_type": "story",
+    "icon": "",
+    "color": "#6c5ce7",
+    "is_active": true,
+    "order": 0
+  }
+},
+{
+  "model": "core.category",
+  "pk": 4,
+  "fields": {
+    "created_at": "2025-07-18T16:17:18.646Z",
+    "updated_at": "2025-07-18T16:17:18.647Z",
+    "name": "Выдающиеся люди",
+    "slug": "vydayushiesya-lyudi",
+    "description": "В этом разделе собраны истории о людях, чья жизнь и дела оставили глубокий след в сердцах современников и потомков. Их поступки вдохновляют, их вера укрепляет, их путь освещает дорогу другим. Здесь вы найдёте рассказы о священниках, учёных, простых тружениках и святых — о тех, кто жил не для себя, а для других, неся свет, истину и доброту в этот мир.",
+    "content_type": "story",
+    "icon": "",
+    "color": "#6c5ce7",
+    "is_active": true,
+    "order": 0
+  }
+},
+{
+  "model": "core.category",
+  "pk": 5,
+  "fields": {
+    "created_at": "2025-07-18T23:25:31.038Z",
+    "updated_at": "2025-07-18T23:25:31.038Z",
+    "name": "Жертвенная любовь",
+    "slug": "zhertvennaya-lyubov",
+    "description": "Жертвенная любовь — это любовь, способная отдать всё, не требуя ничего взамен. Это подвиг сердца, готовность пострадать ради ближнего, даже если он не оценит этой жертвы. В рассказах этой категории раскрывается сила любви, которая побеждает эгоизм, страх, боль и даже смерть. Здесь — примеры родительской, супружеской, братской и божественной любви, освещённой светом подлинного самопожертвования.",
+    "content_type": "story",
+    "icon": "",
+    "color": "#6c5ce7",
+    "is_active": true,
+    "order": 0
+  }
+},
+{
+  "model": "core.category",
+  "pk": 6,
+  "fields": {
+    "created_at": "2025-07-18T23:43:10.331Z",
+    "updated_at": "2025-07-18T23:43:10.331Z",
+    "name": "За пределами логики",
+    "slug": "za-predelami-logiki",
+    "description": "За пределами логики — это истории, которые не укладываются в рамки привычного восприятия. Здесь — чудеса, странные совпадения, прозрения, сны и необъяснимые события, в которых логика отступает, а интуиция и вера выходят на первый план. Это рассказы, в которых невидимое становится ощутимым, а невозможное — реальным. Там, где разум останавливается, начинается нечто большее.",
+    "content_type": "story",
+    "icon": "",
+    "color": "#6c5ce7",
+    "is_active": true,
+    "order": 0
+  }
+},
+{
+  "model": "core.category",
+  "pk": 7,
+  "fields": {
+    "created_at": "2025-07-19T01:40:48.730Z",
+    "updated_at": "2025-07-19T01:40:48.730Z",
+    "name": "О Великой Отечественной Войне",
+    "slug": "o-velikoj-otechestvennoj-vojne",
+    "description": "О Великой Отечественной войне — это рассказы о подвиге, вере и несгибаемом духе народа в страшные годы испытаний. Здесь — фронтовые будни и тыловая самоотверженность, прощания и встречи, письма с войны, детские судьбы и великие жертвы ради жизни. Эти истории хранят память о тех, кто выстоял, любил, страдал и верил, когда, казалось, надежды уже не было.",
+    "content_type": "story",
+    "icon": "",
+    "color": "#6c5ce7",
+    "is_active": true,
+    "order": 0
+  }
+},
+{
+  "model": "core.category",
+  "pk": 8,
+  "fields": {
+    "created_at": "2025-07-19T02:02:35.999Z",
+    "updated_at": "2025-07-19T02:02:35.999Z",
+    "name": "Как-то радостно и тепло",
+    "slug": "kak-to-radostno-i-teplo",
+    "description": "Как-то радостно и тепло — это рассказы, в которых светло на душе, даже если слёзы наворачиваются. Здесь — простые моменты, наполненные добротой, неожиданной заботой, искренней улыбкой или тихим чудом. Эти истории возвращают веру в людей, напоминают о близких, согревают, словно луч солнца в пасмурный день. Они не кричат — они тихо светят, оставляя после себя тепло в сердце.",
+    "content_type": "story",
+    "icon": "",
+    "color": "#6c5ce7",
+    "is_active": true,
+    "order": 0
+  }
+},
+{
+  "model": "core.category",
+  "pk": 9,
+  "fields": {
+    "created_at": "2025-07-19T04:33:48.347Z",
+    "updated_at": "2025-07-19T04:33:48.347Z",
+    "name": "Подвиги святых",
+    "slug": "podvigi-svyatyh",
+    "description": "Подвиги святых — это рассказы о людях, полностью отдавших себя Богу. Их жизнь — путь самоотверженности, молитвы, поста и служения ближним. Здесь — мученики, преподобные, исповедники и праведники, чьи подвиги вдохновляют, укрепляют веру и показывают, как сила духа побеждает страх, зло и саму смерть. Эти истории напоминают: святость — не недосягаемый идеал, а живой свет, сияющий сквозь века.",
+    "content_type": "story",
+    "icon": "",
+    "color": "#6c5ce7",
+    "is_active": true,
+    "order": 0
+  }
+},
+{
+  "model": "core.category",
+  "pk": 10,
+  "fields": {
+    "created_at": "2025-07-19T05:42:47.970Z",
+    "updated_at": "2025-07-19T05:42:47.970Z",
+    "name": "Смиреномудрие",
+    "slug": "smirenomudrie",
+    "description": "Смиреномудрие — это рассказы о внутренней силе, сокрытой под покровом тишины и кротости. Здесь — примеры тех, кто не искал почестей, не доказывал свою правоту, но носил в сердце мир, терпение и любовь. Эти истории показывают, как настоящая мудрость проявляется в смирении, как мягкое слово и чистая душа могут изменить больше, чем громкие дела. Смиреномудрие — путь тихий, но ведущий к высоте.",
+    "content_type": "story",
+    "icon": "",
+    "color": "#6c5ce7",
+    "is_active": true,
+    "order": 0
+  }
+},
+{
+  "model": "core.category",
+  "pk": 11,
+  "fields": {
+    "created_at": "2025-07-19T05:50:48.322Z",
+    "updated_at": "2025-07-19T05:50:48.322Z",
+    "name": "Человеческий поступок",
+    "slug": "chelovecheskij-postupok",
+    "description": "Человеческий поступок — это истории о моменте выбора, когда человек проявляет доброту, честность, мужество или сострадание, даже если это трудно. Это не всегда подвиг, но всегда — искра человечности, способная зажечь свет в чужой судьбе. В этих рассказах раскрывается красота души, поступающей по совести, и сила простого добра, совершаемого от сердца.",
+    "content_type": "story",
+    "icon": "",
+    "color": "#6c5ce7",
+    "is_active": true,
+    "order": 0
+  }
+},
+{
+  "model": "core.category",
+  "pk": 12,
+  "fields": {
+    "created_at": "2025-07-19T16:09:27.523Z",
+    "updated_at": "2025-07-19T16:09:27.523Z",
+    "name": "Чудеса веры",
+    "slug": "chudesa-very",
+    "description": "Чудеса веры — это рассказы о том, как Господь отвечает на молитву, как невозможное становится возможным, когда сердце наполнено доверием к Богу. Здесь — исцеления, спасения, удивительные совпадения и таинственные промыслы, которые невозможно объяснить иначе, как вмешательством свыше. Эти истории укрепляют душу, вдохновляют надеяться и напоминают: с верой возможно всё.",
+    "content_type": "story",
+    "icon": "",
+    "color": "#6c5ce7",
+    "is_active": true,
+    "order": 0
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 1,
+  "fields": {
+    "created_at": "2025-06-30T04:24:18.927Z",
+    "updated_at": "2025-07-17T01:58:24.766Z",
+    "name": "врачебные истории",
+    "slug": "vrachebnye-istorii",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 2,
+  "fields": {
+    "created_at": "2025-07-02T10:49:43.436Z",
+    "updated_at": "2025-07-02T10:49:43.436Z",
+    "name": "школа",
+    "slug": "shkola",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 3,
+  "fields": {
+    "created_at": "2025-07-02T10:49:49.820Z",
+    "updated_at": "2025-07-02T10:49:49.820Z",
+    "name": "дети",
+    "slug": "deti",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 4,
+  "fields": {
+    "created_at": "2025-07-02T10:49:58.151Z",
+    "updated_at": "2025-07-02T10:49:58.151Z",
+    "name": "внутренняя сила",
+    "slug": "vnutrennyaya-sila",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 5,
+  "fields": {
+    "created_at": "2025-07-02T11:07:02.707Z",
+    "updated_at": "2025-07-02T11:07:02.707Z",
+    "name": "доброе слово",
+    "slug": "dobroe-slovo",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 6,
+  "fields": {
+    "created_at": "2025-07-03T00:16:41.393Z",
+    "updated_at": "2025-07-03T00:16:41.394Z",
+    "name": "истории из жизни",
+    "slug": "istorii-iz-zhizni",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 7,
+  "fields": {
+    "created_at": "2025-07-03T00:16:57.266Z",
+    "updated_at": "2025-07-03T00:16:57.266Z",
+    "name": "семья",
+    "slug": "semya",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 8,
+  "fields": {
+    "created_at": "2025-07-03T00:46:42.644Z",
+    "updated_at": "2025-07-03T00:46:42.644Z",
+    "name": "жертвенность",
+    "slug": "zhertvennost",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 9,
+  "fields": {
+    "created_at": "2025-07-03T01:57:22.447Z",
+    "updated_at": "2025-07-03T01:57:22.447Z",
+    "name": "чудеса",
+    "slug": "chudesa",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 10,
+  "fields": {
+    "created_at": "2025-07-03T14:22:38.612Z",
+    "updated_at": "2025-07-03T14:22:38.613Z",
+    "name": "исцеление",
+    "slug": "iscelenie",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 11,
+  "fields": {
+    "created_at": "2025-07-17T01:56:00.454Z",
+    "updated_at": "2025-07-17T01:58:39.128Z",
+    "name": "за пределами логики",
+    "slug": "za-predelami-logiki",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 12,
+  "fields": {
+    "created_at": "2025-07-17T23:55:59.177Z",
+    "updated_at": "2025-07-17T23:55:59.177Z",
+    "name": "бандиты",
+    "slug": "bandity",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 13,
+  "fields": {
+    "created_at": "2025-07-18T00:20:16.838Z",
+    "updated_at": "2025-07-18T00:20:16.838Z",
+    "name": "вразумление",
+    "slug": "vrazumlenie",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 14,
+  "fields": {
+    "created_at": "2025-07-18T00:40:39.017Z",
+    "updated_at": "2025-07-18T00:40:39.017Z",
+    "name": "алкоголь",
+    "slug": "alkogol",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 15,
+  "fields": {
+    "created_at": "2025-07-18T16:19:10.287Z",
+    "updated_at": "2025-07-18T16:19:10.287Z",
+    "name": "сильная личность",
+    "slug": "silnaya-lichnost",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 16,
+  "fields": {
+    "created_at": "2025-07-18T16:21:59.434Z",
+    "updated_at": "2025-07-18T16:21:59.434Z",
+    "name": "испытания",
+    "slug": "ispytaniya",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 17,
+  "fields": {
+    "created_at": "2025-07-18T16:29:36.583Z",
+    "updated_at": "2025-07-18T16:29:36.583Z",
+    "name": "кротость",
+    "slug": "krotost",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 18,
+  "fields": {
+    "created_at": "2025-07-18T23:30:26.395Z",
+    "updated_at": "2025-07-18T23:30:26.395Z",
+    "name": "христианская любовь",
+    "slug": "hristianskaya-lyubov",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 19,
+  "fields": {
+    "created_at": "2025-07-19T00:04:59.128Z",
+    "updated_at": "2025-07-19T00:04:59.128Z",
+    "name": "гонения",
+    "slug": "goneniya",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 20,
+  "fields": {
+    "created_at": "2025-07-19T00:17:53.554Z",
+    "updated_at": "2025-07-19T00:17:53.554Z",
+    "name": "моя половинка",
+    "slug": "moya-polovinka",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 21,
+  "fields": {
+    "created_at": "2025-07-19T01:43:57.546Z",
+    "updated_at": "2025-07-19T01:43:57.546Z",
+    "name": "ВОВ",
+    "slug": "vov",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 22,
+  "fields": {
+    "created_at": "2025-07-19T02:04:15.905Z",
+    "updated_at": "2025-07-19T02:04:15.905Z",
+    "name": "простая радость",
+    "slug": "prostaya-radost",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 23,
+  "fields": {
+    "created_at": "2025-07-19T02:11:59.042Z",
+    "updated_at": "2025-07-19T02:11:59.042Z",
+    "name": "бабушка",
+    "slug": "babushka",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 24,
+  "fields": {
+    "created_at": "2025-07-19T02:13:13.718Z",
+    "updated_at": "2025-07-19T02:13:13.718Z",
+    "name": "молитва",
+    "slug": "molitva",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 25,
+  "fields": {
+    "created_at": "2025-07-19T02:14:38.436Z",
+    "updated_at": "2025-07-19T02:14:38.436Z",
+    "name": "животные",
+    "slug": "zhivotnye",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 26,
+  "fields": {
+    "created_at": "2025-07-19T02:19:33.798Z",
+    "updated_at": "2025-07-19T02:19:33.798Z",
+    "name": "дедушка",
+    "slug": "dedushka",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 27,
+  "fields": {
+    "created_at": "2025-07-19T02:29:15.884Z",
+    "updated_at": "2025-07-19T02:29:15.884Z",
+    "name": "покаяние (изменение)",
+    "slug": "pokayanie-izmenenie",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 28,
+  "fields": {
+    "created_at": "2025-07-19T04:27:02.538Z",
+    "updated_at": "2025-07-19T04:27:02.538Z",
+    "name": "мама",
+    "slug": "mama",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 29,
+  "fields": {
+    "created_at": "2025-07-19T04:35:54.903Z",
+    "updated_at": "2025-07-19T04:35:54.903Z",
+    "name": "смирение",
+    "slug": "smirenie",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 30,
+  "fields": {
+    "created_at": "2025-07-19T05:51:15.949Z",
+    "updated_at": "2025-07-19T05:51:15.949Z",
+    "name": "сострадание",
+    "slug": "sostradanie",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 31,
+  "fields": {
+    "created_at": "2025-07-19T05:52:55.653Z",
+    "updated_at": "2025-07-19T05:52:55.653Z",
+    "name": "Папа",
+    "slug": "papa",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 32,
+  "fields": {
+    "created_at": "2025-07-19T06:11:39.830Z",
+    "updated_at": "2025-07-19T06:11:39.830Z",
+    "name": "дочь",
+    "slug": "doch",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 33,
+  "fields": {
+    "created_at": "2025-07-19T06:14:11.149Z",
+    "updated_at": "2025-07-19T06:14:11.149Z",
+    "name": "сын",
+    "slug": "syn",
+    "description": "",
+    "color": "#74b9ff",
+    "is_active": true
+  }
+},
+{
+  "model": "core.contactmessage",
+  "pk": 1,
+  "fields": {
+    "created_at": "2025-08-05T00:48:11.629Z",
+    "updated_at": "2025-08-05T00:48:11.629Z",
+    "name": "Станислав",
+    "email": "stassilin@mail.ru",
+    "subject": "general",
+    "message": "Проверка обратной связи",
+    "status": "new",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "is_read": false,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "core.mobilefeedback",
+  "pk": 1,
+  "fields": {
+    "created_at": "2025-08-13T02:09:41.868Z",
+    "updated_at": "2025-08-13T02:09:41.868Z",
+    "feedback_type": "bug",
+    "message": "Крутотень",
+    "status": "new",
+    "priority": "high",
+    "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1",
+    "url": "http://127.0.0.1:8000/contact/",
+    "ip_address": "127.0.0.1",
+    "screen_resolution": "414x896",
+    "user": null,
+    "is_read": false,
+    "admin_notes": "",
+    "assigned_to": null
+  }
+},
+{
+  "model": "core.mobilefeedback",
+  "pk": 2,
+  "fields": {
+    "created_at": "2025-08-13T02:12:55.138Z",
+    "updated_at": "2025-08-13T02:12:55.138Z",
+    "feedback_type": "design",
+    "message": "На этой странице не очень понятно",
+    "status": "new",
+    "priority": "medium",
+    "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1",
+    "url": "http://127.0.0.1:8000/shop/my-purchases/",
+    "ip_address": "127.0.0.1",
+    "screen_resolution": "414x896",
+    "user": [
+      "admin"
+    ],
+    "is_read": false,
+    "admin_notes": "",
+    "assigned_to": null
+  }
+},
+{
+  "model": "core.sitesettings",
+  "pk": 1,
+  "fields": {
+    "site_name": "Добрые Истории",
+    "site_description": "Духовные рассказы, книги и аудио для современного человека",
+    "contact_email": "info@pravoslavie-portal.ru",
+    "contact_phone": "+7 (800) 123-45-67",
+    "social_telegram": "",
+    "social_youtube": "",
+    "social_vk": "",
+    "maintenance_mode": false,
+    "maintenance_message": "",
+    "analytics_yandex": "",
+    "analytics_google": ""
+  }
+}
+]

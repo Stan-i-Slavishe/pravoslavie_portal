@@ -1,0 +1,109 @@
+<!-- stories/ajax/comment_item.html -->
+<div class="comment-item mb-4 ajax-comment" id="comment-{{ comment.id }}" data-comment-id="{{ comment.id }}">
+    <div class="main-comment">
+        <div class="d-flex align-items-start">
+            <!-- Аватар -->
+            <div class="comment-avatar me-3">
+                <div class="avatar-circle bg-secondary text-white">
+                    {% if comment.user.first_name %}{{ comment.user.first_name|first|upper }}{{ comment.user.last_name|first|upper }}{% else %}{{ comment.user.username|first|upper }}{% endif %}
+                </div>
+            </div>
+            
+            <!-- Содержимое комментария -->
+            <div class="comment-content flex-grow-1">
+                <!-- Заголовок комментария -->
+                <div class="comment-header d-flex justify-content-between align-items-center mb-1">
+                    <div class="comment-meta">
+                        <strong class="comment-author">{{ comment.user.get_full_name|default:comment.user.username }}</strong>
+                        <span class="comment-time text-muted ms-2">{{ comment.get_time_since_posted }}</span>
+                        <span class="badge bg-success ms-2 new-comment-badge">Новый</span>
+                    </div>
+                    {% if user == comment.user or user.is_staff %}
+                    <div class="comment-actions">
+                        <button class="btn btn-sm btn-outline-danger ajax-delete-comment" 
+                                data-comment-id="{{ comment.id }}"
+                                title="Удалить">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Текст комментария -->
+                <div class="comment-text mb-2">
+                    <p class="mb-0">{{ comment.text|linebreaks }}</p>
+                </div>
+                
+                <!-- Действия с комментарием -->
+                {% if user.is_authenticated %}
+                <div class="comment-reactions mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <!-- Лайки/дизлайки -->
+                        <button class="btn btn-sm btn-outline-success ajax-reaction-btn like-btn"
+                                data-comment-id="{{ comment.id }}" 
+                                data-reaction="like">
+                            <i class="fas fa-thumbs-up me-1"></i>
+                            <span class="likes-count">{{ comment.likes_count }}</span>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger ajax-reaction-btn dislike-btn"
+                                data-comment-id="{{ comment.id }}" 
+                                data-reaction="dislike">
+                            <i class="fas fa-thumbs-down me-1"></i>
+                            <span class="dislikes-count">{{ comment.dislikes_count }}</span>
+                        </button>
+                        
+                        <!-- КНОПКА ОТВЕТИТЬ -->
+                        <button class="btn btn-sm btn-outline-primary ajax-reply-btn" 
+                                data-comment-id="{{ comment.id }}"
+                                data-author="{{ comment.user.get_full_name|default:comment.user.username }}">
+                            <i class="fas fa-reply me-1"></i>Ответить
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- ФОРМА ОТВЕТА (скрыта по умолчанию) -->
+                <div class="ajax-reply-form-container" id="ajax-reply-form-{{ comment.id }}" style="display: none;">
+                    <!-- Форма будет создаваться динамически через JavaScript -->
+                </div>
+                {% endif %}
+                
+                <!-- ОТВЕТЫ НА КОММЕНТАРИЙ -->
+                <div class="replies-container" id="replies-{{ comment.id }}">
+                    {% if comment.replies.all %}
+                    <div class="replies-section mt-3">
+                        <div class="replies-wrapper ps-4 border-start border-3 border-primary">
+                            <div class="replies-header mb-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-reply me-1"></i>
+                                    <span class="replies-count">{{ comment.replies_count }}</span>
+                                    {% if comment.replies_count == 1 %}ответ{% elif comment.replies_count < 5 %}ответа{% else %}ответов{% endif %}
+                                </small>
+                            </div>
+                            
+                            <div class="replies-list">
+                                {% for reply in comment.replies.all %}
+                                    {% include 'stories/ajax/reply_item.html' with reply=reply parent_comment=comment %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="replies-section mt-3" style="display: none;">
+                        <div class="replies-wrapper ps-4 border-start border-3 border-primary">
+                            <div class="replies-header mb-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-reply me-1"></i>
+                                    <span class="replies-count">0</span> ответов
+                                </small>
+                            </div>
+                            <div class="replies-list">
+                                <!-- Новые ответы будут добавляться здесь -->
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,41 @@
+# 🐳 Православный портал - Development Dockerfile (упрощенный)
+FROM python:3.11-slim
+
+# 📝 Метаданные
+LABEL maintainer="Pravoslavie Portal Team"
+LABEL description="Orthodox Christian Portal - Development Version"
+LABEL version="1.0-dev"
+
+# 🛠️ Установка системных зависимостей (упрощенная версия)
+RUN apt-get update && apt-get install -y \
+    gcc \
+    postgresql-client \
+    gettext \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# 📂 Создание рабочей директории
+WORKDIR /app
+
+# 📦 Копирование и установка зависимостей Python
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 🔧 Установка дополнительных dev зависимостей (упрощенный список)
+RUN pip install --no-cache-dir \
+    django-debug-toolbar \
+    ipython
+
+# 👤 Создание пользователя для разработки
+RUN adduser --disabled-password --gecos '' devuser && \
+    chown -R devuser:devuser /app
+USER devuser
+
+# 🔧 Создание необходимых директорий
+RUN mkdir -p /app/logs /app/media /app/staticfiles
+
+# 🌐 Открытие порта
+EXPOSE 8000
+
+# 🎯 Команда по умолчанию
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

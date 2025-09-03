@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ story.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="alert alert-success">
+        <h4>🎉 Комментарии работают!</h4>
+        <p>Простая, надежная система без ошибок.</p>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            {% if story.youtube_embed_id %}
+            <div class="ratio ratio-16x9 mb-3">
+                <iframe src="https://www.youtube.com/embed/{{ story.youtube_embed_id }}" allowfullscreen></iframe>
+            </div>
+            {% endif %}
+            
+            <h1>{{ story.title }}</h1>
+            {% if story.description %}<p class="lead">{{ story.description }}</p>{% endif %}
+            
+            {% include 'stories/youtube_comments_final.html' %}
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Статистика</h5>
+                    <p>Просмотры: {{ story.views_count }}</p>
+                    <p>Дата: {{ story.created_at|date:"d.m.Y" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

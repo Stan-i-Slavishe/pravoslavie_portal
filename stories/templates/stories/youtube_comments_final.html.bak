@@ -1,0 +1,539 @@
+<!-- ИСПРАВЛЕННАЯ СИСТЕМА КОММЕНТАРИЕВ -->
+<div class="youtube-comments mt-4">
+    <!-- Заголовок с количеством комментариев -->
+    <div class="comments-header mb-4">
+        <h4 class="d-flex align-items-center">
+            <i class="fas fa-comments me-2 text-primary"></i>
+            <span id="total-comments-count">{{ comments.count }}</span> комментариев
+        </h4>
+    </div>
+    
+    <!-- Главная форма добавления комментария -->
+    {% if user.is_authenticated %}
+    <div class="add-comment-section mb-4">
+        <div class="d-flex align-items-start">
+            <div class="user-avatar me-3">
+                <div class="avatar-circle bg-primary text-white">
+                    {% if user.first_name %}{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}{% else %}{{ user.username|first|upper }}{% endif %}
+                </div>
+            </div>
+            <div class="flex-grow-1">
+                <form id="main-comment-form" method="post" action="{% url 'stories:add_comment' story.slug %}">
+                    {% csrf_token %}
+                    <textarea id="main-comment-textarea" 
+                              name="text" 
+                              class="form-control mb-2" 
+                              rows="1" 
+                              placeholder="Добавьте публичный комментарий..." 
+                              required 
+                              maxlength="2000"></textarea>
+                    
+                    <!-- Действия формы (скрыты по умолчанию) -->
+                    <div id="main-comment-actions" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small class="text-muted char-counter">
+                                <span id="main-char-count">2000</span> символов осталось
+                            </small>
+                            <div class="action-buttons">
+                                <button type="button" class="btn btn-sm btn-secondary me-2" onclick="cancelMainComment()">
+                                    Отмена
+                                </button>
+                                <button type="submit" class="btn btn-sm btn-primary submit-btn" disabled>
+                                    <i class="fas fa-paper-plane me-1"></i>Комментировать
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="auth-prompt mb-4 p-3 bg-light rounded text-center">
+        <p class="mb-2"><strong>Войдите, чтобы оставить комментарий</strong></p>
+        <a href="{% url 'account_login' %}?next={{ request.get_full_path }}" class="btn btn-primary me-2">Войти</a>
+        <a href="{% url 'account_signup' %}?next={{ request.get_full_path }}" class="btn btn-outline-primary">Регистрация</a>
+    </div>
+    {% endif %}
+    
+    <!-- Индикатор загрузки -->
+    <div id="comments-loading" style="display: none;">
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Загрузка...</span>
+            </div>
+            <p class="mt-2 text-muted">Загрузка комментариев...</p>
+        </div>
+    </div>
+    
+    <!-- Сообщение "нет комментариев" -->
+    <div id="no-comments" style="display: {% if comments %}none{% else %}block{% endif %};">
+        <div class="no-comments text-center py-5">
+            <i class="far fa-comment-dots text-muted mb-3" style="font-size: 4rem;"></i>
+            <h5 class="text-muted mb-2">Пока нет комментариев</h5>
+            <p class="text-muted mb-3">Станьте первым, кто поделится мнением!</p>
+            {% if user.is_authenticated %}
+            <button class="btn btn-primary" onclick="focusMainComment()">
+                <i class="fas fa-comment me-2"></i>Написать комментарий
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Контейнер для комментариев -->
+    <div id="comments-container" class="comments-list" style="display: {% if comments %}block{% else %}none{% endif %};">
+        {% for comment in comments %}
+        <div class="comment-item mb-4" id="comment-{{ comment.id }}" data-comment-id="{{ comment.id }}">
+            <!-- ОСНОВНОЙ КОММЕНТАРИЙ -->
+            <div class="main-comment">
+                <div class="d-flex align-items-start">
+                    <!-- Аватар -->
+                    <div class="comment-avatar me-3">
+                        <div class="avatar-circle bg-secondary text-white">
+                            {% if comment.user.first_name %}{{ comment.user.first_name|first|upper }}{{ comment.user.last_name|first|upper }}{% else %}{{ comment.user.username|first|upper }}{% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Содержимое комментария -->
+                    <div class="comment-content flex-grow-1">
+                        <!-- Заголовок комментария -->
+                        <div class="comment-header d-flex justify-content-between align-items-center mb-1">
+                            <div class="comment-meta">
+                                <strong class="comment-author">{{ comment.user.get_full_name|default:comment.user.username }}</strong>
+                                <span class="comment-time text-muted ms-2">{{ comment.get_time_since_posted }}</span>
+                            </div>
+                            {% if user == comment.user or user.is_staff %}
+                            <div class="comment-actions">
+                                <a href="{% url 'stories:delete_comment' comment.id %}" 
+                                   class="btn btn-sm btn-outline-danger" 
+                                   onclick="return confirm('Удалить комментарий?')"
+                                   title="Удалить">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Текст комментария -->
+                        <div class="comment-text mb-2">
+                            <p class="mb-0">{{ comment.text|linebreaks }}</p>
+                        </div>
+                        
+                        <!-- Действия с комментарием -->
+                        {% if user.is_authenticated %}
+                        <div class="comment-reactions mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <!-- Лайки/дизлайки -->
+                                <a href="{% url 'stories:toggle_comment_reaction' comment.id 'like' %}" 
+                                   class="btn btn-sm btn-outline-success reaction-btn">
+                                    <i class="fas fa-thumbs-up me-1"></i>
+                                    <span class="likes-count">{{ comment.likes_count }}</span>
+                                </a>
+                                <a href="{% url 'stories:toggle_comment_reaction' comment.id 'dislike' %}" 
+                                   class="btn btn-sm btn-outline-danger reaction-btn">
+                                    <i class="fas fa-thumbs-down me-1"></i>
+                                    <span class="dislikes-count">{{ comment.dislikes_count }}</span>
+                                </a>
+                                
+                                <!-- КНОПКА ОТВЕТИТЬ -->
+                                <button class="btn btn-sm btn-outline-primary reply-btn" 
+                                        onclick="toggleReplyForm('{{ comment.id }}', '{{ comment.user.get_full_name|default:comment.user.username }}')">
+                                    <i class="fas fa-reply me-1"></i>Ответить
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- ФОРМА ОТВЕТА (скрыта по умолчанию) -->
+                        <div class="reply-form-container" id="reply-form-{{ comment.id }}" style="display: none;">
+                            <!-- Форма будет создаваться динамически через JavaScript -->
+                        </div>
+                        {% endif %}
+                        
+                        <!-- ОТВЕТЫ НА КОММЕНТАРИЙ -->
+                        <div class="replies-container" id="replies-{{ comment.id }}">
+                            {% if comment.replies.all %}
+                            <div class="replies-section mt-3">
+                                <div class="replies-wrapper ps-4 border-start border-3 border-primary">
+                                    <div class="replies-header mb-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-reply me-1"></i>
+                                            {{ comment.replies_count }} 
+                                            {% if comment.replies_count == 1 %}ответ{% elif comment.replies_count < 5 %}ответа{% else %}ответов{% endif %}
+                                        </small>
+                                    </div>
+                                    
+                                    {% for reply in comment.replies.all %}
+                                    <div class="reply-item mb-3" data-comment-id="{{ reply.id }}">
+                                        <div class="d-flex align-items-start">
+                                            <!-- Аватар ответившего -->
+                                            <div class="reply-avatar me-2">
+                                                <div class="avatar-circle-small bg-info text-white">
+                                                    {% if reply.user.first_name %}{{ reply.user.first_name|first|upper }}{{ reply.user.last_name|first|upper }}{% else %}{{ reply.user.username|first|upper }}{% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Содержимое ответа -->
+                                            <div class="reply-content flex-grow-1">
+                                                <div class="reply-header d-flex justify-content-between align-items-center mb-1">
+                                                    <div class="reply-meta">
+                                                        <strong class="reply-author">{{ reply.user.get_full_name|default:reply.user.username }}</strong>
+                                                        <span class="reply-time text-muted ms-2">{{ reply.get_time_since_posted }}</span>
+                                                    </div>
+                                                    {% if user == reply.user or user.is_staff %}
+                                                    <a href="{% url 'stories:delete_comment' reply.id %}" 
+                                                       class="btn btn-sm btn-outline-danger" 
+                                                       onclick="return confirm('Удалить ответ?')"
+                                                       title="Удалить">
+                                                        <i class="fas fa-times"></i>
+                                                    </a>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="reply-text">
+                                                    <p class="mb-1 small">{{ reply.text|linebreaks }}</p>
+                                                </div>
+                                                
+                                                <!-- Лайки для ответов -->
+                                                {% if user.is_authenticated %}
+                                                <div class="reply-reactions mt-1">
+                                                    <a href="{% url 'stories:toggle_comment_reaction' reply.id 'like' %}" 
+                                                       class="btn btn-sm btn-outline-success me-1">
+                                                        <i class="fas fa-thumbs-up"></i> {{ reply.likes_count }}
+                                                    </a>
+                                                    <a href="{% url 'stories:toggle_comment_reaction' reply.id 'dislike' %}" 
+                                                       class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-thumbs-down"></i> {{ reply.dislikes_count }}
+                                                    </a>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ПРОСТОЙ JAVASCRIPT БЕЗ AJAX -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ Простая система комментариев загружена');
+    setupMainCommentForm();
+});
+
+function setupMainCommentForm() {
+    const textarea = document.getElementById('main-comment-textarea');
+    const actions = document.getElementById('main-comment-actions');
+    const form = document.getElementById('main-comment-form');
+    const submitBtn = form?.querySelector('.submit-btn');
+    const charCount = document.getElementById('main-char-count');
+    
+    if (!textarea || !actions || !form) return;
+    
+    // Обработчик фокуса
+    textarea.addEventListener('focus', () => {
+        textarea.classList.add('expanded');
+        actions.style.display = 'block';
+        textarea.rows = 3;
+    });
+    
+    // Обработчик ввода
+    textarea.addEventListener('input', () => {
+        const remaining = 2000 - textarea.value.length;
+        charCount.textContent = remaining;
+        
+        // Изменение цвета счетчика
+        const counter = charCount.parentElement;
+        counter.className = 'text-muted char-counter small';
+        if (remaining < 200) counter.classList.add('text-warning');
+        if (remaining < 50) counter.classList.add('text-danger');
+        
+        // Активация кнопки отправки
+        if (submitBtn) {
+            submitBtn.disabled = textarea.value.trim().length === 0;
+        }
+    });
+    
+    // Ctrl+Enter для отправки
+    textarea.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            form.submit();
+        }
+    });
+}
+
+function toggleReplyForm(commentId, authorName) {
+    const container = document.getElementById(`reply-form-${commentId}`);
+    
+    if (container.style.display === 'block') {
+        container.style.display = 'none';
+        return;
+    }
+    
+    // Закрыть все другие формы
+    document.querySelectorAll('[id^="reply-form-"]').forEach(form => {
+        if (form.id !== `reply-form-${commentId}`) {
+            form.style.display = 'none';
+        }
+    });
+    
+    // Создать форму ответа
+    container.innerHTML = `
+        <div class="reply-form-inline mt-3 p-3 bg-light rounded">
+            <div class="mb-2">
+                <small class="text-muted">
+                    <i class="fas fa-reply me-1"></i>
+                    Ответ для <strong>${authorName}</strong>
+                </small>
+            </div>
+            
+            <form method="post" action="{% url 'stories:add_reply' 0 %}".replace('0', commentId)>
+                {% csrf_token %}
+                <div class="d-flex">
+                    <div class="user-avatar me-3">
+                        <div class="avatar-circle-small bg-primary text-white">
+                            {% if user.first_name %}{{ user.first_name|first|upper }}{% else %}{{ user.username|first|upper }}{% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow-1">
+                        <div class="mb-2">
+                            <textarea 
+                                class="form-control reply-textarea"
+                                name="text"
+                                placeholder="Добавьте ответ..."
+                                rows="2"
+                                maxlength="1000"
+                                required
+                            ></textarea>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                Максимум 1000 символов
+                            </small>
+                            
+                            <div class="action-buttons">
+                                <button type="button" class="btn btn-sm btn-secondary me-2" onclick="closeReplyForm('${commentId}')">
+                                    Отмена
+                                </button>
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-paper-plane me-1"></i>Ответить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    container.style.display = 'block';
+    
+    // Фокус на textarea
+    setTimeout(() => {
+        const textarea = container.querySelector('textarea');
+        if (textarea) {
+            textarea.focus();
+        }
+    }, 100);
+}
+
+function closeReplyForm(commentId) {
+    const container = document.getElementById(`reply-form-${commentId}`);
+    if (container) {
+        container.style.display = 'none';
+    }
+}
+
+function cancelMainComment() {
+    const textarea = document.getElementById('main-comment-textarea');
+    const actions = document.getElementById('main-comment-actions');
+    
+    textarea.value = '';
+    textarea.classList.remove('expanded');
+    textarea.rows = 1;
+    actions.style.display = 'none';
+    
+    const submitBtn = document.querySelector('#main-comment-form .submit-btn');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+    }
+}
+
+function focusMainComment() {
+    const textarea = document.getElementById('main-comment-textarea');
+    if (textarea) {
+        textarea.focus();
+    }
+}
+</script>
+
+<!-- СТИЛИ -->
+<style>
+.youtube-comments {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    transition: transform 0.2s ease;
+}
+
+.avatar-circle:hover {
+    transform: scale(1.05);
+}
+
+.avatar-circle-small {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 11px;
+}
+
+.comment-item {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.comment-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.comment-author {
+    color: #065fd4;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.comment-time {
+    font-size: 12px;
+}
+
+.comment-text p {
+    color: #0f0f0f;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.reaction-btn {
+    border-radius: 18px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.reaction-btn:hover {
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+.reply-btn {
+    border-radius: 18px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.reply-form-inline {
+    border-left: 3px solid #007bff;
+    background: #f8f9fa !important;
+}
+
+.replies-section {
+    background: rgba(248, 249, 250, 0.7);
+    border-radius: 8px;
+    padding: 0.5rem;
+}
+
+.reply-item {
+    background: white;
+    border-radius: 6px;
+    padding: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.reply-author {
+    color: #065fd4;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+.reply-time {
+    font-size: 11px;
+}
+
+.auth-prompt {
+    border: 2px dashed #dee2e6;
+}
+
+.no-comments {
+    background: white;
+    border-radius: 12px;
+    margin: 2rem 0;
+}
+
+.char-counter.text-warning {
+    color: #ffc107 !important;
+}
+
+.char-counter.text-danger {
+    color: #dc3545 !important;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .youtube-comments {
+        padding: 1rem;
+        border-radius: 8px;
+    }
+    
+    .avatar-circle {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+    
+    .avatar-circle-small {
+        width: 24px;
+        height: 24px;
+        font-size: 10px;
+    }
+    
+    .comment-item {
+        padding: 0.75rem;
+    }
+    
+    .replies-section {
+        padding: 0.25rem;
+    }
+}
+</style>

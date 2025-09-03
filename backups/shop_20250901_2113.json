@@ -1,0 +1,1947 @@
+[
+{
+  "model": "shop.product",
+  "pk": 1,
+  "fields": {
+    "title": "Великая книга",
+    "description": "Рассказы о вере, любви и человечности\r\nЭта книга изменит ваш взгляд на мир. В ней собраны подлинные истории обычных людей, которые столкнулись с необычными обстоятельствами и нашли в себе силы сделать правильный выбор.",
+    "price": "500.00",
+    "product_type": "book",
+    "book_id": 1,
+    "audio_id": null,
+    "subscription_id": null,
+    "fairy_tale_template_id": null,
+    "is_active": true,
+    "is_digital": true,
+    "requires_personalization": false,
+    "has_audio_option": false,
+    "audio_option_price": "0.00",
+    "has_illustration_option": false,
+    "illustration_option_price": "0.00",
+    "personalization_form_config": {},
+    "image": "shop/products/Обложка.jpg",
+    "created_at": "2025-07-24T00:27:23.290Z",
+    "updated_at": "2025-08-17T01:41:26.630Z"
+  }
+},
+{
+  "model": "shop.product",
+  "pk": 7,
+  "fields": {
+    "title": "Месячная подписка \"Добрые истории\"",
+    "description": "Полный доступ к библиотеке книг, аудио и персонализированным сказкам на 1 месяц.",
+    "price": "299.00",
+    "product_type": "subscription",
+    "book_id": null,
+    "audio_id": null,
+    "subscription_id": 1,
+    "fairy_tale_template_id": null,
+    "is_active": true,
+    "is_digital": true,
+    "requires_personalization": false,
+    "has_audio_option": false,
+    "audio_option_price": "0.00",
+    "has_illustration_option": false,
+    "illustration_option_price": "0.00",
+    "personalization_form_config": {},
+    "image": "",
+    "created_at": "2025-08-02T14:02:07.970Z",
+    "updated_at": "2025-08-02T14:02:07.970Z"
+  }
+},
+{
+  "model": "shop.product",
+  "pk": 8,
+  "fields": {
+    "title": "Годовая подписка \"Добрые истории\"",
+    "description": "Полный доступ ко всему контенту на 12 месяцев. Экономия 50% по сравнению с месячной подпиской!",
+    "price": "1799.00",
+    "product_type": "subscription",
+    "book_id": null,
+    "audio_id": null,
+    "subscription_id": 2,
+    "fairy_tale_template_id": null,
+    "is_active": true,
+    "is_digital": true,
+    "requires_personalization": false,
+    "has_audio_option": false,
+    "audio_option_price": "0.00",
+    "has_illustration_option": false,
+    "illustration_option_price": "0.00",
+    "personalization_form_config": {},
+    "image": "",
+    "created_at": "2025-08-02T14:02:08.051Z",
+    "updated_at": "2025-08-02T14:02:08.052Z"
+  }
+},
+{
+  "model": "shop.product",
+  "pk": 9,
+  "fields": {
+    "title": "Семейная подписка",
+    "description": "Подписка для всей семьи с доступом до 5 детских профилей и неограниченными персонализированными сказками.",
+    "price": "499.00",
+    "product_type": "subscription",
+    "book_id": null,
+    "audio_id": null,
+    "subscription_id": 1,
+    "fairy_tale_template_id": null,
+    "is_active": true,
+    "is_digital": true,
+    "requires_personalization": false,
+    "has_audio_option": false,
+    "audio_option_price": "0.00",
+    "has_illustration_option": false,
+    "illustration_option_price": "0.00",
+    "personalization_form_config": {},
+    "image": "shop/products/книга_3.jpg",
+    "created_at": "2025-08-02T14:02:08.138Z",
+    "updated_at": "2025-08-04T00:25:08.754Z"
+  }
+},
+{
+  "model": "shop.product",
+  "pk": 10,
+  "fields": {
+    "title": "Книга весна",
+    "description": "В этой книге отображаются бесконечные ведения непреодолимого и т.д.",
+    "price": "1200.00",
+    "product_type": "book",
+    "book_id": 3,
+    "audio_id": null,
+    "subscription_id": null,
+    "fairy_tale_template_id": null,
+    "is_active": true,
+    "is_digital": true,
+    "requires_personalization": false,
+    "has_audio_option": false,
+    "audio_option_price": "0.00",
+    "has_illustration_option": false,
+    "illustration_option_price": "0.00",
+    "personalization_form_config": {},
+    "image": "books/covers/Книга_NLs8jMw.jpg",
+    "created_at": "2025-08-02T14:41:56.246Z",
+    "updated_at": "2025-08-17T07:26:52.143Z"
+  }
+},
+{
+  "model": "shop.product",
+  "pk": 11,
+  "fields": {
+    "title": "Яндекс директ",
+    "description": "Потрясающая книга с весьм отрадно и похвально многозначительным продолжением",
+    "price": "0.00",
+    "product_type": "book",
+    "book_id": 2,
+    "audio_id": null,
+    "subscription_id": null,
+    "fairy_tale_template_id": null,
+    "is_active": false,
+    "is_digital": true,
+    "requires_personalization": false,
+    "has_audio_option": false,
+    "audio_option_price": "0.00",
+    "has_illustration_option": false,
+    "illustration_option_price": "0.00",
+    "personalization_form_config": {},
+    "image": "books/covers/титульный_лист.jpg",
+    "created_at": "2025-08-04T01:23:28.828Z",
+    "updated_at": "2025-08-05T16:40:57.150Z"
+  }
+},
+{
+  "model": "shop.product",
+  "pk": 12,
+  "fields": {
+    "title": "Тестовая Платная Книга",
+    "description": "Это тестовая платная книга для проверки функциональности корзины.",
+    "price": "299.00",
+    "product_type": "book",
+    "book_id": 4,
+    "audio_id": null,
+    "subscription_id": null,
+    "fairy_tale_template_id": null,
+    "is_active": true,
+    "is_digital": true,
+    "requires_personalization": false,
+    "has_audio_option": false,
+    "audio_option_price": "0.00",
+    "has_illustration_option": false,
+    "illustration_option_price": "0.00",
+    "personalization_form_config": {},
+    "image": "",
+    "created_at": "2025-08-07T00:20:24.049Z",
+    "updated_at": "2025-08-07T00:20:24.049Z"
+  }
+},
+{
+  "model": "shop.product",
+  "pk": 13,
+  "fields": {
+    "title": "Микеланжело",
+    "description": "В незапаметные времена",
+    "price": "1500.00",
+    "product_type": "book",
+    "book_id": 5,
+    "audio_id": null,
+    "subscription_id": null,
+    "fairy_tale_template_id": null,
+    "is_active": true,
+    "is_digital": true,
+    "requires_personalization": false,
+    "has_audio_option": false,
+    "audio_option_price": "0.00",
+    "has_illustration_option": false,
+    "illustration_option_price": "0.00",
+    "personalization_form_config": {},
+    "image": "",
+    "created_at": "2025-08-08T01:09:23.965Z",
+    "updated_at": "2025-08-17T07:26:48.845Z"
+  }
+},
+{
+  "model": "shop.product",
+  "pk": 14,
+  "fields": {
+    "title": "Тестовая Платная Книга (Исправленная)",
+    "description": "Это тестовая платная книга с правильными настройками",
+    "price": "299.00",
+    "product_type": "book",
+    "book_id": 7,
+    "audio_id": null,
+    "subscription_id": null,
+    "fairy_tale_template_id": null,
+    "is_active": true,
+    "is_digital": true,
+    "requires_personalization": false,
+    "has_audio_option": false,
+    "audio_option_price": "0.00",
+    "has_illustration_option": false,
+    "illustration_option_price": "0.00",
+    "personalization_form_config": {},
+    "image": "",
+    "created_at": "2025-08-08T01:14:11.156Z",
+    "updated_at": "2025-08-16T16:17:14.558Z"
+  }
+},
+{
+  "model": "shop.cart",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "created_at": "2025-07-12T12:03:21.820Z",
+    "updated_at": "2025-08-17T07:25:18.168Z",
+    "applied_discount_code": "DEBUG15",
+    "discount_amount": "75.00"
+  }
+},
+{
+  "model": "shop.cart",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "stassilin"
+    ],
+    "created_at": "2025-08-03T16:48:49.557Z",
+    "updated_at": "2025-08-03T16:48:49.557Z",
+    "applied_discount_code": "",
+    "discount_amount": "0.00"
+  }
+},
+{
+  "model": "shop.cart",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "test_cart_user"
+    ],
+    "created_at": "2025-08-07T00:34:15.054Z",
+    "updated_at": "2025-08-07T00:34:15.054Z",
+    "applied_discount_code": "",
+    "discount_amount": "0.00"
+  }
+},
+{
+  "model": "shop.cart",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "stassilin1984"
+    ],
+    "created_at": "2025-08-09T01:35:54.442Z",
+    "updated_at": "2025-08-09T01:35:54.442Z",
+    "applied_discount_code": "",
+    "discount_amount": "0.00"
+  }
+},
+{
+  "model": "shop.cart",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "stassilin0"
+    ],
+    "created_at": "2025-08-11T15:43:58.317Z",
+    "updated_at": "2025-08-11T15:43:58.317Z",
+    "applied_discount_code": "",
+    "discount_amount": "0.00"
+  }
+},
+{
+  "model": "shop.cartitem",
+  "pk": 11,
+  "fields": {
+    "cart": 2,
+    "product": 10,
+    "quantity": 1,
+    "added_at": "2025-08-05T16:53:43.643Z",
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": ""
+  }
+},
+{
+  "model": "shop.cartitem",
+  "pk": 14,
+  "fields": {
+    "cart": 2,
+    "product": 11,
+    "quantity": 1,
+    "added_at": "2025-08-06T01:25:34.767Z",
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": ""
+  }
+},
+{
+  "model": "shop.cartitem",
+  "pk": 19,
+  "fields": {
+    "cart": 3,
+    "product": 12,
+    "quantity": 1,
+    "added_at": "2025-08-07T00:34:15.141Z",
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": ""
+  }
+},
+{
+  "model": "shop.cartitem",
+  "pk": 39,
+  "fields": {
+    "cart": 2,
+    "product": 7,
+    "quantity": 1,
+    "added_at": "2025-08-09T01:16:10.604Z",
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": ""
+  }
+},
+{
+  "model": "shop.cartitem",
+  "pk": 40,
+  "fields": {
+    "cart": 2,
+    "product": 14,
+    "quantity": 1,
+    "added_at": "2025-08-09T01:16:18.562Z",
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": ""
+  }
+},
+{
+  "model": "shop.cartitem",
+  "pk": 45,
+  "fields": {
+    "cart": 4,
+    "product": 1,
+    "quantity": 1,
+    "added_at": "2025-08-10T00:24:01.924Z",
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": ""
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 1,
+  "fields": {
+    "order_id": "97e67dfc-8a16-4a45-a878-45419ae99fe4",
+    "user": [
+      "admin"
+    ],
+    "status": "paid",
+    "total_amount": "1299.00",
+    "discount_amount": "0.00",
+    "discount_code": "",
+    "email": "stassilin@mail.ru",
+    "first_name": "Станислав",
+    "last_name": "Силин",
+    "phone": "",
+    "payment_method": "test",
+    "payment_id": "",
+    "payment_data": {},
+    "created_at": "2025-08-02T14:16:32.461Z",
+    "updated_at": "2025-08-02T14:16:41.664Z",
+    "paid_at": null,
+    "completed_at": null,
+    "notes": ""
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 2,
+  "fields": {
+    "order_id": "c1c1beea-6648-4a85-8bb4-1992d468f01a",
+    "user": [
+      "admin"
+    ],
+    "status": "paid",
+    "total_amount": "2199.00",
+    "discount_amount": "0.00",
+    "discount_code": "",
+    "email": "stassilin@mail.ru",
+    "first_name": "Станислав",
+    "last_name": "Силин",
+    "phone": "",
+    "payment_method": "test",
+    "payment_id": "",
+    "payment_data": {},
+    "created_at": "2025-08-03T00:54:03.189Z",
+    "updated_at": "2025-08-03T00:54:11.901Z",
+    "paid_at": null,
+    "completed_at": null,
+    "notes": ""
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 3,
+  "fields": {
+    "order_id": "ed212ba9-be4b-4131-b3f8-d21b5c7483ff",
+    "user": [
+      "admin"
+    ],
+    "status": "paid",
+    "total_amount": "1200.00",
+    "discount_amount": "0.00",
+    "discount_code": "",
+    "email": "stassilin@mail.ru",
+    "first_name": "Станислав",
+    "last_name": "Силин",
+    "phone": "",
+    "payment_method": "test",
+    "payment_id": "",
+    "payment_data": {},
+    "created_at": "2025-08-04T00:20:22.683Z",
+    "updated_at": "2025-08-04T00:20:29.563Z",
+    "paid_at": null,
+    "completed_at": null,
+    "notes": ""
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 4,
+  "fields": {
+    "order_id": "4b60b6d8-4a28-4b3f-a292-8c3267f5fb07",
+    "user": [
+      "admin"
+    ],
+    "status": "paid",
+    "total_amount": "499.00",
+    "discount_amount": "0.00",
+    "discount_code": "",
+    "email": "stassilin@mail.ru",
+    "first_name": "Станислав",
+    "last_name": "Силин",
+    "phone": "",
+    "payment_method": "test",
+    "payment_id": "",
+    "payment_data": {},
+    "created_at": "2025-08-04T00:33:20.279Z",
+    "updated_at": "2025-08-04T00:33:27.211Z",
+    "paid_at": null,
+    "completed_at": null,
+    "notes": ""
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 5,
+  "fields": {
+    "order_id": "39f310e7-59e4-4bae-bf06-9060620b3ae6",
+    "user": [
+      "testuser"
+    ],
+    "status": "completed",
+    "total_amount": "1200.00",
+    "discount_amount": "0.00",
+    "discount_code": "",
+    "email": "test@example.com",
+    "first_name": "Тест",
+    "last_name": "Пользователь",
+    "phone": "+7 123 456 78 90",
+    "payment_method": "test_card",
+    "payment_id": "test_payment_39f310e7",
+    "payment_data": {},
+    "created_at": "2025-08-04T01:23:28.925Z",
+    "updated_at": "2025-08-04T01:23:29.682Z",
+    "paid_at": "2025-08-04T01:23:29.362Z",
+    "completed_at": "2025-08-04T01:23:29.682Z",
+    "notes": ""
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 6,
+  "fields": {
+    "order_id": "2c53a7af-bc21-41b1-8f02-709b4a5b6263",
+    "user": [
+      "admin"
+    ],
+    "status": "pending",
+    "total_amount": "3499.00",
+    "discount_amount": "0.00",
+    "discount_code": "",
+    "email": "stassilin@mail.ru",
+    "first_name": "Станислав",
+    "last_name": "Силин",
+    "phone": "",
+    "payment_method": "",
+    "payment_id": "",
+    "payment_data": {},
+    "created_at": "2025-08-08T01:20:46.357Z",
+    "updated_at": "2025-08-08T01:20:46.357Z",
+    "paid_at": null,
+    "completed_at": null,
+    "notes": ""
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 7,
+  "fields": {
+    "order_id": "c127056d-6faf-4743-8f2e-56bfb487c0bc",
+    "user": [
+      "stassilin1984"
+    ],
+    "status": "paid",
+    "total_amount": "1499.00",
+    "discount_amount": "0.00",
+    "discount_code": "",
+    "email": "stassilin1984@gmail.com",
+    "first_name": "Станислав",
+    "last_name": "Силин",
+    "phone": "",
+    "payment_method": "test",
+    "payment_id": "",
+    "payment_data": {},
+    "created_at": "2025-08-09T01:46:51.816Z",
+    "updated_at": "2025-08-09T01:46:56.336Z",
+    "paid_at": null,
+    "completed_at": null,
+    "notes": ""
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 8,
+  "fields": {
+    "order_id": "4eed94a0-b1a6-4545-b604-e37576684abb",
+    "user": [
+      "admin"
+    ],
+    "status": "pending",
+    "total_amount": "1799.00",
+    "discount_amount": "0.00",
+    "discount_code": "",
+    "email": "stassilin@mail.ru",
+    "first_name": "Станислав",
+    "last_name": "Силин",
+    "phone": "",
+    "payment_method": "",
+    "payment_id": "",
+    "payment_data": {},
+    "created_at": "2025-08-16T16:28:04.842Z",
+    "updated_at": "2025-08-16T16:28:04.842Z",
+    "paid_at": null,
+    "completed_at": null,
+    "notes": ""
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 9,
+  "fields": {
+    "order_id": "a971371c-e831-4309-9f8e-715ab286022c",
+    "user": [
+      "admin"
+    ],
+    "status": "pending",
+    "total_amount": "2700.00",
+    "discount_amount": "0.00",
+    "discount_code": "",
+    "email": "stassilin@mail.ru",
+    "first_name": "Станислав",
+    "last_name": "Силин",
+    "phone": "",
+    "payment_method": "",
+    "payment_id": "",
+    "payment_data": {},
+    "created_at": "2025-08-17T00:13:17.073Z",
+    "updated_at": "2025-08-17T00:13:17.073Z",
+    "paid_at": null,
+    "completed_at": null,
+    "notes": ""
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 10,
+  "fields": {
+    "order_id": "3c6a00a0-ab37-4597-97a4-75e8a1dd4d1b",
+    "user": [
+      "admin"
+    ],
+    "status": "paid",
+    "total_amount": "1499.00",
+    "discount_amount": "0.00",
+    "discount_code": "",
+    "email": "stassilin@mail.ru",
+    "first_name": "Станислав",
+    "last_name": "Силин",
+    "phone": "",
+    "payment_method": "test",
+    "payment_id": "",
+    "payment_data": {},
+    "created_at": "2025-08-17T00:41:26.392Z",
+    "updated_at": "2025-08-17T00:41:35.415Z",
+    "paid_at": null,
+    "completed_at": null,
+    "notes": ""
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 11,
+  "fields": {
+    "order_id": "f093d192-2e6c-402a-8181-5671efcf158c",
+    "user": [
+      "admin"
+    ],
+    "status": "paid",
+    "total_amount": "1499.00",
+    "discount_amount": "0.00",
+    "discount_code": "",
+    "email": "stassilin@mail.ru",
+    "first_name": "Станислав",
+    "last_name": "Силин",
+    "phone": "",
+    "payment_method": "test",
+    "payment_id": "",
+    "payment_data": {},
+    "created_at": "2025-08-17T00:43:53.716Z",
+    "updated_at": "2025-08-17T00:43:56.976Z",
+    "paid_at": null,
+    "completed_at": null,
+    "notes": ""
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 12,
+  "fields": {
+    "order_id": "08718d27-dac8-47bf-835c-de246868725e",
+    "user": [
+      "admin"
+    ],
+    "status": "pending",
+    "total_amount": "2700.00",
+    "discount_amount": "0.00",
+    "discount_code": "",
+    "email": "stassilin@mail.ru",
+    "first_name": "Станислав",
+    "last_name": "Силин",
+    "phone": "",
+    "payment_method": "",
+    "payment_id": "",
+    "payment_data": {},
+    "created_at": "2025-08-17T01:11:43.129Z",
+    "updated_at": "2025-08-17T01:11:43.129Z",
+    "paid_at": null,
+    "completed_at": null,
+    "notes": ""
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 13,
+  "fields": {
+    "order_id": "ebf073b3-9ccc-4417-b5b2-c94bb935ab32",
+    "user": [
+      "admin"
+    ],
+    "status": "pending",
+    "total_amount": "3299.00",
+    "discount_amount": "0.00",
+    "discount_code": "",
+    "email": "stassilin@mail.ru",
+    "first_name": "Станислав",
+    "last_name": "Силин",
+    "phone": "",
+    "payment_method": "",
+    "payment_id": "",
+    "payment_data": {},
+    "created_at": "2025-08-17T01:21:18.399Z",
+    "updated_at": "2025-08-17T01:21:18.399Z",
+    "paid_at": null,
+    "completed_at": null,
+    "notes": ""
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 14,
+  "fields": {
+    "order_id": "6263f2f6-50bc-494c-af1a-ff4659f08d39",
+    "user": [
+      "admin"
+    ],
+    "status": "pending",
+    "total_amount": "425.00",
+    "discount_amount": "75.00",
+    "discount_code": "DEBUG15",
+    "email": "stassilin@mail.ru",
+    "first_name": "Станислав",
+    "last_name": "Силин",
+    "phone": "",
+    "payment_method": "",
+    "payment_id": "",
+    "payment_data": {},
+    "created_at": "2025-08-17T07:26:26.055Z",
+    "updated_at": "2025-08-17T07:26:26.055Z",
+    "paid_at": null,
+    "completed_at": null,
+    "notes": ""
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 15,
+  "fields": {
+    "order_id": "4d0915e0-62d1-4a35-86a5-ef4d6aae090d",
+    "user": [
+      "admin"
+    ],
+    "status": "pending",
+    "total_amount": "2625.00",
+    "discount_amount": "75.00",
+    "discount_code": "DEBUG15",
+    "email": "stassilin@mail.ru",
+    "first_name": "Станислав",
+    "last_name": "Силин",
+    "phone": "",
+    "payment_method": "",
+    "payment_id": "",
+    "payment_data": {},
+    "created_at": "2025-08-17T07:28:19.964Z",
+    "updated_at": "2025-08-17T07:28:19.964Z",
+    "paid_at": null,
+    "completed_at": null,
+    "notes": ""
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 16,
+  "fields": {
+    "order_id": "3b4024a6-7b4d-41df-bd07-07eac2329c27",
+    "user": [
+      "admin"
+    ],
+    "status": "pending",
+    "total_amount": "1925.00",
+    "discount_amount": "75.00",
+    "discount_code": "DEBUG15",
+    "email": "stassilin@mail.ru",
+    "first_name": "Станислав",
+    "last_name": "Силин",
+    "phone": "",
+    "payment_method": "",
+    "payment_id": "",
+    "payment_data": {},
+    "created_at": "2025-08-17T07:37:24.338Z",
+    "updated_at": "2025-08-17T07:37:24.338Z",
+    "paid_at": null,
+    "completed_at": null,
+    "notes": ""
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 17,
+  "fields": {
+    "order_id": "2d2a8713-d699-4a40-b0a3-43d2448c9635",
+    "user": [
+      "admin"
+    ],
+    "status": "paid",
+    "total_amount": "2924.00",
+    "discount_amount": "75.00",
+    "discount_code": "DEBUG15",
+    "email": "stassilin@mail.ru",
+    "first_name": "Станислав",
+    "last_name": "Силин",
+    "phone": "",
+    "payment_method": "test",
+    "payment_id": "",
+    "payment_data": {},
+    "created_at": "2025-08-17T07:46:03.008Z",
+    "updated_at": "2025-08-17T07:46:16.230Z",
+    "paid_at": null,
+    "completed_at": null,
+    "notes": ""
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 18,
+  "fields": {
+    "order_id": "a2c56031-c1a6-4bfb-a2b8-6afdda785c9b",
+    "user": [
+      "admin"
+    ],
+    "status": "paid",
+    "total_amount": "1724.00",
+    "discount_amount": "75.00",
+    "discount_code": "DEBUG15",
+    "email": "stassilin@mail.ru",
+    "first_name": "Станислав",
+    "last_name": "Силин",
+    "phone": "",
+    "payment_method": "test",
+    "payment_id": "",
+    "payment_data": {},
+    "created_at": "2025-08-17T07:52:23.854Z",
+    "updated_at": "2025-08-17T07:52:31.982Z",
+    "paid_at": null,
+    "completed_at": null,
+    "notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 1,
+  "fields": {
+    "order": 1,
+    "product": 1,
+    "product_title": "Великая книга",
+    "product_price": "500.00",
+    "quantity": 2,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 2,
+  "fields": {
+    "order": 1,
+    "product": 7,
+    "product_title": "Месячная подписка \"Добрые истории\"",
+    "product_price": "299.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 3,
+  "fields": {
+    "order": 2,
+    "product": 1,
+    "product_title": "Великая книга",
+    "product_price": "500.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 4,
+  "fields": {
+    "order": 2,
+    "product": 9,
+    "product_title": "Семейная подписка",
+    "product_price": "499.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 5,
+  "fields": {
+    "order": 2,
+    "product": 10,
+    "product_title": "Книга весна",
+    "product_price": "1200.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 6,
+  "fields": {
+    "order": 3,
+    "product": 10,
+    "product_title": "Книга весна",
+    "product_price": "1200.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 7,
+  "fields": {
+    "order": 4,
+    "product": 9,
+    "product_title": "Семейная подписка",
+    "product_price": "499.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 8,
+  "fields": {
+    "order": 5,
+    "product": 10,
+    "product_title": "Книга весна",
+    "product_price": "1200.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 9,
+  "fields": {
+    "order": 5,
+    "product": 11,
+    "product_title": "Яндекс директ",
+    "product_price": "0.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 10,
+  "fields": {
+    "order": 6,
+    "product": 9,
+    "product_title": "Семейная подписка",
+    "product_price": "499.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 11,
+  "fields": {
+    "order": 6,
+    "product": 13,
+    "product_title": "Микеланжело",
+    "product_price": "1500.00",
+    "quantity": 2,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 12,
+  "fields": {
+    "order": 7,
+    "product": 10,
+    "product_title": "Книга весна",
+    "product_price": "1200.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 13,
+  "fields": {
+    "order": 7,
+    "product": 12,
+    "product_title": "Тестовая Платная Книга",
+    "product_price": "299.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 14,
+  "fields": {
+    "order": 8,
+    "product": 13,
+    "product_title": "Микеланжело",
+    "product_price": "1500.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 15,
+  "fields": {
+    "order": 8,
+    "product": 14,
+    "product_title": "Тестовая Платная Книга (Исправленная)",
+    "product_price": "299.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 16,
+  "fields": {
+    "order": 9,
+    "product": 10,
+    "product_title": "Книга весна",
+    "product_price": "1200.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 17,
+  "fields": {
+    "order": 9,
+    "product": 13,
+    "product_title": "Микеланжело",
+    "product_price": "1500.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 18,
+  "fields": {
+    "order": 10,
+    "product": 10,
+    "product_title": "Книга весна",
+    "product_price": "1200.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 19,
+  "fields": {
+    "order": 10,
+    "product": 12,
+    "product_title": "Тестовая Платная Книга",
+    "product_price": "299.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 20,
+  "fields": {
+    "order": 11,
+    "product": 10,
+    "product_title": "Книга весна",
+    "product_price": "1200.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 21,
+  "fields": {
+    "order": 11,
+    "product": 12,
+    "product_title": "Тестовая Платная Книга",
+    "product_price": "299.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 22,
+  "fields": {
+    "order": 12,
+    "product": 10,
+    "product_title": "Книга весна",
+    "product_price": "1200.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 23,
+  "fields": {
+    "order": 12,
+    "product": 13,
+    "product_title": "Микеланжело",
+    "product_price": "1500.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 24,
+  "fields": {
+    "order": 13,
+    "product": 8,
+    "product_title": "Годовая подписка \"Добрые истории\"",
+    "product_price": "1799.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 25,
+  "fields": {
+    "order": 13,
+    "product": 13,
+    "product_title": "Микеланжело",
+    "product_price": "1500.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 26,
+  "fields": {
+    "order": 14,
+    "product": 1,
+    "product_title": "Великая книга",
+    "product_price": "500.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 27,
+  "fields": {
+    "order": 15,
+    "product": 10,
+    "product_title": "Книга весна",
+    "product_price": "1200.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 28,
+  "fields": {
+    "order": 15,
+    "product": 13,
+    "product_title": "Микеланжело",
+    "product_price": "1500.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 29,
+  "fields": {
+    "order": 16,
+    "product": 1,
+    "product_title": "Великая книга",
+    "product_price": "500.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 30,
+  "fields": {
+    "order": 16,
+    "product": 13,
+    "product_title": "Микеланжело",
+    "product_price": "1500.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 31,
+  "fields": {
+    "order": 17,
+    "product": 8,
+    "product_title": "Годовая подписка \"Добрые истории\"",
+    "product_price": "1799.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 32,
+  "fields": {
+    "order": 17,
+    "product": 10,
+    "product_title": "Книга весна",
+    "product_price": "1200.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 33,
+  "fields": {
+    "order": 18,
+    "product": 13,
+    "product_title": "Микеланжело",
+    "product_price": "1500.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.orderitem",
+  "pk": 34,
+  "fields": {
+    "order": 18,
+    "product": 14,
+    "product_title": "Тестовая Платная Книга (Исправленная)",
+    "product_price": "299.00",
+    "quantity": 1,
+    "is_downloaded": false,
+    "download_count": 0,
+    "first_download_at": null,
+    "last_download_at": null,
+    "personalization_data": {},
+    "include_audio": false,
+    "include_illustrations": false,
+    "special_requests": "",
+    "fairy_tale_status": "",
+    "generated_content": "",
+    "audio_file": "",
+    "illustration_file": "",
+    "estimated_completion": null,
+    "admin_notes": ""
+  }
+},
+{
+  "model": "shop.purchase",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "product": 1,
+    "order": 1,
+    "purchased_at": "2025-08-02T14:16:41.747Z",
+    "download_count": 0,
+    "last_downloaded": null
+  }
+},
+{
+  "model": "shop.purchase",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "product": 7,
+    "order": 1,
+    "purchased_at": "2025-08-02T14:16:41.858Z",
+    "download_count": 0,
+    "last_downloaded": null
+  }
+},
+{
+  "model": "shop.purchase",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "product": 10,
+    "order": 17,
+    "purchased_at": "2025-08-04T00:20:29.673Z",
+    "download_count": 6,
+    "last_downloaded": "2025-08-04T00:48:10.451Z"
+  }
+},
+{
+  "model": "shop.purchase",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "product": 9,
+    "order": 4,
+    "purchased_at": "2025-08-04T00:33:27.343Z",
+    "download_count": 0,
+    "last_downloaded": null
+  }
+},
+{
+  "model": "shop.purchase",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "testuser"
+    ],
+    "product": 10,
+    "order": 5,
+    "purchased_at": "2025-08-04T01:23:29.460Z",
+    "download_count": 0,
+    "last_downloaded": null
+  }
+},
+{
+  "model": "shop.purchase",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "testuser"
+    ],
+    "product": 11,
+    "order": 5,
+    "purchased_at": "2025-08-04T01:23:29.576Z",
+    "download_count": 0,
+    "last_downloaded": null
+  }
+},
+{
+  "model": "shop.purchase",
+  "pk": 7,
+  "fields": {
+    "user": [
+      "stassilin1984"
+    ],
+    "product": 10,
+    "order": 7,
+    "purchased_at": "2025-08-09T01:46:56.449Z",
+    "download_count": 0,
+    "last_downloaded": null
+  }
+},
+{
+  "model": "shop.purchase",
+  "pk": 8,
+  "fields": {
+    "user": [
+      "stassilin1984"
+    ],
+    "product": 12,
+    "order": 7,
+    "purchased_at": "2025-08-09T01:46:56.588Z",
+    "download_count": 0,
+    "last_downloaded": null
+  }
+},
+{
+  "model": "shop.purchase",
+  "pk": 9,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "product": 12,
+    "order": 11,
+    "purchased_at": "2025-08-17T00:43:57.425Z",
+    "download_count": 0,
+    "last_downloaded": null
+  }
+},
+{
+  "model": "shop.purchase",
+  "pk": 10,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "product": 8,
+    "order": 17,
+    "purchased_at": "2025-08-17T07:46:16.616Z",
+    "download_count": 0,
+    "last_downloaded": null
+  }
+},
+{
+  "model": "shop.purchase",
+  "pk": 11,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "product": 13,
+    "order": 18,
+    "purchased_at": "2025-08-17T07:52:32.397Z",
+    "download_count": 0,
+    "last_downloaded": null
+  }
+},
+{
+  "model": "shop.purchase",
+  "pk": 12,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "product": 14,
+    "order": 18,
+    "purchased_at": "2025-08-17T07:52:32.499Z",
+    "download_count": 0,
+    "last_downloaded": null
+  }
+},
+{
+  "model": "shop.discount",
+  "pk": 1,
+  "fields": {
+    "code": "298112",
+    "description": "Просто код",
+    "discount_type": "percentage",
+    "discount_value": "20.00",
+    "min_amount": "1000.00",
+    "max_uses": 10,
+    "uses_count": 0,
+    "valid_from": "2025-08-16T16:16:03Z",
+    "valid_until": "2025-08-16T21:00:00Z",
+    "is_active": true,
+    "created_at": "2025-08-16T16:16:20.228Z"
+  }
+},
+{
+  "model": "shop.discount",
+  "pk": 2,
+  "fields": {
+    "code": "TEST15",
+    "description": "Тестовая скидка 15%",
+    "discount_type": "percentage",
+    "discount_value": "15.00",
+    "min_amount": "100.00",
+    "max_uses": 100,
+    "uses_count": 0,
+    "valid_from": "2025-08-16T16:21:07.040Z",
+    "valid_until": "2025-09-15T16:21:07.040Z",
+    "is_active": true,
+    "created_at": "2025-08-16T16:21:07.041Z"
+  }
+},
+{
+  "model": "shop.discount",
+  "pk": 3,
+  "fields": {
+    "code": "SAVE200",
+    "description": "Скидка 200 рублей",
+    "discount_type": "fixed",
+    "discount_value": "200.00",
+    "min_amount": "1000.00",
+    "max_uses": 50,
+    "uses_count": 0,
+    "valid_from": "2025-08-16T16:21:07.202Z",
+    "valid_until": "2025-09-15T16:21:07.202Z",
+    "is_active": true,
+    "created_at": "2025-08-16T16:21:07.203Z"
+  }
+},
+{
+  "model": "shop.discount",
+  "pk": 4,
+  "fields": {
+    "code": "WELCOME10",
+    "description": "Приветственная скидка 10%",
+    "discount_type": "percentage",
+    "discount_value": "10.00",
+    "min_amount": "500.00",
+    "max_uses": 50,
+    "uses_count": 0,
+    "valid_from": "2025-08-16T16:21:07.305Z",
+    "valid_until": "2025-09-15T16:21:07.306Z",
+    "is_active": true,
+    "created_at": "2025-08-16T16:21:07.306Z"
+  }
+},
+{
+  "model": "shop.discount",
+  "pk": 6,
+  "fields": {
+    "code": "DEBUG15",
+    "description": "Отладочная скидка 15%",
+    "discount_type": "percentage",
+    "discount_value": "15.00",
+    "min_amount": "0.00",
+    "max_uses": 1000,
+    "uses_count": 0,
+    "valid_from": "2025-08-16T07:25:17.942Z",
+    "valid_until": "2026-08-17T07:25:17.942Z",
+    "is_active": true,
+    "created_at": "2025-08-17T07:25:17.995Z"
+  }
+}
+]

@@ -1,0 +1,705 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ story.title }} - Видео-рассказы - {{ site_settings.site_name }}{% endblock %}
+
+{% block description %}{{ story.description|truncatewords:30 }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+/* Общие стили для улучшенной страницы рассказа */
+.breadcrumb-nav {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.story-video-container {
+    background: #000;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+}
+
+.video-iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.story-content {
+    background: #fff;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.story-title {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+}
+
+.story-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.meta-item i {
+    margin-right: 0.5rem;
+    color: #e74c3c;
+}
+
+.story-description {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+    color: #444;
+}
+
+.story-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border: 1px solid #e0e0e0;
+    background: #fff;
+    color: #333;
+    text-decoration: none;
+    border-radius: 25px;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.action-btn:hover {
+    border-color: #e74c3c;
+    color: #e74c3c;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.action-btn.liked {
+    background: #e74c3c;
+    border-color: #e74c3c;
+    color: white;
+}
+
+/* Стили комментариев */
+.youtube-comments-wrapper {
+    padding: 0;
+}
+
+.comments-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.comment-textarea {
+    border: 1px solid #e0e0e0;
+    transition: all 0.2s ease;
+}
+
+.comment-textarea:focus {
+    border-color: #e74c3c;
+    box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.25);
+}
+
+.comment-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.comment-item:last-child {
+    border-bottom: none;
+}
+
+.comment-author {
+    color: #2c3e50;
+    font-size: 0.9rem;
+}
+
+.comment-text-content {
+    color: #444;
+    line-height: 1.5;
+}
+
+.reaction-btn:hover {
+    background: #f8f9fa !important;
+    color: #e74c3c !important;
+}
+
+.reply-btn:hover {
+    color: #e74c3c !important;
+}
+
+/* Стили для ответов */
+.replies-container {
+    border-left: 2px solid #e74c3c;
+    margin-left: 1rem;
+    padding-left: 1rem;
+}
+
+.reply-item {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+}
+
+/* Кнопка сворачивания ответов */
+.replies-toggle {
+    transition: all 0.2s ease;
+}
+
+.replies-toggle:hover {
+    color: #e74c3c !important;
+}
+
+.toggle-icon {
+    transition: transform 0.2s ease;
+}
+
+/* Плавное сворачивание */
+.replies-content {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+/* Анимации */
+.slide-up {
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .story-title {
+        font-size: 1.5rem;
+    }
+    
+    .story-meta {
+        gap: 1rem;
+    }
+    
+    .story-actions {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Хлебные крошки -->
+<nav class="breadcrumb-nav">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+            <a href="{% url 'core:home' %}">Главная</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'stories:list' %}">Видео-рассказы</a>
+        </li>
+        {% if story.category %}
+            <li class="breadcrumb-item">
+                <a href="{% url 'stories:list' %}?category={{ story.category.slug }}">
+                    {{ story.category.name }}
+                </a>
+            </li>
+        {% endif %}
+        <li class="breadcrumb-item active">{{ story.title|truncatewords:5 }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Видео -->
+        <div class="story-video-container">
+            <div class="video-wrapper">
+                {% if story.youtube_id %}
+                    <iframe class="video-iframe" 
+                            src="https://www.youtube.com/embed/{{ story.youtube_id }}?rel=0&showinfo=0" 
+                            title="{{ story.title }}"
+                            allowfullscreen>
+                    </iframe>
+                {% elif story.video_url %}
+                    <iframe class="video-iframe" 
+                            src="{{ story.video_url }}" 
+                            title="{{ story.title }}"
+                            allowfullscreen>
+                    </iframe>
+                {% else %}
+                    <div class="video-placeholder d-flex align-items-center justify-content-center h-100" style="background: linear-gradient(45deg, #e74c3c, #c0392b); color: white; text-align: center;">
+                        <div>
+                            <i class="bi bi-play-circle" style="font-size: 4rem; margin-bottom: 1rem;"></i>
+                            <h3>Видео временно недоступно</h3>
+                            <p>Попробуйте обновить страницу позже</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Контент рассказа -->
+        <div class="story-content">
+            <h1 class="story-title">{{ story.title }}</h1>
+            
+            <div class="story-meta">
+                <div class="meta-item">
+                    <i class="bi bi-calendar3"></i>
+                    <span>{{ story.created_at|date:"d F Y" }}</span>
+                </div>
+                
+                <div class="meta-item">
+                    <i class="bi bi-eye"></i>
+                    <span>{{ story.views_count|default:"0" }} просмотров</span>
+                </div>
+                
+                <div class="meta-item">
+                    <i class="bi bi-heart"></i>
+                    <span>{{ likes_count|default:"0" }} лайков</span>
+                </div>
+                
+                {% if story.category %}
+                    <div class="meta-item">
+                        <i class="bi bi-folder"></i>
+                        <a href="{% url 'stories:list' %}?category={{ story.category.slug }}" 
+                           style="color: #e74c3c; text-decoration: none;">
+                            {{ story.category.name }}
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+            
+            {% if story.description %}
+                <div class="story-description">
+                    {{ story.description|linebreaks }}
+                </div>
+            {% endif %}
+            
+            {% if story.tags.all %}
+                <div class="story-tags mb-3">
+                    {% for tag in story.tags.all %}
+                        <a href="{% url 'stories:list' %}?tag={{ tag.slug }}" 
+                           class="badge bg-secondary me-1 text-decoration-none">
+                            {{ tag.name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <!-- Действия -->
+            <div class="story-actions">
+                <button class="action-btn {% if user_liked %}liked{% endif %}" 
+                        onclick="toggleLike({{ story.id }})">
+                    <i class="bi bi-heart{% if user_liked %}-fill{% endif %} me-2"></i>
+                    <span id="like-text">Нравится</span>
+                    <span id="like-count">({{ likes_count|default:"0" }})</span>
+                </button>
+                
+                <a href="#share" class="action-btn" onclick="toggleShareSection()">
+                    <i class="bi bi-share me-2"></i>
+                    Поделиться
+                </a>
+            </div>
+        </div>
+        
+        <!-- 💬 YOUTUBE-STYLE КОММЕНТАРИИ -->
+        <div class="story-content">
+            <div class="youtube-comments-wrapper" data-story-id="{{ story.id }}">
+                <!-- Заголовок секции комментариев -->
+                <div class="comments-header">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="comments-title">
+                            <i class="bi bi-chat-dots me-2 text-primary"></i>
+                            <span id="total-comments-count">{{ comments_count|default:"0" }}</span> комментариев
+                        </h3>
+                        
+                        <!-- Сортировка комментариев -->
+                        <div class="comments-sort">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-secondary btn-sm sort-btn active" 
+                                        data-sort="top" onclick="sortComments('top')">
+                                    <i class="bi bi-hand-thumbs-up me-1"></i>Популярные
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm sort-btn" 
+                                        data-sort="newest" onclick="sortComments('newest')">
+                                    <i class="bi bi-clock me-1"></i>Новые
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Форма добавления комментария -->
+                {% if user.is_authenticated %}
+                <div class="add-comment-section mb-4">
+                    <div class="d-flex">
+                        <!-- Аватар пользователя -->
+                        <div class="user-avatar me-3">
+                            <div class="avatar-circle" style="width: 40px; height: 40px; background: linear-gradient(45deg, #667eea, #764ba2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px;">
+                                {% if user.first_name and user.first_name|length > 0 %}
+                                    {{ user.first_name|first|upper }}
+                                {% elif user.username and user.username|length > 0 %}
+                                    {{ user.username|first|upper }}
+                                {% else %}
+                                    U
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Форма комментария -->
+                        <div class="comment-form-container flex-grow-1">
+                            <form id="add-comment-form" class="comment-form">
+                                {% csrf_token %}
+                                <div class="comment-input-wrapper">
+                                    <textarea 
+                                        id="comment-textarea"
+                                        class="form-control comment-textarea"
+                                        placeholder="Добавьте публичный комментарий..."
+                                        rows="1"
+                                        maxlength="2000"
+                                        style="resize: none; border-radius: 25px; padding: 12px 16px;"
+                                    ></textarea>
+                                </div>
+                                
+                                <!-- Кнопки управления -->
+                                <div class="comment-actions mt-2" id="comment-actions" style="display: none;">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="char-counter text-muted small">
+                                            <span id="char-count">2000</span> символов осталось
+                                        </div>
+                                        <div class="action-buttons">
+                                            <button type="button" class="btn btn-sm btn-secondary me-2" onclick="cancelComment()">
+                                                Отмена
+                                            </button>
+                                            <button type="submit" class="btn btn-sm btn-primary submit-btn" disabled>
+                                                <i class="bi bi-send me-1"></i>Комментировать
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Скрытое поле для ответов -->
+                                <input type="hidden" id="parent-comment-id" value="">
+                            </form>
+                            
+                            <!-- Информация об ответе -->
+                            <div id="reply-info" class="reply-info mt-2" style="display: none;">
+                                <div class="alert alert-info d-flex justify-content-between align-items-center py-2 px-3">
+                                    <small>
+                                        <i class="bi bi-reply me-1"></i>
+                                        Ответ на комментарий <strong id="reply-to-user"></strong>
+                                    </small>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="cancelReply()">
+                                        Отменить
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="add-comment-section mb-4">
+                    <div class="text-center py-4" style="background: #f8f9fa; border-radius: 12px; border: 1px solid #e9ecef;">
+                        <i class="bi bi-chat-dots text-muted" style="font-size: 2rem;"></i>
+                        <h5 class="mt-3 mb-2">Хотите оставить комментарий?</h5>
+                        <p class="text-muted mb-3">Войдите в систему, чтобы присоединиться к обсуждению</p>
+                        <a href="{% url 'account_login' %}?next={{ request.path }}" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Войти
+                        </a>
+                        <a href="{% url 'account_signup' %}?next={{ request.path }}" class="btn btn-outline-secondary ms-2">
+                            <i class="bi bi-person-plus me-2"></i>Регистрация
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Список комментариев -->
+                <div class="comments-list" id="comments-list">
+                    <!-- Загрузка комментариев -->
+                    <div class="comments-loading text-center py-4" id="comments-loading">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Загрузка комментариев...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Загрузка комментариев...</p>
+                    </div>
+                    
+                    <!-- Контейнер для комментариев -->
+                    <div id="comments-container" style="display: none;">
+                        <!-- Комментарии добавляются динамически -->
+                    </div>
+                    
+                    <!-- Кнопка "Показать еще" -->
+                    <div class="load-more-section text-center mt-4" id="load-more-section" style="display: none;">
+                        <button class="btn btn-outline-primary" id="load-more-btn" onclick="loadMoreComments()">
+                            <i class="bi bi-chevron-down me-2"></i>Показать еще комментарии
+                        </button>
+                    </div>
+                    
+                    <!-- Сообщение о пустых комментариях -->
+                    <div class="no-comments text-center py-5" id="no-comments" style="display: none;">
+                        <div class="no-comments-icon mb-3">
+                            <i class="bi bi-chat-dots text-muted" style="font-size: 3rem;"></i>
+                        </div>
+                        <h5 class="text-muted mb-2">Пока нет комментариев</h5>
+                        <p class="text-muted mb-3">Станьте первым, кто поделится мнением!</p>
+                        {% if user.is_authenticated %}
+                        <button class="btn btn-primary" onclick="focusCommentForm()">
+                            <i class="bi bi-chat me-2"></i>Написать комментарий
+                        </button>
+                        {% else %}
+                        <a href="{% url 'account_login' %}?next={{ request.path }}" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Войти и комментировать
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 🎨 ШАБЛОН КОММЕНТАРИЯ -->
+        <template id="comment-template">
+            <div class="comment-item mb-3" data-comment-id="">
+                <div class="comment-content">
+                    <div class="d-flex">
+                        <div class="comment-avatar me-3">
+                            <div class="avatar-circle" style="width: 32px; height: 32px; background: linear-gradient(45deg, #667eea, #764ba2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">
+                                <span class="avatar-text"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="comment-body flex-grow-1">
+                            <div class="comment-header">
+                                <div class="d-flex align-items-center mb-1">
+                                    <span class="comment-author fw-bold me-2"></span>
+                                    <span class="comment-time text-muted small"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="comment-text mt-1">
+                                <p class="comment-text-content mb-2"></p>
+                            </div>
+                            
+                            <div class="comment-actions mt-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="comment-reactions d-flex align-items-center">
+                                        <button class="btn btn-sm btn-outline-secondary reaction-btn like-btn me-1" style="border: none; background: none; padding: 4px 8px;">
+                                            <i class="bi bi-hand-thumbs-up me-1"></i>
+                                            <span class="likes-count">0</span>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary reaction-btn dislike-btn me-2" style="border: none; background: none; padding: 4px 8px;">
+                                            <i class="bi bi-hand-thumbs-down me-1"></i>
+                                            <span class="dislikes-count">0</span>
+                                        </button>
+                                    </div>
+                                    
+                                    <button class="btn btn-sm btn-link reply-btn p-0 text-decoration-none">
+                                        <i class="bi bi-reply me-1"></i>Ответить
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+    
+    <!-- Боковая панель -->
+    <div class="col-lg-4">
+        <!-- Рекомендации -->
+        {% if recommendations %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightbulb me-2"></i>
+                    Рекомендуем посмотреть
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% for rec_story in recommendations %}
+                <div class="recommendation-item p-3 border-bottom">
+                    <div class="row g-2">
+                        <div class="col-4">
+                            <div class="recommendation-thumbnail bg-light rounded" style="aspect-ratio: 16/9;">
+                                {% if rec_story.youtube_id %}
+                                    <img src="https://img.youtube.com/vi/{{ rec_story.youtube_id }}/mqdefault.jpg" 
+                                         class="img-fluid rounded" 
+                                         alt="{{ rec_story.title }}">
+                                {% else %}
+                                    <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+                                        <i class="bi bi-play-circle fs-3"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-8">
+                            <h6 class="mb-1">
+                                <a href="{% url 'stories:detail' rec_story.slug %}" 
+                                   class="text-decoration-none text-dark">
+                                    {{ rec_story.title|truncatewords:5 }}
+                                </a>
+                            </h6>
+                            <small class="text-muted">
+                                {{ rec_story.views_count|default:"0" }} просмотров
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Статистика -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-bar-chart me-2"></i>
+                    Статистика
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="h4 text-primary mb-1">{{ story.views_count|default:"0" }}</div>
+                        <small class="text-muted">Просмотров</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-danger mb-1">{{ likes_count|default:"0" }}</div>
+                        <small class="text-muted">Лайков</small>
+                    </div>
+                </div>
+                
+                <div class="mt-3 text-center">
+                    <small class="text-muted">
+                        Опубликовано {{ story.created_at|date:"d F Y" }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<!-- 💬 ПОДКЛЮЧЕНИЕ YOUTUBE COMMENTS -->
+<script>
+    window.STORY_ID = {{ story.id }};
+    console.log('🎯 STORY_ID установлен:', window.STORY_ID);
+</script>
+<script src="{% static 'stories/js/youtube_comments.js' %}"></script>
+
+<script>
+// JavaScript для интерактивности
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Страница рассказа загружена');
+});
+
+// Функция лайка
+function toggleLike(storyId) {
+    {% if user.is_authenticated %}
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch('/stories/' + storyId + '/like/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const likeBtn = document.querySelector('.action-btn');
+                const likeIcon = likeBtn.querySelector('i');
+                const likeCount = document.getElementById('like-count');
+                
+                if (data.liked) {
+                    likeBtn.classList.add('liked');
+                    likeIcon.classList.add('bi-heart-fill');
+                    likeIcon.classList.remove('bi-heart');
+                } else {
+                    likeBtn.classList.remove('liked');
+                    likeIcon.classList.add('bi-heart');
+                    likeIcon.classList.remove('bi-heart-fill');
+                }
+                
+                likeCount.textContent = '(' + data.likes_count + ')';
+            }
+        })
+        .catch(err => console.error('Like error:', err));
+    {% else %}
+        window.location.href = "{% url 'account_login' %}";
+    {% endif %}
+}
+
+// Переключение блока поделиться
+function toggleShareSection() {
+    alert('Функция "Поделиться" будет добавлена позже');
+}
+
+// Функция для показа уведомлений
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 3000);
+}
+</script>
+{% endblock %}

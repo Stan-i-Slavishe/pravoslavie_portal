@@ -11,13 +11,34 @@ ALLOWED_HOSTS = [
     'testserver'
 ]
 
-# Database для локальной разработки
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# === ГИБКИЙ ВЫБОР БАЗЫ ДАННЫХ ===
+# Проверяем переменную USE_SQLITE из .env файла
+use_sqlite = config('USE_SQLITE', default=True, cast=bool)
+
+if use_sqlite:
+    # SQLite для простоты разработки
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+    print("🔧 Локальная разработка: SQLite база данных")
+else:
+    # PostgreSQL для тестирования как на продакшене
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DB_NAME', default='pravoslavie_portal_dev'),
+            'USER': config('DB_USER', default='postgres'),
+            'PASSWORD': config('DB_PASSWORD'),
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default='5432'),
+            # PostgreSQL не использует charset в OPTIONS
+            # Кодировка задается при создании БД
+        }
+    }
+    print("🔧 Локальная разработка: PostgreSQL база данных")
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
@@ -39,14 +60,24 @@ SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 
-# Cache для разработки (dummy cache)
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+# Cache для разработки
+cache_backend = config('CACHE_BACKEND', default='dummy')
+if cache_backend == 'dummy':
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        }
     }
-}
+else:
+    # Использовать Redis если нужно тестировать кеширование
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/1'),
+        }
+    }
 
-# Простая конфигурация для разработки
+# Простые настройки для разработки
 try:
     import corsheaders
     CORS_ALLOW_ALL_ORIGINS = True
@@ -61,10 +92,12 @@ YOOKASSA_TEST_MODE = True
 # YouTube API для тестирования
 YOUTUBE_API_KEY = config('YOUTUBE_API_KEY', default='your-youtube-api-key')
 
-# Дополнительные настройки для разработки
-ALLOWED_HOSTS = ['*']  # В разработке разрешаем все хосты
+# Push-уведомления (из переменных окружения)
+VAPID_PRIVATE_KEY = config('VAPID_PRIVATE_KEY', default='')
+VAPID_PUBLIC_KEY = config('VAPID_PUBLIC_KEY', default='')
+VAPID_EMAIL = config('VAPID_EMAIL', default='admin@localhost')
 
-# Переопределение шаблонов для упрощения разработки
+# Упрощенные шаблоны для разработки
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -76,12 +109,11 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                # Убираем проблемные контекстные процессоры
-                # 'core.context_processors.cart_context',
-                # 'core.context_processors.analytics_context',
+                'core.context_processors.cart_context',
+                'core.context_processors.site_context',
             ],
         },
     },
 ]
 
-print("Запущена УПРОЩЕННАЯ локальная разработка (settings_local.py)")
+print("🔧 ЛОКАЛЬНАЯ РАЗРАБОТКА (settings_local.py) - улучшенная версия")

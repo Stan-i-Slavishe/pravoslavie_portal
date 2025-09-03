@@ -1,0 +1,28 @@
+[
+{
+  "model": "subscriptions.subscription",
+  "pk": 1,
+  "fields": {
+    "name": "Семейная",
+    "subscription_type": "basic",
+    "price": "2000.00",
+    "duration_months": 1,
+    "description": "В эту подписку входит:\r\n1",
+    "features": [
+      {
+        "access_level": "premium",
+        "content_types": [
+          "fairy_tales",
+          "audio",
+          "books"
+        ],
+        "discount_percentage": 20,
+        "family_members": 5
+      }
+    ],
+    "is_active": true,
+    "created_at": "2025-08-04T00:22:50.157Z",
+    "updated_at": "2025-08-04T00:22:50.157Z"
+  }
+}
+]

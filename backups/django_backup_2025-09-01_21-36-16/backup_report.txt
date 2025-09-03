@@ -1,0 +1,68 @@
+ПОЛНЫЙ БЭКАП DJANGO - ПРАВОСЛАВНЫЙ ПОРТАЛ
+============================================================
+
+Дата создания: 2025-09-01 21:36:31.578434
+Метод: Django dumpdata (без pg_dump)
+
+СОДЕРЖИМОЕ БЭКАПА:
+------------------------------
+• full_data.json - полный дамп всех данных Django
+• *_data.json - дампы по приложениям
+• database_info.json - информация о структуре БД
+• media/ - копия всех медиа-файлов
+• backup_report.txt - этот отчет
+
+МЕДИА-ФАЙЛЫ:
+------------------------------
+• Файлов: 20
+• Размер: 47.8 MB
+
+РАЗМЕРЫ ФАЙЛОВ БЭКАПА:
+------------------------------
+• accounts_data.json: 6,371 байт
+• auth_data.json: 65,547 байт
+• books_data.json: 1,072 байт
+• core_data.json: 20,764 байт
+• database_info.json: 44 байт
+• fairy_tales_data.json: 17,327 байт
+• full_data.json: 7,438,710 байт
+• shop_data.json: 48,059 байт
+• stories_data.json: 1,026,409 байт
+• subscriptions_data.json: 617 байт
+• media\avatars\Мальчик.jpg: 6,866 байт
+• media\books\covers\книга.jpg: 81,024 байт
+• media\books\covers\книга_4.jpg: 234,597 байт
+• media\books\covers\Книга_NLs8jMw.jpg: 367,731 байт
+• media\books\covers\Мальчик.jpg: 346,916 байт
+• media\books\covers\Обложка.jpg: 173,612 байт
+• media\books\covers\Обложка_5cFA4e6.jpg: 144,015 байт
+• media\books\covers\Обложка_Fzv3jCM.jpg: 144,015 байт
+• media\books\covers\титульный_лист.jpg: 65,991 байт
+• media\books\files\sharewood.biz_12_видов_цветов_которые_должны_быть_в_каждом_цветнике.pdf: 14,142,449 байт
+• media\books\files\sharewood.biz_12_видов_цветов_которые_должны_быть_в_каждом_цветнике_I0DlK6B.pdf: 14,142,449 байт
+• media\books\files\sharewood.biz_Презентация.Тонкости_устройства_газонов_в_дачном_саду.pdf: 8,415,218 байт
+• media\books\files\SW.BAND_9may.avi: 5,694,856 байт
+• media\books\files\SW.BAND_Яндекс_Директ_-Прзентация_и_ссылки_на_сервисы.pdf: 4,969,358 байт
+• media\fairy_tales\covers\2025\06\Шапочка.jpg: 62,799 байт
+• media\fairy_tales\covers\2025\07\Ребёнок.jpg: 89,255 байт
+• media\fairy_tales\covers\2025\08\Мальчик.jpg: 346,916 байт
+• media\shop\products\книга_2.jpg: 222,324 байт
+• media\shop\products\книга_3.jpg: 342,671 байт
+• media\shop\products\Обложка.jpg: 173,612 байт
+
+ОБЩИЙ РАЗМЕР: 58,791,594 байт (56.1 MB)
+
+ВОССТАНОВЛЕНИЕ:
+------------------------------
+1. Создать новую базу данных PostgreSQL
+2. Применить миграции Django: python manage.py migrate
+3. Загрузить данные: python manage.py loaddata full_data.json
+4. Скопировать медиа-файлы в папку media/
+5. Создать суперпользователя: python manage.py createsuperuser
+
+ПРИМЕЧАНИЯ:
+------------------------------
+• Этот бэкап создан методом Django dumpdata
+• Включает все данные приложений и медиа-файлы
+• Не включает системные таблицы PostgreSQL
+• Для полного бэкапа БД используйте pg_dump отдельно

@@ -1,0 +1,309 @@
+/* Базовые стили в стиле Azbyka.ru */
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #34495e;
+    --accent-color: #e74c3c;
+    --text-color: #2c3e50;
+    --light-gray: #ecf0f1;
+    --border-color: #bdc3c7;
+    --white: #ffffff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--white);
+}
+
+/* Заголовки */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+h1 {
+    font-size: 2rem;
+    border-bottom: 2px solid var(--light-gray);
+    padding-bottom: 0.5rem;
+}
+
+h2 {
+    font-size: 1.5rem;
+    color: var(--secondary-color);
+}
+
+/* Ссылки */
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--accent-color);
+    text-decoration: underline;
+}
+
+/* Навигация в стиле Azbyka */
+.navbar {
+    background-color: var(--white) !important;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.5rem 0;
+    box-shadow: none;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color) !important;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-brand .orthodox-cross {
+    margin-right: 0.5rem;
+    font-size: 1.8rem;
+    color: var(--accent-color);
+}
+
+.nav-link {
+    color: var(--text-color) !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem !important;
+    border-radius: 0;
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+    color: var(--accent-color) !important;
+    background-color: var(--light-gray);
+}
+
+.dropdown-menu {
+    border: 1px solid var(--border-color);
+    border-radius: 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.dropdown-item {
+    color: var(--text-color);
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--light-gray);
+}
+
+.dropdown-item:hover {
+    background-color: var(--light-gray);
+    color: var(--accent-color);
+}
+
+/* Главная страница - убираем градиенты */
+.hero-section {
+    background-color: var(--light-gray) !important;
+    background: var(--light-gray) !important;
+    color: var(--text-color) !important;
+    border-radius: 0 !important;
+    padding: 3rem 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.hero-section h1 {
+    color: var(--primary-color);
+    font-weight: 700;
+    border: none;
+    margin-bottom: 1rem;
+}
+
+.hero-section .lead {
+    color: var(--secondary-color);
+    font-size: 1.1rem;
+}
+
+.hero-section .btn {
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 0;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    margin-right: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.hero-section .btn:hover {
+    background-color: var(--secondary-color);
+}
+
+.hero-section .btn-outline-light {
+    background-color: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.hero-section .btn-outline-light:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Карточки разделов */
+.card {
+    border: 1px solid var(--border-color);
+    border-radius: 0;
+    box-shadow: none;
+    transition: box-shadow 0.2s ease;
+    background-color: var(--white);
+}
+
+.card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.card-title {
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.card-text {
+    color: var(--secondary-color);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Иконки православных разделов */
+.section-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.icon-stories {
+    color: var(--accent-color);
+}
+
+.icon-books {
+    color: #27ae60;
+}
+
+.icon-audio {
+    color: #3498db;
+}
+
+/* Кнопки */
+.btn-primary {
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 0;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+}
+
+.btn-outline-secondary {
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    border-radius: 0;
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--light-gray);
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+/* Теги в стиле Azbyka */
+.tag-cloud .badge {
+    background-color: var(--light-gray) !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--border-color);
+    font-weight: normal;
+    padding: 0.4rem 0.8rem;
+    margin: 0.2rem;
+    border-radius: 0;
+    font-size: 0.85rem;
+}
+
+.tag-cloud .badge:hover {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    text-decoration: none;
+}
+
+/* Призыв к действию */
+.cta-section {
+    background-color: var(--light-gray);
+    border: 1px solid var(--border-color);
+    border-radius: 0;
+    padding: 2rem;
+    text-align: center;
+}
+
+.cta-section h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+/* Футер */
+footer {
+    background-color: var(--white) !important;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 2rem 0;
+}
+
+footer h5, footer h6 {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+footer .text-muted {
+    color: var(--secondary-color) !important;
+}
+
+footer a {
+    color: var(--secondary-color);
+}
+
+footer a:hover {
+    color: var(--accent-color);
+}
+
+/* Убираем все анимации hover-card */
+.hover-card {
+    transition: none;
+}
+
+.hover-card:hover {
+    transform: none;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 1rem;
+    }
+    
+    .hero-section h1 {
+        font-size: 1.5rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+/* Православный крест */
+.orthodox-cross::before {
+    content: "☦";
+}

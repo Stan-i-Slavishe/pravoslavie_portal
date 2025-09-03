@@ -1,0 +1,25 @@
+🚨 БЫСТРАЯ СПРАВКА - АВАРИЙНОЕ ВОССТАНОВЛЕНИЕ
+
+ЕСЛИ САЙТ НЕ РАБОТАЕТ:
+
+Windows (PowerShell):
+1. Copy-Item "backups\WORKING_PRODUCTION_BACKUP_20250831\.env.production" ".env.production"
+2. $env:DJANGO_ENV = "production" 
+3. python manage.py check
+
+Linux:
+1. cp backups/WORKING_PRODUCTION_BACKUP_20250831/.env.production .env.production
+2. export DJANGO_ENV=production
+3. sudo systemctl restart gunicorn && sudo systemctl restart nginx
+
+ПРОВЕРКА ПОСЛЕ ВОССТАНОВЛЕНИЯ:
+- python manage.py check --deploy
+- python manage.py migrate --check  
+- Открыть dobrist.com в браузере
+- Проверить логи: sudo tail -f /var/log/dobrist/django_errors.log
+
+КРИТИЧНО: 
+⚠️ Этот backup от 31.08.2025 - РАБОЧАЯ конфигурация!
+⚠️ НЕ УДАЛЯЙТЕ эту папку - это ваша страховка!
+
+ПОМОЩЬ: Если не помогает - найти другие backup в папке backups/

@@ -1,0 +1,502 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ story.title }} - Добрые истории{% endblock %}
+
+{% block description %}{{ story.description|default:"Духовный рассказ на портале Добрые истории" }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- YouTube Video Player -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="video-container">
+                {% if story.youtube_embed %}
+                    <div class="embed-responsive embed-responsive-16by9">
+                        {{ story.youtube_embed|safe }}
+                    </div>
+                {% else %}
+                    <div class="video-placeholder">
+                        <i class="bi bi-play-circle"></i>
+                        <p>Видео не найдено</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <!-- Левая колонка с контентом -->
+        <div class="col-lg-8">
+            <!-- Контент рассказа -->
+        <div class="story-content">
+            <h1 class="story-title">{{ story.title }}</h1>
+            
+            <div class="story-meta">
+                <div class="meta-item">
+                    <i class="bi bi-calendar3"></i>
+                    <span>{{ story.created_at|date:"d F Y" }}</span>
+                </div>
+                
+                <div class="meta-item">
+                    <i class="bi bi-eye"></i>
+                    <span>{{ story.views_count|default:"0" }} просмотров</span>
+                </div>
+                
+                <div class="meta-item">
+                    <i class="bi bi-heart"></i>
+                    <span>{{ likes_count|default:"0" }} лайков</span>
+                </div>
+                
+                {% if story.category %}
+                    <div class="meta-item">
+                        <i class="bi bi-folder"></i>
+                        <a href="{% url 'stories:list' %}?category={{ story.category.slug }}" 
+                           style="color: #e74c3c; text-decoration: none;">
+                            {{ story.category.name }}
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+            
+            {% if story.description %}
+                <div class="story-description">
+                    {{ story.description|linebreaks }}
+                </div>
+            {% endif %}
+            
+            {% if story.tags.all %}
+                <div class="story-tags">
+                    {% for tag in story.tags.all %}
+                        <a href="{% url 'stories:list' %}?tag={{ tag.slug }}" class="story-tag">
+                            {{ tag.name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <!-- Действия -->
+            <div class="story-actions">
+                <button class="action-btn {% if user_liked %}liked{% endif %}" 
+                        onclick="toggleLike({{ story.id }})">
+                    <i class="bi bi-heart{% if user_liked %}-fill{% endif %} me-2"></i>
+                    <span id="like-text">Нравится</span>
+                    <span id="like-count">({{ likes_count|default:"0" }})</span>
+                </button>
+                
+                <a href="#share" class="action-btn" onclick="toggleShareSection()">
+                    <i class="bi bi-share me-2"></i>
+                    Поделиться
+                </a>
+            </div>
+            
+            <!-- 📢 БЛОК ПОДЕЛИТЬСЯ -->
+            <div id="shareSection" class="share-section mt-3" style="display: none;">
+                <h5 class="share-title">
+                    <i class="bi bi-share me-2"></i>
+                    Поделиться рассказом
+                </h5>
+                <p class="text-muted mb-3">Расскажите друзьям об этом рассказе</p>
+                
+                <div class="share-buttons">
+                    <a href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text={{ story.title }}" 
+                       class="share-btn share-telegram" 
+                       target="_blank" 
+                       title="Поделиться в Telegram">
+                        <i class="bi bi-telegram"></i>
+                        Telegram
+                    </a>
+                    
+                    <a href="https://vk.com/share.php?url={{ request.build_absolute_uri }}&title={{ story.title }}" 
+                       class="share-btn share-vk" 
+                       target="_blank" 
+                       title="Поделиться ВКонтакте">
+                        <i class="bi bi-person-vcard"></i>
+                        ВКонтакте
+                    </a>
+                    
+                    <a href="https://wa.me/?text={{ story.title }} {{ request.build_absolute_uri }}" 
+                       class="share-btn share-whatsapp" 
+                       target="_blank" 
+                       title="Поделиться в WhatsApp">
+                        <i class="bi bi-whatsapp"></i>
+                        WhatsApp
+                    </a>
+                    
+                    <button class="share-btn" 
+                            style="background: linear-gradient(45deg, #6c757d, #495057);" 
+                            onclick="copyToClipboard()">
+                        <i class="bi bi-link-45deg"></i>
+                        Скопировать ссылку
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 💬 МЕСТО ДЛЯ БУДУЩИХ КОММЕНТАРИЕВ -->
+        <div class="future-comments mt-5">
+            <div class="text-center py-5" style="background: #f8f9fa; border-radius: 12px; border: 2px dashed #dee2e6;">
+                <i class="bi bi-chat-dots" style="font-size: 3rem; color: #dee2e6;"></i>
+                <h5 class="text-muted mt-3">Система комментариев</h5>
+                <p class="text-muted">Будет добавлена в ближайшее время</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Боковая панель -->
+    <div class="col-lg-4">
+        <!-- 🎵 ПЛЕЙЛИСТЫ ПОЛЬЗОВАТЕЛЯ -->
+        {% if user.is_authenticated and user_playlists %}
+            <div class="sidebar-section">
+                <div class="playlist-header d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="playlist-title mb-0">
+                        <span class="d-flex align-items-center">
+                            <i class="bi bi-music-note-list me-2"></i>
+                            Мои плейлисты
+                        </span>
+                    </h3>
+                    <a href="{% url 'stories:playlists_list' %}" class="playlist-icon-btn">
+                        <i class="bi bi-gear playlist-icon"></i>
+                        <span>Все</span>
+                    </a>
+                </div>
+                
+                {% for playlist in user_playlists %}
+                    <div class="playlist-item mb-2">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="playlist-name">{{ playlist.title }}</div>
+                                <small class="text-muted">{{ playlist.calculated_stories_count }} рассказов</small>
+                            </div>
+                            <div class="ms-2">
+                                {% if playlist.id in story_in_playlists %}
+                                    <button class="btn btn-sm btn-outline-danger" 
+                                            onclick="removeFromPlaylist({{ story.id }}, {{ playlist.id }})">
+                                        <i class="bi bi-dash"></i>
+                                    </button>
+                                {% else %}
+                                    <button class="btn btn-sm btn-outline-success" 
+                                            onclick="addToPlaylist({{ story.id }}, {{ playlist.id }})">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                
+                <div class="text-center mt-3">
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createPlaylistModal">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Создать плейлист
+                    </button>
+                </div>
+            </div>
+        {% elif user.is_authenticated %}
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">
+                    <i class="bi bi-music-note-list"></i>
+                    Плейлисты
+                </h3>
+                
+                <div class="text-center py-3">
+                    <i class="bi bi-music-note-list" style="font-size: 2rem; color: #ddd;"></i>
+                    <p class="text-muted mt-2 mb-3">У вас пока нет плейлистов</p>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createPlaylistModal">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Создать первый плейлист
+                    </button>
+                </div>
+            </div>
+        {% else %}
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">
+                    <i class="bi bi-music-note-list"></i>
+                    Плейлисты
+                </h3>
+                
+                <div class="text-center py-3">
+                    <p class="text-muted">Войдите, чтобы создавать плейлисты</p>
+                    <a href="{% url 'account_login' %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>
+                        Войти
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Статистика -->
+        <div class="sidebar-section">
+            <h3 class="sidebar-title">
+                <i class="bi bi-bar-chart"></i>
+                Статистика
+            </h3>
+            
+            <div class="row text-center">
+                <div class="col-6">
+                    <div class="h4 text-primary mb-1">{{ story.views_count|default:"0" }}</div>
+                    <small class="text-muted">Просмотров</small>
+                </div>
+                <div class="col-6">
+                    <div class="h4 text-danger mb-1">{{ likes_count|default:"0" }}</div>
+                    <small class="text-muted">Лайков</small>
+                </div>
+            </div>
+            
+            <div class="mt-3 text-center">
+                <small class="text-muted">
+                    Опубликовано {{ story.created_at|date:"d F Y" }}
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🎵 МОДАЛЬНОЕ ОКНО ДЛЯ СОЗДАНИЯ ПЛЕЙЛИСТА -->
+{% if user.is_authenticated %}
+<div class="modal fade" id="createPlaylistModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Создать новый плейлист
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{% url 'stories:create_playlist' %}" method="post">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="playlistName" class="form-label">Название плейлиста</label>
+                        <input type="text" class="form-control" id="playlistName" name="name" 
+                               placeholder="Например: Любимые рассказы" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="playlistDescription" class="form-label">Описание (необязательно)</label>
+                        <textarea class="form-control" id="playlistDescription" name="description" rows="3"
+                                  placeholder="Опишите ваш плейлист..."></textarea>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="isPublic" name="is_public">
+                        <label class="form-check-label" for="isPublic">
+                            Публичный плейлист (могут видеть другие)
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Создать
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// JavaScript для интерактивности страницы
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📱 Страница рассказа загружена - ЧИСТАЯ ВЕРСИЯ');
+});
+
+// Функция лайка рассказа
+function toggleLike(storyId) {
+    {% if user.is_authenticated %}
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch('/stories/' + storyId + '/like/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const likeBtn = document.querySelector('.action-btn');
+                const likeIcon = likeBtn.querySelector('i');
+                const likeCount = document.getElementById('like-count');
+                
+                if (data.liked) {
+                    likeBtn.classList.add('liked');
+                    likeIcon.classList.add('bi-heart-fill');
+                    likeIcon.classList.remove('bi-heart');
+                } else {
+                    likeBtn.classList.remove('liked');
+                    likeIcon.classList.add('bi-heart');
+                    likeIcon.classList.remove('bi-heart-fill');
+                }
+                
+                likeCount.textContent = '(' + data.likes_count + ')';
+            }
+        })
+        .catch(err => console.error('Like error:', err));
+    {% else %}
+        window.location.href = "{% url 'account_login' %}";
+    {% endif %}
+}
+
+// Переключение блока поделиться
+function toggleShareSection() {
+    const shareSection = document.getElementById('shareSection');
+    
+    if (shareSection.style.display === 'none' || shareSection.style.display === '') {
+        shareSection.style.display = 'block';
+        setTimeout(() => {
+            shareSection.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest'
+            });
+        }, 100);
+    } else {
+        shareSection.style.display = 'none';
+    }
+}
+
+// Копирование ссылки в буфер обмена
+function copyToClipboard() {
+    const url = window.location.href;
+    
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+            showToast('Ссылка скопирована в буфер обмена!', 'success');
+        }).catch(() => {
+            fallbackCopyToClipboard(url);
+        });
+    } else {
+        fallbackCopyToClipboard(url);
+    }
+}
+
+// Запасной метод копирования
+function fallbackCopyToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        document.execCommand('copy');
+        showToast('Ссылка скопирована!', 'success');
+    } catch (err) {
+        showToast('Ошибка копирования. Скопируйте ссылку вручную.', 'error');
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+// Добавление рассказа в плейлист
+function addToPlaylist(storyId, playlistId) {
+    {% if user.is_authenticated %}
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch('{% url "stories:add_to_playlist" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'story_id': storyId,
+                'playlist_id': playlistId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showToast(data.message, 'error');
+            }
+        })
+        .catch(err => {
+            console.error('Playlist add error:', err);
+            showToast('Ошибка при добавлении в плейлист', 'error');
+        });
+    {% else %}
+        window.location.href = "{% url 'account_login' %}";
+    {% endif %}
+}
+
+// Удаление рассказа из плейлиста
+function removeFromPlaylist(storyId, playlistId) {
+    {% if user.is_authenticated %}
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch('{% url "stories:remove_from_playlist" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'story_id': storyId,
+                'playlist_id': playlistId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showToast(data.message, 'error');
+            }
+        })
+        .catch(err => {
+            console.error('Playlist remove error:', err);
+            showToast('Ошибка при удалении из плейлиста', 'error');
+        });
+    {% else %}
+        window.location.href = "{% url 'account_login' %}";
+    {% endif %}
+}
+
+// Универсальная функция уведомлений
+function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
+    
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show`;
+    toast.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 3000);
+}
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.style.cssText = 'position: fixed; top: 0; right: 0; z-index: 9999; padding: 20px;';
+    document.body.appendChild(container);
+    return container;
+}
+</script>
+{% endblock %}

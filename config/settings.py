@@ -25,8 +25,8 @@ elif ENVIRONMENT == 'staging':
         print("⚠️ settings_staging.py не найден, использую settings_production.py")
         from .settings_production import *
 else:
-    # По умолчанию используем локальные настройки
-    from .settings_local import *
+    # По умолчанию используем PostgreSQL настройки
+    from .settings_local_postgresql import *
 
 # Дополнительные настройки, которые могут переопределяться через .env
 if config('SECRET_KEY', default=None):

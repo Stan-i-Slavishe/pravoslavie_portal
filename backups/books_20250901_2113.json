@@ -1,0 +1,781 @@
+[
+{
+  "model": "books.category",
+  "pk": 1,
+  "fields": {
+    "name": "Сборники рассказов из приложения Добрые Истории",
+    "slug": "seriya-sbornikov-iz-prilozheniya-dobryh-istorij",
+    "icon": "bi-book-half",
+    "description": "В мире, полном шума и тревог, всё больше людей ищут живое слово — честное, доброе, трогающее до слёз.\r\nЭта серия книг выросла из проекта «Добрые истории» — голосов людей, которые делились самым сокровенным.\r\nЗдесь — тихие чудеса, простые герои, необыкновенные повороты судьбы.\r\nНе случайные случайности. Необъяснимые вразумления.\r\n\r\nТо, что оставляет след.",
+    "created_at": "2025-07-24T00:12:32.226Z"
+  }
+},
+{
+  "model": "books.book",
+  "pk": 1,
+  "fields": {
+    "title": "Великая книга",
+    "slug": "velikaya-kniga",
+    "author": "Неудержимый",
+    "description": "Рассказы о вере, любви и человечности\r\nЭта книга изменит ваш взгляд на мир. В ней собраны подлинные истории обычных людей, которые столкнулись с необычными обстоятельствами и нашли в себе силы сделать правильный выбор.",
+    "content": "**📚 Истории о силе веры** — как молитва исцеляет от алкоголизма, как Богородица спасает в критический момент, как вера помогает преодолеть самые тяжелые испытания\r\n\r\n🎭 **Жизненные драмы и чудеса** — женщина усыновила 11 детей-сирот, супруги взяли на воспитание целую семью, истории о том, как любовь побеждает безнадежность\r\n\r\n🏥 **Врачебные истории** — когда медицина встречается с чудом, звонки с того света, исцеления через молитву святому Пантелеимону\r\n\r\n🖤 **Мудрость поколений** — как воспитать в детях любовь к чтению без принуждения, почему примеры важнее нравоучений\r\n\r\n💝 **Подвиги обычных людей** — истории о выборе между добром и злом, о том, как проявляется героизм в повседневной жизни\r\n\r\n### 💎 Особенности издания:\r\n\r\n✨ **Подлинные истории** — все рассказы основаны на реальных событиях\r\n📖 **Легкий слог** — понятно и интересно для читателей любого возраста\r\n❤️ **Духовная глубина** — каждая история несет важный жизненный урок\r\n🎯 **Практическая польза** — конкретные примеры христианской жизни\r\n\r\n*Эта книга станет прекрасным подарком для всей семьи и источником вдохновения в трудные моменты жизни.*",
+    "cover": "books/covers/Обложка_5cFA4e6.jpg",
+    "file": "books/files/sharewood.biz_12_видов_цветов_которые_должны_быть_в_каждом_цветнике.pdf",
+    "category": 1,
+    "format": "pdf",
+    "price": "500.00",
+    "is_free": false,
+    "downloads_count": 0,
+    "rating": "4.00",
+    "views_count": 39,
+    "is_published": true,
+    "is_featured": true,
+    "created_at": "2025-07-24T00:18:39.036Z",
+    "updated_at": "2025-08-16T16:02:19.272Z",
+    "published_at": null,
+    "isbn": "STORIES-2025",
+    "pages": 250,
+    "language": "ru",
+    "publisher": "",
+    "publication_year": null,
+    "tags": [
+      4,
+      1,
+      27,
+      2
+    ]
+  }
+},
+{
+  "model": "books.book",
+  "pk": 2,
+  "fields": {
+    "title": "Яндекс директ",
+    "slug": "yandeks-direkt",
+    "author": "Володя Пупкиг",
+    "description": "Потрясающая книга с весьм отрадно и похвально многозначительным продолжением",
+    "content": "Здесь объёмное содержание.",
+    "cover": "books/covers/титульный_лист.jpg",
+    "file": "books/files/SW.BAND_Яндекс_Директ_-Прзентация_и_ссылки_на_сервисы.pdf",
+    "category": 1,
+    "format": "pdf",
+    "price": "0.00",
+    "is_free": true,
+    "downloads_count": 26,
+    "rating": "3.00",
+    "views_count": 18,
+    "is_published": true,
+    "is_featured": false,
+    "created_at": "2025-07-26T16:52:48.094Z",
+    "updated_at": "2025-07-31T15:39:48.734Z",
+    "published_at": null,
+    "isbn": "",
+    "pages": 125,
+    "language": "ru",
+    "publisher": "",
+    "publication_year": null,
+    "tags": [
+      1
+    ]
+  }
+},
+{
+  "model": "books.book",
+  "pk": 3,
+  "fields": {
+    "title": "Книга весна",
+    "slug": "kniga-vesna",
+    "author": "Николай Махно",
+    "description": "В этой книге отображаются бесконечные ведения непреодолимого и т.д.",
+    "content": "В некоем произволении необьяснимого иыаыад",
+    "cover": "books/covers/Книга_NLs8jMw.jpg",
+    "file": "books/files/sharewood.biz_12_видов_цветов_которые_должны_быть_в_каждом_цветнике_I0DlK6B.pdf",
+    "category": 1,
+    "format": "pdf",
+    "price": "1200.00",
+    "is_free": false,
+    "downloads_count": 0,
+    "rating": "0.00",
+    "views_count": 8,
+    "is_published": true,
+    "is_featured": false,
+    "created_at": "2025-08-02T14:41:56.241Z",
+    "updated_at": "2025-08-08T01:14:10.816Z",
+    "published_at": null,
+    "isbn": "",
+    "pages": 250,
+    "language": "Руский",
+    "publisher": "",
+    "publication_year": null,
+    "tags": [
+      2
+    ]
+  }
+},
+{
+  "model": "books.book",
+  "pk": 4,
+  "fields": {
+    "title": "Тестовая Платная Книга",
+    "slug": "test-platnaya-kniga",
+    "author": "Тестовый Автор",
+    "description": "Это тестовая платная книга для проверки функциональности корзины.",
+    "content": "",
+    "cover": "",
+    "file": "",
+    "category": null,
+    "format": "pdf",
+    "price": "299.00",
+    "is_free": false,
+    "downloads_count": 0,
+    "rating": "0.00",
+    "views_count": 0,
+    "is_published": true,
+    "is_featured": false,
+    "created_at": "2025-08-07T00:20:24.039Z",
+    "updated_at": "2025-08-07T00:20:24.039Z",
+    "published_at": null,
+    "isbn": "",
+    "pages": 100,
+    "language": "ru",
+    "publisher": "",
+    "publication_year": null,
+    "tags": []
+  }
+},
+{
+  "model": "books.book",
+  "pk": 5,
+  "fields": {
+    "title": "Микеланжело",
+    "slug": "mikelanzhelo",
+    "author": "Артур Ким",
+    "description": "В незапаметные времена",
+    "content": "О как много всего необычного можетт быть",
+    "cover": "books/covers/книга_4.jpg",
+    "file": "books/files/SW.BAND_9may.avi",
+    "category": null,
+    "format": "pdf",
+    "price": "1500.00",
+    "is_free": false,
+    "downloads_count": 0,
+    "rating": "0.00",
+    "views_count": 2,
+    "is_published": true,
+    "is_featured": false,
+    "created_at": "2025-08-08T01:09:23.691Z",
+    "updated_at": "2025-08-08T01:14:10.554Z",
+    "published_at": null,
+    "isbn": "",
+    "pages": 200,
+    "language": "ru",
+    "publisher": "",
+    "publication_year": null,
+    "tags": [
+      11,
+      17,
+      30
+    ]
+  }
+},
+{
+  "model": "books.book",
+  "pk": 6,
+  "fields": {
+    "title": "Тестовая Бесплатная Книга",
+    "slug": "test-free-book",
+    "author": "Тестовый Автор",
+    "description": "Это тестовая бесплатная книга",
+    "content": "",
+    "cover": "",
+    "file": "",
+    "category": null,
+    "format": "pdf",
+    "price": "0.00",
+    "is_free": true,
+    "downloads_count": 0,
+    "rating": "0.00",
+    "views_count": 0,
+    "is_published": true,
+    "is_featured": false,
+    "created_at": "2025-08-08T01:14:11.050Z",
+    "updated_at": "2025-08-08T01:14:11.050Z",
+    "published_at": null,
+    "isbn": "",
+    "pages": null,
+    "language": "ru",
+    "publisher": "",
+    "publication_year": null,
+    "tags": []
+  }
+},
+{
+  "model": "books.book",
+  "pk": 7,
+  "fields": {
+    "title": "Тестовая Платная Книга (Исправленная)",
+    "slug": "test-paid-book-correct",
+    "author": "Тестовый Автор",
+    "description": "Это тестовая платная книга с правильными настройками",
+    "content": "",
+    "cover": "",
+    "file": "",
+    "category": null,
+    "format": "pdf",
+    "price": "299.00",
+    "is_free": false,
+    "downloads_count": 0,
+    "rating": "0.00",
+    "views_count": 0,
+    "is_published": true,
+    "is_featured": false,
+    "created_at": "2025-08-08T01:14:11.150Z",
+    "updated_at": "2025-08-08T01:14:11.150Z",
+    "published_at": null,
+    "isbn": "",
+    "pages": null,
+    "language": "ru",
+    "publisher": "",
+    "publication_year": null,
+    "tags": []
+  }
+},
+{
+  "model": "books.bookreview",
+  "pk": 1,
+  "fields": {
+    "book": 1,
+    "user": [
+      "stassilin"
+    ],
+    "rating": 5,
+    "comment": "класс",
+    "created_at": "2025-07-26T16:27:31.613Z"
+  }
+},
+{
+  "model": "books.bookreview",
+  "pk": 2,
+  "fields": {
+    "book": 2,
+    "user": [
+      "admin"
+    ],
+    "rating": 1,
+    "comment": "",
+    "created_at": "2025-07-28T00:09:19.295Z"
+  }
+},
+{
+  "model": "books.bookreview",
+  "pk": 3,
+  "fields": {
+    "book": 2,
+    "user": [
+      "stassilin"
+    ],
+    "rating": 5,
+    "comment": "",
+    "created_at": "2025-07-28T00:56:11.107Z"
+  }
+},
+{
+  "model": "books.bookreview",
+  "pk": 4,
+  "fields": {
+    "book": 1,
+    "user": [
+      "admin"
+    ],
+    "rating": 2,
+    "comment": "Крутотетнь",
+    "created_at": "2025-08-01T00:13:04.731Z"
+  }
+},
+{
+  "model": "books.bookreview",
+  "pk": 5,
+  "fields": {
+    "book": 1,
+    "user": [
+      "stassilin1984"
+    ],
+    "rating": 5,
+    "comment": "",
+    "created_at": "2025-08-09T17:15:40.865Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 1,
+  "fields": {
+    "book": 2,
+    "user": [
+      "admin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-26T16:52:56.953Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 2,
+  "fields": {
+    "book": 2,
+    "user": [
+      "admin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-26T16:53:45.308Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 3,
+  "fields": {
+    "book": 2,
+    "user": [
+      "admin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-26T16:54:16.074Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 4,
+  "fields": {
+    "book": 2,
+    "user": [
+      "admin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-26T17:08:10.008Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 5,
+  "fields": {
+    "book": 2,
+    "user": [
+      "admin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-26T17:08:18.915Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 6,
+  "fields": {
+    "book": 2,
+    "user": [
+      "admin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-26T23:44:38.790Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 7,
+  "fields": {
+    "book": 2,
+    "user": [
+      "admin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-26T23:55:33.840Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 8,
+  "fields": {
+    "book": 2,
+    "user": [
+      "stassilin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-27T00:09:37.668Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 9,
+  "fields": {
+    "book": 2,
+    "user": [
+      "stassilin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-27T00:09:51.482Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 10,
+  "fields": {
+    "book": 2,
+    "user": [
+      "stassilin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-27T00:11:00.236Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 11,
+  "fields": {
+    "book": 2,
+    "user": [
+      "stassilin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-27T00:13:43.889Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 12,
+  "fields": {
+    "book": 2,
+    "user": [
+      "stassilin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-27T00:13:54.475Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 13,
+  "fields": {
+    "book": 2,
+    "user": [
+      "stassilin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-27T00:14:07.690Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 14,
+  "fields": {
+    "book": 2,
+    "user": [
+      "stassilin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-27T00:14:14.644Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 15,
+  "fields": {
+    "book": 2,
+    "user": [
+      "stassilin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-27T00:14:21.367Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 16,
+  "fields": {
+    "book": 2,
+    "user": [
+      "stassilin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-27T00:14:50.819Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 17,
+  "fields": {
+    "book": 2,
+    "user": [
+      "stassilin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-27T00:25:48.879Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 18,
+  "fields": {
+    "book": 2,
+    "user": [
+      "stassilin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-27T00:26:06.745Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 19,
+  "fields": {
+    "book": 2,
+    "user": [
+      "admin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-27T00:37:03.494Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 20,
+  "fields": {
+    "book": 2,
+    "user": [
+      "admin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-27T00:37:56.722Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 21,
+  "fields": {
+    "book": 2,
+    "user": [
+      "admin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-27T00:38:02.834Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 22,
+  "fields": {
+    "book": 2,
+    "user": [
+      "admin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-27T06:23:07.647Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 23,
+  "fields": {
+    "book": 2,
+    "user": [
+      "admin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-27T06:38:35.261Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 24,
+  "fields": {
+    "book": 2,
+    "user": [
+      "admin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-27T07:54:31.823Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 25,
+  "fields": {
+    "book": 2,
+    "user": [
+      "admin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-07-30T01:22:38.421Z"
+  }
+},
+{
+  "model": "books.bookdownload",
+  "pk": 26,
+  "fields": {
+    "book": 2,
+    "user": [
+      "admin"
+    ],
+    "ip_address": "127.0.0.1",
+    "downloaded_at": "2025-08-02T00:43:00.384Z"
+  }
+},
+{
+  "model": "books.userfavoritebook",
+  "pk": 33,
+  "fields": {
+    "user": [
+      "stassilin"
+    ],
+    "book": 2,
+    "added_at": "2025-08-02T00:21:55.529Z"
+  }
+},
+{
+  "model": "books.userfavoritebook",
+  "pk": 35,
+  "fields": {
+    "user": [
+      "stassilin"
+    ],
+    "book": 1,
+    "added_at": "2025-08-02T00:27:15.049Z"
+  }
+},
+{
+  "model": "books.userfavoritebook",
+  "pk": 36,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "book": 2,
+    "added_at": "2025-08-03T16:41:41.988Z"
+  }
+},
+{
+  "model": "books.userfavoritebook",
+  "pk": 37,
+  "fields": {
+    "user": [
+      "stassilin1984"
+    ],
+    "book": 5,
+    "added_at": "2025-08-09T01:49:41.744Z"
+  }
+},
+{
+  "model": "books.userfavoritebook",
+  "pk": 39,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "book": 1,
+    "added_at": "2025-08-09T17:05:39.189Z"
+  }
+},
+{
+  "model": "books.userfavoritebook",
+  "pk": 43,
+  "fields": {
+    "user": [
+      "stassilin1984"
+    ],
+    "book": 1,
+    "added_at": "2025-08-10T01:04:27.426Z"
+  }
+},
+{
+  "model": "books.readingsession",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "book": 2,
+    "current_page": 7,
+    "total_pages": 125,
+    "reading_time": 308,
+    "last_read": "2025-08-17T01:41:09.257Z",
+    "created_at": "2025-07-27T06:37:34.833Z",
+    "font_size": 1.1,
+    "theme": "light"
+  }
+},
+{
+  "model": "books.readingsession",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "stassilin"
+    ],
+    "book": 2,
+    "current_page": 1,
+    "total_pages": 125,
+    "reading_time": 2,
+    "last_read": "2025-08-02T00:31:53.615Z",
+    "created_at": "2025-07-28T00:56:17.875Z",
+    "font_size": 1.1,
+    "theme": "light"
+  }
+},
+{
+  "model": "books.readingsession",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "book": 1,
+    "current_page": 1,
+    "total_pages": 250,
+    "reading_time": 0,
+    "last_read": "2025-08-03T16:47:46.728Z",
+    "created_at": "2025-08-03T16:46:10.289Z",
+    "font_size": 1.1,
+    "theme": "light"
+  }
+},
+{
+  "model": "books.readingsession",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "book": 3,
+    "current_page": 1,
+    "total_pages": 250,
+    "reading_time": 0,
+    "last_read": "2025-08-04T00:50:21.514Z",
+    "created_at": "2025-08-03T16:46:34.149Z",
+    "font_size": 1.1,
+    "theme": "light"
+  }
+},
+{
+  "model": "books.readingsession",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "stassilin1984"
+    ],
+    "book": 3,
+    "current_page": 1,
+    "total_pages": 250,
+    "reading_time": 0,
+    "last_read": "2025-08-09T01:47:11.977Z",
+    "created_at": "2025-08-09T01:47:11.830Z",
+    "font_size": 1.1,
+    "theme": "light"
+  }
+},
+{
+  "model": "books.readingbookmark",
+  "pk": 1,
+  "fields": {
+    "session": 1,
+    "page": 3,
+    "note": "fgyfrhfgh",
+    "created_at": "2025-07-27T07:24:54.385Z"
+  }
+}
+]

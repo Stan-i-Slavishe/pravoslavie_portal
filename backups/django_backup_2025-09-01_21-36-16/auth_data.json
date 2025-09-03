@@ -1,0 +1,3411 @@
+[
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add log entry",
+    "content_type": [
+      "admin",
+      "logentry"
+    ],
+    "codename": "add_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change log entry",
+    "content_type": [
+      "admin",
+      "logentry"
+    ],
+    "codename": "change_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete log entry",
+    "content_type": [
+      "admin",
+      "logentry"
+    ],
+    "codename": "delete_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view log entry",
+    "content_type": [
+      "admin",
+      "logentry"
+    ],
+    "codename": "view_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add permission",
+    "content_type": [
+      "auth",
+      "permission"
+    ],
+    "codename": "add_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change permission",
+    "content_type": [
+      "auth",
+      "permission"
+    ],
+    "codename": "change_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete permission",
+    "content_type": [
+      "auth",
+      "permission"
+    ],
+    "codename": "delete_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view permission",
+    "content_type": [
+      "auth",
+      "permission"
+    ],
+    "codename": "view_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add group",
+    "content_type": [
+      "auth",
+      "group"
+    ],
+    "codename": "add_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change group",
+    "content_type": [
+      "auth",
+      "group"
+    ],
+    "codename": "change_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete group",
+    "content_type": [
+      "auth",
+      "group"
+    ],
+    "codename": "delete_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view group",
+    "content_type": [
+      "auth",
+      "group"
+    ],
+    "codename": "view_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add user",
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "codename": "add_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change user",
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "codename": "change_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete user",
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "codename": "delete_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view user",
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "codename": "view_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add content type",
+    "content_type": [
+      "contenttypes",
+      "contenttype"
+    ],
+    "codename": "add_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change content type",
+    "content_type": [
+      "contenttypes",
+      "contenttype"
+    ],
+    "codename": "change_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete content type",
+    "content_type": [
+      "contenttypes",
+      "contenttype"
+    ],
+    "codename": "delete_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view content type",
+    "content_type": [
+      "contenttypes",
+      "contenttype"
+    ],
+    "codename": "view_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add session",
+    "content_type": [
+      "sessions",
+      "session"
+    ],
+    "codename": "add_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change session",
+    "content_type": [
+      "sessions",
+      "session"
+    ],
+    "codename": "change_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete session",
+    "content_type": [
+      "sessions",
+      "session"
+    ],
+    "codename": "delete_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view session",
+    "content_type": [
+      "sessions",
+      "session"
+    ],
+    "codename": "view_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add site",
+    "content_type": [
+      "sites",
+      "site"
+    ],
+    "codename": "add_site"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change site",
+    "content_type": [
+      "sites",
+      "site"
+    ],
+    "codename": "change_site"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete site",
+    "content_type": [
+      "sites",
+      "site"
+    ],
+    "codename": "delete_site"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view site",
+    "content_type": [
+      "sites",
+      "site"
+    ],
+    "codename": "view_site"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add email address",
+    "content_type": [
+      "account",
+      "emailaddress"
+    ],
+    "codename": "add_emailaddress"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change email address",
+    "content_type": [
+      "account",
+      "emailaddress"
+    ],
+    "codename": "change_emailaddress"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete email address",
+    "content_type": [
+      "account",
+      "emailaddress"
+    ],
+    "codename": "delete_emailaddress"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view email address",
+    "content_type": [
+      "account",
+      "emailaddress"
+    ],
+    "codename": "view_emailaddress"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add email confirmation",
+    "content_type": [
+      "account",
+      "emailconfirmation"
+    ],
+    "codename": "add_emailconfirmation"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change email confirmation",
+    "content_type": [
+      "account",
+      "emailconfirmation"
+    ],
+    "codename": "change_emailconfirmation"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete email confirmation",
+    "content_type": [
+      "account",
+      "emailconfirmation"
+    ],
+    "codename": "delete_emailconfirmation"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view email confirmation",
+    "content_type": [
+      "account",
+      "emailconfirmation"
+    ],
+    "codename": "view_emailconfirmation"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add social account",
+    "content_type": [
+      "socialaccount",
+      "socialaccount"
+    ],
+    "codename": "add_socialaccount"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change social account",
+    "content_type": [
+      "socialaccount",
+      "socialaccount"
+    ],
+    "codename": "change_socialaccount"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete social account",
+    "content_type": [
+      "socialaccount",
+      "socialaccount"
+    ],
+    "codename": "delete_socialaccount"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view social account",
+    "content_type": [
+      "socialaccount",
+      "socialaccount"
+    ],
+    "codename": "view_socialaccount"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add social application",
+    "content_type": [
+      "socialaccount",
+      "socialapp"
+    ],
+    "codename": "add_socialapp"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change social application",
+    "content_type": [
+      "socialaccount",
+      "socialapp"
+    ],
+    "codename": "change_socialapp"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete social application",
+    "content_type": [
+      "socialaccount",
+      "socialapp"
+    ],
+    "codename": "delete_socialapp"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view social application",
+    "content_type": [
+      "socialaccount",
+      "socialapp"
+    ],
+    "codename": "view_socialapp"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add social application token",
+    "content_type": [
+      "socialaccount",
+      "socialtoken"
+    ],
+    "codename": "add_socialtoken"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change social application token",
+    "content_type": [
+      "socialaccount",
+      "socialtoken"
+    ],
+    "codename": "change_socialtoken"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete social application token",
+    "content_type": [
+      "socialaccount",
+      "socialtoken"
+    ],
+    "codename": "delete_socialtoken"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view social application token",
+    "content_type": [
+      "socialaccount",
+      "socialtoken"
+    ],
+    "codename": "view_socialtoken"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Категория",
+    "content_type": [
+      "core",
+      "category"
+    ],
+    "codename": "add_category"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Категория",
+    "content_type": [
+      "core",
+      "category"
+    ],
+    "codename": "change_category"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Категория",
+    "content_type": [
+      "core",
+      "category"
+    ],
+    "codename": "delete_category"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Категория",
+    "content_type": [
+      "core",
+      "category"
+    ],
+    "codename": "view_category"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Сообщение",
+    "content_type": [
+      "core",
+      "contactmessage"
+    ],
+    "codename": "add_contactmessage"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Сообщение",
+    "content_type": [
+      "core",
+      "contactmessage"
+    ],
+    "codename": "change_contactmessage"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Сообщение",
+    "content_type": [
+      "core",
+      "contactmessage"
+    ],
+    "codename": "delete_contactmessage"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Сообщение",
+    "content_type": [
+      "core",
+      "contactmessage"
+    ],
+    "codename": "view_contactmessage"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Настройки сайта",
+    "content_type": [
+      "core",
+      "sitesettings"
+    ],
+    "codename": "add_sitesettings"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Настройки сайта",
+    "content_type": [
+      "core",
+      "sitesettings"
+    ],
+    "codename": "change_sitesettings"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Настройки сайта",
+    "content_type": [
+      "core",
+      "sitesettings"
+    ],
+    "codename": "delete_sitesettings"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Настройки сайта",
+    "content_type": [
+      "core",
+      "sitesettings"
+    ],
+    "codename": "view_sitesettings"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Тег",
+    "content_type": [
+      "core",
+      "tag"
+    ],
+    "codename": "add_tag"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Тег",
+    "content_type": [
+      "core",
+      "tag"
+    ],
+    "codename": "change_tag"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Тег",
+    "content_type": [
+      "core",
+      "tag"
+    ],
+    "codename": "delete_tag"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Тег",
+    "content_type": [
+      "core",
+      "tag"
+    ],
+    "codename": "view_tag"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Плейлист",
+    "content_type": [
+      "stories",
+      "playlist"
+    ],
+    "codename": "add_playlist"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Плейлист",
+    "content_type": [
+      "stories",
+      "playlist"
+    ],
+    "codename": "change_playlist"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Плейлист",
+    "content_type": [
+      "stories",
+      "playlist"
+    ],
+    "codename": "delete_playlist"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Плейлист",
+    "content_type": [
+      "stories",
+      "playlist"
+    ],
+    "codename": "view_playlist"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Поисковый запрос",
+    "content_type": [
+      "stories",
+      "searchquery"
+    ],
+    "codename": "add_searchquery"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Поисковый запрос",
+    "content_type": [
+      "stories",
+      "searchquery"
+    ],
+    "codename": "change_searchquery"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Поисковый запрос",
+    "content_type": [
+      "stories",
+      "searchquery"
+    ],
+    "codename": "delete_searchquery"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Поисковый запрос",
+    "content_type": [
+      "stories",
+      "searchquery"
+    ],
+    "codename": "view_searchquery"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Рассказ",
+    "content_type": [
+      "stories",
+      "story"
+    ],
+    "codename": "add_story"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Рассказ",
+    "content_type": [
+      "stories",
+      "story"
+    ],
+    "codename": "change_story"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Рассказ",
+    "content_type": [
+      "stories",
+      "story"
+    ],
+    "codename": "delete_story"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Рассказ",
+    "content_type": [
+      "stories",
+      "story"
+    ],
+    "codename": "view_story"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add История просмотров",
+    "content_type": [
+      "stories",
+      "userwatchhistory"
+    ],
+    "codename": "add_userwatchhistory"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change История просмотров",
+    "content_type": [
+      "stories",
+      "userwatchhistory"
+    ],
+    "codename": "change_userwatchhistory"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete История просмотров",
+    "content_type": [
+      "stories",
+      "userwatchhistory"
+    ],
+    "codename": "delete_userwatchhistory"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view История просмотров",
+    "content_type": [
+      "stories",
+      "userwatchhistory"
+    ],
+    "codename": "view_userwatchhistory"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Элемент плейлиста",
+    "content_type": [
+      "stories",
+      "playlistitem"
+    ],
+    "codename": "add_playlistitem"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Элемент плейлиста",
+    "content_type": [
+      "stories",
+      "playlistitem"
+    ],
+    "codename": "change_playlistitem"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Элемент плейлиста",
+    "content_type": [
+      "stories",
+      "playlistitem"
+    ],
+    "codename": "delete_playlistitem"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Элемент плейлиста",
+    "content_type": [
+      "stories",
+      "playlistitem"
+    ],
+    "codename": "view_playlistitem"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Рекомендация",
+    "content_type": [
+      "stories",
+      "userrecommendation"
+    ],
+    "codename": "add_userrecommendation"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Рекомендация",
+    "content_type": [
+      "stories",
+      "userrecommendation"
+    ],
+    "codename": "change_userrecommendation"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Рекомендация",
+    "content_type": [
+      "stories",
+      "userrecommendation"
+    ],
+    "codename": "delete_userrecommendation"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Рекомендация",
+    "content_type": [
+      "stories",
+      "userrecommendation"
+    ],
+    "codename": "view_userrecommendation"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Просмотр",
+    "content_type": [
+      "stories",
+      "storyview"
+    ],
+    "codename": "add_storyview"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Просмотр",
+    "content_type": [
+      "stories",
+      "storyview"
+    ],
+    "codename": "change_storyview"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Просмотр",
+    "content_type": [
+      "stories",
+      "storyview"
+    ],
+    "codename": "delete_storyview"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Просмотр",
+    "content_type": [
+      "stories",
+      "storyview"
+    ],
+    "codename": "view_storyview"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Рекомендация",
+    "content_type": [
+      "stories",
+      "storyrecommendation"
+    ],
+    "codename": "add_storyrecommendation"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Рекомендация",
+    "content_type": [
+      "stories",
+      "storyrecommendation"
+    ],
+    "codename": "change_storyrecommendation"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Рекомендация",
+    "content_type": [
+      "stories",
+      "storyrecommendation"
+    ],
+    "codename": "delete_storyrecommendation"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Рекомендация",
+    "content_type": [
+      "stories",
+      "storyrecommendation"
+    ],
+    "codename": "view_storyrecommendation"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Лайк",
+    "content_type": [
+      "stories",
+      "storylike"
+    ],
+    "codename": "add_storylike"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Лайк",
+    "content_type": [
+      "stories",
+      "storylike"
+    ],
+    "codename": "change_storylike"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Лайк",
+    "content_type": [
+      "stories",
+      "storylike"
+    ],
+    "codename": "delete_storylike"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Лайк",
+    "content_type": [
+      "stories",
+      "storylike"
+    ],
+    "codename": "view_storylike"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Категория",
+    "content_type": [
+      "books",
+      "category"
+    ],
+    "codename": "add_category"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Категория",
+    "content_type": [
+      "books",
+      "category"
+    ],
+    "codename": "change_category"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Категория",
+    "content_type": [
+      "books",
+      "category"
+    ],
+    "codename": "delete_category"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Категория",
+    "content_type": [
+      "books",
+      "category"
+    ],
+    "codename": "view_category"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Тег",
+    "content_type": [
+      "books",
+      "tag"
+    ],
+    "codename": "add_tag"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Тег",
+    "content_type": [
+      "books",
+      "tag"
+    ],
+    "codename": "change_tag"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Тег",
+    "content_type": [
+      "books",
+      "tag"
+    ],
+    "codename": "delete_tag"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Тег",
+    "content_type": [
+      "books",
+      "tag"
+    ],
+    "codename": "view_tag"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Книга",
+    "content_type": [
+      "books",
+      "book"
+    ],
+    "codename": "add_book"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Книга",
+    "content_type": [
+      "books",
+      "book"
+    ],
+    "codename": "change_book"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Книга",
+    "content_type": [
+      "books",
+      "book"
+    ],
+    "codename": "delete_book"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Книга",
+    "content_type": [
+      "books",
+      "book"
+    ],
+    "codename": "view_book"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Избранная книга",
+    "content_type": [
+      "books",
+      "userfavoritebook"
+    ],
+    "codename": "add_userfavoritebook"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Избранная книга",
+    "content_type": [
+      "books",
+      "userfavoritebook"
+    ],
+    "codename": "change_userfavoritebook"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Избранная книга",
+    "content_type": [
+      "books",
+      "userfavoritebook"
+    ],
+    "codename": "delete_userfavoritebook"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Избранная книга",
+    "content_type": [
+      "books",
+      "userfavoritebook"
+    ],
+    "codename": "view_userfavoritebook"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Отзыв",
+    "content_type": [
+      "books",
+      "bookreview"
+    ],
+    "codename": "add_bookreview"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Отзыв",
+    "content_type": [
+      "books",
+      "bookreview"
+    ],
+    "codename": "change_bookreview"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Отзыв",
+    "content_type": [
+      "books",
+      "bookreview"
+    ],
+    "codename": "delete_bookreview"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Отзыв",
+    "content_type": [
+      "books",
+      "bookreview"
+    ],
+    "codename": "view_bookreview"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Скачивание",
+    "content_type": [
+      "books",
+      "bookdownload"
+    ],
+    "codename": "add_bookdownload"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Скачивание",
+    "content_type": [
+      "books",
+      "bookdownload"
+    ],
+    "codename": "change_bookdownload"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Скачивание",
+    "content_type": [
+      "books",
+      "bookdownload"
+    ],
+    "codename": "delete_bookdownload"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Скачивание",
+    "content_type": [
+      "books",
+      "bookdownload"
+    ],
+    "codename": "view_bookdownload"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Товар",
+    "content_type": [
+      "shop",
+      "product"
+    ],
+    "codename": "add_product"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Товар",
+    "content_type": [
+      "shop",
+      "product"
+    ],
+    "codename": "change_product"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Товар",
+    "content_type": [
+      "shop",
+      "product"
+    ],
+    "codename": "delete_product"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Товар",
+    "content_type": [
+      "shop",
+      "product"
+    ],
+    "codename": "view_product"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Корзина",
+    "content_type": [
+      "shop",
+      "cart"
+    ],
+    "codename": "add_cart"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Корзина",
+    "content_type": [
+      "shop",
+      "cart"
+    ],
+    "codename": "change_cart"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Корзина",
+    "content_type": [
+      "shop",
+      "cart"
+    ],
+    "codename": "delete_cart"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Корзина",
+    "content_type": [
+      "shop",
+      "cart"
+    ],
+    "codename": "view_cart"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Заказ",
+    "content_type": [
+      "shop",
+      "order"
+    ],
+    "codename": "add_order"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Заказ",
+    "content_type": [
+      "shop",
+      "order"
+    ],
+    "codename": "change_order"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Заказ",
+    "content_type": [
+      "shop",
+      "order"
+    ],
+    "codename": "delete_order"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Заказ",
+    "content_type": [
+      "shop",
+      "order"
+    ],
+    "codename": "view_order"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Скидка",
+    "content_type": [
+      "shop",
+      "discount"
+    ],
+    "codename": "add_discount"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Скидка",
+    "content_type": [
+      "shop",
+      "discount"
+    ],
+    "codename": "change_discount"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Скидка",
+    "content_type": [
+      "shop",
+      "discount"
+    ],
+    "codename": "delete_discount"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Скидка",
+    "content_type": [
+      "shop",
+      "discount"
+    ],
+    "codename": "view_discount"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Покупка",
+    "content_type": [
+      "shop",
+      "purchase"
+    ],
+    "codename": "add_purchase"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Покупка",
+    "content_type": [
+      "shop",
+      "purchase"
+    ],
+    "codename": "change_purchase"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Покупка",
+    "content_type": [
+      "shop",
+      "purchase"
+    ],
+    "codename": "delete_purchase"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Покупка",
+    "content_type": [
+      "shop",
+      "purchase"
+    ],
+    "codename": "view_purchase"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Элемент заказа",
+    "content_type": [
+      "shop",
+      "orderitem"
+    ],
+    "codename": "add_orderitem"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Элемент заказа",
+    "content_type": [
+      "shop",
+      "orderitem"
+    ],
+    "codename": "change_orderitem"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Элемент заказа",
+    "content_type": [
+      "shop",
+      "orderitem"
+    ],
+    "codename": "delete_orderitem"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Элемент заказа",
+    "content_type": [
+      "shop",
+      "orderitem"
+    ],
+    "codename": "view_orderitem"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Элемент корзины",
+    "content_type": [
+      "shop",
+      "cartitem"
+    ],
+    "codename": "add_cartitem"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Элемент корзины",
+    "content_type": [
+      "shop",
+      "cartitem"
+    ],
+    "codename": "change_cartitem"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Элемент корзины",
+    "content_type": [
+      "shop",
+      "cartitem"
+    ],
+    "codename": "delete_cartitem"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Элемент корзины",
+    "content_type": [
+      "shop",
+      "cartitem"
+    ],
+    "codename": "view_cartitem"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Категория сказок",
+    "content_type": [
+      "fairy_tales",
+      "fairytalecategory"
+    ],
+    "codename": "add_fairytalecategory"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Категория сказок",
+    "content_type": [
+      "fairy_tales",
+      "fairytalecategory"
+    ],
+    "codename": "change_fairytalecategory"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Категория сказок",
+    "content_type": [
+      "fairy_tales",
+      "fairytalecategory"
+    ],
+    "codename": "delete_fairytalecategory"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Категория сказок",
+    "content_type": [
+      "fairy_tales",
+      "fairytalecategory"
+    ],
+    "codename": "view_fairytalecategory"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Шаблон сказки",
+    "content_type": [
+      "fairy_tales",
+      "fairytaletemplate"
+    ],
+    "codename": "add_fairytaletemplate"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Шаблон сказки",
+    "content_type": [
+      "fairy_tales",
+      "fairytaletemplate"
+    ],
+    "codename": "change_fairytaletemplate"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Шаблон сказки",
+    "content_type": [
+      "fairy_tales",
+      "fairytaletemplate"
+    ],
+    "codename": "delete_fairytaletemplate"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Шаблон сказки",
+    "content_type": [
+      "fairy_tales",
+      "fairytaletemplate"
+    ],
+    "codename": "view_fairytaletemplate"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Заказ персонализации",
+    "content_type": [
+      "fairy_tales",
+      "personalizationorder"
+    ],
+    "codename": "add_personalizationorder"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Заказ персонализации",
+    "content_type": [
+      "fairy_tales",
+      "personalizationorder"
+    ],
+    "codename": "change_personalizationorder"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Заказ персонализации",
+    "content_type": [
+      "fairy_tales",
+      "personalizationorder"
+    ],
+    "codename": "delete_personalizationorder"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Заказ персонализации",
+    "content_type": [
+      "fairy_tales",
+      "personalizationorder"
+    ],
+    "codename": "view_personalizationorder"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Отзыв о сказке",
+    "content_type": [
+      "fairy_tales",
+      "fairytalereview"
+    ],
+    "codename": "add_fairytalereview"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Отзыв о сказке",
+    "content_type": [
+      "fairy_tales",
+      "fairytalereview"
+    ],
+    "codename": "change_fairytalereview"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Отзыв о сказке",
+    "content_type": [
+      "fairy_tales",
+      "fairytalereview"
+    ],
+    "codename": "delete_fairytalereview"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Отзыв о сказке",
+    "content_type": [
+      "fairy_tales",
+      "fairytalereview"
+    ],
+    "codename": "view_fairytalereview"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Избранная сказка",
+    "content_type": [
+      "fairy_tales",
+      "fairytalefavorite"
+    ],
+    "codename": "add_fairytalefavorite"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Избранная сказка",
+    "content_type": [
+      "fairy_tales",
+      "fairytalefavorite"
+    ],
+    "codename": "change_fairytalefavorite"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Избранная сказка",
+    "content_type": [
+      "fairy_tales",
+      "fairytalefavorite"
+    ],
+    "codename": "delete_fairytalefavorite"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Избранная сказка",
+    "content_type": [
+      "fairy_tales",
+      "fairytalefavorite"
+    ],
+    "codename": "view_fairytalefavorite"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Поведение пользователя",
+    "content_type": [
+      "analytics",
+      "userbehavior"
+    ],
+    "codename": "add_userbehavior"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Поведение пользователя",
+    "content_type": [
+      "analytics",
+      "userbehavior"
+    ],
+    "codename": "change_userbehavior"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Поведение пользователя",
+    "content_type": [
+      "analytics",
+      "userbehavior"
+    ],
+    "codename": "delete_userbehavior"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Поведение пользователя",
+    "content_type": [
+      "analytics",
+      "userbehavior"
+    ],
+    "codename": "view_userbehavior"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Популярный контент",
+    "content_type": [
+      "analytics",
+      "popularcontent"
+    ],
+    "codename": "add_popularcontent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Популярный контент",
+    "content_type": [
+      "analytics",
+      "popularcontent"
+    ],
+    "codename": "change_popularcontent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Популярный контент",
+    "content_type": [
+      "analytics",
+      "popularcontent"
+    ],
+    "codename": "delete_popularcontent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Популярный контент",
+    "content_type": [
+      "analytics",
+      "popularcontent"
+    ],
+    "codename": "view_popularcontent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Email подписка",
+    "content_type": [
+      "analytics",
+      "emailsubscription"
+    ],
+    "codename": "add_emailsubscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Email подписка",
+    "content_type": [
+      "analytics",
+      "emailsubscription"
+    ],
+    "codename": "change_emailsubscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Email подписка",
+    "content_type": [
+      "analytics",
+      "emailsubscription"
+    ],
+    "codename": "delete_emailsubscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Email подписка",
+    "content_type": [
+      "analytics",
+      "emailsubscription"
+    ],
+    "codename": "view_emailsubscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Намерение покупки",
+    "content_type": [
+      "analytics",
+      "purchaseintent"
+    ],
+    "codename": "add_purchaseintent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Намерение покупки",
+    "content_type": [
+      "analytics",
+      "purchaseintent"
+    ],
+    "codename": "change_purchaseintent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Намерение покупки",
+    "content_type": [
+      "analytics",
+      "purchaseintent"
+    ],
+    "codename": "delete_purchaseintent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Намерение покупки",
+    "content_type": [
+      "analytics",
+      "purchaseintent"
+    ],
+    "codename": "view_purchaseintent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Недельный отчет",
+    "content_type": [
+      "analytics",
+      "weeklyreport"
+    ],
+    "codename": "add_weeklyreport"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Недельный отчет",
+    "content_type": [
+      "analytics",
+      "weeklyreport"
+    ],
+    "codename": "change_weeklyreport"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Недельный отчет",
+    "content_type": [
+      "analytics",
+      "weeklyreport"
+    ],
+    "codename": "delete_weeklyreport"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Недельный отчет",
+    "content_type": [
+      "analytics",
+      "weeklyreport"
+    ],
+    "codename": "view_weeklyreport"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Комментарий",
+    "content_type": [
+      "stories",
+      "storycomment"
+    ],
+    "codename": "add_storycomment"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Комментарий",
+    "content_type": [
+      "stories",
+      "storycomment"
+    ],
+    "codename": "change_storycomment"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Комментарий",
+    "content_type": [
+      "stories",
+      "storycomment"
+    ],
+    "codename": "delete_storycomment"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Комментарий",
+    "content_type": [
+      "stories",
+      "storycomment"
+    ],
+    "codename": "view_storycomment"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Жалоба на комментарий",
+    "content_type": [
+      "stories",
+      "commentreport"
+    ],
+    "codename": "add_commentreport"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Жалоба на комментарий",
+    "content_type": [
+      "stories",
+      "commentreport"
+    ],
+    "codename": "change_commentreport"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Жалоба на комментарий",
+    "content_type": [
+      "stories",
+      "commentreport"
+    ],
+    "codename": "delete_commentreport"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Жалоба на комментарий",
+    "content_type": [
+      "stories",
+      "commentreport"
+    ],
+    "codename": "view_commentreport"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Реакция на комментарий",
+    "content_type": [
+      "stories",
+      "commentreaction"
+    ],
+    "codename": "add_commentreaction"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Реакция на комментарий",
+    "content_type": [
+      "stories",
+      "commentreaction"
+    ],
+    "codename": "change_commentreaction"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Реакция на комментарий",
+    "content_type": [
+      "stories",
+      "commentreaction"
+    ],
+    "codename": "delete_commentreaction"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Реакция на комментарий",
+    "content_type": [
+      "stories",
+      "commentreaction"
+    ],
+    "codename": "view_commentreaction"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Настройки плейлистов пользователя",
+    "content_type": [
+      "stories",
+      "userplaylistpreference"
+    ],
+    "codename": "add_userplaylistpreference"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Настройки плейлистов пользователя",
+    "content_type": [
+      "stories",
+      "userplaylistpreference"
+    ],
+    "codename": "change_userplaylistpreference"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Настройки плейлистов пользователя",
+    "content_type": [
+      "stories",
+      "userplaylistpreference"
+    ],
+    "codename": "delete_userplaylistpreference"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Настройки плейлистов пользователя",
+    "content_type": [
+      "stories",
+      "userplaylistpreference"
+    ],
+    "codename": "view_userplaylistpreference"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Сохраненный рассказ",
+    "content_type": [
+      "stories",
+      "savedstory"
+    ],
+    "codename": "add_savedstory"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Сохраненный рассказ",
+    "content_type": [
+      "stories",
+      "savedstory"
+    ],
+    "codename": "change_savedstory"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Сохраненный рассказ",
+    "content_type": [
+      "stories",
+      "savedstory"
+    ],
+    "codename": "delete_savedstory"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Сохраненный рассказ",
+    "content_type": [
+      "stories",
+      "savedstory"
+    ],
+    "codename": "view_savedstory"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Сессия чтения",
+    "content_type": [
+      "books",
+      "bookreadingsession"
+    ],
+    "codename": "add_bookreadingsession"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Сессия чтения",
+    "content_type": [
+      "books",
+      "bookreadingsession"
+    ],
+    "codename": "change_bookreadingsession"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Сессия чтения",
+    "content_type": [
+      "books",
+      "bookreadingsession"
+    ],
+    "codename": "delete_bookreadingsession"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Сессия чтения",
+    "content_type": [
+      "books",
+      "bookreadingsession"
+    ],
+    "codename": "view_bookreadingsession"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Глава книги",
+    "content_type": [
+      "books",
+      "bookchapter"
+    ],
+    "codename": "add_bookchapter"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Глава книги",
+    "content_type": [
+      "books",
+      "bookchapter"
+    ],
+    "codename": "change_bookchapter"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Глава книги",
+    "content_type": [
+      "books",
+      "bookchapter"
+    ],
+    "codename": "delete_bookchapter"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Глава книги",
+    "content_type": [
+      "books",
+      "bookchapter"
+    ],
+    "codename": "view_bookchapter"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Закладка",
+    "content_type": [
+      "books",
+      "readingbookmark"
+    ],
+    "codename": "add_readingbookmark"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Закладка",
+    "content_type": [
+      "books",
+      "readingbookmark"
+    ],
+    "codename": "change_readingbookmark"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Закладка",
+    "content_type": [
+      "books",
+      "readingbookmark"
+    ],
+    "codename": "delete_readingbookmark"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Закладка",
+    "content_type": [
+      "books",
+      "readingbookmark"
+    ],
+    "codename": "view_readingbookmark"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Сессия чтения",
+    "content_type": [
+      "books",
+      "readingsession"
+    ],
+    "codename": "add_readingsession"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Сессия чтения",
+    "content_type": [
+      "books",
+      "readingsession"
+    ],
+    "codename": "change_readingsession"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Сессия чтения",
+    "content_type": [
+      "books",
+      "readingsession"
+    ],
+    "codename": "delete_readingsession"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Сессия чтения",
+    "content_type": [
+      "books",
+      "readingsession"
+    ],
+    "codename": "view_readingsession"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Воронка конверсии",
+    "content_type": [
+      "analytics",
+      "conversionfunnel"
+    ],
+    "codename": "add_conversionfunnel"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Воронка конверсии",
+    "content_type": [
+      "analytics",
+      "conversionfunnel"
+    ],
+    "codename": "change_conversionfunnel"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Воронка конверсии",
+    "content_type": [
+      "analytics",
+      "conversionfunnel"
+    ],
+    "codename": "delete_conversionfunnel"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Воронка конверсии",
+    "content_type": [
+      "analytics",
+      "conversionfunnel"
+    ],
+    "codename": "view_conversionfunnel"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Событие аналитики",
+    "content_type": [
+      "analytics",
+      "analyticsevent"
+    ],
+    "codename": "add_analyticsevent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Событие аналитики",
+    "content_type": [
+      "analytics",
+      "analyticsevent"
+    ],
+    "codename": "change_analyticsevent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Событие аналитики",
+    "content_type": [
+      "analytics",
+      "analyticsevent"
+    ],
+    "codename": "delete_analyticsevent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Событие аналитики",
+    "content_type": [
+      "analytics",
+      "analyticsevent"
+    ],
+    "codename": "view_analyticsevent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Подписка",
+    "content_type": [
+      "subscriptions",
+      "subscription"
+    ],
+    "codename": "add_subscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Подписка",
+    "content_type": [
+      "subscriptions",
+      "subscription"
+    ],
+    "codename": "change_subscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Подписка",
+    "content_type": [
+      "subscriptions",
+      "subscription"
+    ],
+    "codename": "delete_subscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Подписка",
+    "content_type": [
+      "subscriptions",
+      "subscription"
+    ],
+    "codename": "view_subscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Подписка пользователя",
+    "content_type": [
+      "subscriptions",
+      "usersubscription"
+    ],
+    "codename": "add_usersubscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Подписка пользователя",
+    "content_type": [
+      "subscriptions",
+      "usersubscription"
+    ],
+    "codename": "change_usersubscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Подписка пользователя",
+    "content_type": [
+      "subscriptions",
+      "usersubscription"
+    ],
+    "codename": "delete_usersubscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Подписка пользователя",
+    "content_type": [
+      "subscriptions",
+      "usersubscription"
+    ],
+    "codename": "view_usersubscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Профиль пользователя",
+    "content_type": [
+      "accounts",
+      "userprofile"
+    ],
+    "codename": "add_userprofile"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Профиль пользователя",
+    "content_type": [
+      "accounts",
+      "userprofile"
+    ],
+    "codename": "change_userprofile"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Профиль пользователя",
+    "content_type": [
+      "accounts",
+      "userprofile"
+    ],
+    "codename": "delete_userprofile"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Профиль пользователя",
+    "content_type": [
+      "accounts",
+      "userprofile"
+    ],
+    "codename": "view_userprofile"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Мобильная обратная связь",
+    "content_type": [
+      "core",
+      "mobilefeedback"
+    ],
+    "codename": "add_mobilefeedback"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Мобильная обратная связь",
+    "content_type": [
+      "core",
+      "mobilefeedback"
+    ],
+    "codename": "change_mobilefeedback"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Мобильная обратная связь",
+    "content_type": [
+      "core",
+      "mobilefeedback"
+    ],
+    "codename": "delete_mobilefeedback"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Мобильная обратная связь",
+    "content_type": [
+      "core",
+      "mobilefeedback"
+    ],
+    "codename": "view_mobilefeedback"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add PWA аналитика",
+    "content_type": [
+      "pwa",
+      "pwaanalytics"
+    ],
+    "codename": "add_pwaanalytics"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change PWA аналитика",
+    "content_type": [
+      "pwa",
+      "pwaanalytics"
+    ],
+    "codename": "change_pwaanalytics"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete PWA аналитика",
+    "content_type": [
+      "pwa",
+      "pwaanalytics"
+    ],
+    "codename": "delete_pwaanalytics"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view PWA аналитика",
+    "content_type": [
+      "pwa",
+      "pwaanalytics"
+    ],
+    "codename": "view_pwaanalytics"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Push-подписка",
+    "content_type": [
+      "pwa",
+      "pushsubscription"
+    ],
+    "codename": "add_pushsubscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Push-подписка",
+    "content_type": [
+      "pwa",
+      "pushsubscription"
+    ],
+    "codename": "change_pushsubscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Push-подписка",
+    "content_type": [
+      "pwa",
+      "pushsubscription"
+    ],
+    "codename": "delete_pushsubscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Push-подписка",
+    "content_type": [
+      "pwa",
+      "pushsubscription"
+    ],
+    "codename": "view_pushsubscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Кешированный контент",
+    "content_type": [
+      "pwa",
+      "cachedcontent"
+    ],
+    "codename": "add_cachedcontent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Кешированный контент",
+    "content_type": [
+      "pwa",
+      "cachedcontent"
+    ],
+    "codename": "change_cachedcontent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Кешированный контент",
+    "content_type": [
+      "pwa",
+      "cachedcontent"
+    ],
+    "codename": "delete_cachedcontent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Кешированный контент",
+    "content_type": [
+      "pwa",
+      "cachedcontent"
+    ],
+    "codename": "view_cachedcontent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Установка PWA",
+    "content_type": [
+      "pwa",
+      "pwainstallevent"
+    ],
+    "codename": "add_pwainstallevent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Установка PWA",
+    "content_type": [
+      "pwa",
+      "pwainstallevent"
+    ],
+    "codename": "change_pwainstallevent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Установка PWA",
+    "content_type": [
+      "pwa",
+      "pwainstallevent"
+    ],
+    "codename": "delete_pwainstallevent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Установка PWA",
+    "content_type": [
+      "pwa",
+      "pwainstallevent"
+    ],
+    "codename": "view_pwainstallevent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Офлайн действие",
+    "content_type": [
+      "pwa",
+      "offlineaction"
+    ],
+    "codename": "add_offlineaction"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Офлайн действие",
+    "content_type": [
+      "pwa",
+      "offlineaction"
+    ],
+    "codename": "change_offlineaction"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Офлайн действие",
+    "content_type": [
+      "pwa",
+      "offlineaction"
+    ],
+    "codename": "delete_offlineaction"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Офлайн действие",
+    "content_type": [
+      "pwa",
+      "offlineaction"
+    ],
+    "codename": "view_offlineaction"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Категория уведомлений",
+    "content_type": [
+      "pwa",
+      "notificationcategory"
+    ],
+    "codename": "add_notificationcategory"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Категория уведомлений",
+    "content_type": [
+      "pwa",
+      "notificationcategory"
+    ],
+    "codename": "change_notificationcategory"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Категория уведомлений",
+    "content_type": [
+      "pwa",
+      "notificationcategory"
+    ],
+    "codename": "delete_notificationcategory"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Категория уведомлений",
+    "content_type": [
+      "pwa",
+      "notificationcategory"
+    ],
+    "codename": "view_notificationcategory"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Настройки уведомлений пользователя",
+    "content_type": [
+      "pwa",
+      "usernotificationsettings"
+    ],
+    "codename": "add_usernotificationsettings"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Настройки уведомлений пользователя",
+    "content_type": [
+      "pwa",
+      "usernotificationsettings"
+    ],
+    "codename": "change_usernotificationsettings"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Настройки уведомлений пользователя",
+    "content_type": [
+      "pwa",
+      "usernotificationsettings"
+    ],
+    "codename": "delete_usernotificationsettings"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Настройки уведомлений пользователя",
+    "content_type": [
+      "pwa",
+      "usernotificationsettings"
+    ],
+    "codename": "view_usernotificationsettings"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Подписка на уведомления",
+    "content_type": [
+      "pwa",
+      "usernotificationsubscription"
+    ],
+    "codename": "add_usernotificationsubscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Подписка на уведомления",
+    "content_type": [
+      "pwa",
+      "usernotificationsubscription"
+    ],
+    "codename": "change_usernotificationsubscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Подписка на уведомления",
+    "content_type": [
+      "pwa",
+      "usernotificationsubscription"
+    ],
+    "codename": "delete_usernotificationsubscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Подписка на уведомления",
+    "content_type": [
+      "pwa",
+      "usernotificationsubscription"
+    ],
+    "codename": "view_usernotificationsubscription"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Православное событие",
+    "content_type": [
+      "pwa",
+      "orthodoxevent"
+    ],
+    "codename": "add_orthodoxevent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Православное событие",
+    "content_type": [
+      "pwa",
+      "orthodoxevent"
+    ],
+    "codename": "change_orthodoxevent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Православное событие",
+    "content_type": [
+      "pwa",
+      "orthodoxevent"
+    ],
+    "codename": "delete_orthodoxevent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Православное событие",
+    "content_type": [
+      "pwa",
+      "orthodoxevent"
+    ],
+    "codename": "view_orthodoxevent"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Ежедневная православная информация",
+    "content_type": [
+      "pwa",
+      "dailyorthodoxinfo"
+    ],
+    "codename": "add_dailyorthodoxinfo"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Ежедневная православная информация",
+    "content_type": [
+      "pwa",
+      "dailyorthodoxinfo"
+    ],
+    "codename": "change_dailyorthodoxinfo"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Ежедневная православная информация",
+    "content_type": [
+      "pwa",
+      "dailyorthodoxinfo"
+    ],
+    "codename": "delete_dailyorthodoxinfo"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Ежедневная православная информация",
+    "content_type": [
+      "pwa",
+      "dailyorthodoxinfo"
+    ],
+    "codename": "view_dailyorthodoxinfo"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Период поста",
+    "content_type": [
+      "pwa",
+      "fastingperiod"
+    ],
+    "codename": "add_fastingperiod"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Период поста",
+    "content_type": [
+      "pwa",
+      "fastingperiod"
+    ],
+    "codename": "change_fastingperiod"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Период поста",
+    "content_type": [
+      "pwa",
+      "fastingperiod"
+    ],
+    "codename": "delete_fastingperiod"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Период поста",
+    "content_type": [
+      "pwa",
+      "fastingperiod"
+    ],
+    "codename": "view_fastingperiod"
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$600000$6fYDVBNoUKoPmq1aIf9Qb4$1tnZ5nXjRlM5Czka6Vk8oXF7FPoYLg9gKto67aL60gg=",
+    "last_login": "2025-08-29T23:27:46.703Z",
+    "is_superuser": true,
+    "username": "admin",
+    "first_name": "Станислав",
+    "last_name": "Силин",
+    "email": "stassilin@mail.ru",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-06-30T04:22:09.244Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "testuser1",
+    "first_name": "Алексей",
+    "last_name": "Петров",
+    "email": "test1@example.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-06-30T09:56:14.160Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "testuser2",
+    "first_name": "Мария",
+    "last_name": "Сидорова",
+    "email": "test2@example.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-06-30T09:56:14.334Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$600000$26aILNEI6T2sAYdsuh78ZF$G1xT4yioD57Abq+asT1te2cSgQNpolFjLV+uc2wPrDM=",
+    "last_login": "2025-08-09T01:10:26.261Z",
+    "is_superuser": false,
+    "username": "stassilin",
+    "first_name": "",
+    "last_name": "",
+    "email": "stassilin@mail.ru",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-07-01T04:31:57.635Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$600000$Q58m8G5AH8S4vmeMBNemUO$RTBK9cuF/rd6V7LnDEhu8HDuMK5LuBe2bfDcFdCd0Ho=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "testuser",
+    "first_name": "Тест",
+    "last_name": "Пользователь",
+    "email": "test@example.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-08-04T01:23:27.729Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$600000$YvwwJppRwOcUWjLwnQFxYq$n9p0Jn0SAAE/FBpa63c46/ihjgwK6kik3MOBtWrW4EY=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "test_cart_user",
+    "first_name": "Тест",
+    "last_name": "",
+    "email": "test@example.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-08-07T00:34:13.991Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "!PgjKNhAoR59M8ytugVcKWThVumbcWi3oZgdMZAg0",
+    "last_login": "2025-08-19T23:59:54.910Z",
+    "is_superuser": false,
+    "username": "stassilin1984",
+    "first_name": "Станислав",
+    "last_name": "Силин",
+    "email": "stassilin1984@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-08-09T01:35:52.910Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$600000$9fD9JBRT37tMRXUm2JjXsQ$CtSSITrZNTGlbPqSmOKFVYbkaZi8iG9oV2UpVe0BsQY=",
+    "last_login": "2025-08-11T15:43:57.695Z",
+    "is_superuser": false,
+    "username": "stassilin0",
+    "first_name": "",
+    "last_name": "",
+    "email": "stassilin@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-08-11T15:43:56.073Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$600000$IuMhy2l2rMMSfbFCtfxSPn$f4Iu8Vwn70hqQMJtaVJZq0BwQQbmBeGyBZcliVtOc7s=",
+    "last_login": "2025-09-01T16:31:37.143Z",
+    "is_superuser": true,
+    "username": "leagro",
+    "first_name": "",
+    "last_name": "",
+    "email": "stassilin1984@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-09-01T16:24:27.013Z",
+    "groups": [],
+    "user_permissions": []
+  }
+}
+]

@@ -7,7 +7,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('shop', '0004_add_discount_fields_to_order'),
-        ('shop', '0005_add_discount_fields_manual'),
     ]
 
     operations = [

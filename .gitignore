@@ -40,3 +40,13 @@ Thumbs.db
 # === BACKUP ===
 # Разрешаем коммитить backup'ы (они не содержат секретов)
 !backups/
+
+# === АРХИВНЫЕ ФАЙЛЫ ===
+_archived_scripts/
+*.deleted
+
+# === DOCKER (удален из проекта) ===
+Dockerfile*
+docker-compose*
+.dockerignore
+.devcontainer/

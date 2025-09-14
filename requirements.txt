@@ -83,3 +83,4 @@ django-manifest-loader==1.2.0
 python-slugify==8.0.4
 python-dateutil==2.9.0.post0
 pytz==2024.2
+gunicorn

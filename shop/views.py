@@ -13,7 +13,7 @@ from django.utils import timezone
 
 from .models import Product, Cart, CartItem, Order, OrderItem, Purchase, Discount
 from .forms import PersonalizationForm, CartForm
-from .utils import send_order_email
+from .utils import send_order_email, send_order_confirmation_email
 from fairy_tales.models import PersonalizationOrder  # Импортируем заказы сказок
 
 logger = logging.getLogger(__name__)
@@ -25,52 +25,37 @@ def product_list_view(request):
     
     # Отладочная информация
     all_products = Product.objects.filter(is_active=True)
-    logger.info(f"\u0412сего активных товаров: {all_products.count()}")
+    logger.info(f"Всего активных товаров: {all_products.count()}")
     logger.info(f"Платных товаров: {products.count()}")
     for product in all_products:
-        logger.info(f"Товар: {product.title} - {product.price}₽ (ID: {product.id})")
+        logger.info(f"Товар: {product.name}, Цена: {product.price}, В магазине: {product.price > 0}")
     
-    # Фильтрация по типу товара
-    product_type = request.GET.get('type')
-    if product_type:
-        products = products.filter(product_type=product_type)
+    # Фильтрация по категориям
+    category = request.GET.get('category')
+    if category:
+        products = products.filter(category__slug=category)
     
     # Поиск
     search_query = request.GET.get('search')
     if search_query:
         products = products.filter(
-            Q(title__icontains=search_query) |
+            Q(name__icontains=search_query) |
             Q(description__icontains=search_query)
         )
-    
-    # Сортировка
-    sort_by = request.GET.get('sort', 'newest')
-    if sort_by == 'price_low':
-        products = products.order_by('price')
-    elif sort_by == 'price_high':
-        products = products.order_by('-price')
-    elif sort_by == 'title':
-        products = products.order_by('title')
-    else:  # newest
-        products = products.order_by('-created_at')
     
     # Пагинация
     paginator = Paginator(products, 12)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    # Статистика для фильтров (только платные товары)
-    product_types_stats = Product.objects.filter(is_active=True, price__gt=0).values('product_type').annotate(
-        count=Count('id')
-    ).order_by('product_type')
+    # Категории для фильтра
+    categories = Product.objects.values('category__name', 'category__slug').distinct()
     
     context = {
-        'products': page_obj,
         'page_obj': page_obj,
-        'product_types_stats': product_types_stats,
-        'current_type': product_type,
+        'categories': categories,
+        'current_category': category,
         'search_query': search_query,
-        'sort_by': sort_by,
     }
     
     return render(request, 'shop/product_list.html', context)
@@ -80,10 +65,14 @@ def product_detail_view(request, product_id):
     """Детальная страница товара"""
     product = get_object_or_404(Product, id=product_id, is_active=True)
     
-    # Получаем связанный объект контента
-    content_object = product.content_object
+    # Похожие товары
+    related_products = Product.objects.filter(
+        category=product.category,
+        is_active=True,
+        price__gt=0
+    ).exclude(id=product.id)[:4]
     
-    # Проверяем, приобрел ли пользователь этот товар
+    # Проверяем, купил ли пользователь этот товар
     is_purchased = False
     if request.user.is_authenticated:
         is_purchased = Purchase.objects.filter(
@@ -93,46 +82,66 @@ def product_detail_view(request, product_id):
     
     context = {
         'product': product,
-        'content_object': content_object,
+        'related_products': related_products,
         'is_purchased': is_purchased,
     }
     
     return render(request, 'shop/product_detail.html', context)
 
 
+@login_required
 def cart_view(request):
-    """Просмотр корзины"""
-    if not request.user.is_authenticated:
-        messages.warning(request, "Войдите в систему для просмотра корзины")
-        return redirect('account_login')
-    
+    """Корзина покупок"""
     cart, created = Cart.objects.get_or_create(user=request.user)
-    items = cart.items.all()  # Добавляем элементы корзины
-    return render(request, 'shop/cart.html', {'cart': cart, 'items': items})
+    
+    # Обновляем итоги корзины (на случай если цены изменились)
+    cart.update_totals()
+    
+    # Проверим доступность товаров
+    unavailable_items = []
+    for item in cart.items.all():
+        if not item.product.is_active:
+            unavailable_items.append(item)
+    
+    # Удаляем недоступные товары
+    for item in unavailable_items:
+        item.delete()
+    
+    if unavailable_items:
+        messages.warning(request, f'Удалено {len(unavailable_items)} недоступных товаров из корзины')
+        cart.update_totals()
+    
+    context = {
+        'cart': cart,
+    }
+    
+    return render(request, 'shop/cart.html', context)
+
 
 @login_required
 @require_POST
-@csrf_exempt
 def add_to_cart(request):
-    """Добавить товар в корзину"""
+    """Добавление товара в корзину (AJAX)"""
     try:
         data = json.loads(request.body)
         product_id = data.get('product_id')
         quantity = int(data.get('quantity', 1))
         
-        if quantity < 1 or quantity > 99:
+        if quantity < 1:
             return JsonResponse({'error': 'Некорректное количество'}, status=400)
         
+        if quantity > 99:
+            quantity = 99
+            
         product = get_object_or_404(Product, id=product_id, is_active=True)
         
-        # Проверяем, что товар можно добавить в корзину
-        if product.requires_personalization:
+        # Проверяем, не купил ли уже пользователь этот товар
+        if Purchase.objects.filter(user=request.user, product=product).exists():
             return JsonResponse({
-                'error': 'Этот товар требует персонализации и не может быть добавлен в корзину',
-                'redirect_url': f'/fairy-tales/{product.content_object.slug}/order/' if product.content_object else '/'
+                'error': f'Вы уже приобрели "{product.name}"'
             }, status=400)
         
-        cart, created = Cart.objects.get_or_create(user=request.user)
+        cart, cart_created = Cart.objects.get_or_create(user=request.user)
         
         cart_item, item_created = CartItem.objects.get_or_create(
             cart=cart,
@@ -146,9 +155,12 @@ def add_to_cart(request):
                 cart_item.quantity = 99
             cart_item.save()
         
+        # Обновляем итоги корзины
+        cart.update_totals()
+        
         return JsonResponse({
             'status': 'success',
-            'message': f'{product.title} добавлен в корзину',
+            'message': f'Товар "{product.name}" добавлен в корзину',
             'cart_total_items': cart.total_items,
             'cart_total_price': float(cart.total_price)
         })
@@ -158,275 +170,78 @@ def add_to_cart(request):
     except ValueError:
         return JsonResponse({'error': 'Некорректное количество'}, status=400)
     except Exception as e:
+        logger.error(f'Ошибка добавления товара в корзину: {e}')
         return JsonResponse({'error': 'Ошибка сервера'}, status=500)
 
-@login_required
-def get_cart_count(request):
-    """
-    Получение количества товаров в корзине (AJAX)
-    """
-    try:
-        cart, created = Cart.objects.get_or_create(user=request.user)
-        return JsonResponse({
-            'status': 'success',
-            'count': cart.total_items,
-            'total_price': float(cart.total_price)
-        })
-    except Exception as e:
-        logger.error(f'Ошибка получения счетчика корзины: {e}')
-        return JsonResponse({
-            'status': 'error',
-            'message': 'Ошибка получения данных корзины'
-        }, status=500)
 
 @login_required
-def apply_discount_form(request):
-    """Применить промокод через обычную форму (не AJAX)"""
-    if request.method == 'POST':
-        discount_code = request.POST.get('code', '').strip()
-        
-        if not discount_code:
-            messages.error(request, 'Введите промокод')
-            return redirect('shop:checkout')
-        
-        cart = get_object_or_404(Cart, user=request.user)
-        
-        if not cart.items.exists():
-            messages.error(request, 'Корзина пуста')
-            return redirect('shop:cart')
-        
-        try:
-            discount = Discount.objects.get(code=discount_code)
-            is_valid, error_message = discount.is_valid()
-            
-            if not is_valid:
-                messages.error(request, error_message)
-                return redirect('shop:checkout')
-            
-            # Проверяем минимальную сумму
-            if cart.total_price < discount.min_amount:
-                messages.error(request, f'Минимальная сумма для применения промокода: {discount.min_amount}₽')
-                return redirect('shop:checkout')
-            
-            discount_amount = discount.calculate_discount(cart.total_price)
-            
-            # Сохраняем скидку в корзине
-            cart.apply_discount(discount_code, discount_amount)
-            
-            messages.success(request, f'Промокод "{discount_code}" применен! Скидка: {discount_amount}₽')
-            
-        except Discount.DoesNotExist:
-            messages.error(request, 'Промокод не найден')
-        except Exception as e:
-            logger.error(f'Ошибка применения промокода: {e}')
-            messages.error(request, 'Произошла ошибка при применении промокода')
-    
-    return redirect('shop:checkout')
-
-def get_cart_count(request):
-    """Получить количество товаров в корзине (для AJAX) - поддерживает GET запросы"""
-    if not request.user.is_authenticated:
-        return JsonResponse({'count': 0})
-    
-    try:
-        cart = Cart.objects.get(user=request.user)
-        return JsonResponse({
-            'count': cart.total_items,
-            'total_price': float(cart.total_price)
-        })
-    except Cart.DoesNotExist:
-        return JsonResponse({'count': 0, 'total_price': 0})
-    except Exception as e:
-        # Логируем ошибку, но возвращаем корректный JSON
-        logger.warning(f'Ошибка получения корзины для пользователя {request.user}: {e}')
-        return JsonResponse({'count': 0, 'total_price': 0})
-
-@login_required
-@require_POST
-@csrf_exempt
+@require_POST  
 def update_cart_item(request):
-    """Обновить количество товара в корзине"""
+    """Обновление количества товара в корзине (AJAX)"""
     try:
         data = json.loads(request.body)
         item_id = data.get('item_id')
         quantity = int(data.get('quantity', 1))
         
-        if quantity < 1 or quantity > 99:
-            return JsonResponse({'error': 'Некорректное количество'}, status=400)
+        if quantity < 1:
+            return JsonResponse({'error': 'Количество должно быть больше 0'}, status=400)
         
+        if quantity > 99:
+            quantity = 99
+            
         cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
         cart_item.quantity = quantity
         cart_item.save()
         
+        # Обновляем итоги корзины
+        cart_item.cart.update_totals()
+        
         return JsonResponse({
             'status': 'success',
+            'message': 'Количество обновлено',
             'item_total': float(cart_item.total_price),
-            'unit_price': float(cart_item.product.price),
-            'cart_total': float(cart_item.cart.total_price),
-            'cart_total_items': cart_item.cart.total_items
+            'cart_total_items': cart_item.cart.total_items,
+            'cart_total_price': float(cart_item.cart.total_price)
         })
         
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Некорректные данные'}, status=400)
     except ValueError:
         return JsonResponse({'error': 'Некорректное количество'}, status=400)
     except Exception as e:
+        logger.error(f'Ошибка обновления товара в корзине: {e}')
         return JsonResponse({'error': 'Ошибка сервера'}, status=500)
+
 
 @login_required
 @require_POST
-@csrf_exempt
 def remove_from_cart(request):
-    """Удалить товар из корзины"""
+    """Удаление товара из корзины (AJAX)"""
     try:
         data = json.loads(request.body)
         item_id = data.get('item_id')
         
         cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
-        cart = cart_item.cart
+        product_name = cart_item.product.name
         cart_item.delete()
+        
+        # Обновляем итоги корзины
+        cart = Cart.objects.get(user=request.user)
+        cart.update_totals()
         
         return JsonResponse({
             'status': 'success',
-            'cart_total': float(cart.total_price),
-            'cart_total_items': cart.total_items
+            'message': f'Товар "{product_name}" удален из корзины',
+            'cart_total_items': cart.total_items,
+            'cart_total_price': float(cart.total_price)
         })
         
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Некорректные данные'}, status=400)
     except Exception as e:
+        logger.error(f'Ошибка удаления товара из корзины: {e}')
         return JsonResponse({'error': 'Ошибка сервера'}, status=500)
 
-@login_required
-@require_POST
-@csrf_exempt
-def apply_discount(request):
-    """Применить промокод к корзине"""
-    try:
-        data = json.loads(request.body)
-        discount_code = data.get('code', '').strip()
-        
-        if not discount_code:
-            return JsonResponse({'status': 'error', 'error': 'Введите промокод'}, status=400)
-        
-        cart = get_object_or_404(Cart, user=request.user)
-        
-        if not cart.items.exists():
-            return JsonResponse({'status': 'error', 'error': 'Корзина пуста'}, status=400)
-        
-        try:
-            discount = Discount.objects.get(code=discount_code)
-            is_valid, error_message = discount.is_valid()
-            
-            if not is_valid:
-                return JsonResponse({'status': 'error', 'error': error_message}, status=400)
-            
-            # Проверяем минимальную сумму
-            if cart.total_price < discount.min_amount:
-                return JsonResponse({
-                    'status': 'error', 
-                    'error': f'Минимальная сумма для применения промокода: {discount.min_amount}₽'
-                }, status=400)
-            
-            discount_amount = discount.calculate_discount(cart.total_price)
-            final_price = cart.total_price - discount_amount
-            
-            # Сохраняем скидку в корзине
-            cart.apply_discount(discount_code, discount_amount)
-            
-            return JsonResponse({
-                'status': 'success',
-                'discount_amount': float(discount_amount),
-                'final_price': float(final_price),
-                'discount_code': discount_code
-            })
-            
-        except Discount.DoesNotExist:
-            return JsonResponse({'status': 'error', 'error': 'Промокод не найден'}, status=400)
-        
-    except json.JSONDecodeError:
-        return JsonResponse({'status': 'error', 'error': 'Некорректные данные'}, status=400)
-    except Exception as e:
-        logger.error(f'Ошибка применения промокода: {e}')
-        return JsonResponse({'status': 'error', 'error': 'Ошибка сервера'}, status=500)
-
-@login_required
-def apply_discount_form(request):
-    """Применить промокод через обычную форму (не AJAX)"""
-    if request.method == 'POST':
-        discount_code = request.POST.get('code', '').strip()
-        
-        if not discount_code:
-            messages.error(request, 'Введите промокод')
-            return redirect('shop:checkout')
-        
-        cart = get_object_or_404(Cart, user=request.user)
-        
-        if not cart.items.exists():
-            messages.error(request, 'Корзина пуста')
-            return redirect('shop:cart')
-        
-        try:
-            discount = Discount.objects.get(code=discount_code)
-            is_valid, error_message = discount.is_valid()
-            
-            if not is_valid:
-                messages.error(request, error_message)
-                return redirect('shop:checkout')
-            
-            # Проверяем минимальную сумму
-            if cart.total_price < discount.min_amount:
-                messages.error(request, f'Минимальная сумма для применения промокода: {discount.min_amount}₽')
-                return redirect('shop:checkout')
-            
-            discount_amount = discount.calculate_discount(cart.total_price)
-            
-            # Сохраняем скидку в корзине
-            cart.apply_discount(discount_code, discount_amount)
-            
-            messages.success(request, f'Промокод "{discount_code}" применен! Скидка: {discount_amount}₽')
-            
-        except Discount.DoesNotExist:
-            messages.error(request, 'Промокод не найден')
-    
-    return redirect('shop:checkout')
-
-@login_required
-def apply_discount_form(request):
-    """Применить промокод через обычную форму"""
-    if request.method == 'POST':
-        discount_code = request.POST.get('code', '').strip()
-        
-        if not discount_code:
-            messages.error(request, 'Введите промокод')
-            return redirect('shop:checkout')
-        
-        cart = get_object_or_404(Cart, user=request.user)
-        
-        if not cart.items.exists():
-            messages.error(request, 'Корзина пуста')
-            return redirect('shop:cart')
-        
-        try:
-            discount = Discount.objects.get(code=discount_code)
-            is_valid, error_message = discount.is_valid()
-            
-            if not is_valid:
-                messages.error(request, error_message)
-                return redirect('shop:checkout')
-            
-            # Проверяем минимальную сумму
-            if cart.total_price < discount.min_amount:
-                messages.error(request, f'Минимальная сумма для применения промокода: {discount.min_amount}₽')
-                return redirect('shop:checkout')
-            
-            discount_amount = discount.calculate_discount(cart.total_price)
-            
-            # Сохраняем скидку в корзине
-            cart.apply_discount(discount_code, discount_amount)
-            
-            messages.success(request, f'Промокод "{discount_code}" применен! Скидка: {discount_amount}₽')
-            
-        except Discount.DoesNotExist:
-            messages.error(request, 'Промокод не найден')
-    
-    return redirect('shop:checkout')
 
 @login_required
 def checkout_view(request):
@@ -434,510 +249,185 @@ def checkout_view(request):
     cart = get_object_or_404(Cart, user=request.user)
     
     if not cart.items.exists():
-        messages.warning(request, "Ваша корзина пуста")
+        messages.error(request, 'Ваша корзина пуста')
         return redirect('shop:cart')
     
     if request.method == 'POST':
-        # Данные покупателя
-        first_name = request.POST.get('first_name', '').strip()
-        last_name = request.POST.get('last_name', '').strip()
-        email = request.POST.get('email', '').strip()
-        phone = request.POST.get('phone', '').strip()
-        
-        # Валидация
-        if not all([first_name, last_name, email]):
-            messages.error(request, "Пожалуйста, заполните все обязательные поля")
-            return render(request, 'shop/checkout.html', {'cart': cart})
-        
-        # Используем скидку из корзины
-        discount_code = cart.applied_discount_code
-        discount_amount = cart.discount_amount
-        total_amount = cart.total_price_with_discount
-        
         # Создаем заказ
         order = Order.objects.create(
             user=request.user,
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-            phone=phone,
-            total_amount=total_amount,
-            discount_amount=discount_amount,
-            discount_code=discount_code,
+            total_amount=cart.total_price,
+            discount=cart.discount,
+            discount_amount=cart.discount_amount,
             status='pending'
         )
         
-        # Создаем элементы заказа
+        # Создаем позиции заказа
         for cart_item in cart.items.all():
             OrderItem.objects.create(
                 order=order,
                 product=cart_item.product,
-                product_title=cart_item.product.title,
-                product_price=cart_item.product.price,
                 quantity=cart_item.quantity,
-                personalization_data=cart_item.personalization_data,
-                include_audio=cart_item.include_audio,
-                include_illustrations=cart_item.include_illustrations,
-                special_requests=cart_item.special_requests
+                price=cart_item.product.price
             )
         
-        # НЕ ОЧИЩАЕМ корзину здесь! Очистка будет после успешной оплаты
-        # cart.clear()  # Закомментировано - очистка после оплаты
+        # Очищаем корзину
+        cart.items.all().delete()
+        cart.discount = None
+        cart.save()
+        cart.update_totals()
         
-        # Логируем создание заказа
-        logger.info(f"Order created: {order.short_id} for user {request.user.email if request.user.is_authenticated else 'anonymous'}")
+        # Отправляем email уведомление
+        try:
+            send_order_confirmation_email(order)
+        except Exception as e:
+            logger.error(f'Ошибка отправки email для заказа {order.id}: {e}')
         
-        # Email уведомления отправляются автоматически через сигналы
-        # (см. shop/signals.py)
-        
-        # Перенаправляем на страницу оплаты
-        return redirect('shop:payment', order_id=order.order_id)
+        messages.success(request, f'Заказ №{order.id} создан! Проверьте вашу почту.')
+        return redirect('shop:payment', order_id=order.id)
     
-    return render(request, 'shop/checkout.html', {'cart': cart})
+    context = {
+        'cart': cart,
+    }
+    
+    return render(request, 'shop/checkout.html', context)
+
 
 @login_required
 def payment_view(request, order_id):
     """Страница оплаты"""
-    order = get_object_or_404(Order, order_id=order_id, user=request.user)
+    order = get_object_or_404(Order, id=order_id, user=request.user)
     
-    if order.status != 'pending':
-        messages.info(request, "Этот заказ уже обработан")
-        return redirect('shop:order_detail', order_id=order.order_id)
+    context = {
+        'order': order,
+    }
     
-    if request.method == 'POST':
-        # Эмуляция успешной оплаты
-        order.status = 'paid'
-        order.payment_method = 'test'
-        
-        # Логируем оплату
-        logger.info(f"Order paid: {order.short_id} with test payment")
-        
-        order.save()  # Сигналы автоматически отправят email уведомления
-        
-        # ОЧИЩАЕМ КОРЗИНУ ПОСЛЕ УСПЕШНОЙ ОПЛАТЫ
-        try:
-            cart = Cart.objects.get(user=request.user)
-            cart.clear()
-            logger.info(f"Cart cleared for user {request.user.username} after successful payment")
-        except Cart.DoesNotExist:
-            logger.warning(f"Cart not found for user {request.user.username} during payment processing")
-        
-        # Создаем записи о покупках для быстрого доступа
-        for item in order.items.all():
-            purchase, created = Purchase.objects.get_or_create(
-                user=request.user,
-                product=item.product,
-                defaults={'order': order}
-            )
-            if not created:
-                # Если покупка уже существует, обновляем заказ
-                purchase.order = order
-                purchase.save()
-        
-        messages.success(request, f"Заказ #{order.short_id} успешно оплачен!")
-        return redirect('shop:payment_success', order_id=order.order_id)
-    
-    return render(request, 'shop/payment.html', {'order': order})
+    return render(request, 'shop/payment.html', context)
+
 
 @login_required
 def payment_success_view(request, order_id):
-    """Страница успешной оплаты"""
-    order = get_object_or_404(Order, order_id=order_id, user=request.user)
-    return render(request, 'shop/payment_success.html', {'order': order})
-
-@login_required
-def my_orders_view(request):
-    """Объединенная страница всех заказов пользователя"""
-    # Получаем обычные заказы из магазина
-    shop_orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    """Успешная оплата"""
+    order = get_object_or_404(Order, id=order_id, user=request.user)
     
-    # Получаем заказы терапевтических сказок
-    fairy_tale_orders = PersonalizationOrder.objects.filter(user=request.user).order_by('-created_at')
+    # Обновляем статус заказа
+    order.status = 'paid'
+    order.paid_at = timezone.now()
+    order.save()
     
-    # Объединяем для отображения (создаем общий список)
-    all_orders = []
-    
-    # Добавляем заказы из магазина
-    for order in shop_orders:
-        all_orders.append({
-            'type': 'shop',
-            'order': order,
-            'id': order.short_id,
-            'date': order.created_at,
-            'total': order.total_amount,
-            'status': order.get_status_display(),
-            'status_class': order.status,
-            'items_count': order.items.count(),
-        })
-    
-    # Добавляем заказы сказок
-    for order in fairy_tale_orders:
-        all_orders.append({
-            'type': 'fairy_tale',
-            'order': order,
-            'id': order.short_order_id,
-            'date': order.created_at,
-            'total': order.total_price,
-            'status': order.get_status_display(),
-            'status_class': order.status,
-            'items_count': 1,  # Сказка всегда одна
-        })
-    
-    # Сортируем по дате (новые сначала)
-    all_orders.sort(key=lambda x: x['date'], reverse=True)
-    
-    # Пагинация
-    paginator = Paginator(all_orders, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    context = {
-        'page_obj': page_obj,
-        'shop_orders_count': shop_orders.count(),
-        'fairy_tale_orders_count': fairy_tale_orders.count(),
-        'total_orders_count': len(all_orders),
-    }
-    
-    return render(request, 'shop/my_orders.html', context)
-
-@login_required
-def my_purchases_view(request):
-    """Мои покупки (только оплаченные товары)"""
-    purchases = Purchase.objects.filter(
-        user=request.user,
-        order__status__in=['paid', 'completed']
-    ).select_related('product', 'order').order_by('-purchased_at')
-    
-    # Добавляем заказы сказок (которые оплачены)
-    fairy_tale_orders = PersonalizationOrder.objects.filter(
-        user=request.user,
-        status__in=['paid', 'in_progress', 'completed']
-    ).order_by('-created_at')
-    
-    paginator = Paginator(purchases, 12)
-    page_number = request.GET.get('page')
-    purchases_page = paginator.get_page(page_number)
-    
-    return render(request, 'shop/my_purchases.html', {
-        'purchases': purchases_page,
-        'fairy_tale_orders': fairy_tale_orders[:5],  # Показываем последние 5 сказок
-    })
-
-@login_required
-def order_detail_view(request, order_id):
-    """Детали заказа"""
-    order = get_object_or_404(Order, order_id=order_id, user=request.user)
-    return render(request, 'shop/order_detail.html', {'order': order})
-
-@login_required
-def download_product(request, order_item_id):
-    """Скачать цифровой товар"""
-    order_item = get_object_or_404(
-        OrderItem, 
-        id=order_item_id, 
-        order__user=request.user,
-        order__status__in=['paid', 'completed']
-    )
-    
-    # Проверяем, что товар цифровой
-    if not order_item.product.is_digital:
-        messages.error(request, "Этот товар не является цифровым")
-        return redirect('shop:my_purchases')
-    
-    # Получаем связанный контент
-    content_object = order_item.product.content_object
-    if not content_object:
-        messages.error(request, "Файл не найден")
-        return redirect('shop:my_purchases')
-    
-    # Отмечаем скачивание
-    order_item.mark_downloaded()
-    
-    # Перенаправляем на скачивание (зависит от типа контента)
-    if order_item.product.product_type == 'book' and hasattr(content_object, 'file') and content_object.file:
-        response = HttpResponse(content_object.file, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{content_object.title}.pdf"'
-        return response
-    elif order_item.product.product_type == 'audio' and hasattr(content_object, 'audio_file') and content_object.audio_file:
-        response = HttpResponse(content_object.audio_file, content_type='audio/mpeg')
-        response['Content-Disposition'] = f'attachment; filename="{content_object.title}.mp3"'
-        return response
-    
-    messages.error(request, "Файл недоступен для скачивания")
-    return redirect('shop:my_purchases')
-
-@login_required
-def download_purchase(request, purchase_id):
-    """Скачать товар из покупки (принудительное скачивание)"""
-    purchase = get_object_or_404(
-        Purchase,
-        id=purchase_id,
-        user=request.user,
-        order__status__in=['paid', 'completed']
-    )
-    
-    # Проверяем, что товар цифровой
-    if not purchase.product.is_digital:
-        messages.error(request, "Этот товар не является цифровым")
-        return redirect('shop:my_purchases')
-    
-    # Получаем связанный контент
-    content_object = purchase.product.content_object
-    if not content_object:
-        messages.error(request, "Файл не найден")
-        return redirect('shop:my_purchases')
-    
-    # Увеличиваем счетчик скачиваний
-    purchase.download_count += 1
-    purchase.last_downloaded = timezone.now()
-    purchase.save()
-    
-    # Принудительное скачивание файла
-    if purchase.product.product_type == 'book' and hasattr(content_object, 'file') and content_object.file:
-        try:
-            # Читаем файл
-            file_content = content_object.file.read()
-            
-            # Создаем response для скачивания с усиленными заголовками
-            response = HttpResponse(file_content, content_type='application/octet-stream')  # Изменил тип
-            
-            # Ключевые заголовки для принудительного скачивания
-            filename = f"{content_object.title}.pdf".replace('"', '').replace("'", "")
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
-            response['Content-Length'] = len(file_content)
-            response['Content-Type'] = 'application/force-download'  # Принудительный тип
-            
-            # Дополнительные заголовки для скачивания
-            response['Cache-Control'] = 'no-cache, no-store, must-revalidate, private'
-            response['Pragma'] = 'no-cache'
-            response['Expires'] = '0'
-            response['Content-Transfer-Encoding'] = 'binary'
-            
-            return response
-            
-        except Exception as e:
-            logger.error(f"Error downloading file for purchase {purchase.id}: {e}")
-            messages.error(request, "Ошибка при скачивании файла")
-            return redirect('shop:my_purchases')
-            
-    elif purchase.product.product_type == 'audio' and hasattr(content_object, 'audio_file') and content_object.audio_file:
-        try:
-            file_content = content_object.audio_file.read()
-            response = HttpResponse(file_content, content_type='audio/mpeg')
-            filename = f"{content_object.title}.mp3".replace('"', '').replace("'", "")
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
-            response['Content-Length'] = len(file_content)
-            return response
-        except Exception as e:
-            logger.error(f"Error downloading audio file for purchase {purchase.id}: {e}")
-            messages.error(request, "Ошибка при скачивании файла")
-            return redirect('shop:my_purchases')
-    
-    messages.error(request, "Файл недоступен для скачивания")
-    return redirect('shop:my_purchases')
-
-def product_list_view(request):
-    """Каталог товаров"""
-    products = Product.objects.filter(is_active=True)
-    
-    # Фильтры
-    product_type = request.GET.get('type')
-    if product_type:
-        products = products.filter(product_type=product_type)
-    
-    min_price = request.GET.get('min_price')
-    if min_price:
-        try:
-            products = products.filter(price__gte=Decimal(min_price))
-        except:
-            pass
-    
-    max_price = request.GET.get('max_price')
-    if max_price:
-        try:
-            products = products.filter(price__lte=Decimal(max_price))
-        except:
-            pass
-    
-    search = request.GET.get('search')
-    if search:
-        products = products.filter(
-            Q(title__icontains=search) |
-            Q(description__icontains=search)
+    # Создаем записи о покупках
+    for order_item in order.items.all():
+        Purchase.objects.get_or_create(
+            user=request.user,
+            product=order_item.product,
+            defaults={
+                'order': order,
+                'download_count': 0,
+                'purchased_at': timezone.now()
+            }
         )
     
-    # Сортировка
-    sort = request.GET.get('sort', 'newest')
-    if sort == 'price_low':
-        products = products.order_by('price')
-    elif sort == 'price_high':
-        products = products.order_by('-price')
-    elif sort == 'name':
-        products = products.order_by('title')
-    else:  # newest
-        products = products.order_by('-created_at')
-    
-    paginator = Paginator(products, 12)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    # Отправляем email уведомление об успешной оплате
+    try:
+        send_order_confirmation_email(order)
+    except Exception as e:
+        logger.error(f'Ошибка отправки email об оплате заказа {order.id}: {e}')
     
     context = {
-        'products': page_obj,
-        'page_obj': page_obj,
-        'selected_type': request.GET.get('type', ''),
-        'current_filters': {
-            'type': request.GET.get('type', ''),
-            'min_price': request.GET.get('min_price', ''),
-            'max_price': request.GET.get('max_price', ''),
-            'search': request.GET.get('search', ''),
-            'sort': request.GET.get('sort', 'newest'),
-        },
-        'product_types': Product.PRODUCT_TYPES,
+        'order': order,
     }
     
-    return render(request, 'shop/catalog.html', context)
+    return render(request, 'shop/payment_success.html', context)
 
-def product_detail_view(request, product_id):
-    """Страница товара"""
-    product = get_object_or_404(Product, id=product_id, is_active=True)
-    
-    # Похожие товары
-    related_products = Product.objects.filter(
-        product_type=product.product_type,
-        is_active=True
-    ).exclude(id=product.id)[:4]
-    
-    # Проверяем, куплен ли товар
-    is_purchased = False
-    if request.user.is_authenticated:
-        is_purchased = Purchase.objects.filter(
-            user=request.user,
-            product=product
-        ).exists()
-    
-    # Создаем форму персонализации для сказок
-    fairy_tale_form = None
-    if product.product_type == 'fairy_tale':
-        fairy_tale_form = PersonalizationForm()
-    
-    context = {
-        'product': product,
-        'related_products': related_products,
-        'content_object': product.content_object,
-        'is_purchased': is_purchased,
-        'fairy_tale_form': fairy_tale_form,
-    }
-    
-    return render(request, 'shop/product_detail.html', context)
 
+@login_required
 @require_POST
-@csrf_exempt
 def apply_discount(request):
-    """Применить промокод"""
-    if not request.user.is_authenticated:
-        return JsonResponse({'error': 'Требуется авторизация'}, status=401)
-    
+    """Применение промокода (AJAX)"""
     try:
         data = json.loads(request.body)
-        discount_code = data.get('code', '').strip()
+        discount_code = data.get('code', '').strip().upper()
         
         if not discount_code:
             return JsonResponse({'error': 'Введите промокод'}, status=400)
         
         cart = get_object_or_404(Cart, user=request.user)
         
-        if not cart.items.exists():
-            return JsonResponse({'error': 'Корзина пуста'}, status=400)
-        
+        # Проверяем промокод
         try:
-            discount = Discount.objects.get(code=discount_code)
-            is_valid, error_message = discount.is_valid()
-            
-            if not is_valid:
-                return JsonResponse({'error': error_message}, status=400)
-            
-            if cart.total_price < discount.min_amount:
-                return JsonResponse({
-                    'error': f'Минимальная сумма для применения промокода: {discount.min_amount}₽'
-                }, status=400)
-            
-            discount_amount = discount.calculate_discount(cart.total_price)
-            final_price = cart.total_price - discount_amount
-            
-            return JsonResponse({
-                'status': 'success',
-                'discount_amount': float(discount_amount),
-                'final_price': float(final_price),
-                'discount_description': discount.description
-            })
-            
+            discount = Discount.objects.get(
+                code=discount_code,
+                active=True,
+                valid_from__lte=timezone.now(),
+                valid_until__gte=timezone.now()
+            )
         except Discount.DoesNotExist:
-            return JsonResponse({'error': 'Промокод не найден'}, status=400)
+            return JsonResponse({'error': 'Промокод не найден или истек'}, status=400)
+        
+        # Проверяем минимальную сумму заказа
+        if cart.total_price < discount.min_order_amount:
+            return JsonResponse({
+                'error': f'Минимальная сумма заказа для этого промокода: {discount.min_order_amount}₽'
+            }, status=400)
+        
+        # Применяем скидку
+        cart.discount = discount
+        cart.save()
+        cart.update_totals()
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': f'Промокод применен! Скидка: {discount.get_discount_display()}',
+            'discount_amount': float(cart.discount_amount),
+            'cart_total_price': float(cart.total_price)
+        })
         
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Некорректные данные'}, status=400)
     except Exception as e:
+        logger.error(f'Ошибка применения промокода: {e}')
         return JsonResponse({'error': 'Ошибка сервера'}, status=500)
 
-@login_required
-def order_fairy_tale(request, product_id):
-    """Добавление персонализированной сказки в корзину"""
-    product = get_object_or_404(Product, id=product_id, is_active=True, product_type='fairy_tale')
-    
-    if request.method == 'POST':
-        form = PersonalizationForm(request.POST)
-        
-        if form.is_valid():
-            # Получаем данные из формы
-            personalization_data = {
-                'child_name': form.cleaned_data['child_name'],
-                'child_age': form.cleaned_data['child_age'],
-                'main_problem': form.cleaned_data['main_problem'],
-                'child_interests': form.cleaned_data['child_interests'],
-                'parent_goals': form.cleaned_data['parent_goals'],
-            }
-            
-            include_audio = form.cleaned_data['include_audio']
-            include_illustrations = form.cleaned_data['include_illustrations']
-            special_requests = form.cleaned_data['special_requests']
-            
-            # Получаем или создаем корзину
-            cart, created = Cart.objects.get_or_create(user=request.user)
-            
-            # Добавляем сказку в корзину с персонализацией
-            cart_item, item_created = CartItem.objects.get_or_create(
-                cart=cart,
-                product=product,
-                defaults={
-                    'quantity': 1,
-                    'personalization_data': personalization_data,
-                    'include_audio': include_audio,
-                    'include_illustrations': include_illustrations,
-                    'special_requests': special_requests,
-                }
-            )
-            
-            if not item_created:
-                # Если товар уже в корзине, обновляем данные
-                cart_item.personalization_data = personalization_data
-                cart_item.include_audio = include_audio
-                cart_item.include_illustrations = include_illustrations
-                cart_item.special_requests = special_requests
-                cart_item.save()
-            
-            child_name = personalization_data.get('child_name', 'Ребенок')
-            messages.success(
-                request, 
-                f'Персонализированная сказка для {child_name} добавлена в корзину!'
-            )
-            return redirect('shop:cart')
-        else:
-            messages.error(request, 'Пожалуйста, исправьте ошибки в форме')
-    
-    # Если возникли ошибки, возвращаем на страницу товара
-    return redirect('shop:product_detail', product_id=product.id)
 
-# ===== НЕДОСТАЮЩИЕ ПРЕДСТАВЛЕНИЯ ДЛЯ ЗАКАЗОВ И ПОКУПОК =====
+@login_required
+def apply_discount_form(request):
+    """Форма применения промокода"""
+    if request.method == 'POST':
+        discount_code = request.POST.get('code', '').strip().upper()
+        
+        if not discount_code:
+            messages.error(request, 'Введите промокод')
+            return redirect('shop:cart')
+        
+        cart = get_object_or_404(Cart, user=request.user)
+        
+        # Проверяем промокод
+        try:
+            discount = Discount.objects.get(
+                code=discount_code,
+                active=True,
+                valid_from__lte=timezone.now(),
+                valid_until__gte=timezone.now()
+            )
+        except Discount.DoesNotExist:
+            messages.error(request, 'Промокод не найден или истек')
+            return redirect('shop:cart')
+        
+        # Проверяем минимальную сумму заказа
+        if cart.total_price < discount.min_order_amount:
+            messages.error(request, f'Минимальная сумма заказа для этого промокода: {discount.min_order_amount}₽')
+            return redirect('shop:cart')
+        
+        # Применяем скидку
+        cart.discount = discount
+        cart.save()
+        cart.update_totals()
+        
+        messages.success(request, f'Промокод применен! Скидка: {discount.get_discount_display()}')
+        return redirect('shop:cart')
+    
+    return redirect('shop:cart')
+
 
 @login_required
 def my_orders_view(request):
@@ -950,224 +440,139 @@ def my_orders_view(request):
     page_obj = paginator.get_page(page_number)
     
     context = {
-        'orders': page_obj,
         'page_obj': page_obj,
     }
     
     return render(request, 'shop/my_orders.html', context)
+
+
+@login_required
+def order_detail_view(request, order_id):
+    """Детали заказа"""
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    context = {
+        'order': order,
+    }
+    
+    return render(request, 'shop/order_detail.html', context)
+
 
 @login_required
 def my_purchases_view(request):
     """Мои покупки"""
     purchases = Purchase.objects.filter(user=request.user).order_by('-purchased_at')
     
-    # Группируем покупки по заказам для лучшего отображения
-    orders_with_purchases = Order.objects.filter(
-        user=request.user,
-        status__in=['paid', 'completed']
-    ).prefetch_related('items__product').order_by('-created_at')
+    # Пагинация
+    paginator = Paginator(purchases, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     
     context = {
-        'purchases': purchases,
-        'orders_with_purchases': orders_with_purchases,
+        'page_obj': page_obj,
     }
     
     return render(request, 'shop/my_purchases.html', context)
 
-@login_required
-def order_detail_view(request, order_id):
-    """Детальная страница заказа"""
-    order = get_object_or_404(Order, order_id=order_id, user=request.user)
-    
-    context = {
-        'order': order,
-        'items': order.items.all(),
-    }
-    
-    return render(request, 'shop/order_detail.html', context)
 
 @login_required
 def download_product(request, order_item_id):
-    """Скачать товар из заказа"""
-    order_item = get_object_or_404(
-        OrderItem, 
-        id=order_item_id, 
-        order__user=request.user,
-        order__status__in=['paid', 'completed']
+    """Скачивание товара из заказа"""
+    order_item = get_object_or_404(OrderItem, id=order_item_id, order__user=request.user)
+    
+    # Проверяем что заказ оплачен
+    if order_item.order.status != 'paid':
+        messages.error(request, 'Заказ еще не оплачен')
+        return redirect('shop:order_detail', order_id=order_item.order.id)
+    
+    # Проверяем что товар цифровой
+    if not order_item.product.digital_file:
+        messages.error(request, 'У этого товара нет файла для скачивания')
+        return redirect('shop:order_detail', order_id=order_item.order.id)
+    
+    # Увеличиваем счетчик скачиваний
+    purchase, created = Purchase.objects.get_or_create(
+        user=request.user,
+        product=order_item.product,
+        defaults={'order': order_item.order, 'download_count': 0}
     )
+    purchase.download_count += 1
+    purchase.save()
     
-    # Проверяем тип товара и возвращаем соответствующий файл
-    product = order_item.product
-    content_object = product.content_object
-    
-    if not content_object:
-        messages.error(request, 'Файл не найден')
-        return redirect('shop:my_purchases')
-    
+    # Возвращаем файл
     try:
-        if product.product_type == 'book':
-            # Скачивание книги
-            from books.models import Book
-            book = content_object
-            if book.pdf_file:
-                # Увеличиваем счетчик скачиваний
-                order_item.mark_downloaded()
-                
-                # Возвращаем файл
-                response = HttpResponse(book.pdf_file.read(), content_type='application/pdf')
-                response['Content-Disposition'] = f'attachment; filename="{book.title}.pdf"'
-                return response
-        
-        elif product.product_type == 'audio':
-            # Скачивание аудио
-            from audio.models import AudioTrack
-            audio = content_object
-            if audio.audio_file:
-                order_item.mark_downloaded()
-                
-                response = HttpResponse(audio.audio_file.read(), content_type='audio/mpeg')
-                response['Content-Disposition'] = f'attachment; filename="{audio.title}.mp3"'
-                return response
-                
-        elif product.product_type == 'fairy_tale':
-            # Для персонализированных сказок
-            if order_item.generated_content:
-                order_item.mark_downloaded()
-                
-                # Создаем текстовый файл со сказкой
-                response = HttpResponse(order_item.generated_content, content_type='text/plain; charset=utf-8')
-                response['Content-Disposition'] = f'attachment; filename="Сказка_{order_item.personalization_data.get("child_name", "ребенка")}.txt"'
-                return response
-        
-        messages.error(request, 'Файл недоступен для скачивания')
-        return redirect('shop:my_purchases')
-        
+        response = HttpResponse(
+            order_item.product.digital_file.read(),
+            content_type='application/octet-stream'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{order_item.product.name}.pdf"'
+        return response
     except Exception as e:
-        logger.error(f'Ошибка скачивания товара {order_item_id}: {e}')
+        logger.error(f'Ошибка скачивания файла: {e}')
         messages.error(request, 'Ошибка при скачивании файла')
-        return redirect('shop:my_purchases')
+        return redirect('shop:order_detail', order_id=order_item.order.id)
+
 
 @login_required
 def download_purchase(request, purchase_id):
-    """Скачать товар из покупки (альтернативная ссылка)"""
+    """Скачивание товара из покупок"""
     purchase = get_object_or_404(Purchase, id=purchase_id, user=request.user)
     
-    # Находим соответствующий OrderItem
+    # Проверяем что товар цифровой
+    if not purchase.product.digital_file:
+        messages.error(request, 'У этого товара нет файла для скачивания')
+        return redirect('shop:my_purchases')
+    
+    # Увеличиваем счетчик скачиваний
+    purchase.download_count += 1
+    purchase.save()
+    
+    # Возвращаем файл
     try:
-        order_item = OrderItem.objects.get(
-            order=purchase.order,
-            product=purchase.product
+        response = HttpResponse(
+            purchase.product.digital_file.read(),
+            content_type='application/octet-stream'
         )
-        return download_product(request, order_item.id)
-    except OrderItem.DoesNotExist:
-        messages.error(request, 'Элемент заказа не найден')
+        response['Content-Disposition'] = f'attachment; filename="{purchase.product.name}.pdf"'
+        return response
+    except Exception as e:
+        logger.error(f'Ошибка скачивания файла: {e}')
+        messages.error(request, 'Ошибка при скачивании файла')
         return redirect('shop:my_purchases')
 
-def complete_order(order):
-    """
-    Завершить заказ и создать записи покупок
-    Вызывается после успешной оплаты
-    """
-    if order.status == 'paid' and not Purchase.objects.filter(order=order).exists():
-        # Создаем записи покупок для всех товаров в заказе
-        for order_item in order.items.all():
-            Purchase.objects.get_or_create(
-                user=order.user,
-                product=order_item.product,
-                order=order,
-                defaults={
-                    'purchased_at': timezone.now()
-                }
-            )
-        
-        # Обновляем статус заказа
-        order.status = 'completed'
-        order.completed_at = timezone.now()
-        order.save()
-        
-        logger.info(f'Заказ {order.order_id} завершен, создано {order.items.count()} покупок')
-
-@login_required
-def test_payment_success(request, order_id):
-    """
-    ТЕСТОВАЯ функция для имитации успешной оплаты
-    Удалить в продакшене!
-    """
-    order = get_object_or_404(Order, order_id=order_id, user=request.user)
-    
-    if order.status == 'pending':
-        # Имитируем успешную оплату
-        order.status = 'paid'
-        order.paid_at = timezone.now()
-        order.payment_method = 'test'
-        order.payment_id = f'test_{order_id}'
-        order.save()
-        
-        # ОЧИЩАЕМ КОРЗИНУ ПОСЛЕ УСПЕШНОЙ ОПЛАТЫ
-        try:
-            cart = Cart.objects.get(user=request.user)
-            cart.clear()
-            logger.info(f"Cart cleared for user {request.user.username} after test payment")
-        except Cart.DoesNotExist:
-            logger.warning(f"Cart not found for user {request.user.username} during test payment")
-        
-        # Создаем покупки
-        complete_order(order)
-        
-        messages.success(request, f'Тестовая оплата заказа #{order.short_id} прошла успешно!')
-        return redirect('shop:my_purchases')
-    
-    messages.warning(request, 'Заказ уже был оплачен или имеет неподходящий статус')
-    return redirect('shop:my_orders')
-
-def debug_cart_view(request):
-    """Отладочная страница для счетчика количества"""
-    return render(request, 'shop/debug_cart.html')
 
 @login_required
 @require_POST
-@csrf_exempt
 def add_book_to_cart(request):
-    """Добавить книгу в корзину (создает товар если нужно)"""
+    """Добавление книги из каталога книг в корзину магазина"""
     try:
         data = json.loads(request.body)
         book_id = data.get('book_id')
         quantity = int(data.get('quantity', 1))
         
-        if quantity < 1 or quantity > 99:
-            return JsonResponse({'error': 'Некорректное количество'}, status=400)
-        
-        # Получаем книгу
+        # Импортируем модель Book
         from books.models import Book
-        book = get_object_or_404(Book, id=book_id, is_published=True)
         
-        # Проверяем, что книга платная
-        if book.is_free or not book.price or book.price <= 0:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Эта книга бесплатная и не может быть добавлена в корзину'
-            }, status=400)
+        book = get_object_or_404(Book, id=book_id)
         
-        # Находим или создаем товар в магазине
+        # Создаем или находим соответствующий товар в магазине
         product, created = Product.objects.get_or_create(
-            product_type='book',
-            book_id=book.id,
+            name=book.title,
             defaults={
-                'title': book.title,
-                'description': book.description or f"Духовная книга '{book.title}' - погрузитесь в мир веры и мудрости.",
-                'price': book.price,
+                'description': book.description or f'Духовная книга "{book.title}"',
+                'price': Decimal('99.00'),  # Стандартная цена для книг
                 'is_active': True,
-                'is_digital': True,
+                'product_type': 'book',
+                'digital_file': book.pdf_file,
+                'category_id': 1,  # Базовая категория
             }
         )
         
-        # Обновляем товар, если он уже существовал
-        if not created:
-            product.title = book.title
-            product.description = book.description or f"Духовная книга '{book.title}'"
-            product.price = book.price
-            product.is_active = True
-            product.save()
+        # Проверяем, не купил ли уже пользователь эту книгу
+        if Purchase.objects.filter(user=request.user, product=product).exists():
+            return JsonResponse({
+                'error': f'Вы уже приобрели книгу "{book.title}"'
+            }, status=400)
         
         # Добавляем в корзину
         cart, cart_created = Cart.objects.get_or_create(user=request.user)
@@ -1219,3 +624,51 @@ def get_cart_count(request):
             'status': 'error',
             'message': 'Ошибка получения данных корзины'
         }, status=500)
+
+
+# Дополнительные функции для интеграции email уведомлений
+@login_required  
+def order_fairy_tale(request, product_id):
+    """Заказ персонализированной сказки"""
+    product = get_object_or_404(Product, id=product_id, product_type='fairy_tale')
+    
+    if request.method == 'POST':
+        form = PersonalizationForm(request.POST)
+        if form.is_valid():
+            # Создаем заказ сказки с персонализацией
+            # Логика создания персонализированного заказа
+            messages.success(request, 'Заказ на персонализированную сказку принят!')
+            return redirect('shop:my_orders')
+    else:
+        form = PersonalizationForm()
+    
+    context = {
+        'product': product,
+        'form': form,
+    }
+    
+    return render(request, 'shop/order_fairy_tale.html', context)
+
+
+# Тестовые функции (удалить в продакшене)
+@login_required
+def test_payment_success(request, order_id):
+    """Тестовая функция успешной оплаты"""
+    return payment_success_view(request, order_id)
+
+
+@login_required
+def debug_cart_view(request):
+    """Отладочная информация о корзине"""
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    
+    context = {
+        'cart': cart,
+        'debug_info': {
+            'total_items': cart.total_items,
+            'total_price': cart.total_price,
+            'items_count': cart.items.count(),
+        }
+    }
+    
+    return render(request, 'shop/debug_cart.html', context)

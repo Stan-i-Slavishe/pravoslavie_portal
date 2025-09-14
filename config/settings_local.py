@@ -117,3 +117,19 @@ TEMPLATES = [
 ]
 
 print("🔧 ЛОКАЛЬНАЯ РАЗРАБОТКА (settings_local.py) - улучшенная версия")
+
+
+# Настройки для локальной разработки
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
+
+# Локальные домены для CSRF
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+
+# Для локальной разработки можно отключить строгие настройки безопасности
+SECURE_BROWSER_XSS_FILTER = False
+SECURE_CONTENT_TYPE_NOSNIFF = False

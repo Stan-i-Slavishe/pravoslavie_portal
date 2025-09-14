@@ -15,10 +15,9 @@ urlpatterns = [
     # Основные страницы
     path('', include('core.urls')),
     
-    # Аутентификация
+    # Аутентификация (оставляем стандартный путь)
     path('accounts/', include('allauth.urls')),
-    
-    # Профиль пользователя
+    # Профиль пользователя (новый путь)
     path('profile/', include('accounts.urls')),
     
     # Контент

@@ -100,3 +100,8 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
+
+
+# Кастомные адаптеры для русификации email
+ACCOUNT_ADAPTER = 'accounts.adapters.AccountAdapter'
+SOCIALACCOUNT_ADAPTER = 'accounts.adapters.SocialAccountAdapter'

@@ -58,6 +58,7 @@ django-import-export==4.1.1
 # Monitoring & Logging
 sentry-sdk==2.19.2
 django-log-viewer==1.1.7
+psutil==6.1.0
 
 # Performance & Optimization
 django-cachalot==2.7.0
@@ -83,4 +84,3 @@ django-manifest-loader==1.2.0
 python-slugify==8.0.4
 python-dateutil==2.9.0.post0
 pytz==2024.2
-gunicorn

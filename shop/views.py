@@ -33,7 +33,7 @@ def product_list_view(request):
     # Фильтрация по категориям
     category = request.GET.get('category')
     if category:
-        products = products.filter(category__slug=category)
+        products = products.filter(product_type=category)
     
     # Поиск
     search_query = request.GET.get('search')
@@ -49,7 +49,7 @@ def product_list_view(request):
     page_obj = paginator.get_page(page_number)
     
     # Категории для фильтра
-    categories = Product.objects.values('category__name', 'category__slug').distinct()
+    categories = Product.objects.values('product_type', 'product_type').distinct()
     
     context = {
         'page_obj': page_obj,
@@ -67,7 +67,7 @@ def product_detail_view(request, product_id):
     
     # Похожие товары
     related_products = Product.objects.filter(
-        category=product.category,
+        product_type=product.product_type,
         is_active=True,
         price__gt=0
     ).exclude(id=product.id)[:4]

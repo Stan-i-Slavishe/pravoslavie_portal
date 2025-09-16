@@ -16,7 +16,7 @@ ALLOWED_HOSTS = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME', default='pravoslavie_local_db'),
+        'NAME': config('DB_NAME', default='pravoslavie_portal_db'),
         'USER': config('DB_USER', default='pravoslavie_user'),
         'PASSWORD': config('DB_PASSWORD', default='local_strong_password_2024'),
         'HOST': config('DB_HOST', default='localhost'),
@@ -105,3 +105,22 @@ TEMPLATES = [
 ]
 
 print("ЛОКАЛЬНАЯ РАЗРАБОТКА (settings_local.py) - PostgreSQL принудительно")
+# CSRF Settings for HTTPS
+CSRF_TRUSTED_ORIGINS = ['https://dobrist.com', 'https://www.dobrist.com']
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# Настройки для прямого перехода к Google OAuth
+SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}

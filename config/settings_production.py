@@ -228,3 +228,18 @@ if EMAIL_HOST_USER:
     EMAIL_TIMEOUT = 10
     EMAIL_SSL_KEYFILE = None
     EMAIL_SSL_CERTFILE = None
+
+# 📊 Импорт настроек мониторинга
+try:
+    from .monitoring_settings import *
+except ImportError:
+    print("⚠️ Настройки мониторинга не загружены")
+
+# 🔧 Добавление middleware мониторинга
+MIDDLEWARE += [
+    'core.middleware.monitoring.PerformanceMonitoringMiddleware',
+    'core.middleware.monitoring.SecurityMonitoringMiddleware', 
+    'core.middleware.monitoring.HealthCheckMiddleware',
+]
+
+print("📊 Production настройки с мониторингом загружены")

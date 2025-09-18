@@ -49,4 +49,5 @@ _archived_scripts/
 Dockerfile*
 docker-compose*
 .dockerignore
-.devcontainer/
+.devcontainer/# Production settings - local only
+config/settings_production.py

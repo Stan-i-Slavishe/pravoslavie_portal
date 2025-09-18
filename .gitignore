@@ -55,3 +55,7 @@ config/settings_production.py
 *_data*.py   
 restore*.py 
 diagnose*.py 
+load_all_stories.py 
+nuclear_restore.py 
+postgresql_restore.py 
+safe_restore.py 

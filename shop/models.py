@@ -53,6 +53,11 @@ class Product(models.Model):
         return f"{self.title} ({self.get_product_type_display()}) - {self.price}₽"
     
     @property
+    def name(self):
+        """Алиас для title для совместимости с сервером"""
+        return self.title
+    
+    @property
     def content_object(self):
         """Получить связанный объект контента"""
         if self.product_type == 'book' and self.book_id:

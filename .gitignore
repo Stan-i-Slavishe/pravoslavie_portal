@@ -50,3 +50,9 @@ Dockerfile*
 docker-compose*
 .dockerignore
 .devcontainer/
+
+# === PRODUCTION SETTINGS - НE СИНХРОНИЗИРОВАТЬ ===
+# Защита production настроек от случайной перезаписи
+config/settings_production.py
+.env_working
+config/settings_production_working.py

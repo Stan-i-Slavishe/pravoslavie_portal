@@ -28,7 +28,7 @@ def product_list_view(request):
     logger.info(f"Всего активных товаров: {all_products.count()}")
     logger.info(f"Платных товаров: {products.count()}")
     for product in all_products:
-        logger.info(f"Товар: {product.name}, Цена: {product.price}, В магазине: {product.price > 0}")
+        logger.info(f"Товар: {product.title}, Цена: {product.price}, В магазине: {product.price > 0}")
     
     # Фильтрация по категориям
     category = request.GET.get('category')
@@ -39,7 +39,7 @@ def product_list_view(request):
     search_query = request.GET.get('search')
     if search_query:
         products = products.filter(
-            Q(name__icontains=search_query) |
+            Q(title__icontains=search_query) |
             Q(description__icontains=search_query)
         )
     

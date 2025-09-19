@@ -23,7 +23,7 @@
                             <i class="bi bi-envelope-fill text-primary me-3" style="font-size: 1.5rem;"></i>
                             <div>
                                 <strong>Email</strong><br>
-                                <a href="mailto:info@pravoslavie-portal.ru">info@pravoslavie-portal.ru</a>
+                                <a href="mailto:{{ site_settings.contact_email }}">{{ site_settings.contact_email }}</a>
                             </div>
                         </div>
                         
@@ -31,7 +31,7 @@
                             <i class="bi bi-telephone-fill text-success me-3" style="font-size: 1.5rem;"></i>
                             <div>
                                 <strong>Телефон</strong><br>
-                                <a href="tel:+78001234567">+7 (800) 123-45-67</a><br>
+                                <a href="tel:{{ site_settings.contact_phone }}">{{ site_settings.contact_phone }}</a><br>
                                 <small class="text-muted">Звонок бесплатный</small>
                             </div>
                         </div>
@@ -174,12 +174,16 @@
             <div class="card-body text-center">
                 <p class="card-text small mb-3">Следите за нашими новостями и обновлениями</p>
                 <div class="d-flex justify-content-center gap-3">
-                    <a href="#" class="btn btn-outline-primary btn-sm social-btn-telegram">
+                    {% if site_settings.social_telegram %}
+                    <a href="{{ site_settings.social_telegram }}" class="btn btn-outline-primary btn-sm social-btn-telegram" target="_blank">
                         <i class="bi bi-telegram me-2"></i> Telegram
                     </a>
-                    <a href="#" class="btn btn-danger btn-sm social-btn-youtube">
+                    {% endif %}
+                    {% if site_settings.social_youtube %}
+                    <a href="{{ site_settings.social_youtube }}" class="btn btn-danger btn-sm social-btn-youtube" target="_blank">
                         <i class="bi bi-youtube me-2"></i> YouTube
                     </a>
+                    {% endif %}
                 </div>
             </div>
         </div>

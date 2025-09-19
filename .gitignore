@@ -1,16 +1,30 @@
 # === КОНФИДЕНЦИАЛЬНЫЕ ФАЙЛЫ ===
+# КРИТИЧНО: основной .env файл
+.env
+
+# Файлы окружения
 .env.local
 .env.staging  
 .env.production
 .env.*
+.env.backup
+.env.current
+.env_*
 
 # === БАЗЫ ДАННЫХ ===
 db.sqlite3
 *.db
+*.sql
+*.dump
+*.backup
+.pgpass
 
 # === ЛОГИ ===
 logs/
 *.log
+error.log
+access.log
+gunicorn.log
 
 # === PYTHON ===
 __pycache__/
@@ -37,6 +51,17 @@ local_settings.py
 .DS_Store
 Thumbs.db
 
+# === КЛЮЧИ И СЕРТИФИКАТЫ ===
+*.key
+*.pem
+*.cert
+ssl/
+
+# === ВРЕМЕННЫЕ ФАЙЛЫ НАСТРОЕК ===
+*_local_backup.py
+settings_production*.backup
+config/*.backup
+
 # === BACKUP ===
 # Разрешаем коммитить backup'ы (они не содержат секретов)
 !backups/
@@ -50,8 +75,8 @@ Dockerfile*
 docker-compose*
 .dockerignore
 .devcontainer/# Production settings - local only
-config/settings_production.py
-*.bat 
+# config/settings_production.py  # УБРАНО - нужно для деплоя
+# *.bat   # УБРАНО - нужно для деплоя 
 *_data*.py   
 restore*.py 
 diagnose*.py 

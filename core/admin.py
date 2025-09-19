@@ -217,6 +217,15 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         ('Контактная информация', {
             'fields': ('contact_email', 'contact_phone')
         }),
+        # ⭐ НОВЫЕ СЕКЦИИ ДЛЯ РЕЖИМА РАБОТЫ И АДРЕСА
+        ('Время работы', {
+            'fields': ('work_hours', 'work_hours_note'),
+            'description': 'Настройки рабочего времени для отображения на странице контактов'
+        }),
+        ('Адрес и местоположение', {
+            'fields': ('address_city', 'address_country', 'address_full'),
+            'description': 'Адресная информация для страницы контактов'
+        }),
         ('Социальные сети', {
             'fields': ('social_telegram', 'social_youtube', 'social_vk'),
             'classes': ('collapse',)

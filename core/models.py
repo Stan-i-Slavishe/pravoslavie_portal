@@ -355,6 +355,36 @@ class SiteSettings(models.Model):
         default='+7 (800) 123-45-67',
         verbose_name='Контактный телефон'
     )
+    
+    # ⭐ НОВЫЕ ПОЛЯ ДЛЯ АДРЕСА И РЕЖИМА РАБОТЫ
+    work_hours = models.CharField(
+        max_length=100,
+        default='Пн-Пт: 9:00 - 18:00',
+        verbose_name='Время работы',
+        help_text='Например: Пн-Пт: 9:00 - 18:00'
+    )
+    work_hours_note = models.CharField(
+        max_length=50,
+        default='По московскому времени',
+        verbose_name='Примечание к времени работы',
+        blank=True
+    )
+    address_city = models.CharField(
+        max_length=100,
+        default='г. Москва',
+        verbose_name='Город'
+    )
+    address_country = models.CharField(
+        max_length=50,
+        default='Россия',
+        verbose_name='Страна'
+    )
+    address_full = models.TextField(
+        blank=True,
+        verbose_name='Полный адрес',
+        help_text='Полный почтовый адрес (необязательно)'
+    )
+    
     social_telegram = models.URLField(
         blank=True,
         verbose_name='Telegram канал'

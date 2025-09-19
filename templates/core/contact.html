@@ -42,8 +42,10 @@
                             <i class="bi bi-clock-fill text-info me-3" style="font-size: 1.5rem;"></i>
                             <div>
                                 <strong>Время работы</strong><br>
-                                Пн-Пт: 9:00 - 18:00<br>
-                                <small class="text-muted">По московскому времени</small>
+                                {{ site_settings.work_hours }}<br>
+                                {% if site_settings.work_hours_note %}
+                                <small class="text-muted">{{ site_settings.work_hours_note }}</small>
+                                {% endif %}
                             </div>
                         </div>
                         
@@ -51,8 +53,11 @@
                             <i class="bi bi-geo-alt-fill text-warning me-3" style="font-size: 1.5rem;"></i>
                             <div>
                                 <strong>Адрес</strong><br>
-                                г. Москва<br>
-                                <small class="text-muted">Россия</small>
+                                {{ site_settings.address_city }}<br>
+                                <small class="text-muted">{{ site_settings.address_country }}</small>
+                                {% if site_settings.address_full %}
+                                <br><small class="text-muted">{{ site_settings.address_full }}</small>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

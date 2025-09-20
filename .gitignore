@@ -6,10 +6,12 @@
 .env.local
 .env.staging  
 .env.production
-.env.*
 .env.backup
 .env.current
 .env_*
+
+# Разрешаем .env.example (шаблон)
+!.env.example
 
 # === БАЗЫ ДАННЫХ ===
 db.sqlite3
@@ -84,3 +86,4 @@ load_all_stories.py
 nuclear_restore.py 
 postgresql_restore.py 
 safe_restore.py 
+.env 

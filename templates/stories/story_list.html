@@ -215,7 +215,14 @@
 
 /* Скрытые категории */
 .category-hidden {
-    display: none;
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Когда категории показаны через JavaScript */
+.category-shown {
+    display: flex !important;
+    visibility: visible !important;
 }
 
 .category-filter-container {
@@ -590,30 +597,56 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Специальный скрипт для переключения категорий -->
+<script src="{% static 'js/category-toggle-simple.js' %}"></script>
 <script>
-// Функция для показа/скрытия всех категорий
-function toggleAllCategories() {
-    const hiddenCategories = document.querySelectorAll('.category-hidden');
-    const toggleIcon = document.getElementById('toggleIcon');
-    const toggleText = document.getElementById('toggleText');
+// Дополнительная проверка и инициализация
+document.addEventListener('DOMContentLoaded', function() {
+    // Проверяем, что наш скрипт загрузился
+    console.log('✅ Страница stories загружена');
     
-    const isExpanded = hiddenCategories[0] && hiddenCategories[0].style.display !== 'none';
-    
-    hiddenCategories.forEach(category => {
-        if (isExpanded) {
-            category.style.display = 'none';
-        } else {
-            category.style.display = 'flex';
+    // Дополнительная инициализация через небольшую задержку
+    setTimeout(function() {
+        const hiddenCategories = document.querySelectorAll('.category-hidden');
+        const toggleButton = document.getElementById('toggleCategories');
+        
+        console.log('🔍 Проверка элементов:');
+        console.log('Скрытых категорий:', hiddenCategories.length);
+        console.log('Кнопка найдена:', !!toggleButton);
+        
+        // Если функция не определена, определяем запасную
+        if (typeof window.toggleAllCategories !== 'function') {
+            console.log('⚠️ Главная функция не найдена, используем запасную');
+            window.toggleAllCategories = function() {
+                console.log('🔄 Запасная функция переключения');
+                const categories = document.querySelectorAll('.category-hidden');
+                const icon = document.getElementById('toggleIcon');
+                const text = document.getElementById('toggleText');
+                
+                const isHidden = categories[0] && categories[0].style.display === 'none';
+                
+                categories.forEach(cat => {
+                    if (isHidden) {
+                        cat.style.display = 'flex';
+                        cat.style.visibility = 'visible';
+                    } else {
+                        cat.style.display = 'none';
+                        cat.style.visibility = 'hidden';
+                    }
+                });
+                
+                if (icon && text) {
+                    if (isHidden) {
+                        icon.className = 'bi bi-chevron-up me-1';
+                        text.textContent = 'Скрыть';
+                    } else {
+                        icon.className = 'bi bi-chevron-down me-1';
+                        text.textContent = 'Показать все категории';
+                    }
+                }
+            };
         }
-    });
-    
-    if (isExpanded) {
-        toggleIcon.className = 'bi bi-chevron-down me-1';
-        toggleText.textContent = 'Показать все категории';
-    } else {
-        toggleIcon.className = 'bi bi-chevron-up me-1';
-        toggleText.textContent = 'Скрыть';
-    }
-}
+    }, 500);
+});
 </script>
 {% endblock %}

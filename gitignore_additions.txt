@@ -1,0 +1,53 @@
+# === КРИТИЧЕСКИЕ ИСПРАВЛЕНИЯ ДЛЯ .GITIGNORE ===
+
+# Основной .env файл (КРИТИЧНО!)
+.env
+
+# Временные файлы окружения 
+.env.backup
+.env.current
+.env_*
+
+# Файлы PostgreSQL
+.pgpass
+pg_hba.conf
+
+# Backup базы данных (могут содержать пароли)
+*.sql
+*.dump
+*.backup
+
+# Миграции (только пользовательские, Django миграции оставляем)
+# ОСТОРОЖНО: не исключайте автогенерированные Django миграции
+
+# Временные файлы настроек
+temp_settings*.py
+*_local_backup.py
+
+# Файлы деплоя с паролями
+server_commands.sh
+deploy_*.sh
+
+# Ключи и сертификаты
+*.key
+*.pem
+*.cert
+ssl/
+
+# Компилированные Python файлы в корне
+*.pyc
+*$py.class
+
+# Логи приложения
+error.log
+access.log
+gunicorn.log
+
+# Временные файлы редакторов
+*~
+.#*
+#*#
+
+# Файлы бэкапа настроек с паролями
+settings_production*.backup
+config/*.backup

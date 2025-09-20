@@ -1,0 +1,39 @@
+@echo off
+echo 🔄 ЗАГРУЗКА ДАННЫХ ПО ЧАСТЯМ
+echo =============================
+
+cd "backups\django_backup_2025-09-01_21-36-16"
+
+echo 📚 Загружаем core данные...
+python "..\..\manage.py" loaddata core_data.json
+if %errorlevel% neq 0 echo ⚠️ Ошибка core_data, продолжаем...
+
+echo 📖 Загружаем данные рассказов...
+python "..\..\manage.py" loaddata stories_data.json
+if %errorlevel% neq 0 echo ⚠️ Ошибка stories_data, продолжаем...
+
+echo 📗 Загружаем данные книг...
+python "..\..\manage.py" loaddata books_data.json
+if %errorlevel% neq 0 echo ⚠️ Ошибка books_data, продолжаем...
+
+echo 🧚 Загружаем данные сказок...
+python "..\..\manage.py" loaddata fairy_tales_data.json
+if %errorlevel% neq 0 echo ⚠️ Ошибка fairy_tales_data, продолжаем...
+
+echo 🛒 Загружаем данные магазина...
+python "..\..\manage.py" loaddata shop_data.json
+if %errorlevel% neq 0 echo ⚠️ Ошибка shop_data, продолжаем...
+
+echo 📦 Загружаем данные подписок...
+python "..\..\manage.py" loaddata subscriptions_data.json
+if %errorlevel% neq 0 echo ⚠️ Ошибка subscriptions_data, продолжаем...
+
+cd "..\..\"
+
+echo.
+echo ✅ Загрузка завершена (некоторые файлы могли не загрузиться из-за конфликтов).
+echo.
+echo 🚀 Проверьте сайт:
+echo python manage.py runserver
+
+pause

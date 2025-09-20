@@ -46,6 +46,7 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 # 📁 Static & Media Files
 STATIC_URL = '/static/'
 STATIC_ROOT = '/app/staticfiles/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'

@@ -24,3 +24,17 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = '/var/www/pravoslavie_portal/media/'
 
 print("Production настройки загружены")
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.mail.ru'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'stassilin@mail.ru'
+EMAIL_HOST_PASSWORD = 'kAZjm3a2159NDohSEdPK'
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'info@dobrist.com'
+SERVER_EMAIL = 'info@dobrist.com'
+# Email для получения писем с сайта
+CONTACT_EMAIL = 'stassilin@mail.ru'
+ADMINS = [('Admin', 'stassilin@mail.ru')]
+EMAIL_TIMEOUT = 30

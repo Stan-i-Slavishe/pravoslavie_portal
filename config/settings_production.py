@@ -33,7 +33,7 @@ EMAIL_HOST_USER = 'stassilin@mail.ru'
 EMAIL_HOST_PASSWORD = 'kAZjm3a2159NDohSEdPK'
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'stassilin@mail.ru'
-SERVER_EMAIL = 'info@dobrist.com'
+SERVER_EMAIL = 'stassilin@mail.ru'
 # Email для получения писем с сайта
 CONTACT_EMAIL = 'stassilin@mail.ru'
 ADMINS = [('Admin', 'stassilin@mail.ru')]

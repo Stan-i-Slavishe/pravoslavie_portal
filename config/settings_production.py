@@ -26,6 +26,7 @@ MEDIA_ROOT = '/var/www/pravoslavie_portal/media/'
 print("Production настройки загружены")
 
 
+# Email Configuration для локального Postfix
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 25
@@ -34,5 +35,3 @@ DEFAULT_FROM_EMAIL = 'info@dobrist.com'
 SERVER_EMAIL = 'info@dobrist.com'
 CONTACT_EMAIL = 'stassilin@mail.ru'
 ADMINS = [('Admin', 'stassilin@mail.ru')]
-
-print("Production настройки загружены")

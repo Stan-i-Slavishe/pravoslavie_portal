@@ -153,7 +153,7 @@ IP адрес: {contact_message.ip_address}
                 message=message,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[site_settings.contact_email],
-                fail_silently=True
+                fail_silently=False
             )
         except Exception:
             # Логируем ошибку, но не прерываем процесс
@@ -567,7 +567,7 @@ User Agent: {feedback.user_agent}
                 message,
                 settings.DEFAULT_FROM_EMAIL,
                 [site_settings.contact_email],
-                fail_silently=True
+                fail_silently=False
             )
             
         except Exception as e:

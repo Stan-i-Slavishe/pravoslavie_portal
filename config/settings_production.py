@@ -35,3 +35,10 @@ DEFAULT_FROM_EMAIL = 'info@dobrist.com'
 SERVER_EMAIL = 'info@dobrist.com'
 CONTACT_EMAIL = 'stassilin@mail.ru'
 ADMINS = [('Admin', 'stassilin@mail.ru')]
+
+# reCAPTCHA настройки
+RECAPTCHA_PUBLIC_KEY = '6LeD-dErAAAAAPFCCTD0oEDipeyX8FYmrbJgZ9Ri'
+RECAPTCHA_PRIVATE_KEY = '6LeD-dErAAAAAD6Asd70b0wN98n-YFi0BunWmm2f'
+RECAPTCHA_REQUIRED_SCORE = 0.85
+
+print("Production настройки загружены")

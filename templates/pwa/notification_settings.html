@@ -4,6 +4,7 @@
 {% block title %}Настройки уведомлений{% endblock %}
 
 {% block extra_css %}
+<script src="{% static 'js/admin-controlled-notifications.js' %}" defer></script>
 <style>
 .notification-card {
     transition: all 0.3s ease;
@@ -178,6 +179,33 @@ input:checked + .slider:before {
         margin-bottom: 1rem;
     }
 }
+
+/* Стили для отключенных администратором категорий */
+.admin-disabled {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.3;
+}
+
+.admin-disabled::after {
+    content: "Отключено администратором";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.admin-disabled:hover::after {
+    opacity: 1;
+}
 </style>
 {% endblock %}
 
@@ -243,125 +271,50 @@ input:checked + .slider:before {
         </div>
     </div>
 
-    <!-- Простая версия категорий уведомлений -->
+    <!-- Динамические категории уведомлений -->
     <div class="settings-section">
         <h3><i class="fas fa-bell text-primary"></i> Типы уведомлений</h3>
         <p class="text-muted">Выберите, какие уведомления вы хотите получать</p>
         
+        <!-- Счетчик активных категорий -->
+        <div class="mb-3">
+            <small class="text-info">
+                <i class="fas fa-info-circle"></i>
+                Доступно категорий: <span id="active-categories-count">{{ active_categories|length }}</span>
+            </small>
+        </div>
+        
         <div class="row">
-            <!-- Сказки на ночь -->
+            {% for category in active_categories %}
             <div class="col-lg-6 mb-3">
-                <div class="simple-card" data-category="bedtime_stories">
+                <div class="simple-card" data-category="{{ category.name }}" data-notification-category="{{ category.name }}">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center flex-grow-1">
-                            <span class="category-icon me-3">🌙</span>
+                            <span class="category-icon me-3">{{ category.icon }}</span>
                             <div class="flex-grow-1">
-                                <h5 class="mb-1">Сказки на ночь</h5>
-                                <p class="text-muted small mb-0">Напоминания о чтении сказок перед сном</p>
+                                <h5 class="mb-1">{{ category.title }}</h5>
+                                <p class="text-muted small mb-0">{{ category.description }}</p>
                             </div>
                         </div>
                         <label class="toggle-switch ms-3">
-                            <input type="checkbox" class="category-toggle" data-category="bedtime_stories" checked>
+                            <input type="checkbox" 
+                                   class="category-toggle" 
+                                   data-category="{{ category.name }}" 
+                                   {% if category.default_enabled %}checked{% endif %}>
                             <span class="slider"></span>
                         </label>
                     </div>
                 </div>
             </div>
-
-            <!-- Православный календарь -->
-            <div class="col-lg-6 mb-3">
-                <div class="simple-card enabled" data-category="orthodox_calendar">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center flex-grow-1">
-                            <span class="category-icon me-3">⛪</span>
-                            <div class="flex-grow-1">
-                                <h5 class="mb-1">Православный календарь</h5>
-                                <p class="text-muted small mb-0">Уведомления о праздниках и постах</p>
-                            </div>
-                        </div>
-                        <label class="toggle-switch ms-3">
-                            <input type="checkbox" class="category-toggle" data-category="orthodox_calendar" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Уведомления временно недоступны</strong><br>
+                    <small>Администратор временно отключил все категории уведомлений. Попробуйте позже.</small>
                 </div>
             </div>
-
-            <!-- Видео-рассказы -->
-            <div class="col-lg-6 mb-3">
-                <div class="simple-card enabled" data-category="new_content">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center flex-grow-1">
-                            <span class="category-icon me-3">🎬</span>
-                            <div class="flex-grow-1">
-                                <h5 class="mb-1">Видео-рассказы</h5>
-                                <p class="text-muted small mb-0">Уведомления о новых духовных рассказах и видео</p>
-                            </div>
-                        </div>
-                        <label class="toggle-switch ms-3">
-                            <input type="checkbox" class="category-toggle" data-category="new_content" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Терапевтические сказки -->
-            <div class="col-lg-6 mb-3">
-                <div class="simple-card enabled" data-category="fairy_tales">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center flex-grow-1">
-                            <span class="category-icon me-3">🧚</span>
-                            <div class="flex-grow-1">
-                                <h5 class="mb-1">Терапевтические сказки</h5>
-                                <p class="text-muted small mb-0">Рекомендации сказок для решения проблем</p>
-                            </div>
-                        </div>
-                        <label class="toggle-switch ms-3">
-                            <input type="checkbox" class="category-toggle" data-category="fairy_tales" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Новые книги -->
-            <div class="col-lg-6 mb-3">
-                <div class="simple-card enabled" data-category="book_releases">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center flex-grow-1">
-                            <span class="category-icon me-3">📖</span>
-                            <div class="flex-grow-1">
-                                <h5 class="mb-1">Новые книги</h5>
-                                <p class="text-muted small mb-0">Уведомления о поступлении новых книг</p>
-                            </div>
-                        </div>
-                        <label class="toggle-switch ms-3">
-                            <input type="checkbox" class="category-toggle" data-category="book_releases" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Аудио-контент -->
-            <div class="col-lg-6 mb-3">
-                <div class="simple-card" data-category="audio_content">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center flex-grow-1">
-                            <span class="category-icon me-3">🎵</span>
-                            <div class="flex-grow-1">
-                                <h5 class="mb-1">Аудио-контент</h5>
-                                <p class="text-muted small mb-0">Новые аудио-рассказы и подкасты</p>
-                            </div>
-                        </div>
-                        <label class="toggle-switch ms-3">
-                            <input type="checkbox" class="category-toggle" data-category="audio_content">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </div>
 
@@ -409,220 +362,5 @@ input:checked + .slider:before {
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔔 Initializing notification settings...');
-    
-    // Инициализация
-    setupEventHandlers();
-    updateCardStates();
-    updateQuietHoursVisibility();
-    updateChildModeVisibility();
-    
-    // Загружаем текущие настройки
-    loadUserSettings();
-});
-
-function setupEventHandlers() {
-    // Основные переключатели
-    document.getElementById('notificationsEnabled').addEventListener('change', function() {
-        toggleAllNotifications(this.checked);
-        saveSettingsAutomatically();
-    });
-    
-    document.getElementById('quietHoursEnabled').addEventListener('change', function() {
-        updateQuietHoursVisibility();
-        saveSettingsAutomatically();
-    });
-    
-    document.getElementById('childMode').addEventListener('change', function() {
-        updateChildModeVisibility();
-        saveSettingsAutomatically();
-    });
-    
-    // Переключатели категорий
-    document.querySelectorAll('.category-toggle').forEach(toggle => {
-        toggle.addEventListener('change', function() {
-            const category = this.dataset.category;
-            const enabled = this.checked;
-            updateCardState(category, enabled);
-            saveSettingsAutomatically();
-        });
-    });
-    
-    // Автосохранение при изменении времени
-    document.querySelectorAll('#quietStart, #quietEnd, #childBedtime').forEach(input => {
-        input.addEventListener('change', saveSettingsAutomatically);
-    });
-    
-    // Кнопки
-    document.getElementById('saveSettings').addEventListener('click', () => saveSettings(true));
-    document.getElementById('resetSettings').addEventListener('click', resetToDefaults);
-}
-
-function toggleAllNotifications(enabled) {
-    document.querySelectorAll('.category-toggle').forEach(toggle => {
-        toggle.disabled = !enabled;
-    });
-    
-    document.querySelectorAll('.simple-card').forEach(card => {
-        card.style.opacity = enabled ? '1' : '0.5';
-    });
-}
-
-function updateCardState(category, enabled) {
-    const card = document.querySelector(`[data-category="${category}"]`);
-    if (enabled) {
-        card.classList.add('enabled');
-    } else {
-        card.classList.remove('enabled');
-    }
-}
-
-function updateCardStates() {
-    document.querySelectorAll('.category-toggle').forEach(toggle => {
-        const category = toggle.dataset.category;
-        const enabled = toggle.checked;
-        updateCardState(category, enabled);
-    });
-}
-
-function updateQuietHoursVisibility() {
-    const enabled = document.getElementById('quietHoursEnabled').checked;
-    const settings = document.getElementById('quietHoursSettings');
-    
-    settings.style.opacity = enabled ? '1' : '0.5';
-    settings.querySelectorAll('input').forEach(input => input.disabled = !enabled);
-}
-
-function updateChildModeVisibility() {
-    const enabled = document.getElementById('childMode').checked;
-    const settings = document.getElementById('childModeSettings');
-    
-    settings.style.display = enabled ? 'block' : 'none';
-}
-
-async function saveSettingsAutomatically() {
-    clearTimeout(window.autoSaveTimeout);
-    window.autoSaveTimeout = setTimeout(async () => {
-        await saveSettings(false);
-    }, 1000);
-}
-
-async function saveSettings(showNotification = true) {
-    try {
-        const settings = {
-            notifications_enabled: document.getElementById('notificationsEnabled').checked,
-            quiet_hours_enabled: document.getElementById('quietHoursEnabled').checked,
-            quiet_start: document.getElementById('quietStart').value,
-            quiet_end: document.getElementById('quietEnd').value,
-            child_mode: document.getElementById('childMode').checked,
-            child_bedtime: document.getElementById('childBedtime').value,
-            categories: {}
-        };
-        
-        // Собираем настройки категорий
-        document.querySelectorAll('.category-toggle').forEach(toggle => {
-            const category = toggle.dataset.category;
-            settings.categories[category] = {
-                enabled: toggle.checked
-            };
-        });
-        
-        const response = await fetch('/pwa/api/save-notification-settings/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            },
-            body: JSON.stringify(settings)
-        });
-        
-        if (response.ok) {
-            if (showNotification) {
-                showSaveIndicator();
-            }
-            console.log('✅ Settings saved successfully');
-        } else {
-            throw new Error('Failed to save settings');
-        }
-    } catch (error) {
-        console.error('❌ Error saving settings:', error);
-        if (showNotification) {
-            alert('Ошибка при сохранении настроек. Попробуйте еще раз.');
-        }
-    }
-}
-
-async function loadUserSettings() {
-    try {
-        const response = await fetch('/pwa/api/get-notification-settings/');
-        if (response.ok) {
-            const settings = await response.json();
-            
-            // Применяем настройки
-            document.getElementById('notificationsEnabled').checked = settings.notifications_enabled;
-            document.getElementById('quietHoursEnabled').checked = settings.quiet_hours_enabled;
-            document.getElementById('quietStart').value = settings.quiet_start;
-            document.getElementById('quietEnd').value = settings.quiet_end;
-            document.getElementById('childMode').checked = settings.child_mode;
-            document.getElementById('childBedtime').value = settings.child_bedtime;
-            
-            // Применяем настройки категорий
-            for (const [category, categorySettings] of Object.entries(settings.categories)) {
-                const toggle = document.querySelector(`[data-category="${category}"]`);
-                if (toggle) {
-                    toggle.checked = categorySettings.enabled;
-                }
-            }
-            
-            updateCardStates();
-            updateQuietHoursVisibility();
-            updateChildModeVisibility();
-            
-            console.log('✅ Settings loaded');
-        }
-    } catch (error) {
-        console.error('❌ Error loading settings:', error);
-    }
-}
-
-function resetToDefaults() {
-    if (confirm('Сбросить все настройки к значениям по умолчанию?')) {
-        document.getElementById('notificationsEnabled').checked = true;
-        document.getElementById('quietHoursEnabled').checked = true;
-        document.getElementById('quietStart').value = '22:00';
-        document.getElementById('quietEnd').value = '08:00';
-        document.getElementById('childMode').checked = false;
-        document.getElementById('childBedtime').value = '20:00';
-        
-        // Включаем все категории кроме аудио
-        document.querySelectorAll('.category-toggle').forEach(toggle => {
-            toggle.checked = toggle.dataset.category !== 'audio_content';
-        });
-        
-        updateCardStates();
-        updateQuietHoursVisibility();
-        updateChildModeVisibility();
-        
-        saveSettings(true);
-    }
-}
-
-function showSaveIndicator() {
-    const indicator = document.getElementById('saveIndicator');
-    indicator.classList.add('show');
-    
-    setTimeout(() => {
-        indicator.classList.remove('show');
-    }, 3000);
-}
-
-function getCSRFToken() {
-    const cookieValue = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrftoken='));
-    return cookieValue ? cookieValue.split('=')[1] : '';
-}
-</script>
+<script src="{% static 'js/notification-settings-enhanced.js' %}"></script>
 {% endblock %}

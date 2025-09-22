@@ -124,6 +124,14 @@
                         {% endif %}
                     </div>
                     
+                    <!-- reCAPTCHA v3 - невидимая капча -->
+                    <div class="mb-3">
+                        {{ form.captcha }}
+                        {% if form.captcha.errors %}
+                            <div class="text-danger small">{{ form.captcha.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-send"></i> Отправить сообщение
                     </button>

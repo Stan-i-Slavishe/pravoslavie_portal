@@ -2,6 +2,7 @@
 
 from django.urls import path
 from . import views
+from .views_notification_api import get_available_notification_categories
 
 app_name = 'pwa'
 
@@ -33,6 +34,7 @@ urlpatterns = [
     path('notifications/settings/', views.notification_settings_page, name='notification_settings'),
     path('api/save-notification-settings/', views.save_notification_settings, name='save_notification_settings'),
     path('api/get-notification-settings/', views.get_notification_settings, name='get_notification_settings'),
+    path('api/notification-categories/', get_available_notification_categories, name='notification_categories'),
     
     # 📅 API для православного календаря
     path('api/orthodox-calendar/today/', views.orthodox_calendar_today, name='orthodox_calendar_today'),

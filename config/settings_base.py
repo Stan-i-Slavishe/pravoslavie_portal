@@ -25,6 +25,7 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'crispy_forms',
     'crispy_bootstrap5',
+    'django_recaptcha',  # Google reCAPTCHA v3
     'allauth',
     'allauth.account',
     'allauth.socialaccount',

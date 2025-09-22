@@ -1,5 +1,7 @@
 from django import forms
 from django.core.validators import MinLengthValidator
+from django_recaptcha.fields import ReCaptchaField
+from django_recaptcha.widgets import ReCaptchaV3
 from .models import ContactMessage
 
 class ContactForm(forms.ModelForm):
@@ -11,6 +13,11 @@ class ContactForm(forms.ModelForm):
         widget=forms.CheckboxInput(attrs={
             'class': 'form-check-input'
         })
+    )
+    
+    captcha = ReCaptchaField(
+        widget=ReCaptchaV3,
+        label=''
     )
     
     class Meta:

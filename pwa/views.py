@@ -592,16 +592,28 @@ def push_test_page(request):
 @login_required
 @require_http_methods(["GET"])
 def notification_settings_page(request):
-    """Страница настроек уведомлений"""
+    """Страница настроек уведомлений - показывает только активные категории"""
     # Получаем или создаем настройки пользователя
     user_settings, created = UserNotificationSettings.objects.get_or_create(user=request.user)
     
-    # Получаем все категории
-    categories = NotificationCategory.objects.filter(is_active=True)
+    # Получаем ТОЛЬКО АКТИВНЫЕ категории
+    active_categories = NotificationCategory.objects.filter(is_active=True)
     
-    # Получаем подписки пользователя
-    subscriptions = UserNotificationSubscription.objects.filter(user=request.user)
+    # Получаем подписки пользователя только для активных категорий
+    subscriptions = UserNotificationSubscription.objects.filter(
+        user=request.user,
+        category__in=active_categories
+    )
     subscriptions_dict = {sub.category.name: sub for sub in subscriptions}
+    
+    context = {
+        'user_settings': user_settings,
+        'active_categories': active_categories,  # Передаем только активные
+        'subscriptions': subscriptions_dict,
+        'title': 'Настройки уведомлений'
+    }
+    
+    return render(request, 'pwa/notification_settings.html', context)
     
     context = {
         'user_settings': user_settings,

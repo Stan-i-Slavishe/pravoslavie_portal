@@ -562,9 +562,9 @@ def orthodoxy_calendar_today(request):
 
 @require_http_methods(["GET"])
 def push_test_page(request):
-    """Тестовая страница для push-уведомлений"""
-    # Только для администраторов в разработке
-    if not settings.DEBUG or not request.user.is_staff:
+    """Тестовая страница для push-уведомлений (только для администраторов)"""
+    # Доступ только для администраторов
+    if not request.user.is_staff:
         return JsonResponse({'error': 'Access denied'}, status=403)
     
     context = {
@@ -588,6 +588,40 @@ def push_test_page(request):
 # =============================================================================
 # 🔔 НОВЫЕ API ДЛЯ НАСТРОЕК УВЕДОМЛЕНИЙ
 # =============================================================================
+
+@login_required
+@require_http_methods(["GET"])
+def notification_settings_page(request):
+    """Страница настроек уведомлений"""
+    try:
+        # Получаем настройки пользователя
+        user_settings, created = UserNotificationSettings.objects.get_or_create(user=request.user)
+        
+        # Получаем активные категории уведомлений
+        active_categories = NotificationCategory.objects.filter(is_active=True)
+        
+        # Получаем подписки пользователя
+        subscriptions = UserNotificationSubscription.objects.filter(user=request.user)
+        subscriptions_dict = {sub.category.name: sub for sub in subscriptions}
+        
+        context = {
+            'user_settings': user_settings,
+            'active_categories': active_categories,
+            'subscriptions': subscriptions_dict,
+            'title': 'Настройки уведомлений',
+            'show_admin_tools': request.user.is_staff  # Флаг для показа инструментов администратора
+        }
+        
+        return render(request, 'pwa/notification_settings.html', context)
+        
+    except Exception as e:
+        logger.error(f"Error loading notification settings page: {e}")
+        context = {
+            'title': 'Настройки уведомлений',
+            'error': 'Произошла ошибка при загрузке настроек',
+            'show_admin_tools': request.user.is_staff
+        }
+        return render(request, 'pwa/notification_settings.html', context)
 
 @login_required
 @require_http_methods(["GET"])

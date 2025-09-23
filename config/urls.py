@@ -2,7 +2,13 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.shortcuts import redirect
 from core.health_views import HealthCheckView, ReadinessCheckView, LivenessCheckView
+
+# Простой редирект для Google OAuth
+def google_login_redirect(request):
+    """Прямое перенаправление на Google OAuth"""
+    return redirect('/accounts/google/login/?process=login')
 
 # 📊 Мониторинг - импорт views
 try:

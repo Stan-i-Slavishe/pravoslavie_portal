@@ -354,12 +354,17 @@ input:checked + .slider:before {
         </button>
     </div>
 
-    <!-- Кнопка перехода к тестированию -->
+    <!-- Кнопка перехода к тестированию (только для администраторов) -->
+    {% if user.is_staff %}
     <div class="text-center mt-4">
         <a href="{% url 'pwa:push_test' %}" class="btn btn-outline-info">
             <i class="fas fa-flask"></i> Протестировать уведомления
         </a>
+        <small class="d-block text-muted mt-2">
+            <i class="fas fa-user-shield"></i> Инструмент для администраторов
+        </small>
     </div>
+    {% endif %}
 </div>
 
 <script src="{% static 'js/notification-settings-enhanced.js' %}"></script>

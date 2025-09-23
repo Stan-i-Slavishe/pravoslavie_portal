@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Переход на Google{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="card border-0 shadow">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <i class="fab fa-google fa-3x text-danger"></i>
+                    </div>
+                    <h4 class="mb-3">Переход к Google</h4>
+                    <p class="text-muted mb-4">Подождите, перенаправляем...</p>
+                    
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                    
+                    <!-- Скрытая форма для автоматической отправки -->
+                    <form method="post" id="autoForm" style="display: none;">
+                        {% csrf_token %}
+                        {% for provider in providers %}
+                            {% if provider.id == 'google' %}
+                                <input type="hidden" name="provider" value="{{ provider.id }}">
+                                <button type="submit">Submit</button>
+                            {% endif %}
+                        {% endfor %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Мгновенное автоматическое перенаправление
+(function() {
+    const form = document.getElementById('autoForm');
+    if (form) {
+        // Небольшая задержка для показа загрузочного экрана
+        setTimeout(function() {
+            form.submit();
+        }, 500);
+    }
+})();
+</script>
+{% endblock %}

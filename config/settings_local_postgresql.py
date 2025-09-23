@@ -104,15 +104,27 @@ TEMPLATES = [
     },
 ]
 
-print("ЛОКАЛЬНАЯ РАЗРАБОТКА (settings_local.py) - PostgreSQL принудительно")
+# reCAPTCHA настройки для локальной разработки (тестовые ключи)
+RECAPTCHA_PUBLIC_KEY = config('RECAPTCHA_PUBLIC_KEY', default='6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI')
+RECAPTCHA_PRIVATE_KEY = config('RECAPTCHA_PRIVATE_KEY', default='6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe')
+RECAPTCHA_REQUIRED_SCORE = 0.85
+
+# Отключаем предупреждение о тестовых ключах для локальной разработки
+SILENCED_SYSTEM_CHECKS = ['django_recaptcha.recaptcha_test_key_error']
 # CSRF Settings for HTTPS
 CSRF_TRUSTED_ORIGINS = ['https://dobrist.com', 'https://www.dobrist.com']
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-# Настройки для прямого перехода к Google OAuth
+# Настройки для социальной аутентификации Google
 SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_AUTO_SIGNUP = True
+
+# Автоматическое перенаправление на провайдера
+SOCIALACCOUNT_QUERY_EMAIL = True
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'SCOPE': [
@@ -121,6 +133,7 @@ SOCIALACCOUNT_PROVIDERS = {
         ],
         'AUTH_PARAMS': {
             'access_type': 'online',
-        }
+        },
+        'VERIFIED_EMAIL': True,
     }
 }

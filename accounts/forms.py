@@ -1,3 +1,4 @@
+from allauth.account.forms import SignupForm as AllauthSignupForm
 from allauth.socialaccount.forms import SignupForm
 from django import forms
 from django.contrib.auth.models import User
@@ -5,7 +6,53 @@ from django.contrib.auth.forms import UserChangeForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, Field, Submit, Div, HTML
 from crispy_forms.bootstrap import PrependedText, AppendedText
+from django.conf import settings
+
+# Кондициональный импорт reCAPTCHA
+if not settings.DEBUG:
+    from django_recaptcha.fields import ReCaptchaField
+    from django_recaptcha.widgets import ReCaptchaV3
+
 from .models import UserProfile
+
+
+class CustomSignupForm(AllauthSignupForm):
+    """Кастомная форма регистрации с условной Google reCAPTCHA v3"""
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Добавляем капчу только на продакшене
+        if not settings.DEBUG:
+            # На продакшене добавляем reCAPTCHA
+            self.fields['captcha'] = ReCaptchaField(
+                widget=ReCaptchaV3,
+                label=''
+            )
+        
+        # Настраиваем поля формы
+        self.fields['email'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'your@email.com'
+        })
+        
+        if 'password1' in self.fields:
+            self.fields['password1'].widget.attrs.update({
+                'class': 'form-control',
+                'placeholder': 'Введите пароль'
+            })
+        
+        if 'password2' in self.fields:
+            self.fields['password2'].widget.attrs.update({
+                'class': 'form-control',
+                'placeholder': 'Повторите пароль'
+            })
+    
+    def save(self, request):
+        """Сохранение пользователя (с капчей только на продакшене)"""
+        user = super().save(request)
+        return user
+
 
 class CustomSocialSignupForm(SignupForm):
     """Упрощенная форма социальной регистрации"""

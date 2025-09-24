@@ -80,6 +80,21 @@ YOOKASSA_TEST_MODE = True
 # YouTube API для тестирования
 YOUTUBE_API_KEY = config('YOUTUBE_API_KEY', default='your-youtube-api-key')
 
+# reCAPTCHA настройки для разработки (отключена для упрощения тестирования)
+# Включится автоматически на продакшене с реальными ключами
+RECAPTCHA_PUBLIC_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'  # Тестовый ключ Google
+RECAPTCHA_PRIVATE_KEY = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'  # Тестовый ключ Google
+RECAPTCHA_REQUIRED_SCORE = 0.85
+
+# Отключаем проверку reCAPTCHA в локальной разработке
+SILENCED_SYSTEM_CHECKS = ['django_recaptcha.recaptcha_test_key_error']
+
+# Для локальной разработки используем NoOp reCAPTCHA (всегда проходит)
+if DEBUG:
+    # Переопределяем настройки для локальной разработки
+    import os
+    os.environ['RECAPTCHA_TESTING'] = 'True'
+
 # Push-уведомления (из переменных окружения)
 VAPID_PRIVATE_KEY = config('VAPID_PRIVATE_KEY', default='')
 VAPID_PUBLIC_KEY = config('VAPID_PUBLIC_KEY', default='')

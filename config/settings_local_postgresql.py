@@ -114,6 +114,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'core.context_processors.cart_context',
                 'core.context_processors.site_context',
+                'core.context_processors.maintenance_context',
             ],
         },
     },

@@ -1,0 +1,71 @@
+{% if is_admin_in_maintenance %}
+<!-- Индикатор режима обслуживания для администраторов -->
+<div id="maintenance-indicator" class="maintenance-admin-bar">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center py-2">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-tools me-2"></i>
+                <strong>Режим обслуживания активен</strong>
+                <span class="ms-3 text-white-50">Вы видите сайт, так как являетесь администратором</span>
+            </div>
+            <div>
+                <a href="/admin/core/sitesettings/1/change/" class="btn btn-sm btn-outline-light">
+                    <i class="bi bi-gear me-1"></i>Настройки
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.maintenance-admin-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(90deg, #dc3545, #c82333);
+    color: white;
+    z-index: 9999;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    animation: slideDown 0.3s ease-out;
+}
+
+.maintenance-admin-bar a {
+    text-decoration: none;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+/* Сдвигаем контент сайта вниз, чтобы индикатор не перекрывал навигацию */
+body.maintenance-mode-active {
+    padding-top: 56px !important;
+}
+
+/* Для мобильных устройств */
+@media (max-width: 768px) {
+    .maintenance-admin-bar .text-white-50 {
+        display: none;
+    }
+    
+    .maintenance-admin-bar strong {
+        font-size: 0.9rem;
+    }
+}
+</style>
+
+<script>
+// Добавляем класс к body, чтобы сдвинуть контент
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('maintenance-indicator')) {
+        document.body.classList.add('maintenance-mode-active');
+    }
+});
+</script>
+{% endif %}

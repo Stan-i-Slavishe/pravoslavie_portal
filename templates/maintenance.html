@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Техническое обслуживание</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .maintenance-container {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 30px;
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .icon svg {
+            width: 100%;
+            height: 100%;
+            fill: #667eea;
+        }
+        
+        h1 {
+            color: #1a202c;
+            font-size: 32px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .message {
+            color: #4a5568;
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .features {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+        
+        .feature {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .feature-icon.clock {
+            background: #e0f2fe;
+            color: #0284c7;
+        }
+        
+        .feature-icon.shield {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+        
+        .feature-icon.heart {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .feature-text {
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        .admin-login {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .admin-login a {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .admin-login a:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .contact-info {
+            margin-top: 30px;
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        .contact-info a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+        
+        .end-time {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            color: #2d3748;
+        }
+        
+        .end-time strong {
+            color: #667eea;
+        }
+        
+        @media (max-width: 480px) {
+            .maintenance-container {
+                padding: 40px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .message {
+                font-size: 16px;
+            }
+            
+            .features {
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="maintenance-container">
+        <div class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
+            </svg>
+        </div>
+        
+        <h1>Техническое обслуживание</h1>
+        
+        <div class="message">
+            {% if maintenance_message %}
+                {{ maintenance_message|safe }}
+            {% else %}
+                Мы проводим плановые работы для улучшения работы сайта.
+                <br>Скоро вернёмся!
+            {% endif %}
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon clock">⏰</div>
+                <div class="feature-text">Скоро вернёмся</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon shield">🛡️</div>
+                <div class="feature-text">Улучшаем сервис</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon heart">❤️</div>
+                <div class="feature-text">Заботимся о вас</div>
+            </div>
+        </div>
+        
+        {% if maintenance_end_time %}
+        <div class="end-time">
+            <strong>Ориентировочное время завершения работ:</strong><br>
+            {{ maintenance_end_time }}
+        </div>
+        {% endif %}
+        
+        <div class="contact-info">
+            Если у вас срочный вопрос, пожалуйста, напишите нам на
+            <a href="mailto:info@dobrist.com">info@dobrist.com</a>
+        </div>
+        
+        <div class="admin-login">
+            <a href="/admin/">🔐 Вход для администраторов</a>
+        </div>
+    </div>
+</body>
+</html>

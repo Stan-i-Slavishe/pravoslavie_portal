@@ -369,8 +369,9 @@ self.addEventListener('push', event => {
   
   const options = {
     body: 'У нас есть что-то новое для вас!',
-    icon: '/static/icons/icon-192x192.png',
-    badge: '/static/icons/badge-72x72.png',
+    icon: '/static/icons/icon-192x192.png',  // ⭐ Главная иконка приложения
+    badge: '/static/icons/badge-72x72.png',  // ⭐ Маленькая иконка для badge
+    image: null,  // Большое изображение (опционально)
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
@@ -380,16 +381,18 @@ self.addEventListener('push', event => {
       {
         action: 'explore',
         title: 'Посмотреть',
-        icon: '/static/icons/checkmark.png'
+        icon: '/static/icons/icon-72x72.png'
       },
       {
         action: 'close',
         title: 'Закрыть',
-        icon: '/static/icons/xmark.png'
+        icon: '/static/icons/icon-72x72.png'
       }
     ],
     requireInteraction: false,
-    silent: false
+    silent: false,
+    tag: 'default-notification',  // Группировка уведомлений
+    renotify: false  // Не повторять вибрацию при обновлении
   };
   
   if (event.data) {
@@ -397,17 +400,26 @@ self.addEventListener('push', event => {
     options.body = data.body || options.body;
     options.data.url = data.url || '/';
     
+    // ⭐ Устанавливаем иконку из данных или по умолчанию
+    options.icon = data.icon || '/static/icons/icon-192x192.png';
+    options.badge = data.badge || '/static/icons/badge-72x72.png';
+    options.image = data.image || null;
+    options.tag = data.tag || 'default-notification';
+    
     // Специальные настройки для разных типов уведомлений
     if (data.type === 'bedtime_story') {
       options.body = '🌙 Время сказки на ночь! Выберите добрую историю для малыша';
       options.data.url = '/fairy-tales/';
       options.requireInteraction = true;
+      options.tag = 'bedtime-story';
     } else if (data.type === 'orthodox_calendar') {
       options.body = `⛪ ${data.body}`;
       options.data.url = data.url || '/stories/';
+      options.tag = 'orthodox-calendar';
     } else if (data.type === 'new_content') {
       options.body = `📚 ${data.body}`;
       options.data.url = data.url || '/';
+      options.tag = 'new-content';
     }
   }
   

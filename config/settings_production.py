@@ -28,13 +28,13 @@ print("Production настройки загружены")
 
 # Email Configuration для локального Postfix
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'localhost'
-EMAIL_PORT = 25
-EMAIL_USE_TLS = False
+EMAIL_HOST = 'smtp.mail.ru'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'stassilin@mail.ru'
+EMAIL_HOST_PASSWORD = 'kAZjm3a2159NDohSEdPK'
+EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'info@dobrist.com'
 SERVER_EMAIL = 'info@dobrist.com'
-CONTACT_EMAIL = 'stassilin@mail.ru'
-ADMINS = [('Admin', 'stassilin@mail.ru')]
 
 # reCAPTCHA настройки
 RECAPTCHA_PUBLIC_KEY = '6LeD-dErAAAAAPFCCTD0oEDipeyX8FYmrbJgZ9Ri'

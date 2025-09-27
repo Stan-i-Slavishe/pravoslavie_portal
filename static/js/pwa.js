@@ -128,6 +128,12 @@ class PWAManager {
     
     // 🔔 Запрос разрешения на уведомления
     async requestNotificationPermission() {
+        // Запрашивать только если не было ответа (статус 'default')
+        if (Notification.permission !== 'default') {
+            console.log('ℹ️ Notification permission already set:', Notification.permission);
+            return;
+        }
+        
         const permission = await Notification.requestPermission();
         
         if (permission === 'granted') {

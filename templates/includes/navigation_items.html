@@ -1,0 +1,62 @@
+<!-- templates/includes/navigation_items.html -->
+<!-- Проверяем настройки навигации из админки -->
+
+{% if site_settings.show_stories %}
+    <li class="nav-item">
+        {% url 'stories:list' as stories_url %}
+        <a class="nav-link" href="{% if stories_url %}{{ stories_url }}{% else %}#stories{% endif %}">
+            Видео-рассказы
+            {% if site_settings.stories_coming_soon %}
+                <span class="badge bg-warning text-dark ms-1">Скоро</span>
+            {% endif %}
+        </a>
+    </li>
+{% endif %}
+
+{% if site_settings.show_books %}
+    <li class="nav-item">
+        {% url 'books:list' as books_url %}
+        <a class="nav-link" href="{% if books_url %}{{ books_url }}{% else %}#books{% endif %}">
+            Библиотека
+            {% if site_settings.books_coming_soon %}
+                <span class="badge bg-warning text-dark ms-1">Скоро</span>
+            {% endif %}
+        </a>
+    </li>
+{% endif %}
+
+{% if site_settings.show_audio %}
+    <li class="nav-item">
+        {% url 'audio:list' as audio_url %}
+        <a class="nav-link" href="{% if audio_url %}{{ audio_url }}{% else %}#audio{% endif %}">
+            Аудио
+            {% if site_settings.audio_coming_soon %}
+                <span class="badge bg-warning text-dark ms-1">Скоро</span>
+            {% endif %}
+        </a>
+    </li>
+{% endif %}
+
+{% if site_settings.show_fairy_tales %}
+    <li class="nav-item">
+        {% url 'fairy_tales:list' as fairy_tales_url %}
+        <a class="nav-link" href="{% if fairy_tales_url %}{{ fairy_tales_url }}{% else %}#fairy-tales{% endif %}">
+            Сказки
+            {% if site_settings.fairy_tales_coming_soon %}
+                <span class="badge bg-warning text-dark ms-1">Скоро</span>
+            {% endif %}
+        </a>
+    </li>
+{% endif %}
+
+{% if site_settings.show_shop %}
+    <li class="nav-item">
+        {% url 'shop:catalog' as shop_url %}
+        <a class="nav-link" href="{% if shop_url %}{{ shop_url }}{% else %}#shop{% endif %}">
+            Магазин
+            {% if site_settings.shop_coming_soon %}
+                <span class="badge bg-warning text-dark ms-1">Скоро</span>
+            {% endif %}
+        </a>
+    </li>
+{% endif %}

@@ -226,6 +226,18 @@ class SiteSettingsAdmin(admin.ModelAdmin):
             'fields': ('address_city', 'address_country', 'address_full'),
             'description': 'Адресная информация для страницы контактов'
         }),
+        # ⭐ НОВАЯ СЕКЦИЯ - УПРАВЛЕНИЕ НАВИГАЦИЕЙ
+        ('Управление навигацией', {
+            'fields': (
+                'show_stories', 'stories_coming_soon',
+                'show_books', 'books_coming_soon',
+                'show_audio', 'audio_coming_soon',
+                'show_fairy_tales', 'fairy_tales_coming_soon',
+                'show_shop', 'shop_coming_soon',
+            ),
+            'description': 'Включение/отключение разделов в навигации и бейджи "Скоро"',
+            'classes': ('wide',)
+        }),
         ('Социальные сети', {
             'fields': ('social_telegram', 'social_youtube', 'social_vk'),
             'classes': ('collapse',)

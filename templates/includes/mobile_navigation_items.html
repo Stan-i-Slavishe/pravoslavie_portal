@@ -1,0 +1,72 @@
+<!-- templates/includes/mobile_navigation_items.html -->
+<!-- Мобильная навигация с проверками настроек -->
+
+<li>
+    <a href="{% url 'core:home' %}" class="mobile-nav-item" data-section="home">
+        <i class="bi bi-house-fill mobile-nav-icon"></i>
+        <span class="mobile-nav-text">Главная</span>
+    </a>
+</li>
+
+{% if site_settings.show_stories %}
+    <li>
+        <a href="{% url 'stories:list' %}" class="mobile-nav-item" data-section="stories">
+            <i class="bi bi-play-circle-fill mobile-nav-icon"></i>
+            <span class="mobile-nav-text">Рассказы</span>
+            {% if site_settings.stories_coming_soon %}
+                <span class="mobile-nav-badge bg-warning">Скоро</span>
+            {% endif %}
+        </a>
+    </li>
+{% endif %}
+
+{% if site_settings.show_books %}
+    <li>
+        <a href="{% url 'books:list' %}" class="mobile-nav-item" data-section="books">
+            <i class="bi bi-book-fill mobile-nav-icon"></i>
+            <span class="mobile-nav-text">Книги</span>
+            {% if site_settings.books_coming_soon %}
+                <span class="mobile-nav-badge bg-warning">Скоро</span>
+            {% endif %}
+        </a>
+    </li>
+{% endif %}
+
+{% if site_settings.show_fairy_tales %}
+    <li>
+        <a href="{% url 'fairy_tales:list' %}" class="mobile-nav-item" data-section="fairy-tales">
+            <i class="bi bi-stars mobile-nav-icon"></i>
+            <span class="mobile-nav-text">Сказки</span>
+            {% if site_settings.fairy_tales_coming_soon %}
+                <span class="mobile-nav-badge bg-warning">Скоро</span>
+            {% endif %}
+        </a>
+    </li>
+{% endif %}
+
+{% if site_settings.show_audio %}
+    <li>
+        <a href="{% url 'audio:list' %}" class="mobile-nav-item" data-section="audio">
+            <i class="bi bi-music-note-beamed mobile-nav-icon"></i>
+            <span class="mobile-nav-text">Аудио</span>
+            {% if site_settings.audio_coming_soon %}
+                <span class="mobile-nav-badge bg-warning">Скоро</span>
+            {% endif %}
+        </a>
+    </li>
+{% endif %}
+
+{% if site_settings.show_shop %}
+    <li>
+        <a href="{% url 'shop:catalog' %}" class="mobile-nav-item" data-section="shop">
+            <i class="bi bi-cart3 mobile-nav-icon"></i>
+            <span class="mobile-nav-text">Магазин</span>
+            {% if site_settings.shop_coming_soon %}
+                <span class="mobile-nav-badge bg-warning">Скоро</span>
+            {% endif %}
+            {% if user.is_authenticated %}
+                <span class="mobile-nav-badge" id="mobile-cart-badge" style="display: none;">0</span>
+            {% endif %}
+        </a>
+    </li>
+{% endif %}

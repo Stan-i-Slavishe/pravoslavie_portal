@@ -416,6 +416,50 @@ class SiteSettings(models.Model):
         verbose_name='Google Analytics ID'
     )
     
+    # Управление навигацией
+    show_stories = models.BooleanField(
+        default=True,
+        verbose_name='Показывать "Видео-рассказы"'
+    )
+    show_books = models.BooleanField(
+        default=True,
+        verbose_name='Показывать "Библиотеку"'
+    )
+    show_audio = models.BooleanField(
+        default=False,
+        verbose_name='Показывать "Аудио"'
+    )
+    show_fairy_tales = models.BooleanField(
+        default=False,
+        verbose_name='Показывать "Сказки"'
+    )
+    show_shop = models.BooleanField(
+        default=True,
+        verbose_name='Показывать "Магазин"'
+    )
+    
+    # Бейджи "В разработке" / "Скоро"
+    stories_coming_soon = models.BooleanField(
+        default=False,
+        verbose_name='Рассказы: показать "Скоро"'
+    )
+    books_coming_soon = models.BooleanField(
+        default=False,
+        verbose_name='Библиотека: показать "Скоро"'
+    )
+    audio_coming_soon = models.BooleanField(
+        default=True,
+        verbose_name='Аудио: показать "Скоро"'
+    )
+    fairy_tales_coming_soon = models.BooleanField(
+        default=True,
+        verbose_name='Сказки: показать "Скоро"'
+    )
+    shop_coming_soon = models.BooleanField(
+        default=False,
+        verbose_name='Магазин: показать "Скоро"'
+    )
+    
     class Meta:
         verbose_name = 'Настройки сайта'
         verbose_name_plural = 'Настройки сайта'

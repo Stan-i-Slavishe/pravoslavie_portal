@@ -41,6 +41,13 @@ allowed_hosts_env = config('ALLOWED_HOSTS', default=None)
 if allowed_hosts_env:
     ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',')]
 
+# Импорт VAPID настроек для push-уведомлений
+try:
+    from .settings_vapid import *
+    print(f"🔑 VAPID Keys loaded: Private={bool(VAPID_PRIVATE_KEY)}, Public={bool(VAPID_PUBLIC_KEY)}")
+except ImportError:
+    print("⚠️ VAPID settings not found")
+
 print(f"Настройки загружены для {ENVIRONMENT.upper()} окружения")
 print(f"   DEBUG: {DEBUG}")
 print(f"   ALLOWED_HOSTS: {ALLOWED_HOSTS}")

@@ -80,6 +80,8 @@ django-anymail==12.0
 # PWA & Modern Features
 django-pwa==1.1.0
 django-manifest-loader==1.2.0
+pywebpush==2.0.3
+py-vapid==1.9.2
 
 # Utils & Helpers
 python-slugify==8.0.4

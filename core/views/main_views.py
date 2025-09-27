@@ -12,6 +12,7 @@ import json
 from ..models import Category, Tag, ContactMessage, SiteSettings, MobileFeedback
 from ..forms import ContactForm
 from ..seo import page_meta  # Правильный импорт из пакета seo
+from django.contrib.auth.decorators import login_required
 
 class HomeView(TemplateView):
     template_name = 'core/home.html'
@@ -582,3 +583,25 @@ User Agent: {feedback.user_agent}
             'success': False,
             'error': 'Метод GET не поддерживается для этого API'
         }, status=405)
+
+
+class DonateView(TemplateView):
+    """Страница поддержки проекта"""
+    template_name = 'core/donate.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Поддержать проект'
+        
+        # SEO мета-теги
+        context['page_key'] = 'donate'
+        context['seo'] = page_meta('donate', request=self.request)
+        
+        # Данные для ЮMoney
+        context['yumoney_account'] = '5599002068582453'
+        context['yumoney_formatted'] = '5599 0020 6858 2453'
+        
+        # Настройки сайта
+        context['site_settings'] = SiteSettings.get_settings()
+        
+        return context

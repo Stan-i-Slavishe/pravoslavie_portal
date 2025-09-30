@@ -125,11 +125,15 @@ AUTHENTICATION_BACKENDS = (
     'allauth.account.auth_backends.AuthenticationBackend',
 )
 
+# Новый синтаксис django-allauth (v0.50+)
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
-ACCOUNT_EMAIL_REQUIRED = False
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_UNIQUE_EMAIL = True
+
+# Методы входа (новый формат)
+ACCOUNT_LOGIN_METHODS = {'email'}  # Только email для входа
+
+# Поля регистрации (новый формат) - email опционален
+ACCOUNT_SIGNUP_FIELDS = ['password1*', 'password2*']  # * означает обязательное поле
 
 # Кастомные формы allauth с капчей
 ACCOUNT_FORMS = {

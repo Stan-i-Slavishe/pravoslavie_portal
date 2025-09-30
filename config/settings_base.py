@@ -132,8 +132,9 @@ ACCOUNT_UNIQUE_EMAIL = True
 # Методы входа (новый формат)
 ACCOUNT_LOGIN_METHODS = {'email'}  # Только email для входа
 
-# Поля регистрации (новый формат) - email опционален
-ACCOUNT_SIGNUP_FIELDS = ['password1*', 'password2*']  # * означает обязательное поле
+# Поля регистрации (новый формат)
+# * означает обязательное поле, без * - опциональное
+ACCOUNT_SIGNUP_FIELDS = ['email', 'password1*', 'password2*']
 
 # Кастомные формы allauth с капчей
 ACCOUNT_FORMS = {

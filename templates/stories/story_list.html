@@ -6,6 +6,8 @@
 {% block description %}Духовные видео-рассказы и истории о вере, чудесах и православной жизни{% endblock %}
 
 {% block extra_css %}
+<!-- Принудительное обновление кеша -->
+<link rel="stylesheet" href="{% static 'css/azbyka-style.css' %}?v={{ request.GET.v|default:'1.0' }}">
 <style>
 /* Стили для страницы видео-рассказов */
 .stories-hero {
@@ -167,6 +169,7 @@
     font-size: 0.85rem;
     color: #666;
     text-align: center;
+    gap: 1rem; /* Добавляем отступы между элементами */
 }
 
 .story-meta .meta-item {
@@ -625,10 +628,10 @@
 
 <!-- Список рассказов -->
 {% if stories %}
-    <div class="row g-4">
+    <div class="row g-4 story-grid">
         {% for story in stories %}
             <div class="col-lg-4 col-md-6">
-                <div class="story-card">
+                <div class="card story-card">
                     <!-- Кликабельное превью -->
                     <a href="{% url 'stories:detail' slug=story.slug %}" class="story-thumbnail-link text-decoration-none">
                         <div class="story-thumbnail">
@@ -654,7 +657,7 @@
                         </div>
                     </a>
                     
-                    <div class="story-content">
+                    <div class="card-body story-content">
                         <h3 class="story-title">
                             <a href="{% url 'stories:detail' slug=story.slug %}" class="text-decoration-none">
                                 {{ story.title }}
@@ -666,10 +669,6 @@
                         {% endif %}
                         
                         <div class="story-meta">
-                            <div class="meta-item">
-                                <i class="bi bi-eye"></i>
-                                <span>{{ story.views_count|default:"0" }} просмотров</span>
-                            </div>
                             <div class="meta-item">
                                 <i class="bi bi-calendar3"></i>
                                 <span>{{ story.created_at|date:"d.m.Y" }}</span>
@@ -683,7 +682,7 @@
                         {% if story.tags.all %}
                             <div class="story-tags">
                                 {% for tag in story.tags.all %}
-                                    <a href="?tag={{ tag.slug }}" class="story-tag">
+                                    <a href="?tag={{ tag.slug }}" class="tag-item">
                                         {{ tag.name }}
                                     </a>
                                 {% endfor %}

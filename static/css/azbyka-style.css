@@ -1416,3 +1416,198 @@ footer a:hover {
     margin-right: 0.5rem;
     flex-shrink: 0;
 }
+
+/* ===================================================== */
+/* ИСПРАВЛЕНИЕ КАРТОЧЕК РАССКАЗОВ - ОДИНАКОВАЯ ВЫСОТА */
+/* ===================================================== */
+
+/* Основные стили для карточек рассказов */
+.story-card {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 420px !important; /* Фиксированная минимальная высота */
+    height: 100% !important; /* Заполняет родительский контейнер */
+    transition: var(--transition-normal) !important;
+}
+
+.story-card .card-body {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-grow: 1 !important;
+    padding: 1.5rem !important;
+}
+
+.story-content {
+    flex-grow: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Заголовки - фиксированная высота */
+.story-title {
+    min-height: 65px !important; /* Место для заголовка в 2-3 строки */
+    display: flex !important;
+    align-items: flex-start !important;
+    margin-bottom: 1rem !important;
+    line-height: 1.3 !important;
+    font-weight: 600 !important;
+    overflow: hidden !important;
+}
+
+/* Описание - ограниченное количество строк */
+.story-description {
+    flex-grow: 1 !important;
+    overflow: hidden !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3 !important; /* Максимум 3 строки */
+    -webkit-box-orient: vertical !important;
+    line-height: 1.5 !important;
+    margin-bottom: 1rem !important;
+    color: var(--text-secondary) !important;
+}
+
+/* Контейнер для тегов - фиксированная высота */
+.story-tags {
+    min-height: 55px !important; /* Фиксированная высота для тегов */
+    display: flex !important;
+    align-items: flex-start !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    margin: 1rem 0 !important;
+    overflow: hidden !important;
+}
+
+/* Стили для отдельных тегов */
+.tag-item {
+    display: inline-block !important;
+    background: linear-gradient(45deg, #e3f2fd, #f3e5f5) !important;
+    color: #1976d2 !important;
+    padding: 4px 10px !important;
+    border-radius: 15px !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 110px !important; /* Ограничиваем ширину тегов */
+    border: 1px solid rgba(25, 118, 210, 0.2) !important;
+    transition: var(--transition-fast) !important;
+}
+
+.tag-item:hover {
+    background: linear-gradient(45deg, #bbdefb, #e1bee7) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(25, 118, 210, 0.2) !important;
+}
+
+/* Кнопки всегда внизу карточки */
+.story-actions {
+    margin-top: auto !important;
+    padding-top: 1rem !important;
+    display: flex !important;
+    gap: 0.5rem !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+}
+
+/* Обеспечиваем равномерную высоту в сетке Bootstrap */
+.row.story-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+}
+
+.row.story-grid > [class*="col-"] {
+    display: flex !important;
+    margin-bottom: 1.5rem !important;
+}
+
+/* Дополнительные стили для карточек */
+.story-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.story-card .card-img-top {
+    height: 200px !important;
+    object-fit: cover !important;
+    border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .story-card {
+        min-height: 380px !important;
+    }
+    
+    .story-title {
+        min-height: 50px !important;
+        font-size: 1.1rem !important;
+    }
+    
+    .story-description {
+        -webkit-line-clamp: 2 !important;
+        font-size: 0.9rem !important;
+    }
+    
+    .story-tags {
+        min-height: 45px !important;
+    }
+    
+    .tag-item {
+        max-width: 90px !important;
+        font-size: 10px !important;
+        padding: 3px 8px !important;
+    }
+    
+    .story-card .card-body {
+        padding: 1rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .story-card {
+        min-height: 350px !important;
+    }
+    
+    .story-title {
+        min-height: 45px !important;
+        font-size: 1rem !important;
+    }
+    
+    .tag-item {
+        max-width: 80px !important;
+        font-size: 9px !important;
+    }
+}
+
+/* Альтернативный подход через CSS Grid (если нужно) */
+.story-grid-container {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    gap: 1.5rem !important;
+    grid-auto-rows: 1fr !important; /* Все строки одинаковой высоты */
+}
+
+/* Стили для состояний карточек */
+.story-card.featured {
+    border: 2px solid var(--accent-color) !important;
+    background: linear-gradient(135deg, #fff, #fff5f5) !important;
+}
+
+.story-card.new {
+    position: relative !important;
+}
+
+.story-card.new::before {
+    content: "Новое" !important;
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important;
+    background: var(--accent-color) !important;
+    color: white !important;
+    padding: 2px 8px !important;
+    border-radius: 10px !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    z-index: 10 !important;
+}

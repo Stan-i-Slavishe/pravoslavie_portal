@@ -126,7 +126,7 @@ AUTHENTICATION_BACKENDS = (
 )
 
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
-ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_REQUIRED = False
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_UNIQUE_EMAIL = True
@@ -182,3 +182,10 @@ LOGGING = {
 
 # Создать папку для логов, если её нет
 os.makedirs(BASE_DIR / 'logs', exist_ok=True)
+
+# VK OAuth настройки
+SOCIALACCOUNT_PROVIDERS = {
+    'vk': {
+        'SCOPE': ['email'],
+    }
+}

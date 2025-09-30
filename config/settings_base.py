@@ -129,12 +129,13 @@ AUTHENTICATION_BACKENDS = (
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
 ACCOUNT_UNIQUE_EMAIL = True
 
-# Методы входа (новый формат)
-ACCOUNT_LOGIN_METHODS = {'email'}  # Только email для входа
+# Методы входа (новый формат) - email берётся автоматически отсюда
+ACCOUNT_LOGIN_METHODS = {'email'}
 
-# Поля регистрации (новый формат)
-# * означает обязательное поле, без * - опциональное
-ACCOUNT_SIGNUP_FIELDS = ['email', 'password1*', 'password2*']
+# Поля регистрации (новый формат) - только пароли
+# Email НЕ нужно указывать здесь, он берётся из ACCOUNT_LOGIN_METHODS
+# * означает обязательное поле
+ACCOUNT_SIGNUP_FIELDS = ['password1*', 'password2*']
 
 # Кастомные формы allauth с капчей
 ACCOUNT_FORMS = {

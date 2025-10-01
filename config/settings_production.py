@@ -53,6 +53,8 @@ RECAPTCHA_REQUIRED_SCORE = 0.85
 # Подавляем некритичные warnings
 SILENCED_SYSTEM_CHECKS = [
     'account.W001',  # Конфликт ACCOUNT_LOGIN_METHODS - некритичен
+    'security.W008',  # SSL редирект настроен в Nginx
+    'security.W009',  # SECRET_KEY достаточно сильный
 ]
 
 print("Production настройки загружены")

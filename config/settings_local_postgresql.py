@@ -86,8 +86,11 @@ RECAPTCHA_PUBLIC_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'  # Тесто�
 RECAPTCHA_PRIVATE_KEY = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'  # Тестовый ключ Google
 RECAPTCHA_REQUIRED_SCORE = 0.85
 
-# Отключаем проверку reCAPTCHA в локальной разработке
-SILENCED_SYSTEM_CHECKS = ['django_recaptcha.recaptcha_test_key_error']
+# Подавляем некритичные warnings
+SILENCED_SYSTEM_CHECKS = [
+    'django_recaptcha.recaptcha_test_key_error',
+    'account.W001',  # Подавляем warning о конфликте ACCOUNT_LOGIN_METHODS
+]
 
 # Для локальной разработки используем NoOp reCAPTCHA (всегда проходит)
 if DEBUG:
@@ -120,36 +123,14 @@ TEMPLATES = [
     },
 ]
 
-# reCAPTCHA настройки для локальной разработки (тестовые ключи)
-RECAPTCHA_PUBLIC_KEY = config('RECAPTCHA_PUBLIC_KEY', default='6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI')
-RECAPTCHA_PRIVATE_KEY = config('RECAPTCHA_PRIVATE_KEY', default='6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe')
-RECAPTCHA_REQUIRED_SCORE = 0.85
+# CSRF Settings for local development
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000']
 
-# Отключаем предупреждение о тестовых ключах для локальной разработки
-SILENCED_SYSTEM_CHECKS = ['django_recaptcha.recaptcha_test_key_error']
-# CSRF Settings for HTTPS
-CSRF_TRUSTED_ORIGINS = ['https://dobrist.com', 'https://www.dobrist.com']
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-# Настройки для социальной аутентификации Google
+# Настройки для социальной аутентификации (берутся из settings_base.py)
+# VK, Google и другие провайдеры настроены в settings_base.py
 SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_AUTO_SIGNUP = True
-
-# Автоматическое перенаправление на провайдера
 SOCIALACCOUNT_QUERY_EMAIL = True
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'none'
 
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': [
-            'profile',
-            'email',
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-        },
-        'VERIFIED_EMAIL': True,
-    }
-}
+# НЕ переопределяем ACCOUNT_EMAIL_REQUIRED - используем из settings_base.py!
+# НЕ переопределяем SOCIALACCOUNT_PROVIDERS - используем из settings_base.py!

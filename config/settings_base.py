@@ -125,12 +125,13 @@ AUTHENTICATION_BACKENDS = (
     'allauth.account.auth_backends.AuthenticationBackend',
 )
 
-# Django-allauth настройки (совместимый формат для разных версий)
+# Django-allauth настройки (новый синтаксис v65+)
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
 ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_EMAIL_REQUIRED = False  # Email не обязателен для VK OAuth
-ACCOUNT_USERNAME_REQUIRED = False  # Username не обязателен
-ACCOUNT_AUTHENTICATION_METHOD = 'email'  # Вход через email
+
+# Поля регистрации - email опционален (без звездочки для VK OAuth)
+# * означает обязательное поле, без * - опциональное
+ACCOUNT_SIGNUP_FIELDS = ['email', 'password1*', 'password2*']
 
 # Кастомные формы allauth с капчей
 ACCOUNT_FORMS = {

@@ -189,5 +189,10 @@ os.makedirs(BASE_DIR / 'logs', exist_ok=True)
 SOCIALACCOUNT_PROVIDERS = {
     'vk': {
         'SCOPE': ['email'],
+    },
+    'telegram': {
+        'AUTH_PARAMS': {
+            'auth_date': True,  # Проверка даты авторизации
+        },
     }
 }

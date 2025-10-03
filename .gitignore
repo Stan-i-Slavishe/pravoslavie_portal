@@ -92,3 +92,20 @@ safe_restore.py
 backups/configs_working_*/
 backups/*.tar.gz
 BACKUP_INFO.txt
+"" 
+"# Local recovery scripts and docs" 
+"BACKUP_QUICK_ACCESS.md" 
+"SERVER_RECOVERY_*.md" 
+"emergency_restart.bat" 
+"check_postgresql_status.bat" 
+"quick_recovery.bat" 
+"server_info.txt" 
+
+# Local recovery scripts and docs
+BACKUP_QUICK_ACCESS.md
+SERVER_RECOVERY_*.md
+emergency_restart.bat
+check_postgresql_status.bat
+quick_recovery.bat
+server_info.txt
+diagnose_server.py

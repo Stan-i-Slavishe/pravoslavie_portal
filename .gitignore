@@ -87,3 +87,8 @@ nuclear_restore.py
 postgresql_restore.py 
 safe_restore.py 
 .env 
+
+# Backups with sensitive data
+backups/configs_working_*/
+backups/*.tar.gz
+BACKUP_INFO.txt

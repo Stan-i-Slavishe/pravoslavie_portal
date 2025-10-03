@@ -10,7 +10,7 @@
 <meta property="og:title" content="{{ fairy_tale.title }}">
 <meta property="og:description" content="{{ fairy_tale.short_description }}">
 {% if fairy_tale.cover_image %}
-<meta property="og:image" content="{{ request.build_absolute_uri }}{{ fairy_tale.cover_image.url }}">
+<meta property="og:image" content="{{ request.get_full_path }}{{ fairy_tale.cover_image.url }}">
 {% endif %}
 {% endblock %}
 
@@ -478,14 +478,14 @@
                     <ul class="dropdown-menu w-100">
                         <li>
                             <a class="dropdown-item" 
-                               href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text={{ fairy_tale.title }}"
+                               href="https://t.me/share/url?url={{ request.get_full_path }}&text={{ fairy_tale.title }}"
                                target="_blank">
                                 <i class="bi bi-telegram text-info me-2"></i> Telegram
                             </a>
                         </li>
                         <li>
                             <a class="dropdown-item" 
-                               href="https://vk.com/share.php?url={{ request.build_absolute_uri }}&title={{ fairy_tale.title }}"
+                               href="https://vk.com/share.php?url={{ request.get_full_path }}&title={{ fairy_tale.title }}"
                                target="_blank">
                                 <span class="me-2 d-inline-flex align-items-center justify-content-center" 
                                       style="width: 16px; height: 16px; background: #4680c2; color: white; font-size: 10px; font-weight: bold; border-radius: 2px;">VK</span> 
@@ -494,7 +494,7 @@
                         </li>
                         <li>
                             <a class="dropdown-item" 
-                               href="https://wa.me/?text={{ fairy_tale.title }} {{ request.build_absolute_uri }}"
+                               href="https://wa.me/?text={{ fairy_tale.title }} {{ request.get_full_path }}"
                                target="_blank">
                                 <i class="bi bi-whatsapp text-success me-2"></i> WhatsApp
                             </a>

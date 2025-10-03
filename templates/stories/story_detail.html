@@ -1623,7 +1623,7 @@
                 <!-- Блок поделиться -->
                 <div id="shareSection" class="share-section mt-2" style="display: none;">
                     <div class="share-buttons d-flex gap-2 flex-wrap">
-                        <a href="https://wa.me/?text={{ story.title|urlencode }} {{ request.build_absolute_uri|urlencode }}" 
+                        <a href="https://wa.me/?text={{ story.title|urlencode }} {{ request.get_full_path|urlencode }}" 
                            class="btn btn-success btn-sm" 
                            target="_blank" 
                            title="Поделиться в WhatsApp">
@@ -1631,7 +1631,7 @@
                             WhatsApp
                         </a>
                         
-                        <a href="https://t.me/share/url?url={{ request.build_absolute_uri|urlencode }}&text={{ story.title|urlencode }}" 
+                        <a href="https://t.me/share/url?url={{ request.get_full_path|urlencode }}&text={{ story.title|urlencode }}" 
                            class="btn btn-info btn-sm" 
                            target="_blank" 
                            title="Поделиться в Telegram">

@@ -132,8 +132,6 @@
 /* Цвета социальных кнопок */
 .btn-google { background: linear-gradient(135deg, #dd4b39, #c23321); }
 .btn-vk { background: linear-gradient(135deg, #4c75a3, #45688e); }
-.btn-telegram { background: linear-gradient(135deg, #0088cc, #006ca5); }
-.btn-mailru { background: linear-gradient(135deg, #168de2, #147bc4); }
 .btn-yandex { background: linear-gradient(135deg, #ffcc00, #e6b800); color: #333; }
 
 .btn-yandex:hover { color: #333; }
@@ -268,8 +266,6 @@
 .social-section.active .social-btn:nth-child(1) { animation-delay: 0.1s; }
 .social-section.active .social-btn:nth-child(2) { animation-delay: 0.2s; }
 .social-section.active .social-btn:nth-child(3) { animation-delay: 0.3s; }
-.social-section.active .social-btn:nth-child(4) { animation-delay: 0.4s; }
-.social-section.active .social-btn:nth-child(5) { animation-delay: 0.5s; }
 
 @keyframes fadeInUp {
     to {
@@ -373,16 +369,6 @@
                     <i class="fab fa-vk"></i>
                     ВКонтакте
                 </a>
-                
-                <a href="/accounts/telegram/login/" class="social-btn btn-telegram">
-                    <i class="fab fa-telegram-plane"></i>
-                    Telegram
-                </a>
-                
-                <a href="/accounts/mailru/login/" class="social-btn btn-mailru">
-                    <i class="fas fa-envelope"></i>
-                    Mail.ru
-                </a>
             </div>
             
             <a href="/accounts/yandex/login/" class="social-btn btn-yandex" style="width: 100%; margin-top: 8px;">
@@ -451,34 +437,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Аналитика кликов по социальным кнопкам
     document.querySelectorAll('.social-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
-            // Проверяем, есть ли реальная ссылка
-            if (this.href && this.href !== '#' && !this.href.endsWith('#')) {
-                // Эффект клика
-                this.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    this.style.transform = '';
-                }, 150);
-                
-                console.log('Переход к авторизации:', this.textContent.trim());
-                // Позволяем переходу произойти
-                return true;
-            } else {
-                // Отменяем переход, показываем сообщение
-                e.preventDefault();
-                
-                // Эффект клика
-                this.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    this.style.transform = '';
-                }, 150);
-                
-                console.log('Клик по:', this.textContent.trim());
-                
-                // Сообщение о разработке
-                setTimeout(() => {
-                    alert(`Авторизация через ${this.textContent.trim()} в разработке`);
-                }, 200);
-            }
+            // Эффект клика
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+            
+            console.log('Переход к авторизации:', this.textContent.trim());
         });
     });
 

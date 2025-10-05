@@ -32,8 +32,7 @@ THIRD_PARTY_APPS = [
     # Провайдеры социальных сетей
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.vk',
-    'allauth.socialaccount.providers.telegram',
-    'allauth.socialaccount.providers.mailru',
+    # 'allauth.socialaccount.providers.mailru',  # ОТКЛЮЧЕН
     'allauth.socialaccount.providers.yandex',
 ]
 
@@ -185,14 +184,26 @@ LOGGING = {
 # Создать папку для логов, если её нет
 os.makedirs(BASE_DIR / 'logs', exist_ok=True)
 
-# VK OAuth настройки
+# Настройки OAuth провайдеров
+# ВАЖНО: Здесь только SCOPE и параметры, БЕЗ APP!
+# APP (client_id, secret) настраиваются в Django Admin
 SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+    },
     'vk': {
         'SCOPE': ['email'],
     },
-    'telegram': {
-        'AUTH_PARAMS': {
-            'auth_date': True,  # Проверка даты авторизации
-        },
+    # 'mailru': {  # ОТКЛЮЧЕН
+    #     'SCOPE': ['userinfo'],
+    # },
+    'yandex': {
+        # Без дополнительных настроек
     }
 }

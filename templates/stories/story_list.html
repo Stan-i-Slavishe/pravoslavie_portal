@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load youtube_time %}
 
 {% block title %}Видео-рассказы - {{ site_settings.site_name }}{% endblock %}
 
@@ -164,33 +165,35 @@
 .story-meta {
     display: flex;
     align-items: center;
-    justify-content: space-around;
-    margin-bottom: 1rem;
-    font-size: 0.85rem;
-    color: #666;
-    text-align: center;
-    gap: 1rem; /* Добавляем отступы между элементами */
+    justify-content: flex-start;
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    color: #606060;
+    gap: 0.5rem;
 }
 
-.story-meta .meta-item {
-    display: flex;
-    flex-direction: column;
+.story-meta .meta-separator {
+    color: #606060;
+    font-weight: bold;
+}
+
+.story-category-badge {
+    display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    flex: 1;
-}
-
-.story-meta .meta-item i {
-    font-size: 1.2rem;
-    color: #e74c3c;
-    margin-bottom: 0.25rem;
-}
-
-.story-meta .meta-item span {
+    gap: 0.35rem;
+    padding: 0.3rem 0.6rem;
+    background: #e3f2fd;
+    color: #1976d2;
+    border-radius: 0.5rem;
     font-size: 0.75rem;
     font-weight: 500;
-    color: #666;
-    white-space: nowrap;
+    margin-bottom: 0.75rem;
+    border: 1px solid #bbdefb;
+}
+
+.story-category-badge i {
+    font-size: 0.9rem;
+    color: #2196f3;
 }
 
 .story-tags {
@@ -203,7 +206,7 @@
     background: #f8f9fa;
     color: #333;
     border-radius: 0.25rem;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     margin-right: 0.5rem;
     margin-bottom: 0.25rem;
     text-decoration: none;
@@ -669,20 +672,20 @@
                         {% endif %}
                         
                         <div class="story-meta">
-                            <div class="meta-item">
-                                <i class="bi bi-calendar3"></i>
-                                <span>{{ story.created_at|date:"d.m.Y" }}</span>
-                            </div>
-                            <div class="meta-item">
-                                <i class="bi bi-folder"></i>
-                                <span>{{ story.category.name|default:"Без категории" }}</span>
-                            </div>
+                            <span>{{ story.views_count|default:0 }} просмотров</span>
+                            <span class="meta-separator">•</span>
+                            <span>{{ story.created_at|youtube_time }}</span>
+                        </div>
+                        
+                        <div class="story-category-badge">
+                            <i class="bi bi-bookmark-fill"></i>
+                            <span>{{ story.category.name|default:"Без категории" }}</span>
                         </div>
                         
                         {% if story.tags.all %}
                             <div class="story-tags">
                                 {% for tag in story.tags.all %}
-                                    <a href="?tag={{ tag.slug }}" class="tag-item">
+                                    <a href="?tag={{ tag.slug }}" class="story-tag">
                                         {{ tag.name }}
                                     </a>
                                 {% endfor %}

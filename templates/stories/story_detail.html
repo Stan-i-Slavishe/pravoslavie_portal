@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load seo_tags %}
+{% load youtube_time %}
 
 <!-- Мета-теги для рассказа -->
 {% block meta_tags %}
@@ -1522,8 +1523,7 @@
                     <!-- Дата публикации -->
                     <div class="meta-item">
                         <i class="bi bi-calendar3"></i>
-                        <span class="d-none d-md-inline">{{ story.created_at|date:"d F Y" }}</span>
-                        <span class="d-md-none">{{ story.created_at|date:"d.m.Y" }}</span>
+                        <span>{{ story.created_at|youtube_time }}</span>
                     </div>
                     
                     <!-- Количество лайков -->

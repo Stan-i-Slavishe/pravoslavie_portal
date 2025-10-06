@@ -452,13 +452,22 @@
     border-left: 4px solid #e74c3c;
 }
 
+/* Вторая строка с датой и просмотрами */
+.meta-row-secondary {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
 .meta-item {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     font-size: 0.9rem;
     color: #495057;
-    white-space: nowrap;
 }
 
 .meta-item i {
@@ -476,17 +485,122 @@
     text-decoration: underline !important;
 }
 
-/* Мобильная адаптация - горизонтальное расположение 2x2+1 */
+/* Стили для dropdown меню "Поделиться" */
+.share-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 0.5rem;
+    z-index: 1000;
+    min-width: 200px;
+}
+
+.share-dropdown-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e9ecef;
+    overflow: hidden;
+    animation: dropdownFadeIn 0.2s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.share-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: #212529;
+    text-decoration: none;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.share-dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.share-dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #212529;
+}
+
+.share-dropdown-item i {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+}
+
+.share-dropdown-item span {
+    flex: 1;
+}
+
+/* Анимация биения сердечка */
+@keyframes heartbeat {
+    0% {
+        transform: scale(1);
+    }
+    10% {
+        transform: scale(1.2);
+    }
+    20% {
+        transform: scale(1);
+    }
+    30% {
+        transform: scale(1.2);
+    }
+    40% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.heart-icon {
+    display: inline-block;
+    animation: heartbeat 2s ease-in-out infinite;
+    color: #dc3545 !important;
+    transition: all 0.3s ease;
+}
+
+.heart-icon:hover {
+    animation: heartbeat 0.8s ease-in-out infinite;
+    transform: scale(1.1);
+}
+
+/* Заполненное сердечко */
+.bi-heart-fill.heart-icon {
+    animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+/* Мобильная адаптация */
 @media (max-width: 768px) {
     .video-container {
         margin-bottom: 15px;
     }
     
     .story-meta {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto auto auto;
-        gap: 0.75rem 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
         padding: 0.75rem;
         background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
         border-radius: 12px;
@@ -497,76 +611,49 @@
     
     .meta-item {
         font-size: 0.85rem;
-        gap: 0.4rem;
-        white-space: nowrap;
-        overflow: hidden;
+        gap: 0.3rem;
         transition: all 0.2s ease;
-        padding: 0.25rem;
+        padding: 0.25rem 0.5rem;
         border-radius: 6px;
-        animation: slideInScale 0.4s ease-out;
-        animation-delay: calc(var(--item-index, 0) * 0.1s);
     }
     
-    .meta-item:hover {
-        background-color: rgba(231, 76, 60, 0.1);
-        transform: scale(1.02);
+    /* Первая строка - кнопки действий */
+    .meta-item:not(.meta-secondary) {
+        flex: 1;
+        min-width: 80px;
+        justify-content: center;
+    }
+    
+    /* Вторая строка - информация */
+    .meta-item.meta-secondary {
+        width: auto;
+        flex: 1;
+        min-width: 120px;
+        margin-top: 0.5rem;
+        color: #6c757d;
+        font-size: 0.8rem;
+    }
+    
+    .meta-item.meta-secondary:first-of-type {
+        margin-top: 0.5rem;
     }
     
     .meta-item i {
         font-size: 0.9rem;
-        min-width: 16px;
-        text-align: center;
     }
     
-    .meta-item a {
-        color: #e74c3c;
-        text-decoration: none;
-        font-weight: 600;
+    .meta-item .btn {
+        font-size: 0.85rem;
     }
     
-    .meta-item a:hover {
-        color: #c53030 !important;
-        text-decoration: none !important;
+    /* Дата и просмотры на новой строке */
+    .meta-row-secondary {
+        width: 100%;
+        flex-basis: 100%;
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        justify-content: center;
     }
-    
-    /* Первый ряд - дата и просмотры */
-    .meta-item:nth-child(1) { 
-        grid-column: 1; 
-        grid-row: 1; 
-        --item-index: 1;
-    }
-    .meta-item:nth-child(2) { 
-        grid-column: 2; 
-        grid-row: 1; 
-        --item-index: 2;
-    }
-    
-    /* Второй ряд - лайки и категория */
-    .meta-item:nth-child(3) { 
-        grid-column: 1; 
-        grid-row: 2; 
-        --item-index: 3;
-    }
-    .meta-item:nth-child(4) { 
-        grid-column: 2; 
-        grid-row: 2; 
-        --item-index: 4;
-    }
-    
-    /* Третий элемент (кнопка сохранить) - по левой стороне */
-    .meta-item:nth-child(5) { 
-        grid-column: 1 / -1; 
-        grid-row: 3; 
-        justify-self: start;
-        --item-index: 5;
-    }
-    
-    /* Цветовая схема для разных типов метаданных */
-    .meta-item:nth-child(1) i { color: #28a745; } /* Дата - зеленый */
-    .meta-item:nth-child(2) i { color: #007bff; } /* Просмотры - синий */
-    .meta-item:nth-child(3) i { color: #dc3545; } /* Лайки - красный */
-    .meta-item:nth-child(4) i { color: #fd7e14; } /* Категория - оранжевый */
-    .meta-item:nth-child(5) i { color: #6f42c1; } /* Кнопка - фиолетовый */
     
     /* Увеличиваем размер мобильного виджета на планшетах */
     .playlist-mobile-list {
@@ -603,6 +690,51 @@
         font-size: 0.55rem;
         padding: 0px 3px;
         min-width: 14px;
+    }
+    
+    /* Компактные метаданные на маленьких экранах */
+    .story-meta {
+        gap: 0.5rem;
+        padding: 0.6rem;
+    }
+    
+    .meta-item {
+        font-size: 0.8rem;
+        padding: 0.2rem 0.4rem;
+    }
+    
+    .meta-item:not(.meta-secondary) {
+        min-width: 70px;
+    }
+    
+    .meta-item.meta-secondary {
+        min-width: 100px;
+        font-size: 0.75rem;
+    }
+    
+    .meta-item span {
+        font-size: 0.8rem;
+    }
+    
+    .meta-item i {
+        font-size: 0.85rem;
+    }
+    
+    /* Адаптация dropdown на мобильных */
+    .share-dropdown {
+        left: auto;
+        right: 0;
+        transform: none;
+        min-width: 180px;
+    }
+    
+    .share-dropdown-item {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.85rem;
+    }
+    
+    .share-dropdown-item i {
+        font-size: 1.1rem;
     }
 }
 
@@ -1045,7 +1177,7 @@
     }
 
     .story-description.collapsed {
-        max-height: 7.5em; /* Меньше строк на мобильных */
+        max-height: 4.8em; /* 3 строки на мобильных */
     }
 
     .story-description.collapsed::after {
@@ -1520,52 +1652,20 @@
                 <h1 class="story-title">{{ story.title }}</h1>
                 
                 <div class="story-meta mb-4">
-                    <!-- Дата публикации -->
+                    <!-- Первая строка: Лайк | Сохранить | Поделиться -->
                     <div class="meta-item">
-                        <i class="bi bi-calendar3"></i>
-                        <span>{{ story.created_at|youtube_time }}</span>
+                        <button class="btn btn-sm btn-link p-0 text-decoration-none {% if user_liked %}text-danger{% else %}text-danger{% endif %}" 
+                                onclick="toggleLike({{ story.id }})"
+                                style="border: none; background: none;">
+                            <i class="bi bi-heart{% if user_liked %}-fill{% endif %} me-1 heart-icon"></i>
+                            <span id="like-count-meta">{{ likes_count|default:"0" }}</span>
+                        </button>
                     </div>
                     
-                    <!-- Количество лайков -->
-                    <div class="meta-item">
-                        <i class="bi bi-heart"></i>
-                        <span class="d-none d-md-inline">{{ likes_count|default:"0" }} лайков</span>
-                        <span class="d-md-none">{{ likes_count|default:"0" }}</span>
-                    </div>
-                    
-                    <!-- Категория рассказа -->
-                    {% if story.category %}
-                        <div class="meta-item">
-                            <i class="bi bi-folder"></i>
-                            <a href="{% url 'stories:list' %}?category={{ story.category.slug }}" 
-                               style="color: #e74c3c; text-decoration: none;">
-                                <span class="d-none d-md-inline">{{ story.category.name }}</span>
-                                <span class="d-md-none">{{ story.category.name|truncatechars:12 }}</span>
-                            </a>
-                        </div>
-                    {% else %}
-                        <!-- Если нет категории, показываем теги -->
-                        {% if story.tags.all %}
-                            <div class="meta-item">
-                                <i class="bi bi-tags"></i>
-                                <span class="d-none d-md-inline">Теги</span>
-                                <span class="d-md-none">{{ story.tags.all.0.name|truncatechars:10 }}</span>
-                            </div>
-                        {% else %}
-                            <!-- Если ни категории, ни тегов - показываем тип контента -->
-                            <div class="meta-item">
-                                <i class="bi bi-play-circle"></i>
-                                <span class="d-none d-md-inline">Видео-рассказ</span>
-                                <span class="d-md-none">Видео</span>
-                            </div>
-                        {% endif %}
-                    {% endif %}
-                    
-                    <!-- Кнопка "Сохранить" -->
                     <div class="meta-item">
                         {% if user.is_authenticated %}
-                            <button class="btn btn-sm btn-outline-secondary" 
-                                    style="border: none; background: none; color: #495057; padding: 0;"
+                            <button class="btn btn-sm btn-link p-0 text-decoration-none text-dark" 
+                                    style="border: none; background: none;"
                                     onclick="showSaveToPlaylistModal()"
                                     title="Сохранить в плейлист">
                                 <i class="bi bi-bookmark me-1"></i>
@@ -1573,13 +1673,66 @@
                             </button>
                         {% else %}
                             <a href="{% url 'account_login' %}" 
-                               class="btn btn-sm btn-outline-secondary" 
-                               style="border: none; background: none; color: #495057; padding: 0; text-decoration: none;"
+                               class="btn btn-sm btn-link p-0 text-decoration-none text-dark" 
+                               style="border: none; background: none;"
                                title="Войдите, чтобы сохранить">
                                 <i class="bi bi-bookmark me-1"></i>
                                 <span>Сохранить</span>
                             </a>
                         {% endif %}
+                    </div>
+                    
+                    <div class="meta-item position-relative">
+                        <button class="btn btn-sm btn-link p-0 text-decoration-none text-dark" 
+                                style="border: none; background: none;"
+                                onclick="toggleShareDropdown(event)"
+                                id="shareDropdownBtn"
+                                title="Поделиться">
+                            <i class="bi bi-share me-1"></i>
+                            <span>Поделиться</span>
+                        </button>
+                        
+                        <!-- Dropdown меню поделиться -->
+                        <div class="share-dropdown" id="shareDropdown" style="display: none;">
+                            <div class="share-dropdown-content">
+                                <a href="https://wa.me/?text={{ story.title|urlencode }} {{ request.build_absolute_uri }}" 
+                                   class="share-dropdown-item" 
+                                   target="_blank"
+                                   onclick="event.stopPropagation();">
+                                    <i class="bi bi-whatsapp text-success"></i>
+                                    <span>WhatsApp</span>
+                                </a>
+                                
+                                <a href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text={{ story.title|urlencode }}" 
+                                   class="share-dropdown-item" 
+                                   target="_blank"
+                                   onclick="event.stopPropagation();">
+                                    <i class="bi bi-telegram text-info"></i>
+                                    <span>Telegram</span>
+                                </a>
+                                
+                                <a href="https://vk.com/share.php?url={{ request.build_absolute_uri }}&title={{ story.title|urlencode }}" 
+                                   class="share-dropdown-item" 
+                                   target="_blank"
+                                   onclick="event.stopPropagation();">
+                                    <i class="bi bi-share text-primary"></i>
+                                    <span>ВКонтакте</span>
+                                </a>
+                                
+                                <button class="share-dropdown-item" 
+                                        onclick="copyToClipboard(); event.stopPropagation();">
+                                    <i class="bi bi-link-45deg text-secondary"></i>
+                                    <span>Скопировать ссылку</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Вторая строка: Просмотры • Дата -->
+                    <div class="meta-row-secondary">
+                        <span>{{ story.views_count|default:"0" }} просмотров</span>
+                        <span class="mx-2">•</span>
+                        <span>{{ story.created_at|youtube_time }}</span>
                     </div>
                 </div>
                 
@@ -1609,7 +1762,7 @@
                 <div class="story-actions mb-2">
                     <button class="btn btn-outline-danger {% if user_liked %}active{% endif %}" 
                             onclick="toggleLike({{ story.id }})">
-                        <i class="bi bi-heart{% if user_liked %}-fill{% endif %} me-2"></i>
+                        <i class="bi bi-heart{% if user_liked %}-fill{% endif %} me-2 heart-icon"></i>
                         <span id="like-text">Нравится</span>
                         <span id="like-count">({{ likes_count|default:"0" }})</span>
                     </button>
@@ -1962,21 +2115,43 @@ function toggleLike(storyId) {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                const likeBtn = document.querySelector('.btn[onclick*="toggleLike"]');
-                const likeIcon = likeBtn.querySelector('i');
+                // Обновляем все счетчики лайков на странице
+                const likeCountMeta = document.getElementById('like-count-meta');
                 const likeCount = document.getElementById('like-count');
+                const likeBtns = document.querySelectorAll('[onclick*="toggleLike"]');
                 
-                if (data.liked) {
-                    likeBtn.classList.add('active');
-                    likeIcon.classList.add('bi-heart-fill');
-                    likeIcon.classList.remove('bi-heart');
-                } else {
-                    likeBtn.classList.remove('active');
-                    likeIcon.classList.add('bi-heart');
-                    likeIcon.classList.remove('bi-heart-fill');
-                }
+                // Обновляем счетчики
+                if (likeCountMeta) likeCountMeta.textContent = data.likes_count;
+                if (likeCount) likeCount.textContent = '(' + data.likes_count + ')';
                 
-                likeCount.textContent = '(' + data.likes_count + ')';
+                // Обновляем иконки всех кнопок
+                likeBtns.forEach(btn => {
+                    const icon = btn.querySelector('i');
+                    if (data.liked) {
+                        btn.classList.add('text-danger');
+                        btn.classList.remove('text-dark');
+                        if (icon) {
+                            icon.classList.add('bi-heart-fill');
+                            icon.classList.remove('bi-heart');
+                            // Убеждаемся что класс heart-icon остается
+                            if (!icon.classList.contains('heart-icon')) {
+                                icon.classList.add('heart-icon');
+                            }
+                        }
+                    } else {
+                        btn.classList.add('text-danger'); // Оставляем красным!
+                        btn.classList.remove('text-dark');
+                        if (icon) {
+                            icon.classList.add('bi-heart');
+                            icon.classList.remove('bi-heart-fill');
+                            // Убеждаемся что класс heart-icon остается
+                            if (!icon.classList.contains('heart-icon')) {
+                                icon.classList.add('heart-icon');
+                            }
+                        }
+                    }
+                });
+                
                 showToast(data.liked ? 'Лайк добавлен!' : 'Лайк убран!', 'success');
             }
         })
@@ -1989,7 +2164,31 @@ function toggleLike(storyId) {
     {% endif %}
 }
 
-// Переключение блока поделиться
+// Переключение dropdown "Поделиться"
+function toggleShareDropdown(event) {
+    event.stopPropagation();
+    const dropdown = document.getElementById('shareDropdown');
+    
+    if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+        dropdown.style.display = 'block';
+    } else {
+        dropdown.style.display = 'none';
+    }
+}
+
+// Закрытие dropdown при клике вне его области
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('shareDropdown');
+    const shareBtn = document.getElementById('shareDropdownBtn');
+    
+    if (dropdown && shareBtn) {
+        if (!dropdown.contains(event.target) && !shareBtn.contains(event.target)) {
+            dropdown.style.display = 'none';
+        }
+    }
+});
+
+// Переключение блока поделиться (старая секция)
 function toggleShareSection() {
     const shareSection = document.getElementById('shareSection');
     

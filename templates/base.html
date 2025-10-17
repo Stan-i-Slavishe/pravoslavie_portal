@@ -226,6 +226,65 @@
         color: white !important;
         text-decoration: none;
     }
+    
+    /* 🔧 ИСПРАВЛЕНИЕ: Раскрытие текста на мобильных */
+    .story-description.expanded,
+    .text-content.expanded,
+    .expandable-text.expanded {
+        max-height: none !important;
+        overflow: visible !important;
+        display: block !important;
+        -webkit-line-clamp: unset !important;
+        -webkit-box-orient: unset !important;
+    }
+    
+    .story-description.expanded::after,
+    .text-content.expanded::after,
+    .expandable-text.expanded::after {
+        display: none !important;
+    }
+    
+    .story-detail,
+    .story-card,
+    .fairy-tale-detail,
+    .book-detail {
+        overflow: visible !important;
+    }
+    
+    @media (max-width: 768px) {
+        .story-description.collapsed,
+        .text-content.collapsed {
+            max-height: 120px;
+            overflow: hidden;
+        }
+        
+        .story-description.expanded,
+        .text-content.expanded,
+        .expandable-text.expanded {
+            max-height: none !important;
+            overflow: visible !important;
+            height: auto !important;
+        }
+        
+        .story-detail,
+        .content-wrapper,
+        .main-content {
+            overflow: visible !important;
+            max-height: none !important;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .story-description.collapsed {
+            max-height: 100px;
+        }
+        
+        .story-description.expanded,
+        .text-content.expanded {
+            max-height: none !important;
+            overflow: visible !important;
+        }
+    }
     </style>
     
     <!-- Дополнительные мета-теги -->
